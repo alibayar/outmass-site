@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — OutMass</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.6; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    nav a.cta-sm { background: #0078d4; color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; }
+    nav a.cta-sm:hover { background: #005fa3; text-decoration: none; }
+
+    .hero { text-align: center; padding: 60px 0 20px; }
+    .hero h1 { font-size: 38px; font-weight: 800; margin-bottom: 12px; }
+    .hero p { font-size: 18px; color: #555; }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; max-width: 940px; margin: 48px auto 0; }
+    .price-card { border: 2px solid #e8e8e8; border-radius: 12px; padding: 36px 28px; text-align: center; }
+    .price-card.popular { border-color: #0078d4; position: relative; }
+    .price-card.popular::after { content: 'Most Popular'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #0078d4; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 20px; }
+    .price-card h3 { font-size: 22px; margin-bottom: 8px; }
+    .price-card .price { font-size: 42px; font-weight: 800; margin: 12px 0 4px; }
+    .price-card .price span { font-size: 16px; font-weight: 400; color: #888; }
+    .price-card ul { list-style: none; text-align: left; margin: 20px 0 28px; }
+    .price-card ul li { padding: 6px 0; font-size: 15px; color: #444; }
+    .price-card ul li::before { content: '✓ '; color: #0078d4; font-weight: 700; }
+    .btn-primary { display: inline-block; background: #0078d4; color: #fff; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600; width: 100%; text-align: center; }
+    .btn-primary:hover { background: #005fa3; text-decoration: none; }
+
+    .faq { max-width: 700px; margin: 60px auto; padding: 0 24px; }
+    .faq h2 { font-size: 28px; margin-bottom: 28px; text-align: center; }
+    .faq-item { border-bottom: 1px solid #e8e8e8; padding: 20px 0; }
+    .faq-item h3 { font-size: 17px; margin-bottom: 8px; }
+    .faq-item p { color: #555; font-size: 15px; }
+
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="index.html" class="logo">Out<span>Mass</span></a>
+    <div>
+      <a href="index.html" style="margin-right:20px;font-size:15px;color:#444;">Home</a>
+      <a href="#" class="cta-sm">Add to Chrome</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <h1>Simple, transparent pricing</h1>
+    <p>Start free. Upgrade when you need more power.</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="pricing-grid">
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price">$0<span>/mo</span></div>
+        <ul>
+          <li>50 emails / month</li>
+          <li>Mail merge with CSV</li>
+          <li>Open tracking</li>
+          <li>1 follow-up step</li>
+          <li>Basic merge tags</li>
+        </ul>
+        <a href="#" class="btn-primary">Get Started</a>
+      </div>
+      <div class="price-card popular">
+        <h3>Pro</h3>
+        <div class="price">$20<span>/mo</span></div>
+        <ul>
+          <li>Unlimited emails</li>
+          <li>Mail merge with CSV</li>
+          <li>Open + click tracking</li>
+          <li>Unlimited follow-ups</li>
+          <li>Advanced merge tags</li>
+          <li>Campaign reports</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="#" class="btn-primary">Start Free Trial</a>
+      </div>
+      <div class="price-card">
+        <h3>Team</h3>
+        <div class="price">$15<span>/user/mo</span></div>
+        <ul>
+          <li>Everything in Pro</li>
+          <li>Minimum 5 users</li>
+          <li>Shared templates</li>
+          <li>Team analytics dashboard</li>
+          <li>Admin controls</li>
+          <li>Dedicated support</li>
+        </ul>
+        <a href="#" class="btn-primary">Contact Us</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item">
+    <h3>Can I try Pro features before buying?</h3>
+    <p>Yes. Every new account gets a 7-day Pro trial with full access to all features.</p>
+  </div>
+  <div class="faq-item">
+    <h3>What payment methods do you accept?</h3>
+    <p>We accept all major credit cards via Stripe. Subscriptions are billed monthly.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Can I cancel anytime?</h3>
+    <p>Absolutely. Cancel from your account settings at any time. You'll keep access until the end of your billing period.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Is there a refund policy?</h3>
+    <p>Yes — we offer a 30-day money-back guarantee. See our <a href="refund.html">refund policy</a> for details.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Do emails go through your servers?</h3>
+    <p>No. Emails are sent directly through Microsoft Graph API using your own Outlook account. We never store your email content.</p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 OutMass (Metis Bilisim). All rights reserved.</p>
+    <p style="margin-top:8px;">
+      <a href="terms.html">Terms of Service</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="refund.html">Refund Policy</a>
+      <a href="mailto:getoutmassapp@outlook.com">Contact</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>

@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Privacy Policy — OutMass</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.8; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 32px; margin-bottom: 8px; }
+    .content .updated { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 20px; margin: 32px 0 12px; color: #1a1a2e; }
+    .content h3 { font-size: 17px; margin: 20px 0 8px; }
+    .content p, .content li { font-size: 15px; color: #444; margin-bottom: 12px; }
+    .content ul { margin-left: 24px; margin-bottom: 16px; }
+    .content table { width: 100%; border-collapse: collapse; margin: 16px 0; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border: 1px solid #e0e0e0; font-size: 14px; }
+    .content th { background: #f8f9fb; font-weight: 600; }
+
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="index.html" class="logo">Out<span>Mass</span></a>
+    <a href="index.html" style="font-size:15px;color:#444;">Home</a>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>Privacy Policy</h1>
+    <p class="updated">Last updated: March 18, 2026</p>
+
+    <p>This Privacy Policy describes how Metis Bilisim ("OutMass", "we", "us") collects, uses, and protects your personal data when you use the OutMass Chrome extension and related services. We are committed to protecting your privacy and complying with the General Data Protection Regulation (GDPR) and other applicable data protection laws.</p>
+
+    <h2>1. Data Controller</h2>
+    <p><strong>Metis Bilisim</strong><br>
+    Email: <a href="mailto:getoutmassapp@outlook.com">getoutmassapp@outlook.com</a></p>
+
+    <h2>2. Data We Collect</h2>
+
+    <table>
+      <thead>
+        <tr><th>Data Type</th><th>Purpose</th><th>Legal Basis</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Name and email address</td><td>Account creation, communication</td><td>Contract performance</td></tr>
+        <tr><td>Microsoft OAuth tokens</td><td>Sending emails via Graph API</td><td>Contract performance</td></tr>
+        <tr><td>Campaign metadata (subject lines, send times, recipient counts)</td><td>Campaign management, analytics</td><td>Contract performance</td></tr>
+        <tr><td>Email open and click events</td><td>Tracking and reporting</td><td>Legitimate interest</td></tr>
+        <tr><td>Usage statistics (features used, session duration)</td><td>Product improvement</td><td>Legitimate interest</td></tr>
+        <tr><td>Payment information</td><td>Subscription billing (processed by Stripe)</td><td>Contract performance</td></tr>
+      </tbody>
+    </table>
+
+    <h2>3. Data We Do NOT Collect</h2>
+    <ul>
+      <li>We do <strong>not</strong> store the content or body of your emails.</li>
+      <li>We do <strong>not</strong> store your Microsoft password.</li>
+      <li>We do <strong>not</strong> read or store your inbox messages.</li>
+      <li>We do <strong>not</strong> sell your data to third parties.</li>
+    </ul>
+
+    <h2>4. Microsoft OAuth Data</h2>
+    <p>When you sign in with Microsoft, we request the following permissions:</p>
+    <ul>
+      <li><strong>Mail.Send</strong> — to send emails on your behalf via Microsoft Graph API</li>
+      <li><strong>Mail.Read</strong> — to detect replies for follow-up automation</li>
+    </ul>
+    <p>OAuth access tokens are stored securely and are never shared with third parties. You can revoke access at any time from your Microsoft account settings.</p>
+
+    <h2>5. How We Use Your Data</h2>
+    <ul>
+      <li>To provide and operate the Service</li>
+      <li>To send emails on your behalf through Microsoft Graph API</li>
+      <li>To track campaign performance (opens, clicks)</li>
+      <li>To manage your subscription and process payments</li>
+      <li>To communicate with you about your account and the Service</li>
+      <li>To improve and develop new features</li>
+    </ul>
+
+    <h2>6. Third-Party Services</h2>
+    <p>We use the following third-party services that may process your data:</p>
+    <ul>
+      <li><strong>Supabase</strong> — Database hosting (PostgreSQL)</li>
+      <li><strong>Stripe</strong> — Payment processing</li>
+      <li><strong>Upstash</strong> — Redis queue for email scheduling</li>
+      <li><strong>Microsoft Graph API</strong> — Email sending</li>
+    </ul>
+    <p>Each service operates under their own privacy policies and data protection agreements.</p>
+
+    <h2>7. Data Retention</h2>
+    <ul>
+      <li>Account data is retained while your account is active.</li>
+      <li>Campaign metadata is retained for 12 months after creation.</li>
+      <li>Tracking data (opens, clicks) is retained for 6 months.</li>
+      <li>Upon account deletion, all personal data is removed within 30 days.</li>
+    </ul>
+
+    <h2>8. Your Rights (GDPR)</h2>
+    <p>If you are located in the European Economic Area (EEA) or Turkey, you have the following rights:</p>
+    <ul>
+      <li><strong>Access</strong> — Request a copy of your personal data</li>
+      <li><strong>Rectification</strong> — Request correction of inaccurate data</li>
+      <li><strong>Erasure</strong> — Request deletion of your data ("right to be forgotten")</li>
+      <li><strong>Portability</strong> — Request your data in a portable format</li>
+      <li><strong>Restriction</strong> — Request restriction of processing</li>
+      <li><strong>Objection</strong> — Object to processing based on legitimate interest</li>
+    </ul>
+    <p>To exercise any of these rights, email us at <a href="mailto:getoutmassapp@outlook.com">getoutmassapp@outlook.com</a>. We will respond within 30 days.</p>
+
+    <h2>9. Cookies</h2>
+    <p>The OutMass Chrome extension does not use cookies. Our website (landing page) may use minimal cookies for:</p>
+    <ul>
+      <li><strong>Essential cookies</strong> — Required for basic site functionality</li>
+      <li><strong>Analytics cookies</strong> — To understand how visitors use our site (optional, with consent)</li>
+    </ul>
+    <p>You can disable cookies in your browser settings at any time.</p>
+
+    <h2>10. Data Security</h2>
+    <p>We implement appropriate technical and organizational measures to protect your data, including:</p>
+    <ul>
+      <li>Encrypted data transmission (HTTPS/TLS)</li>
+      <li>Secure OAuth token storage</li>
+      <li>Access controls and authentication</li>
+      <li>Regular security reviews</li>
+    </ul>
+
+    <h2>11. International Data Transfers</h2>
+    <p>Your data may be processed in countries outside your country of residence. We ensure appropriate safeguards are in place for any international transfers in compliance with GDPR.</p>
+
+    <h2>12. Children's Privacy</h2>
+    <p>OutMass is not intended for use by individuals under the age of 16. We do not knowingly collect personal data from children.</p>
+
+    <h2>13. Changes to This Policy</h2>
+    <p>We may update this Privacy Policy from time to time. We will notify you of material changes via email or through the Service. The "Last updated" date at the top reflects the most recent revision.</p>
+
+    <h2>14. Contact Us</h2>
+    <p>For any privacy-related questions or requests:<br>
+    <strong>Email:</strong> <a href="mailto:getoutmassapp@outlook.com">getoutmassapp@outlook.com</a><br>
+    <strong>Company:</strong> Metis Bilisim</p>
+  </div>
+</div>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 OutMass (Metis Bilisim). All rights reserved.</p>
+    <p style="margin-top:8px;">
+      <a href="terms.html">Terms of Service</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="refund.html">Refund Policy</a>
+      <a href="mailto:getoutmassapp@outlook.com">Contact</a>
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
