@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutMass Sidebar</title>
+  <link rel="stylesheet" href="styles/sidebar.css">
+</head>
+<body>
+  <!-- Header -->
+  <div class="sidebar-header">
+    <h1>OutMass</h1>
+    <button class="btn-close" id="btn-close" title="Kapat">&times;</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab active" data-tab="campaign">Kampanya</button>
+    <button class="tab" data-tab="reports">Raporlar</button>
+    <button class="tab" data-tab="settings">Ayarlar</button>
+  </div>
+
+  <!-- Tab: Kampanya -->
+  <div class="tab-content active" id="tab-campaign">
+    <!-- CSV Upload -->
+    <div class="form-group">
+      <label>Alıcı Listesi (CSV)</label>
+      <div class="csv-dropzone" id="csv-dropzone">
+        <p>CSV dosyasını sürükleyip bırakın</p>
+        <p class="hint">veya tıklayarak seçin</p>
+        <input type="file" id="csv-input" accept=".csv" hidden>
+      </div>
+      <div class="csv-info" id="csv-info" style="display:none;">
+        <span id="csv-filename"></span>
+        <span id="csv-count"></span>
+        <button class="btn-clear-csv" id="btn-clear-csv">&times;</button>
+      </div>
+    </div>
+
+    <!-- Subject -->
+    <div class="form-group">
+      <label for="subject">Konu</label>
+      <input type="text" id="subject" placeholder="Merhaba {{firstName}}, size bir teklifimiz var">
+    </div>
+
+    <!-- Body -->
+    <div class="form-group">
+      <label for="body">Email İçeriği</label>
+      <textarea id="body" rows="8" placeholder="Merhaba {{firstName}},&#10;&#10;{{company}} için harika bir teklifimiz var..."></textarea>
+      <div class="placeholders">
+        Kullanılabilir: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code>
+      </div>
+    </div>
+
+    <!-- Actions -->
+    <div class="form-actions">
+      <button class="btn btn-secondary" id="btn-preview">Önizleme</button>
+      <button class="btn btn-primary" id="btn-send" disabled>Gönder</button>
+    </div>
+
+    <!-- Follow-up -->
+    <div class="followup-section">
+      <label class="followup-toggle">
+        <input type="checkbox" id="followup-enabled">
+        Açmayanlara otomatik follow-up gönder
+      </label>
+      <div class="followup-fields" id="followup-fields">
+        <div class="form-group">
+          <label for="followup-delay">Kaç gün sonra?</label>
+          <input type="number" id="followup-delay" value="3" min="1" max="30">
+        </div>
+        <div class="form-group">
+          <label for="followup-subject">Follow-up Konusu</label>
+          <input type="text" id="followup-subject" placeholder="Tekrar: {{firstName}}, teklifimizi gördünüz mü?">
+        </div>
+        <div class="form-group">
+          <label for="followup-body">Follow-up İçeriği</label>
+          <textarea id="followup-body" rows="4" placeholder="Merhaba {{firstName}},&#10;&#10;Önceki emailimizi gördünüz mü?"></textarea>
+        </div>
+        <p class="followup-note">Ana emaile ek olarak, emaili açmayanlara gönderilecek.</p>
+      </div>
+    </div>
+
+    <!-- Quota -->
+    <div class="quota-bar">
+      <div class="quota-text" id="quota-text">50/50 email kaldı (Free Plan)</div>
+      <div class="quota-track">
+        <div class="quota-fill" id="quota-fill" style="width: 100%"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab: Raporlar -->
+  <div class="tab-content" id="tab-reports">
+    <!-- Campaign List -->
+    <div id="reports-list">
+      <div class="reports-loading" id="reports-loading">Yükleniyor...</div>
+      <div id="campaign-list"></div>
+    </div>
+    <!-- Campaign Detail -->
+    <div id="reports-detail" style="display:none;">
+      <button class="btn-back" id="btn-reports-back">&larr; Geri</button>
+      <h3 id="detail-name"></h3>
+      <div class="stat-cards">
+        <div class="stat-card">
+          <div class="stat-value" id="stat-sent">0</div>
+          <div class="stat-label">Gönderildi</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-opened">0</div>
+          <div class="stat-label">Açıldı</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value" id="stat-clicked">0</div>
+          <div class="stat-label">Tıklandı</div>
+        </div>
+      </div>
+      <div class="stat-rates">
+        <span>Açılma: <strong id="stat-open-rate">0%</strong></span>
+        <span>Tıklama: <strong id="stat-click-rate">0%</strong></span>
+      </div>
+      <canvas id="stats-chart" width="320" height="160"></canvas>
+      <div id="followup-status" class="followup-status"></div>
+    </div>
+  </div>
+
+  <!-- Tab: Ayarlar -->
+  <div class="tab-content" id="tab-settings">
+    <div class="placeholder-state">
+      <p>Yakında</p>
+      <p class="hint">Hesap ve gönderim ayarları burada olacak.</p>
+    </div>
+  </div>
+
+  <script src="sidebar.js"></script>
+</body>
+</html>

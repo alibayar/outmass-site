@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OutMass</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      width: 320px;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      background: #fff;
+      color: #323130;
+    }
+
+    .popup-header {
+      background: #0078d4;
+      color: #fff;
+      padding: 16px;
+      text-align: center;
+    }
+
+    .popup-header h1 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .popup-header p {
+      font-size: 12px;
+      opacity: 0.85;
+      margin-top: 4px;
+    }
+
+    .popup-body {
+      padding: 20px 16px;
+    }
+
+    /* ── Login State ── */
+    #login-section {
+      text-align: center;
+    }
+
+    #login-section p {
+      font-size: 13px;
+      color: #605e5c;
+      margin-bottom: 16px;
+    }
+
+    .btn-microsoft {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: #0078d4;
+      color: #fff;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .btn-microsoft:hover {
+      background: #106ebe;
+    }
+
+    .btn-microsoft:disabled {
+      background: #a19f9d;
+      cursor: not-allowed;
+    }
+
+    .btn-microsoft svg {
+      width: 16px;
+      height: 16px;
+      fill: #fff;
+    }
+
+    /* ── Loading State ── */
+    #loading-section {
+      display: none;
+      text-align: center;
+      padding: 20px 0;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 28px;
+      height: 28px;
+      border: 3px solid #edebe9;
+      border-top-color: #0078d4;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+      font-size: 13px;
+      color: #605e5c;
+      margin-top: 10px;
+    }
+
+    /* ── Error State ── */
+    #error-section {
+      display: none;
+      text-align: center;
+    }
+
+    .error-message {
+      background: #fde7e9;
+      color: #a4262c;
+      font-size: 12px;
+      padding: 10px;
+      border-radius: 4px;
+      margin-bottom: 12px;
+      word-break: break-word;
+    }
+
+    .btn-retry {
+      background: none;
+      border: 1px solid #0078d4;
+      color: #0078d4;
+      padding: 6px 16px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+    }
+
+    .btn-retry:hover {
+      background: #f3f2f1;
+    }
+
+    /* ── Connected State ── */
+    #connected-section {
+      display: none;
+    }
+
+    .user-info {
+      background: #f3f2f1;
+      border-radius: 6px;
+      padding: 12px;
+      margin-bottom: 12px;
+    }
+
+    .user-info .user-name {
+      font-size: 14px;
+      font-weight: 600;
+      color: #323130;
+    }
+
+    .user-info .email {
+      font-size: 12px;
+      color: #605e5c;
+      margin-top: 2px;
+    }
+
+    .user-info .plan {
+      font-size: 12px;
+      color: #605e5c;
+      margin-top: 6px;
+    }
+
+    .plan-badge {
+      display: inline-block;
+      background: #0078d4;
+      color: #fff;
+      font-size: 11px;
+      padding: 2px 8px;
+      border-radius: 10px;
+      font-weight: 600;
+    }
+
+    .plan-badge.pro {
+      background: #107c10;
+    }
+
+    .link-dashboard {
+      display: block;
+      text-align: center;
+      color: #0078d4;
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px;
+      border: 1px solid #0078d4;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+
+    .link-dashboard:hover {
+      background: #f3f2f1;
+    }
+
+    .btn-logout {
+      display: block;
+      width: 100%;
+      background: none;
+      border: 1px solid #c8c6c4;
+      color: #605e5c;
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      transition: background 0.15s;
+    }
+
+    .btn-logout:hover {
+      background: #fde7e9;
+      border-color: #a4262c;
+      color: #a4262c;
+    }
+
+    .popup-footer {
+      border-top: 1px solid #edebe9;
+      padding: 10px 16px;
+      text-align: center;
+    }
+
+    .popup-footer a {
+      font-size: 11px;
+      color: #a19f9d;
+      text-decoration: none;
+    }
+    .btn-upgrade-popup {
+      display: block;
+      width: 100%;
+      background: #ff8c00;
+      color: #fff;
+      border: none;
+      padding: 8px;
+      border-radius: 4px;
+      font-size: 13px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    .btn-upgrade-popup:hover {
+      background: #e67e00;
+    }
+
+    .btn-manage-sub {
+      display: block;
+      width: 100%;
+      background: none;
+      border: 1px solid #0078d4;
+      color: #0078d4;
+      padding: 6px;
+      border-radius: 4px;
+      font-size: 12px;
+      cursor: pointer;
+      font-family: inherit;
+      margin-bottom: 8px;
+    }
+
+    .btn-manage-sub:hover {
+      background: #f3f2f1;
+    }
+
+    .plan-badge.free {
+      background: #ff8c00;
+    }
+
+    .plan-badge.team {
+      background: #8764b8;
+    }
+  </style>
+</head>
+<body>
+  <div class="popup-header">
+    <h1>OutMass</h1>
+    <p>Toplu email kampanyalari</p>
+  </div>
+
+  <div class="popup-body">
+    <!-- Login State -->
+    <div id="login-section">
+      <p>Outlook hesabinizla baglanarak kampanya olusturmaya baslayin.</p>
+      <button class="btn-microsoft" id="btn-login">
+        <svg viewBox="0 0 21 21"><path d="M0 0h10v10H0zM11 0h10v10H11zM0 11h10v10H0zM11 11h10v10H11z"/></svg>
+        Microsoft ile Baglan
+      </button>
+    </div>
+
+    <!-- Loading State -->
+    <div id="loading-section">
+      <div class="spinner"></div>
+      <div class="loading-text">Microsoft hesabiniza baglaniliyor...</div>
+    </div>
+
+    <!-- Error State -->
+    <div id="error-section">
+      <div class="error-message" id="error-text">Bir hata olustu.</div>
+      <button class="btn-retry" id="btn-retry">Tekrar Dene</button>
+    </div>
+
+    <!-- Connected State -->
+    <div id="connected-section">
+      <div class="user-info">
+        <div class="user-name" id="user-name">User</div>
+        <div class="email" id="user-email">user@outlook.com</div>
+        <div class="plan">
+          Plan: <span class="plan-badge" id="user-plan">Free</span>
+        </div>
+      </div>
+      <a href="#" class="link-dashboard" id="btn-dashboard">Dashboard'u Ac</a>
+      <button class="btn-upgrade-popup" id="btn-upgrade-popup" style="display:none;">Yukselt → Pro</button>
+      <button class="btn-manage-sub" id="btn-manage-sub" style="display:none;">Aboneligi Yonet</button>
+      <button class="btn-logout" id="btn-logout">Cikis Yap</button>
+    </div>
+  </div>
+
+  <div class="popup-footer">
+    <a href="#">OutMass v0.1.0</a>
+  </div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
