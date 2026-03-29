@@ -59,4 +59,8 @@ celery.conf.beat_schedule = {
         "task": "workers.scheduled_worker.process_scheduled_campaigns",
         "schedule": 300.0,  # every 5 minutes
     },
+    "evaluate-ab-tests": {
+        "task": "workers.scheduled_worker.evaluate_ab_tests",
+        "schedule": 600.0,  # every 10 minutes
+    },
 }

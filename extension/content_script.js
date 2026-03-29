@@ -188,6 +188,14 @@
     }
   });
 
+  // ── Message listener from popup/background (chrome.runtime) ──
+  chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
+    if (message.type === "TOGGLE_SIDEBAR") {
+      toggleSidebar();
+      sendResponse({ ack: true });
+    }
+  });
+
   // ── Init ──
   function init() {
     log("Content script loaded on", location.hostname);

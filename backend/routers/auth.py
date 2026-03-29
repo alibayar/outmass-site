@@ -158,11 +158,11 @@ def _check_monthly_reset(user: dict):
     """Reset monthly counter if we've crossed into a new month."""
     reset_date = user.get("month_reset_date")
     if reset_date:
-        from datetime import date
+        from datetime import date, datetime, timezone
 
         if isinstance(reset_date, str):
             reset_date = date.fromisoformat(reset_date)
-        today = date.today()
+        today = datetime.now(timezone.utc).date()
         if today.month != reset_date.month or today.year != reset_date.year:
             from database import get_db
 

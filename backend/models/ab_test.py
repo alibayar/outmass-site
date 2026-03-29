@@ -45,14 +45,21 @@ def get_ab_test(campaign_id: str) -> dict | None:
 
 
 def increment_opens(ab_test_id: str, variant: str):
-    """Increment opens for variant A or B."""
+    """Increment opens for variant A or B using RPC for atomicity."""
     field = "opens_a" if variant == "A" else "opens_b"
-    test = get_db().table("ab_tests").select(field).eq("id", ab_test_id).execute()
-    if test.data and len(test.data) > 0:
-        new_val = test.data[0].get(field, 0) + 1
-        get_db().table("ab_tests").update({field: new_val}).eq(
-            "id", ab_test_id
+    try:
+        get_db().rpc(
+            "increment_ab_test_opens",
+            {"ab_test_id_input": ab_test_id, "field_name": field},
         ).execute()
+    except Exception:
+        # Fallback to non-atomic if RPC doesn't exist
+        test = get_db().table("ab_tests").select(field).eq("id", ab_test_id).execute()
+        if test.data and len(test.data) > 0:
+            new_val = test.data[0].get(field, 0) + 1
+            get_db().table("ab_tests").update({field: new_val}).eq(
+                "id", ab_test_id
+            ).execute()
 
 
 def update_ab_test(ab_test_id: str, updates: dict):

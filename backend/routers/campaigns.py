@@ -92,7 +92,7 @@ async def create_campaign(
         body=body.body,
         scheduled_for=body.scheduled_for,
     )
-    return {"campaign_id": campaign["id"], "status": "draft"}
+    return {"campaign_id": campaign["id"], "status": campaign["status"]}
 
 
 @router.get("")
@@ -338,7 +338,7 @@ async def send_campaign(
             subject_override = None
             ab_variant = None
             if ab_test:
-                if contact in ab_group_a:
+                if idx < half:
                     subject_override = ab_test["subject_a"]
                     ab_variant = "A"
                 else:

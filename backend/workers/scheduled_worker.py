@@ -1,7 +1,8 @@
 """
-OutMass — Scheduled Campaign Worker
-Celery beat task: processes due scheduled campaigns every 5 minutes.
-Uses stored access tokens to send emails via Graph API.
+OutMass — Scheduled Campaign Worker + A/B Test Winner Sender
+Celery beat tasks:
+- processes due scheduled campaigns every 5 minutes
+- evaluates A/B test winners and sends remaining contacts every 10 minutes
 """
 
 import re
@@ -216,3 +217,119 @@ def _wrap_links(html: str, contact_id: str) -> str:
         tracked = f"{BACKEND_URL}/c/{contact_id}?url={encoded}"
         return f'href="{tracked}"'
     return re.sub(r'href="(https?://[^"]+)"', replacer, html)
+
+
+# ── A/B Test Winner Evaluation ──
+
+MIN_AB_WAIT_HOURS = 4  # Wait at least 4 hours before evaluating
+
+
+@celery.task
+def evaluate_ab_tests():
+    """
+    Evaluate A/B tests that are awaiting a winner.
+    Compare opens_a vs opens_b, pick the winner, send remaining contacts.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    from database import get_db
+    from models import ab_test as ab_test_model
+    from models import campaign as campaign_model
+    from models import contact as contact_model
+    from models import user as user_model
+
+    db = get_db()
+
+    # Find AB tests awaiting winner
+    result = (
+        db.table("ab_tests")
+        .select("*")
+        .eq("status", "awaiting_winner")
+        .execute()
+    )
+    if not result.data:
+        return {"evaluated": 0}
+
+    cutoff = datetime.now(timezone.utc) - timedelta(hours=MIN_AB_WAIT_HOURS)
+    total_sent = 0
+
+    for ab_test in result.data:
+        # Only evaluate if enough time has passed
+        created_at = ab_test.get("created_at", "")
+        if created_at and datetime.fromisoformat(created_at.replace("Z", "+00:00")) > cutoff:
+            continue
+
+        # Determine winner
+        opens_a = ab_test.get("opens_a", 0)
+        opens_b = ab_test.get("opens_b", 0)
+        winner = "A" if opens_a >= opens_b else "B"
+        winning_subject = ab_test["subject_a"] if winner == "A" else ab_test["subject_b"]
+
+        ab_test_model.update_ab_test(ab_test["id"], {
+            "winner": winner,
+            "status": "sending_winner",
+        })
+
+        campaign = campaign_model.get_campaign(ab_test["campaign_id"])
+        if not campaign:
+            ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
+            continue
+
+        user = user_model.get_by_id(ab_test["user_id"])
+        if not user:
+            ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
+            continue
+
+        access_token = _get_fresh_access_token(db, user["id"])
+        if not access_token:
+            continue
+
+        # Get remaining pending contacts (those without ab_variant)
+        remaining = contact_model.get_pending_contacts(ab_test["campaign_id"])
+        if not remaining:
+            ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
+            campaign_model.update_campaign(ab_test["campaign_id"], {"status": "sent"})
+            continue
+
+        # Suppression list
+        suppressed_result = (
+            db.table("suppression_list")
+            .select("email")
+            .eq("user_id", user["id"])
+            .execute()
+        )
+        suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
+
+        sent_count = 0
+        with httpx.Client() as client:
+            for contact in remaining:
+                if contact.get("unsubscribed"):
+                    continue
+                if contact.get("email", "").lower() in suppressed_emails:
+                    continue
+
+                try:
+                    # Override campaign subject with winning subject
+                    campaign_copy = dict(campaign)
+                    campaign_copy["subject"] = winning_subject
+                    result = _send_email(
+                        client=client,
+                        access_token=access_token,
+                        campaign=campaign_copy,
+                        contact=contact,
+                    )
+                    if result["success"]:
+                        contact_model.mark_sent(contact["id"])
+                        campaign_model.increment_stat(ab_test["campaign_id"], "sent_count")
+                        sent_count += 1
+                except Exception:
+                    pass
+
+                time.sleep(SEND_DELAY_SECONDS)
+
+        user_model.increment_sent_count(user["id"], sent_count)
+        ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
+        campaign_model.update_campaign(ab_test["campaign_id"], {"status": "sent"})
+        total_sent += sent_count
+
+    return {"evaluated": len(result.data), "sent": total_sent}

@@ -290,7 +290,7 @@ async def billing_success():
 <body>
     <div class="card">
         <h1>Payment successful!</h1>
-        <p>Your Pro plan is now active. You can close this tab.</p>
+        <p>Your plan upgrade is now active. You can close this tab.</p>
     </div>
 </body>
 </html>"""

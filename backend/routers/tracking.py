@@ -11,6 +11,7 @@ from fastapi import APIRouter, BackgroundTasks, HTTPException, Query
 from fastapi.responses import RedirectResponse, Response
 
 from database import get_db
+from models import ab_test as ab_test_model
 from models import campaign as campaign_model
 from models import contact as contact_model
 
@@ -40,12 +41,23 @@ async def track_open(contact_id: str, background_tasks: BackgroundTasks):
     contact = contact_model.get_contact(contact_id)
 
     if contact:
-        background_tasks.add_task(contact_model.mark_opened, contact_id)
-        background_tasks.add_task(
-            campaign_model.increment_stat,
-            contact["campaign_id"],
-            "open_count",
-        )
+        # Only increment stats on first open (mark_opened checks opened_at is null)
+        if not contact.get("opened_at"):
+            background_tasks.add_task(contact_model.mark_opened, contact_id)
+            background_tasks.add_task(
+                campaign_model.increment_stat,
+                contact["campaign_id"],
+                "open_count",
+            )
+            # Track A/B variant opens
+            if contact.get("ab_variant"):
+                ab_test = ab_test_model.get_ab_test(contact["campaign_id"])
+                if ab_test:
+                    background_tasks.add_task(
+                        ab_test_model.increment_opens,
+                        ab_test["id"],
+                        contact["ab_variant"],
+                    )
         background_tasks.add_task(
             _record_event,
             contact_id,
@@ -70,8 +82,8 @@ async def track_click(
     url: str = Query(..., description="Original URL to redirect to"),
 ):
     """Record click event and 302 redirect to original URL."""
-    # C-03: Validate URL scheme to prevent open redirect
-    if not url.startswith("https://") and not url.startswith("http://"):
+    # C-03: Validate URL scheme to prevent open redirect (case-insensitive)
+    if not url.lower().startswith(("https://", "http://")):
         raise HTTPException(status_code=400, detail="Invalid redirect URL")
 
     contact = contact_model.get_contact(contact_id)
@@ -105,13 +117,23 @@ async def unsubscribe(contact_id: str):
     # Get campaign to find user_id
     campaign = campaign_model.get_campaign(contact["campaign_id"])
     if campaign:
-        get_db().table("suppression_list").insert(
-            {
-                "user_id": campaign["user_id"],
-                "email": contact["email"],
-                "reason": "user_unsubscribed",
-            }
-        ).execute()
+        # Check for existing suppression entry to avoid duplicates
+        existing = (
+            get_db()
+            .table("suppression_list")
+            .select("id")
+            .eq("user_id", campaign["user_id"])
+            .eq("email", contact["email"])
+            .execute()
+        )
+        if not existing.data:
+            get_db().table("suppression_list").insert(
+                {
+                    "user_id": campaign["user_id"],
+                    "email": contact["email"],
+                    "reason": "user_unsubscribed",
+                }
+            ).execute()
 
     return Response(
         content="""<!DOCTYPE html>
