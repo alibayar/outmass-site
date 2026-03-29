@@ -181,6 +181,71 @@ body {
   color: #d13438;
 }
 
+/* ── AI Writer ── */
+.ai-writer-section {
+  margin-bottom: 12px;
+}
+
+.btn-ai {
+  width: 100%;
+  padding: 8px;
+  background: linear-gradient(135deg, #6366f1, #8b5cf6);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.btn-ai:hover {
+  opacity: 0.9;
+}
+
+/* ── Templates ── */
+.template-section {
+  margin-bottom: 16px;
+}
+
+.template-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.template-select {
+  flex: 1;
+  padding: 6px 8px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+  color: #323130;
+  background: #fff;
+}
+
+.btn-small {
+  padding: 6px 10px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  background: #f3f2f1;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.btn-small:hover {
+  background: #edebe9;
+}
+
+.btn-small:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* ── Placeholders hint ── */
 .placeholders {
   margin-top: 6px;
@@ -398,6 +463,100 @@ body {
 
 .followup-status:empty {
   display: none;
+}
+
+.btn-export {
+  width: 100%;
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* ── A/B Test Section ── */
+.ab-test-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #edebe9;
+}
+
+.ab-test-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #323130;
+}
+
+.ab-test-toggle input[type="checkbox"] {
+  accent-color: #0078d4;
+}
+
+.ab-test-fields {
+  display: none;
+  margin-top: 12px;
+}
+
+.ab-test-fields.visible {
+  display: block;
+}
+
+.ab-test-fields input {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.ab-test-note {
+  font-size: 11px;
+  color: #a19f9d;
+  margin-top: 4px;
+}
+
+/* ── Schedule Section ── */
+.schedule-section {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #edebe9;
+}
+
+.schedule-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #323130;
+}
+
+.schedule-toggle input[type="checkbox"] {
+  accent-color: #0078d4;
+}
+
+.schedule-fields {
+  display: none;
+  margin-top: 12px;
+}
+
+.schedule-fields.visible {
+  display: block;
+}
+
+.schedule-fields input[type="datetime-local"] {
+  width: 100%;
+  padding: 6px 8px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.schedule-note {
+  font-size: 11px;
+  color: #a19f9d;
+  margin-top: 4px;
 }
 
 /* ── Follow-up Section ── */

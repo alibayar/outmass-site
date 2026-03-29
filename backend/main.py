@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import BACKEND_URL
-from routers import auth, billing, campaigns, tracking
+from routers import ai, auth, billing, campaigns, templates, tracking
 
 app = FastAPI(
     title="OutMass API",
@@ -34,6 +34,8 @@ app.include_router(auth.router)
 app.include_router(campaigns.router)
 app.include_router(tracking.router)
 app.include_router(billing.router)
+app.include_router(templates.router)
+app.include_router(ai.router)
 
 
 # ── Health Check ──

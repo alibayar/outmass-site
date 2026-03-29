@@ -219,16 +219,30 @@
   function startSendFlow(subject, body) {
     var campaignName = subject.substring(0, 50) || "Kampanya";
 
+    // Check schedule
+    var scheduledFor = null;
+    if (scheduleCheckbox && scheduleCheckbox.checked) {
+      var dtInput = document.getElementById("schedule-datetime");
+      if (dtInput && dtInput.value) {
+        scheduledFor = new Date(dtInput.value).toISOString();
+      }
+    }
+
     // Disable button, show progress
     btnSend.disabled = true;
-    btnSend.textContent = "Hazirlaniyor...";
-    log("Send flow started");
+    btnSend.textContent = scheduledFor ? "Zamanlaniyor..." : "Hazirlaniyor...";
+    log("Send flow started", scheduledFor ? "scheduled:" + scheduledFor : "immediate");
 
     // Step 1: Create campaign
+    var createPayload = { name: campaignName, subject: subject, body: body };
+    if (scheduledFor) {
+      createPayload.scheduled_for = scheduledFor;
+    }
+
     chrome.runtime.sendMessage(
       {
         type: "CREATE_CAMPAIGN",
-        payload: { name: campaignName, subject: subject, body: body },
+        payload: createPayload,
       },
       function (createResp) {
         if (!createResp || createResp.error) {
@@ -257,55 +271,108 @@
 
             var count = uploadResp.data ? uploadResp.data.count : uploadResp.count;
             log("Contacts uploaded:", count);
-            btnSend.textContent = "Gonderiliyor... 0/" + count;
 
-            // Step 3: Send
-            chrome.runtime.sendMessage(
-              {
-                type: "SEND_CAMPAIGN",
-                campaignId: campaignId,
-              },
-              function (sendResp) {
-                if (!sendResp) {
-                  showSendError("Gonderim basarisiz");
-                  return;
-                }
-                if (sendResp.error) {
-                  if (sendResp.status === 402 || sendResp.error === "limit_exceeded") {
-                    btnSend.textContent = "Gonder";
-                    btnSend.disabled = false;
-                    showUpgradeModal();
-                    return;
+            // If A/B test enabled, create it before sending
+            var abEnabled = abTestCheckbox && abTestCheckbox.checked;
+            var abSubjectB = document.getElementById("ab-subject-b");
+            var abTestPct = document.getElementById("ab-test-pct");
+
+            if (abEnabled && abSubjectB && abSubjectB.value.trim()) {
+              chrome.runtime.sendMessage(
+                {
+                  type: "CREATE_AB_TEST",
+                  campaignId: campaignId,
+                  payload: {
+                    subject_a: subject,
+                    subject_b: abSubjectB.value.trim(),
+                    test_percentage: parseInt(abTestPct ? abTestPct.value : "20", 10) || 20,
+                  },
+                },
+                function (abResp) {
+                  if (abResp && abResp.error) {
+                    if (abResp.status === 402) {
+                      alert("A/B testing sadece Pro planda kullanilabilir.");
+                    } else {
+                      log("A/B test creation failed:", abResp.error);
+                    }
+                    // Continue with normal send anyway
+                  } else {
+                    log("A/B test created:", abResp);
                   }
-                  showSendError(sendResp.error);
-                  return;
+                  // Proceed to send step
+                  proceedToSend(campaignId, count, scheduledFor);
                 }
+              );
+              return;
+            }
 
-                var data = sendResp.data || sendResp;
-                var queued = data.queued || 0;
-                var sendErrors = data.errors || [];
-                btnSend.textContent = "Gonder";
-                btnSend.disabled = false;
-
-                if (queued === 0 && sendErrors.length > 0) {
-                  alert("Gonderim basarisiz!\n\nHata: " + sendErrors[0].error);
-                  log("Campaign send errors:", sendErrors);
-                } else if (sendErrors.length > 0) {
-                  alert(queued + " email gonderildi, " + sendErrors.length + " hata olustu.\n\nIlk hata: " + sendErrors[0].error);
-                } else {
-                  alert("Basarili! " + queued + " email gonderildi.");
-                }
-                log("Campaign sent:", queued, "emails, errors:", sendErrors.length);
-
-                // Create follow-up if enabled
-                maybeCreateFollowup(campaignId);
-
-                // Refresh quota
-                loadQuota();
-              }
-            );
+            proceedToSend(campaignId, count, scheduledFor);
           }
         );
+      }
+    );
+  }
+
+  function proceedToSend(campaignId, count, scheduledFor) {
+    // If scheduled, don't send now
+    if (scheduledFor) {
+      btnSend.textContent = "Gonder";
+      btnSend.disabled = false;
+      var schedDate = new Date(scheduledFor);
+      alert("Basarili! " + count + " aliciya " + schedDate.toLocaleString("tr-TR") + " tarihinde gonderilecek.");
+      log("Campaign scheduled:", campaignId, "for", scheduledFor);
+      maybeCreateFollowup(campaignId);
+      return;
+    }
+
+    btnSend.textContent = "Gonderiliyor... 0/" + count;
+
+    // Step 3: Send
+    chrome.runtime.sendMessage(
+      {
+        type: "SEND_CAMPAIGN",
+        campaignId: campaignId,
+      },
+      function (sendResp) {
+        if (!sendResp) {
+          showSendError("Gonderim basarisiz");
+          return;
+        }
+        if (sendResp.error) {
+          if (sendResp.status === 402 || sendResp.error === "limit_exceeded") {
+            btnSend.textContent = "Gonder";
+            btnSend.disabled = false;
+            showUpgradeModal();
+            return;
+          }
+          showSendError(sendResp.error);
+          return;
+        }
+
+        var data = sendResp.data || sendResp;
+        var queued = data.queued || 0;
+        var sendErrors = data.errors || [];
+        var hasAbTest = data.ab_test;
+        btnSend.textContent = "Gonder";
+        btnSend.disabled = false;
+
+        if (queued === 0 && sendErrors.length > 0) {
+          alert("Gonderim basarisiz!\n\nHata: " + sendErrors[0].error);
+          log("Campaign send errors:", sendErrors);
+        } else if (hasAbTest) {
+          alert("Basarili! " + queued + " email gonderildi (A/B test).\nKazanan konu satiri otomatik gonderilecek.");
+        } else if (sendErrors.length > 0) {
+          alert(queued + " email gonderildi, " + sendErrors.length + " hata olustu.\n\nIlk hata: " + sendErrors[0].error);
+        } else {
+          alert("Basarili! " + queued + " email gonderildi.");
+        }
+        log("Campaign sent:", queued, "emails, errors:", sendErrors.length);
+
+        // Create follow-up if enabled
+        maybeCreateFollowup(campaignId);
+
+        // Refresh quota
+        loadQuota();
       }
     );
   }
@@ -315,6 +382,216 @@
     btnSend.disabled = false;
     alert("Hata: " + message);
     log("Send error:", message);
+  }
+
+  // ── AI Writer ──
+  var btnAiWriter = document.getElementById("btn-ai-writer");
+
+  if (btnAiWriter) {
+    btnAiWriter.addEventListener("click", function () {
+      showAiWriterModal();
+    });
+  }
+
+  function showAiWriterModal() {
+    var existing = document.getElementById("ai-modal");
+    if (existing) existing.remove();
+
+    var overlay = document.createElement("div");
+    overlay.id = "ai-modal";
+    overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);display:flex;align-items:center;justify-content:center;z-index:9999;";
+
+    var modal = document.createElement("div");
+    modal.style.cssText = "background:#fff;border-radius:12px;padding:24px;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);";
+    modal.innerHTML =
+      '<h3 style="margin:0 0 12px;font-size:16px;color:#323130;">AI Email Yazici</h3>' +
+      '<textarea id="ai-prompt" rows="3" placeholder="Ne hakkinda email yazilsin?&#10;Ornek: SaaS urunumuz icin soguk satis emaili" style="width:100%;padding:8px;border:1px solid #c8c6c4;border-radius:4px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>' +
+      '<div style="display:flex;gap:8px;margin-top:8px;">' +
+        '<select id="ai-tone" style="flex:1;padding:6px;border:1px solid #c8c6c4;border-radius:4px;font-size:12px;">' +
+          '<option value="professional">Profesyonel</option>' +
+          '<option value="friendly">Samimi</option>' +
+          '<option value="formal">Resmi</option>' +
+          '<option value="casual">Rahat</option>' +
+        '</select>' +
+        '<select id="ai-lang" style="flex:1;padding:6px;border:1px solid #c8c6c4;border-radius:4px;font-size:12px;">' +
+          '<option value="tr">Turkce</option>' +
+          '<option value="en">English</option>' +
+        '</select>' +
+      '</div>' +
+      '<div style="display:flex;gap:8px;margin-top:12px;">' +
+        '<button id="ai-generate-btn" style="flex:1;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;">Olustur</button>' +
+        '<button id="ai-cancel-btn" style="padding:10px 16px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">Iptal</button>' +
+      '</div>';
+
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+
+    document.getElementById("ai-generate-btn").addEventListener("click", function () {
+      var promptInput = document.getElementById("ai-prompt");
+      var toneSelect = document.getElementById("ai-tone");
+      var langSelect = document.getElementById("ai-lang");
+      var generateBtn = document.getElementById("ai-generate-btn");
+
+      var promptText = promptInput.value.trim();
+      if (!promptText) {
+        alert("Lutfen ne hakkinda email istediginizi yazin.");
+        return;
+      }
+
+      generateBtn.textContent = "Olusturuluyor...";
+      generateBtn.disabled = true;
+
+      chrome.runtime.sendMessage(
+        {
+          type: "AI_GENERATE_EMAIL",
+          payload: {
+            prompt: promptText,
+            tone: toneSelect.value,
+            language: langSelect.value,
+          },
+        },
+        function (resp) {
+          generateBtn.textContent = "Olustur";
+          generateBtn.disabled = false;
+
+          if (!resp || resp.error) {
+            if (resp && resp.status === 402) {
+              alert("AI email yazici sadece Pro planda kullanilabilir.");
+            } else {
+              alert("AI olusturma basarisiz: " + (resp ? resp.error : "Bilinmeyen hata"));
+            }
+            return;
+          }
+
+          var data = resp.data || resp;
+          if (data.subject) subjectInput.value = data.subject;
+          if (data.body) bodyInput.value = data.body;
+          updateSendButton();
+          overlay.remove();
+          log("AI email generated");
+        }
+      );
+    });
+
+    document.getElementById("ai-cancel-btn").addEventListener("click", function () {
+      overlay.remove();
+    });
+
+    overlay.addEventListener("click", function (e) {
+      if (e.target === overlay) overlay.remove();
+    });
+  }
+
+  // ── Templates ──
+  var templateSelect = document.getElementById("template-select");
+  var btnSaveTemplate = document.getElementById("btn-save-template");
+
+  function loadTemplates() {
+    chrome.runtime.sendMessage({ type: "GET_TEMPLATES" }, function (resp) {
+      if (!resp || resp.error || !resp.data) return;
+      var templates = resp.data.templates || [];
+
+      // Clear existing options except first
+      while (templateSelect.options.length > 1) {
+        templateSelect.remove(1);
+      }
+
+      templates.forEach(function (t) {
+        var opt = document.createElement("option");
+        opt.value = JSON.stringify({ subject: t.subject, body: t.body });
+        opt.textContent = t.name;
+        opt.dataset.templateId = t.id;
+        templateSelect.appendChild(opt);
+      });
+    });
+  }
+
+  if (templateSelect) {
+    templateSelect.addEventListener("change", function () {
+      if (!templateSelect.value) return;
+      try {
+        var tmpl = JSON.parse(templateSelect.value);
+        subjectInput.value = tmpl.subject || "";
+        bodyInput.value = tmpl.body || "";
+        updateSendButton();
+        log("Template loaded");
+      } catch (e) {
+        log("Template parse error:", e);
+      }
+    });
+  }
+
+  if (btnSaveTemplate) {
+    btnSaveTemplate.addEventListener("click", function () {
+      var subject = subjectInput.value.trim();
+      var body = bodyInput.value.trim();
+      if (!subject && !body) {
+        alert("Once konu ve icerik doldurun.");
+        return;
+      }
+      var name = prompt("Sablon adi:", subject.substring(0, 40) || "Sablonum");
+      if (!name) return;
+
+      btnSaveTemplate.disabled = true;
+      btnSaveTemplate.textContent = "...";
+
+      chrome.runtime.sendMessage(
+        {
+          type: "SAVE_TEMPLATE",
+          payload: { name: name, subject: subject, body: body },
+        },
+        function (resp) {
+          btnSaveTemplate.disabled = false;
+          btnSaveTemplate.textContent = "Kaydet";
+
+          if (resp && !resp.error) {
+            log("Template saved");
+            loadTemplates(); // Refresh list
+          } else {
+            var errMsg = resp && resp.error;
+            if (resp && resp.status === 402) {
+              alert("Email sablonlari Standard ve Pro planlarda kullanilabilir.");
+            } else {
+              alert("Sablon kaydedilemedi: " + (errMsg || "Bilinmeyen hata"));
+            }
+          }
+        }
+      );
+    });
+  }
+
+  // ── A/B Test ──
+  var abTestCheckbox = document.getElementById("ab-test-enabled");
+  var abTestFields = document.getElementById("ab-test-fields");
+
+  if (abTestCheckbox) {
+    abTestCheckbox.addEventListener("change", function () {
+      if (abTestCheckbox.checked) {
+        abTestFields.classList.add("visible");
+      } else {
+        abTestFields.classList.remove("visible");
+      }
+    });
+  }
+
+  // ── Schedule ──
+  var scheduleCheckbox = document.getElementById("schedule-enabled");
+  var scheduleFields = document.getElementById("schedule-fields");
+
+  if (scheduleCheckbox) {
+    scheduleCheckbox.addEventListener("change", function () {
+      if (scheduleCheckbox.checked) {
+        scheduleFields.classList.add("visible");
+        // Set default to tomorrow 9:00
+        var tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        tomorrow.setHours(9, 0, 0, 0);
+        var dtInput = document.getElementById("schedule-datetime");
+        dtInput.value = tomorrow.toISOString().slice(0, 16);
+      } else {
+        scheduleFields.classList.remove("visible");
+      }
+    });
   }
 
   // ── Follow-up ──
@@ -421,6 +698,7 @@
   function showCampaignDetail(campaignId) {
     reportsList.style.display = "none";
     reportsDetail.style.display = "block";
+    currentDetailCampaignId = campaignId;
 
     chrome.runtime.sendMessage(
       { type: "GET_CAMPAIGN_STATS", campaignId: campaignId },
@@ -450,6 +728,51 @@
         drawBarChart(stats.sent_count || 0, stats.open_count || 0, stats.click_count || 0);
       }
     );
+  }
+
+  // ── CSV Export ──
+  var currentDetailCampaignId = null;
+
+  var btnExportCsv = document.getElementById("btn-export-csv");
+  if (btnExportCsv) {
+    btnExportCsv.addEventListener("click", function () {
+      if (!currentDetailCampaignId) return;
+      btnExportCsv.textContent = "Indiriliyor...";
+      btnExportCsv.disabled = true;
+
+      chrome.runtime.sendMessage(
+        { type: "EXPORT_CAMPAIGN_CSV", campaignId: currentDetailCampaignId },
+        function (resp) {
+          btnExportCsv.textContent = "CSV Indir";
+          btnExportCsv.disabled = false;
+
+          if (!resp || resp.error) {
+            if (resp && resp.status === 402) {
+              alert("CSV export Standard ve Pro planlarda kullanilabilir.");
+            } else {
+              alert("Export basarisiz: " + (resp ? resp.error : "Bilinmeyen hata"));
+            }
+            return;
+          }
+
+          // resp.data contains { csv_data, filename }
+          var data = resp.data || {};
+          var csvContent = data.csv_data;
+          var filename = data.filename || "outmass_export.csv";
+          if (csvContent) {
+            var blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+            var url = URL.createObjectURL(blob);
+            var a = document.createElement("a");
+            a.href = url;
+            a.download = filename;
+            a.click();
+            URL.revokeObjectURL(url);
+          } else {
+            alert("CSV export basarili ancak veri bos.");
+          }
+        }
+      );
+    });
   }
 
   function drawBarChart(sent, opened, clicked) {
@@ -559,6 +882,7 @@
     log("Sidebar loaded");
     loadQuota();
     updateSendButton();
+    loadTemplates();
   }
 
   init();

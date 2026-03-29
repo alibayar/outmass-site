@@ -37,6 +37,21 @@
       </div>
     </div>
 
+    <!-- AI Writer -->
+    <div class="ai-writer-section">
+      <button class="btn btn-ai" id="btn-ai-writer">AI ile Yaz</button>
+    </div>
+
+    <!-- Templates -->
+    <div class="template-section">
+      <div class="template-row">
+        <select id="template-select" class="template-select">
+          <option value="">-- Sablon sec --</option>
+        </select>
+        <button class="btn btn-small" id="btn-save-template" title="Mevcut icerigi sablon olarak kaydet">Kaydet</button>
+      </div>
+    </div>
+
     <!-- Subject -->
     <div class="form-group">
       <label for="subject">Konu</label>
@@ -56,6 +71,40 @@
     <div class="form-actions">
       <button class="btn btn-secondary" id="btn-preview">Önizleme</button>
       <button class="btn btn-primary" id="btn-send" disabled>Gönder</button>
+    </div>
+
+    <!-- A/B Test -->
+    <div class="ab-test-section">
+      <label class="ab-test-toggle">
+        <input type="checkbox" id="ab-test-enabled">
+        A/B test (2 konu satiri dene)
+      </label>
+      <div class="ab-test-fields" id="ab-test-fields">
+        <div class="form-group">
+          <label for="ab-subject-b">Alternatif konu (B)</label>
+          <input type="text" id="ab-subject-b" placeholder="Ikinci konu satiri...">
+        </div>
+        <div class="form-group">
+          <label for="ab-test-pct">Test orani (%)</label>
+          <input type="number" id="ab-test-pct" value="20" min="10" max="50" step="5">
+        </div>
+        <p class="ab-test-note">Alicilarin bir kismina iki farkli konu gonderilir. Kazanan geri kalanlara gonderilir.</p>
+      </div>
+    </div>
+
+    <!-- Schedule -->
+    <div class="schedule-section">
+      <label class="schedule-toggle">
+        <input type="checkbox" id="schedule-enabled">
+        Zamanli gonderim
+      </label>
+      <div class="schedule-fields" id="schedule-fields">
+        <div class="form-group">
+          <label for="schedule-datetime">Gonderim zamani</label>
+          <input type="datetime-local" id="schedule-datetime">
+        </div>
+        <p class="schedule-note">Belirtilen zamanda otomatik gonderilecek.</p>
+      </div>
     </div>
 
     <!-- Follow-up -->
@@ -121,6 +170,7 @@
       </div>
       <canvas id="stats-chart" width="320" height="160"></canvas>
       <div id="followup-status" class="followup-status"></div>
+      <button class="btn btn-secondary btn-export" id="btn-export-csv">CSV Indir</button>
     </div>
   </div>
 

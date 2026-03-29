@@ -26,6 +26,7 @@ from config import (
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
+from models import ab_test as ab_test_model
 from models import campaign as campaign_model
 from models import contact as contact_model
 from models import followup as followup_model
@@ -42,6 +43,7 @@ class CreateCampaignRequest(BaseModel):
     name: str
     subject: str
     body: str
+    scheduled_for: str | None = None  # ISO datetime string, e.g. "2026-03-30T09:00:00Z"
 
 
 class UploadContactsRequest(BaseModel):
@@ -56,6 +58,12 @@ class CreateFollowupRequest(BaseModel):
     condition: str = "not_opened"
 
 
+class CreateAbTestRequest(BaseModel):
+    subject_a: str
+    subject_b: str
+    test_percentage: int = 20  # % of contacts for testing
+
+
 # ── Endpoints ──
 
 
@@ -64,11 +72,25 @@ async def create_campaign(
     body: CreateCampaignRequest,
     user: dict = Depends(get_current_user),
 ):
+    # Scheduled sending requires Standard+ plan
+    if body.scheduled_for:
+        plan = user.get("plan", "free")
+        if plan == "free":
+            raise HTTPException(
+                status_code=402,
+                detail={
+                    "error": "feature_locked",
+                    "message": "Zamanli gonderim Standard ve Pro planlarda kullanilabilir",
+                    "required_plan": "standard",
+                },
+            )
+
     campaign = campaign_model.create_campaign(
         user_id=user["id"],
         name=body.name,
         subject=body.subject,
         body=body.body,
+        scheduled_for=body.scheduled_for,
     )
     return {"campaign_id": campaign["id"], "status": "draft"}
 
@@ -106,6 +128,58 @@ async def campaign_stats(
         "open_rate": open_rate,
         "click_rate": click_rate,
         "pending_followups": pending_followups,
+    }
+
+
+@router.get("/{campaign_id}/export")
+async def export_campaign_csv(
+    campaign_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Export campaign contacts as CSV. Requires Standard+ plan."""
+    plan = user.get("plan", "free")
+    if plan == "free":
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "feature_locked",
+                "message": "CSV export Standard ve Pro planlarda kullanilabilir",
+                "required_plan": "standard",
+            },
+        )
+
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    contacts = contact_model.get_all_contacts(campaign_id)
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "email", "first_name", "last_name", "company", "position",
+        "status", "sent_at", "opened_at", "clicked_at", "unsubscribed",
+    ])
+    for c in contacts:
+        writer.writerow([
+            c.get("email", ""),
+            c.get("first_name", ""),
+            c.get("last_name", ""),
+            c.get("company", ""),
+            c.get("position", ""),
+            c.get("status", ""),
+            c.get("sent_at", ""),
+            c.get("opened_at", ""),
+            c.get("clicked_at", ""),
+            c.get("unsubscribed", False),
+        ])
+
+    output.seek(0)
+    safe_name = re.sub(r"[^a-zA-Z0-9_-]", "_", campaign.get("name", "export"))
+
+    return {
+        "csv_data": output.getvalue(),
+        "filename": f"outmass_{safe_name}.csv",
     }
 
 
@@ -169,6 +243,8 @@ async def send_campaign(
 
     if campaign["status"] == "sending":
         raise HTTPException(status_code=409, detail="Campaign already sending")
+    if campaign["status"] == "sent":
+        raise HTTPException(status_code=409, detail="Campaign already sent")
 
     # ── Save access token for follow-up worker ──
     from database import get_db as _get_db
@@ -228,17 +304,46 @@ async def send_campaign(
     )
     suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
+    # ── A/B Test setup ──
+    ab_test = ab_test_model.get_ab_test(campaign_id)
+    ab_test_size = 0
+    ab_group_a = []
+    ab_group_b = []
+    ab_remaining = []
+
+    if ab_test and ab_test["status"] == "testing":
+        test_pct = ab_test.get("test_percentage", 20)
+        ab_test_size = max(2, int(len(pending) * test_pct / 100))
+        half = ab_test_size // 2
+        ab_group_a = pending[:half]
+        ab_group_b = pending[half:ab_test_size]
+        ab_remaining = pending[ab_test_size:]
+    else:
+        ab_test = None  # Ignore non-testing AB tests
+
     # ── Send emails synchronously (MVP, no Celery) ──
     sent_count = 0
     errors = []
 
     async with httpx.AsyncClient() as client:
-        for contact in pending:
+        send_list = pending if not ab_test else ab_group_a + ab_group_b
+        for idx, contact in enumerate(send_list):
             # Check suppression list + contact-level unsubscribe
             if contact.get("unsubscribed"):
                 continue
             if contact.get("email", "").lower() in suppressed_emails:
                 continue
+
+            # Determine subject for A/B testing
+            subject_override = None
+            ab_variant = None
+            if ab_test:
+                if contact in ab_group_a:
+                    subject_override = ab_test["subject_a"]
+                    ab_variant = "A"
+                else:
+                    subject_override = ab_test["subject_b"]
+                    ab_variant = "B"
 
             try:
                 result = await _send_single_email(
@@ -246,9 +351,12 @@ async def send_campaign(
                     access_token=x_ms_token,
                     campaign=campaign,
                     contact=contact,
+                    subject_override=subject_override,
                 )
                 if result["success"]:
                     contact_model.mark_sent(contact["id"])
+                    if ab_variant:
+                        contact_model.set_ab_variant(contact["id"], ab_variant)
                     campaign_model.increment_stat(campaign_id, "sent_count")
                     sent_count += 1
                 else:
@@ -259,20 +367,27 @@ async def send_campaign(
                 errors.append({"email": contact["email"], "error": str(e)})
 
             # C-04: Non-blocking rate limiting between emails
-            if sent_count < len(pending):
+            if sent_count < len(send_list):
                 await asyncio.sleep(SEND_DELAY_SECONDS)
 
     # Update user's monthly count
     user_model.increment_sent_count(user["id"], sent_count)
 
-    # Update campaign status
-    final_status = "sent" if not errors else "partial"
-    campaign_model.update_campaign(campaign_id, {"status": final_status})
+    # Handle A/B test: if test phase done, mark status (winner evaluated later by worker)
+    if ab_test and ab_remaining:
+        ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})
+        # Update campaign to "ab_testing" — remaining contacts will be sent by worker
+        campaign_model.update_campaign(campaign_id, {"status": "ab_testing"})
+    else:
+        # Update campaign status
+        final_status = "sent" if not errors else "partial"
+        campaign_model.update_campaign(campaign_id, {"status": final_status})
 
     return {
         "queued": sent_count,
         "campaign_id": campaign_id,
         "errors": errors[:10],  # Cap error list
+        "ab_test": bool(ab_test),
     }
 
 
@@ -337,6 +452,73 @@ async def cancel_followup(
     return {"status": "cancelled"}
 
 
+# ── A/B Testing Endpoints ──
+
+
+@router.post("/{campaign_id}/ab-test")
+async def create_ab_test(
+    campaign_id: str,
+    body: CreateAbTestRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Create an A/B test for a campaign. Pro plan only."""
+    if user.get("plan", "free") != "pro":
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "feature_locked",
+                "message": "A/B testing sadece Pro planda kullanilabilir",
+                "required_plan": "pro",
+            },
+        )
+
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    # Check if AB test already exists
+    existing = ab_test_model.get_ab_test(campaign_id)
+    if existing:
+        raise HTTPException(status_code=409, detail="A/B test already exists for this campaign")
+
+    test_pct = max(10, min(50, body.test_percentage))
+
+    ab_test = ab_test_model.create_ab_test(
+        campaign_id=campaign_id,
+        user_id=user["id"],
+        subject_a=body.subject_a,
+        subject_b=body.subject_b,
+        test_percentage=test_pct,
+    )
+    return {"ab_test_id": ab_test["id"], "test_percentage": test_pct}
+
+
+@router.get("/{campaign_id}/ab-test")
+async def get_ab_test_status(
+    campaign_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Get A/B test results for a campaign."""
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    ab_test = ab_test_model.get_ab_test(campaign_id)
+    if not ab_test:
+        raise HTTPException(status_code=404, detail="No A/B test found")
+
+    return {
+        "ab_test_id": ab_test["id"],
+        "subject_a": ab_test["subject_a"],
+        "subject_b": ab_test["subject_b"],
+        "opens_a": ab_test["opens_a"],
+        "opens_b": ab_test["opens_b"],
+        "winner": ab_test["winner"],
+        "status": ab_test["status"],
+        "test_percentage": ab_test["test_percentage"],
+    }
+
+
 # ── Helpers ──
 
 
@@ -345,6 +527,7 @@ async def _send_single_email(
     access_token: str,
     campaign: dict,
     contact: dict,
+    subject_override: str | None = None,
 ) -> dict:
     """Send a single email via Microsoft Graph API."""
     # Build merge context
@@ -359,7 +542,8 @@ async def _send_single_email(
     custom = contact.get("custom_fields") or {}
     merge_ctx.update(custom)
 
-    merged_subject = _merge_template(campaign["subject"], merge_ctx)
+    subject_text = subject_override or campaign["subject"]
+    merged_subject = _merge_template(subject_text, merge_ctx)
     merged_body = _merge_template(campaign["body"], merge_ctx)
 
     # Add tracking pixel

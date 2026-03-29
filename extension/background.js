@@ -429,8 +429,61 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "EXPORT_CAMPAIGN_CSV":
+      backendFetch("/campaigns/" + message.campaignId + "/export").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "CREATE_FOLLOWUP":
       backendFetch("/campaigns/" + message.campaignId + "/followups", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "CREATE_AB_TEST":
+      backendFetch("/campaigns/" + message.campaignId + "/ab-test", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "GET_AB_TEST":
+      backendFetch("/campaigns/" + message.campaignId + "/ab-test").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "SAVE_TEMPLATE":
+      backendFetch("/templates", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "GET_TEMPLATES":
+      backendFetch("/templates").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "DELETE_TEMPLATE":
+      backendFetch("/templates/" + message.templateId, {
+        method: "DELETE",
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "AI_GENERATE_EMAIL":
+      backendFetch("/ai/generate-email", {
         method: "POST",
         body: message.payload,
       }).then(function (result) {

@@ -34,6 +34,9 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "")
 # ── Graph API ──
 GRAPH_API_BASE = "https://graph.microsoft.com/v1.0"
 
+# ── AI ──
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
+
 # ── Limits ──
 FREE_PLAN_MONTHLY_LIMIT = 50
 STANDARD_PLAN_MONTHLY_LIMIT = 5000

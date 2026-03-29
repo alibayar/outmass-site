@@ -103,10 +103,30 @@ def mark_clicked(contact_id: str):
     ).eq("id", contact_id).is_("clicked_at", "null").execute()
 
 
+def set_ab_variant(contact_id: str, variant: str):
+    """Set the A/B test variant for a contact."""
+    get_db().table("contacts").update(
+        {"ab_variant": variant}
+    ).eq("id", contact_id).execute()
+
+
 def mark_unsubscribed(contact_id: str):
     get_db().table("contacts").update({"unsubscribed": True}).eq(
         "id", contact_id
     ).execute()
+
+
+def get_all_contacts(campaign_id: str) -> list[dict]:
+    """Get all contacts for a campaign (for CSV export)."""
+    result = (
+        get_db()
+        .table("contacts")
+        .select("*")
+        .eq("campaign_id", campaign_id)
+        .order("created_at")
+        .execute()
+    )
+    return result.data
 
 
 def get_campaign_contacts_count(campaign_id: str) -> int:

@@ -5,26 +5,45 @@ OutMass — Campaign model helpers
 from database import get_db
 
 
-def create_campaign(user_id: str, name: str, subject: str, body: str) -> dict:
+def create_campaign(
+    user_id: str,
+    name: str,
+    subject: str,
+    body: str,
+    scheduled_for: str | None = None,
+) -> dict:
+    data = {
+        "user_id": user_id,
+        "name": name,
+        "subject": subject,
+        "body": body,
+        "status": "scheduled" if scheduled_for else "draft",
+        "total_contacts": 0,
+        "sent_count": 0,
+        "open_count": 0,
+        "click_count": 0,
+    }
+    if scheduled_for:
+        data["scheduled_for"] = scheduled_for
+
+    result = get_db().table("campaigns").insert(data).execute()
+    return result.data[0]
+
+
+def get_due_scheduled_campaigns() -> list[dict]:
+    """Get campaigns that are scheduled and due for sending."""
+    from datetime import datetime, timezone
+
+    now = datetime.now(timezone.utc).isoformat()
     result = (
         get_db()
         .table("campaigns")
-        .insert(
-            {
-                "user_id": user_id,
-                "name": name,
-                "subject": subject,
-                "body": body,
-                "status": "draft",
-                "total_contacts": 0,
-                "sent_count": 0,
-                "open_count": 0,
-                "click_count": 0,
-            }
-        )
+        .select("*")
+        .eq("status", "scheduled")
+        .lte("scheduled_for", now)
         .execute()
     )
-    return result.data[0]
+    return result.data
 
 
 def get_campaign(campaign_id: str) -> dict | None:

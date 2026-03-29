@@ -29,6 +29,7 @@ celery = Celery(
     include=[
         "workers.email_worker",
         "workers.followup_worker",
+        "workers.scheduled_worker",
     ],
 )
 
@@ -53,5 +54,9 @@ celery.conf.beat_schedule = {
     "process-followups-hourly": {
         "task": "workers.followup_worker.process_followups",
         "schedule": 3600.0,  # every hour
+    },
+    "process-scheduled-campaigns": {
+        "task": "workers.scheduled_worker.process_scheduled_campaigns",
+        "schedule": 300.0,  # every 5 minutes
     },
 }
