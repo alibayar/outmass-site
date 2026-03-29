@@ -73,7 +73,12 @@
     var btnManage = document.getElementById("btn-manage-sub");
     if (planKey === "free") {
       btnUpgrade.style.display = "block";
+      btnUpgrade.textContent = "Yukselt \u2192 Standard ($15/ay)";
       btnManage.style.display = "none";
+    } else if (planKey === "standard") {
+      btnUpgrade.style.display = "block";
+      btnUpgrade.textContent = "Yukselt \u2192 Pro ($25/ay)";
+      btnManage.style.display = "block";
     } else {
       btnUpgrade.style.display = "none";
       btnManage.style.display = "block";
@@ -147,7 +152,9 @@
 
   if (btnUpgradePopup) {
     btnUpgradePopup.addEventListener("click", function () {
-      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT" }, function (resp) {
+      var currentPlan = userPlan.textContent.toLowerCase();
+      var targetPlan = currentPlan === "standard" ? "pro" : "standard";
+      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: targetPlan }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           chrome.tabs.create({ url: resp.data.checkout_url });
           window.close();

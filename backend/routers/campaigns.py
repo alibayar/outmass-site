@@ -20,6 +20,8 @@ from pydantic import BaseModel
 from config import (
     BACKEND_URL,
     FREE_PLAN_MONTHLY_LIMIT,
+    STANDARD_PLAN_MONTHLY_LIMIT,
+    PRO_PLAN_MONTHLY_LIMIT,
     GRAPH_API_BASE,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
@@ -191,19 +193,25 @@ async def send_campaign(
         raise HTTPException(status_code=400, detail="No pending contacts")
 
     if plan == "free":
-        remaining = FREE_PLAN_MONTHLY_LIMIT - sent_this_month
-        if remaining <= 0:
-            raise HTTPException(
-                status_code=402,
-                detail={
-                    "error": "limit_exceeded",
-                    "message": "Free planda aylik 50 email limitine ulastiniz",
-                    "emails_sent": sent_this_month,
-                    "limit": FREE_PLAN_MONTHLY_LIMIT,
-                },
-            )
-        # Cap to remaining quota
-        pending = pending[:remaining]
+        limit = FREE_PLAN_MONTHLY_LIMIT
+    elif plan == "standard":
+        limit = STANDARD_PLAN_MONTHLY_LIMIT
+    else:
+        limit = PRO_PLAN_MONTHLY_LIMIT
+
+    remaining = limit - sent_this_month
+    if remaining <= 0:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "limit_exceeded",
+                "message": f"Aylik {limit} email limitine ulastiniz",
+                "emails_sent": sent_this_month,
+                "limit": limit,
+            },
+        )
+    # Cap to remaining quota
+    pending = pending[:remaining]
 
     # ── Mark campaign as sending ──
     campaign_model.update_campaign(campaign_id, {"status": "sending"})
@@ -280,6 +288,16 @@ async def create_followup(
     campaign = campaign_model.get_campaign(campaign_id)
     if not campaign or campaign["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if user.get("plan", "free") not in ("pro",):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "feature_locked",
+                "message": "Follow-up ozelligi sadece Pro planda kullanilabilir",
+                "required_plan": "pro",
+            },
+        )
 
     followup = followup_model.create_followup(
         campaign_id=campaign_id,

@@ -168,9 +168,9 @@
     chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (result) {
       var sent = result.emailsSentThisMonth || 0;
       var plan = result.plan || "free";
-      var limit = plan === "pro" ? 10000 : 50;
+      var limit = plan === "pro" ? 10000 : plan === "standard" ? 5000 : 50;
       var remaining = Math.max(0, limit - sent);
-      var planLabel = plan === "pro" ? "Pro Plan" : "Free Plan";
+      var planLabel = plan === "pro" ? "Pro Plan" : plan === "standard" ? "Standard Plan" : "Free Plan";
 
       quotaText.textContent = remaining + "/" + limit + " email kaldi (" + planLabel + ")";
       quotaFill.style.width = (remaining / limit * 100) + "%";
@@ -196,17 +196,17 @@
     chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (storage) {
       var sent = storage.emailsSentThisMonth || 0;
       var plan = storage.plan || "free";
-      var limit = plan === "pro" ? 10000 : 50;
+      var limit = plan === "pro" ? 10000 : plan === "standard" ? 5000 : 50;
       var remaining = limit - sent;
 
-      if (plan === "free" && remaining <= 0) {
-        alert("Free plan limitinize ulastiniz (50 email/ay).\nPro plana gecin.");
+      if (remaining <= 0) {
+        alert("Plan limitinize ulastiniz (" + limit + " email/ay).\nPlaninizi yukseltin.");
         return;
       }
 
-      if (plan === "free" && csvData.rows.length > remaining) {
+      if (csvData.rows.length > remaining) {
         alert(
-          "Free planda " + remaining + " email hakkiniz kaldi.\n" +
+          remaining + " email hakkiniz kaldi.\n" +
           "CSV'de " + csvData.rows.length + " alici var.\n" +
           "Ilk " + remaining + " aliciya gonderilecek."
         );
@@ -521,21 +521,21 @@
     modal.style.cssText = "background:#fff;border-radius:12px;padding:32px 24px;max-width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);";
     modal.innerHTML =
       '<div style="font-size:32px;margin-bottom:12px;">🚀</div>' +
-      '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">Pro\'ya Gec</h3>' +
-      '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">50 email limitine ulastin.<br/>Pro ile sinirsiz email gonder.</p>' +
+      '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">Planinizi Yukseltin</h3>' +
+      '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">Email limitinize ulastiniz.<br/>Daha fazla email gondermek icin yukseltin.</p>' +
       '<ul style="text-align:left;font-size:12px;color:#605e5c;margin:0 0 20px 16px;padding:0;">' +
-        '<li>Sinirsiz email gonderimi</li>' +
-        '<li>Detayli raporlama</li>' +
-        '<li>Oncelikli destek</li>' +
+        '<li>Standard: 5,000 email/ay — $15/ay</li>' +
+        '<li>Pro: 10,000 email/ay — $25/ay</li>' +
+        '<li>Detayli raporlama + oncelikli destek</li>' +
       '</ul>' +
-      '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">Simdi Yukselt — $20/ay</button>' +
+      '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">Simdi Yukselt — Standard $15/ay</button>' +
       '<button id="btn-upgrade-cancel" style="width:100%;padding:8px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">Belki sonra</button>';
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
     document.getElementById("btn-upgrade").addEventListener("click", function () {
-      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT" }, function (resp) {
+      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "standard" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
         } else {

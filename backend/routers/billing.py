@@ -15,12 +15,17 @@ import stripe
 from fastapi import APIRouter, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 
+from pydantic import BaseModel
+
 from config import (
     BACKEND_URL,
+    STRIPE_STANDARD_PRICE_ID,
     STRIPE_PRO_PRICE_ID,
     STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET,
     FREE_PLAN_MONTHLY_LIMIT,
+    STANDARD_PLAN_MONTHLY_LIMIT,
+    PRO_PLAN_MONTHLY_LIMIT,
 )
 from database import get_db
 from routers.auth import get_current_user
@@ -34,8 +39,13 @@ stripe.api_key = STRIPE_SECRET_KEY
 # ── Plan limits ──────────────────────────────────────────────────────────────
 PLAN_LIMITS = {
     "free": FREE_PLAN_MONTHLY_LIMIT,
-    "pro": 999_999,
+    "standard": STANDARD_PLAN_MONTHLY_LIMIT,
+    "pro": PRO_PLAN_MONTHLY_LIMIT,
 }
+
+
+class CheckoutRequest(BaseModel):
+    plan: str = "pro"
 
 
 # ─── Helpers ─────────────────────────────────────────────────────────────────
@@ -52,19 +62,28 @@ def _get_user_from_db(user_id: str) -> dict | None:
 # ─── 1. Create Checkout ─────────────────────────────────────────────────────
 
 @router.post("/create-checkout")
-async def create_checkout(user: dict = Depends(get_current_user)):
-    """Create a Stripe Checkout Session for a Pro subscription."""
+async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_current_user)):
+    """Create a Stripe Checkout Session for a Standard or Pro subscription."""
     if not STRIPE_SECRET_KEY:
         raise HTTPException(status_code=503, detail="Stripe not configured")
-    if not STRIPE_PRO_PRICE_ID:
+
+    if body.plan == "standard":
+        price_id = STRIPE_STANDARD_PRICE_ID
+    else:
+        price_id = STRIPE_PRO_PRICE_ID
+
+    if not price_id:
         raise HTTPException(status_code=503, detail="Stripe price ID not configured")
 
-    if user.get("plan") == "pro":
+    current_plan = user.get("plan", "free")
+    if current_plan == body.plan:
+        raise HTTPException(status_code=400, detail=f"Already on {body.plan} plan")
+    if current_plan == "pro":
         raise HTTPException(status_code=400, detail="Already on Pro plan")
 
     try:
         session = stripe.checkout.Session.create(
-            line_items=[{"price": STRIPE_PRO_PRICE_ID, "quantity": 1}],
+            line_items=[{"price": price_id, "quantity": 1}],
             mode="subscription",
             success_url=f"{BACKEND_URL}/billing/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{BACKEND_URL}/billing/cancel",
@@ -113,14 +132,25 @@ async def stripe_webhook(request: Request):
         customer_id = data_object.get("customer")
         subscription_id = data_object.get("subscription")
 
+        # Determine plan from the price ID in the subscription
+        plan = "pro"
+        if subscription_id:
+            try:
+                sub = stripe.Subscription.retrieve(subscription_id)
+                sub_price_id = sub["items"]["data"][0]["price"]["id"] if sub["items"]["data"] else ""
+                if sub_price_id == STRIPE_STANDARD_PRICE_ID:
+                    plan = "standard"
+            except Exception:
+                pass
+
         db.table("users").update({
-            "plan": "pro",
+            "plan": plan,
             "stripe_customer_id": customer_id,
             "stripe_subscription_id": subscription_id,
             "plan_updated_at": datetime.now(timezone.utc).isoformat(),
         }).eq("id", user_id).execute()
 
-        logger.info("User %s upgraded to pro", user_id)
+        logger.info("User %s upgraded to %s", user_id, plan)
 
     # ── customer.subscription.deleted ──
     elif event_type == "customer.subscription.deleted":
@@ -145,7 +175,15 @@ async def stripe_webhook(request: Request):
             }
 
             if status in ("active", "trialing"):
-                update_data["plan"] = "pro"
+                # Determine plan from subscription price
+                try:
+                    sub_price_id = data_object["items"]["data"][0]["price"]["id"] if data_object.get("items", {}).get("data") else ""
+                    if sub_price_id == STRIPE_STANDARD_PRICE_ID:
+                        update_data["plan"] = "standard"
+                    else:
+                        update_data["plan"] = "pro"
+                except (KeyError, IndexError):
+                    update_data["plan"] = "pro"
             elif status in ("canceled", "unpaid", "past_due"):
                 update_data["plan"] = "free"
 

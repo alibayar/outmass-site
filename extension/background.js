@@ -441,6 +441,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     case "CREATE_CHECKOUT":
       backendFetch("/billing/create-checkout", {
         method: "POST",
+        body: { plan: message.plan || "pro" },
       }).then(function (result) {
         sendResponse(result);
       });
