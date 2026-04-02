@@ -34,6 +34,10 @@ FRONTEND_URL = os.getenv("FRONTEND_URL", "")
 # ── Graph API ──
 GRAPH_API_BASE = "https://graph.microsoft.com/v1.0"
 
+# ── PostHog ──
+POSTHOG_API_KEY = os.getenv("POSTHOG_API_KEY", "")
+POSTHOG_HOST = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
+
 # ── AI ──
 OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
 

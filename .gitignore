@@ -23,5 +23,8 @@ Thumbs.db
 # Test files
 test_contact.csv
 
+# Celery
+celerybeat-schedule*
+
 # Claude
 .claude/

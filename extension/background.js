@@ -27,6 +27,35 @@ function log(...args) {
   console.log(LOG_PREFIX, ...args);
 }
 
+// ── Error Reporting ──
+function reportError(message, stack, context) {
+  try {
+    fetch(OUTMASS_BACKEND_URL + "/api/error-report", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        message: message,
+        source: "extension-bg",
+        stack: stack || "",
+        context: context || {},
+      }),
+    }).catch(function () {}); // Fire and forget
+  } catch (e) {
+    // Silent
+  }
+}
+
+// Global error handler
+self.addEventListener("error", function (event) {
+  reportError(event.message, event.filename + ":" + event.lineno, {});
+});
+
+self.addEventListener("unhandledrejection", function (event) {
+  var msg = event.reason ? event.reason.message || String(event.reason) : "Unhandled rejection";
+  var stack = event.reason ? event.reason.stack || "" : "";
+  reportError(msg, stack, {});
+});
+
 // ── Installation ──
 chrome.runtime.onInstalled.addListener(function (details) {
   if (details.reason === "install") {
@@ -481,6 +510,15 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         sendResponse(result);
       });
       return true;
+
+    case "REPORT_ERROR":
+      reportError(
+        message.payload ? message.payload.message : "Unknown",
+        message.payload ? message.payload.stack : "",
+        { source: message.payload ? message.payload.source : "unknown" }
+      );
+      sendResponse({ status: "reported" });
+      return false;
 
     case "AI_GENERATE_EMAIL":
       backendFetch("/ai/generate-email", {

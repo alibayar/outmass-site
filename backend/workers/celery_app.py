@@ -4,10 +4,17 @@ OutMass — Celery Application Configuration
 import os
 import ssl
 
+import posthog
 from celery import Celery
 from dotenv import load_dotenv
 
 load_dotenv()
+
+# ── PostHog for Celery workers ──
+POSTHOG_API_KEY = os.getenv("POSTHOG_API_KEY", "")
+if POSTHOG_API_KEY:
+    posthog.api_key = POSTHOG_API_KEY
+    posthog.host = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 

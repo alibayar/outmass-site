@@ -15,6 +15,22 @@
     console.log.apply(console, args);
   }
 
+  // ── Error Reporting ──
+  window.addEventListener("error", function (event) {
+    chrome.runtime.sendMessage({
+      type: "REPORT_ERROR",
+      payload: { message: event.message, stack: event.filename + ":" + event.lineno, source: "sidebar" },
+    });
+  });
+
+  window.addEventListener("unhandledrejection", function (event) {
+    var msg = event.reason ? event.reason.message || String(event.reason) : "Unhandled rejection";
+    chrome.runtime.sendMessage({
+      type: "REPORT_ERROR",
+      payload: { message: msg, stack: "", source: "sidebar" },
+    });
+  });
+
   // ── Elements ──
   var tabs = document.querySelectorAll(".tab");
   var tabContents = document.querySelectorAll(".tab-content");

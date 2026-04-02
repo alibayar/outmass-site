@@ -123,7 +123,6 @@ def get_all_contacts(campaign_id: str) -> list[dict]:
         .table("contacts")
         .select("*")
         .eq("campaign_id", campaign_id)
-        .order("created_at")
         .execute()
     )
     return result.data
