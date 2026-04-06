@@ -26,5 +26,9 @@ test_contact.csv
 # Celery
 celerybeat-schedule*
 
+# Test artifacts
+test-results/
+playwright-report/
+
 # Claude
 .claude/

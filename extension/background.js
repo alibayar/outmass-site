@@ -511,6 +511,45 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "GET_SETTINGS":
+      backendFetch("/settings").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "UPDATE_SETTINGS":
+      backendFetch("/settings", {
+        method: "PUT",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "GET_SUPPRESSION_LIST":
+      backendFetch("/settings/suppression").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "ADD_SUPPRESSION":
+      backendFetch("/settings/suppression", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "REMOVE_SUPPRESSION":
+      backendFetch("/settings/suppression", {
+        method: "DELETE",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "REPORT_ERROR":
       reportError(
         message.payload ? message.payload.message : "Unknown",

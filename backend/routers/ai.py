@@ -1,16 +1,17 @@
 """
 OutMass — AI Router
-POST /ai/generate-email   → Generate email content using OpenAI
+POST /ai/generate-email   → Generate email content using Claude Haiku
 Pro plan only.
 """
 
+import json
 import logging
 
 import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from config import OPENAI_API_KEY
+from config import ANTHROPIC_API_KEY
 from routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -27,13 +28,14 @@ class GenerateEmailRequest(BaseModel):
 SYSTEM_PROMPT = """You are an expert email copywriter. Generate a marketing/outreach email based on the user's description.
 
 Rules:
-- Return ONLY the email content in JSON format: {"subject": "...", "body": "..."}
+- Return ONLY valid JSON: {"subject": "...", "body": "..."}
 - The body should be HTML-formatted (use <p>, <br/>, <strong> tags)
 - Include merge placeholders where appropriate: {{firstName}}, {{lastName}}, {{company}}, {{position}}
 - Keep the email concise and engaging
 - Match the requested tone and language
 - Do NOT include greetings like "Dear" - start with the actual content after a simple "Merhaba {{firstName}}," or "Hi {{firstName}},"
 - End with a clear call-to-action
+- Do NOT wrap the JSON in markdown code blocks
 """
 
 
@@ -53,7 +55,7 @@ async def generate_email(
             },
         )
 
-    if not OPENAI_API_KEY:
+    if not ANTHROPIC_API_KEY:
         raise HTTPException(status_code=503, detail="AI service not configured")
 
     if not body.prompt.strip():
@@ -62,40 +64,37 @@ async def generate_email(
     lang_hint = "Write in Turkish." if body.language == "tr" else "Write in English."
     tone_hint = f"Tone: {body.tone}."
 
+    user_message = f"{body.prompt}\n\n{lang_hint} {tone_hint}"
+
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:
             resp = await client.post(
-                "https://api.openai.com/v1/chat/completions",
+                "https://api.anthropic.com/v1/messages",
                 headers={
-                    "Authorization": f"Bearer {OPENAI_API_KEY}",
-                    "Content-Type": "application/json",
+                    "x-api-key": ANTHROPIC_API_KEY,
+                    "anthropic-version": "2023-06-01",
+                    "content-type": "application/json",
                 },
                 json={
-                    "model": "gpt-4o-mini",
-                    "messages": [
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {
-                            "role": "user",
-                            "content": f"{body.prompt}\n\n{lang_hint} {tone_hint}",
-                        },
-                    ],
-                    "temperature": 0.7,
+                    "model": "claude-3-haiku-20240307",
                     "max_tokens": 1000,
-                    "response_format": {"type": "json_object"},
+                    "system": SYSTEM_PROMPT,
+                    "messages": [
+                        {"role": "user", "content": user_message}
+                    ],
                 },
             )
 
         if resp.status_code != 200:
-            logger.error("OpenAI API error: %s %s", resp.status_code, resp.text)
+            logger.error("Claude API error: %s %s", resp.status_code, resp.text)
             raise HTTPException(status_code=502, detail="AI service error")
 
         data = resp.json()
-        content = data["choices"][0]["message"]["content"]
+        content = data["content"][0]["text"]
 
-        import json
         try:
-            result = json.loads(content)
-        except json.JSONDecodeError:
+            result = json.loads(content, strict=False)
+        except (json.JSONDecodeError, ValueError):
             result = {"subject": "", "body": content}
 
         return {

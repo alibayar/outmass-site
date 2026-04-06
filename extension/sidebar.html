@@ -176,9 +176,85 @@
 
   <!-- Tab: Ayarlar -->
   <div class="tab-content" id="tab-settings">
-    <div class="placeholder-state">
-      <p>Yakında</p>
-      <p class="hint">Hesap ve gönderim ayarları burada olacak.</p>
+    <div id="settings-loading" class="reports-loading">Yukleniyor...</div>
+    <div id="settings-content" style="display:none;">
+
+      <!-- Hesap Bilgisi -->
+      <div class="settings-section">
+        <h4 class="settings-title">Hesap</h4>
+        <div class="settings-info">
+          <div class="settings-row">
+            <span class="settings-label">Email</span>
+            <span class="settings-value" id="settings-email">-</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Plan</span>
+            <span class="settings-value"><span class="plan-badge" id="settings-plan">Free</span></span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label">Bu ay gonderilen</span>
+            <span class="settings-value" id="settings-sent-count">0</span>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button class="btn btn-primary btn-block" id="settings-btn-upgrade">Plani Yukselt</button>
+          <button class="btn btn-secondary btn-block" id="settings-btn-portal" style="display:none;">Aboneligi Yonet</button>
+        </div>
+      </div>
+
+      <!-- Tracking -->
+      <div class="settings-section">
+        <h4 class="settings-title">Takip (Tracking)</h4>
+        <label class="settings-toggle">
+          <input type="checkbox" id="settings-track-opens" checked>
+          Acilma takibi
+        </label>
+        <label class="settings-toggle">
+          <input type="checkbox" id="settings-track-clicks" checked>
+          Tiklama takibi
+        </label>
+      </div>
+
+      <!-- Unsubscribe Metni -->
+      <div class="settings-section">
+        <h4 class="settings-title">Abonelikten Cikma Linki</h4>
+        <div class="form-group">
+          <input type="text" id="settings-unsub-text" value="Abonelikten cik" maxlength="200">
+          <p class="hint">Email altinda gorunecek link metni</p>
+        </div>
+      </div>
+
+      <!-- Timezone -->
+      <div class="settings-section">
+        <h4 class="settings-title">Zaman Dilimi</h4>
+        <div class="form-group">
+          <select id="settings-timezone">
+            <option value="Europe/Istanbul">Turkiye (UTC+3)</option>
+            <option value="Europe/London">Londra (UTC+0/+1)</option>
+            <option value="Europe/Berlin">Berlin (UTC+1/+2)</option>
+            <option value="America/New_York">New York (UTC-5/-4)</option>
+            <option value="America/Los_Angeles">Los Angeles (UTC-8/-7)</option>
+            <option value="Asia/Dubai">Dubai (UTC+4)</option>
+            <option value="UTC">UTC</option>
+          </select>
+        </div>
+      </div>
+
+      <!-- Kaydet Butonu -->
+      <button class="btn btn-primary btn-block" id="settings-btn-save">Ayarlari Kaydet</button>
+
+      <!-- Suppression List -->
+      <div class="settings-section" style="margin-top:20px;">
+        <h4 class="settings-title">Engellenen Emailler</h4>
+        <p class="hint">Bu listedeki adreslere email gonderilmez.</p>
+        <div class="suppression-add">
+          <input type="email" id="suppression-email-input" placeholder="email@ornek.com">
+          <button class="btn btn-small" id="btn-add-suppression">Ekle</button>
+        </div>
+        <div id="suppression-list" class="suppression-list"></div>
+        <div id="suppression-empty" class="hint" style="text-align:center;padding:12px;">Henuz engellenen email yok.</div>
+      </div>
+
     </div>
   </div>
 

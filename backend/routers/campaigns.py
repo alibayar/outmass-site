@@ -352,6 +352,9 @@ async def send_campaign(
                     campaign=campaign,
                     contact=contact,
                     subject_override=subject_override,
+                    track_opens=user.get("track_opens", True),
+                    track_clicks=user.get("track_clicks", True),
+                    unsubscribe_text=user.get("unsubscribe_text", "Abonelikten cik"),
                 )
                 if result["success"]:
                     contact_model.mark_sent(contact["id"])
@@ -528,6 +531,9 @@ async def _send_single_email(
     campaign: dict,
     contact: dict,
     subject_override: str | None = None,
+    track_opens: bool = True,
+    track_clicks: bool = True,
+    unsubscribe_text: str = "Abonelikten cik",
 ) -> dict:
     """Send a single email via Microsoft Graph API."""
     # Build merge context
@@ -546,20 +552,22 @@ async def _send_single_email(
     merged_subject = _merge_template(subject_text, merge_ctx)
     merged_body = _merge_template(campaign["body"], merge_ctx)
 
-    # Add tracking pixel
-    tracking_pixel = (
-        f'<img src="{BACKEND_URL}/t/{contact["id"]}" '
-        f'width="1" height="1" style="display:none" alt="" />'
-    )
+    # Add tracking pixel (if enabled)
+    tracking_pixel = ""
+    if track_opens:
+        tracking_pixel = (
+            f'<img src="{BACKEND_URL}/t/{contact["id"]}" '
+            f'width="1" height="1" style="display:none" alt="" />'
+        )
 
-    # Wrap links for click tracking
-    tracked_body = _wrap_links(merged_body, contact["id"])
+    # Wrap links for click tracking (if enabled)
+    tracked_body = _wrap_links(merged_body, contact["id"]) if track_clicks else merged_body
 
     # Add unsubscribe footer
     unsubscribe_url = f"{BACKEND_URL}/unsubscribe/{contact['id']}"
     footer = (
         f'<br/><p style="font-size:11px;color:#999;">'
-        f'<a href="{unsubscribe_url}">Abonelikten cik</a></p>'
+        f'<a href="{unsubscribe_url}">{unsubscribe_text}</a></p>'
     )
 
     final_html = tracked_body + footer + tracking_pixel

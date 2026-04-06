@@ -113,6 +113,12 @@ CREATE TABLE IF NOT EXISTS ab_tests (
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
+-- ── Settings columns on users ──
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS track_opens BOOLEAN DEFAULT TRUE;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS track_clicks BOOLEAN DEFAULT TRUE;
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS unsubscribe_text TEXT DEFAULT 'Abonelikten cik';
+-- ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Europe/Istanbul';
+
 -- ── Billing columns on users ──
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;

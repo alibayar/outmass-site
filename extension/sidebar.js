@@ -64,6 +64,9 @@
       if (target === "reports") {
         loadReports();
       }
+      if (target === "settings") {
+        loadSettings();
+      }
 
       log("Tab switched to:", target);
     });
@@ -890,6 +893,196 @@
 
     overlay.addEventListener("click", function (e) {
       if (e.target === overlay) overlay.remove();
+    });
+  }
+
+  // ── Settings ──
+  function loadSettings() {
+    var settingsLoading = document.getElementById("settings-loading");
+    var settingsContent = document.getElementById("settings-content");
+
+    if (settingsLoading) settingsLoading.style.display = "block";
+    if (settingsContent) settingsContent.style.display = "none";
+
+    chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
+      if (settingsLoading) settingsLoading.style.display = "none";
+      if (settingsContent) settingsContent.style.display = "block";
+
+      if (!resp || resp.error) {
+        log("Settings load failed:", resp ? resp.error : "unknown");
+        return;
+      }
+
+      var data = resp.data || resp;
+
+      // Account info
+      var emailEl = document.getElementById("settings-email");
+      var planEl = document.getElementById("settings-plan");
+      var sentEl = document.getElementById("settings-sent-count");
+      if (emailEl) emailEl.textContent = data.email || "-";
+      if (planEl) {
+        var plan = data.plan || "free";
+        planEl.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+        planEl.className = "plan-badge " + plan;
+      }
+      if (sentEl) sentEl.textContent = data.emails_sent_this_month || 0;
+
+      // Plan buttons
+      var btnUpgrade = document.getElementById("settings-btn-upgrade");
+      var btnPortal = document.getElementById("settings-btn-portal");
+      if (data.plan === "free") {
+        if (btnUpgrade) btnUpgrade.style.display = "block";
+        if (btnPortal) btnPortal.style.display = "none";
+      } else {
+        if (btnUpgrade) btnUpgrade.style.display = "none";
+        if (btnPortal) btnPortal.style.display = "block";
+      }
+
+      // Tracking
+      var trackOpens = document.getElementById("settings-track-opens");
+      var trackClicks = document.getElementById("settings-track-clicks");
+      if (trackOpens) trackOpens.checked = data.track_opens !== false;
+      if (trackClicks) trackClicks.checked = data.track_clicks !== false;
+
+      // Unsub text
+      var unsubText = document.getElementById("settings-unsub-text");
+      if (unsubText && data.unsubscribe_text) unsubText.value = data.unsubscribe_text;
+
+      // Timezone
+      var tzSelect = document.getElementById("settings-timezone");
+      if (tzSelect && data.timezone) tzSelect.value = data.timezone;
+
+      log("Settings loaded");
+    });
+
+    // Load suppression list
+    loadSuppressionList();
+  }
+
+  function loadSuppressionList() {
+    chrome.runtime.sendMessage({ type: "GET_SUPPRESSION_LIST" }, function (resp) {
+      var listEl = document.getElementById("suppression-list");
+      var emptyEl = document.getElementById("suppression-empty");
+      if (!listEl) return;
+
+      if (!resp || resp.error || !resp.data) {
+        if (emptyEl) emptyEl.style.display = "block";
+        return;
+      }
+
+      var emails = resp.data.emails || [];
+      listEl.innerHTML = "";
+
+      if (emails.length === 0) {
+        if (emptyEl) emptyEl.style.display = "block";
+        return;
+      }
+
+      if (emptyEl) emptyEl.style.display = "none";
+
+      emails.forEach(function (item) {
+        var row = document.createElement("div");
+        row.className = "suppression-row";
+        row.innerHTML =
+          '<span class="suppression-email">' + escapeHtml(item.email) + '</span>' +
+          '<span class="suppression-reason">' + (item.reason === "user_unsubscribed" ? "Abone cikildi" : "Manuel") + '</span>' +
+          '<button class="btn-remove-suppression" data-email="' + escapeHtml(item.email) + '">&times;</button>';
+        listEl.appendChild(row);
+      });
+
+      // Attach remove handlers
+      listEl.querySelectorAll(".btn-remove-suppression").forEach(function (btn) {
+        btn.addEventListener("click", function () {
+          var email = btn.getAttribute("data-email");
+          chrome.runtime.sendMessage(
+            { type: "REMOVE_SUPPRESSION", payload: { email: email } },
+            function () {
+              loadSuppressionList();
+            }
+          );
+        });
+      });
+    });
+  }
+
+  // Settings save button
+  var btnSaveSettings = document.getElementById("settings-btn-save");
+  if (btnSaveSettings) {
+    btnSaveSettings.addEventListener("click", function () {
+      btnSaveSettings.textContent = "Kaydediliyor...";
+      btnSaveSettings.disabled = true;
+
+      var payload = {
+        track_opens: document.getElementById("settings-track-opens").checked,
+        track_clicks: document.getElementById("settings-track-clicks").checked,
+        unsubscribe_text: document.getElementById("settings-unsub-text").value.trim(),
+        timezone: document.getElementById("settings-timezone").value,
+      };
+
+      chrome.runtime.sendMessage(
+        { type: "UPDATE_SETTINGS", payload: payload },
+        function (resp) {
+          btnSaveSettings.textContent = "Ayarlari Kaydet";
+          btnSaveSettings.disabled = false;
+
+          if (resp && !resp.error) {
+            btnSaveSettings.textContent = "Kaydedildi!";
+            setTimeout(function () {
+              btnSaveSettings.textContent = "Ayarlari Kaydet";
+            }, 2000);
+          } else {
+            alert("Ayarlar kaydedilemedi: " + (resp ? resp.error : "Bilinmeyen hata"));
+          }
+        }
+      );
+    });
+  }
+
+  // Upgrade button
+  var settingsBtnUpgrade = document.getElementById("settings-btn-upgrade");
+  if (settingsBtnUpgrade) {
+    settingsBtnUpgrade.addEventListener("click", function () {
+      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "standard" }, function (resp) {
+        if (resp && resp.data && resp.data.checkout_url) {
+          window.open(resp.data.checkout_url, "_blank");
+        } else {
+          alert("Odeme sayfasi olusturulamadi.");
+        }
+      });
+    });
+  }
+
+  // Manage subscription button
+  var settingsBtnPortal = document.getElementById("settings-btn-portal");
+  if (settingsBtnPortal) {
+    settingsBtnPortal.addEventListener("click", function () {
+      chrome.runtime.sendMessage({ type: "OPEN_PORTAL" }, function (resp) {
+        if (resp && resp.data && resp.data.portal_url) {
+          window.open(resp.data.portal_url, "_blank");
+        }
+      });
+    });
+  }
+
+  // Add suppression
+  var btnAddSuppression = document.getElementById("btn-add-suppression");
+  if (btnAddSuppression) {
+    btnAddSuppression.addEventListener("click", function () {
+      var input = document.getElementById("suppression-email-input");
+      var email = input.value.trim();
+      if (!email) return;
+
+      chrome.runtime.sendMessage(
+        { type: "ADD_SUPPRESSION", payload: { email: email } },
+        function (resp) {
+          if (resp && !resp.error) {
+            input.value = "";
+            loadSuppressionList();
+          } else {
+            alert("Eklenemedi: " + (resp ? resp.error : "Bilinmeyen hata"));
+          }
+        }
+      );
     });
   }
 

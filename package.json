@@ -1,0 +1,31 @@
+{
+  "name": "outmass",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "test": "npx playwright test",
+    "test:unit": "cd backend && python -m pytest tests/ -v --ignore=tests/integration",
+    "test:integration": "cd backend && python -m pytest tests/integration/ -v",
+    "test:e2e": "npx playwright test",
+    "test:all": "cd backend && python -m pytest tests/ -v && cd .. && npx playwright test"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/alibayar/outmass-site.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/alibayar/outmass-site/issues"
+  },
+  "homepage": "https://github.com/alibayar/outmass-site#readme",
+  "devDependencies": {
+    "@playwright/test": "^1.59.1"
+  }
+}

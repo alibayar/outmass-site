@@ -12,7 +12,7 @@ from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from config import BACKEND_URL, POSTHOG_API_KEY, POSTHOG_HOST
-from routers import ai, auth, billing, campaigns, templates, tracking
+from routers import ai, auth, billing, campaigns, settings, templates, tracking
 
 logger = logging.getLogger(__name__)
 
@@ -69,6 +69,7 @@ app.include_router(tracking.router)
 app.include_router(billing.router)
 app.include_router(templates.router)
 app.include_router(ai.router)
+app.include_router(settings.router)
 
 
 # ── Extension Error Reporting ──
