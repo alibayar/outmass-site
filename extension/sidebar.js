@@ -1153,13 +1153,30 @@
   }
 
   function checkConnection() {
-    chrome.runtime.sendMessage({ type: "HEALTH_CHECK" }, function (resp) {
-      if (chrome.runtime.lastError) {
+    try {
+      if (!chrome.runtime?.id) {
+        // Extension was reloaded/updated — stop polling, show reload hint
+        if (_healthInterval) clearInterval(_healthInterval);
         setConnectionState(false);
+        if (offlineBanner) offlineBanner.textContent = "Extension guncellendi. Sayfayi yenileyin.";
         return;
       }
-      setConnectionState(!!(resp && resp.ok));
-    });
+      chrome.runtime.sendMessage({ type: "HEALTH_CHECK" }, function (resp) {
+        if (chrome.runtime.lastError) {
+          setConnectionState(false);
+          return;
+        }
+        setConnectionState(!!(resp && resp.ok));
+      });
+    } catch (e) {
+      // Extension context invalidated — stop polling
+      if (_healthInterval) clearInterval(_healthInterval);
+      setConnectionState(false);
+      if (offlineBanner) {
+        offlineBanner.textContent = "Extension guncellendi. Sayfayi yenileyin.";
+        offlineBanner.style.display = "block";
+      }
+    }
   }
 
   // Check immediately, then every 30 seconds
