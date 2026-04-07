@@ -70,7 +70,8 @@
       <label for="body">Email İçeriği</label>
       <textarea id="body" rows="8" placeholder="Merhaba {{firstName}},&#10;&#10;{{company}} için harika bir teklifimiz var..."></textarea>
       <div class="placeholders">
-        Kullanılabilir: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code>
+        Alici: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>
+        Gonderici: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>
       </div>
     </div>
 
@@ -247,6 +248,28 @@
         </div>
       </div>
 
+      <!-- Gonderici Profili -->
+      <div class="settings-section">
+        <h4 class="settings-title">Gonderici Bilgileri</h4>
+        <p class="hint">Email imzanizda ve AI ile yazilan emaillerde kullanilir.</p>
+        <div class="form-group">
+          <label for="settings-sender-name">Adiniz</label>
+          <input type="text" id="settings-sender-name" placeholder="Ali Bayar" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="settings-sender-position">Pozisyonunuz</label>
+          <input type="text" id="settings-sender-position" placeholder="Kurucu & CEO" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="settings-sender-company">Sirketiniz</label>
+          <input type="text" id="settings-sender-company" placeholder="Metis Information Technologies" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="settings-sender-phone">Telefon (opsiyonel)</label>
+          <input type="text" id="settings-sender-phone" placeholder="+90 555 123 4567" maxlength="50">
+        </div>
+      </div>
+
       <!-- Kaydet Butonu -->
       <button class="btn btn-primary btn-block" id="settings-btn-save">Ayarlari Kaydet</button>
 
@@ -257,6 +280,10 @@
         <div class="suppression-add">
           <input type="email" id="suppression-email-input" placeholder="email@ornek.com">
           <button class="btn btn-small" id="btn-add-suppression">Ekle</button>
+        </div>
+        <div class="suppression-search-row">
+          <input type="text" id="suppression-search" placeholder="Ara..." class="suppression-search-input">
+          <span class="suppression-count" id="suppression-count"></span>
         </div>
         <div id="suppression-list" class="suppression-list"></div>
         <div id="suppression-empty" class="hint" style="text-align:center;padding:12px;">Henuz engellenen email yok.</div>

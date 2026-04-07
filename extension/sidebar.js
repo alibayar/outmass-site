@@ -508,6 +508,11 @@
       generateBtn.textContent = "Olusturuluyor...";
       generateBtn.disabled = true;
 
+      // Include sender info from settings for AI context
+      var senderNameEl = document.getElementById("settings-sender-name");
+      var senderPosEl = document.getElementById("settings-sender-position");
+      var senderCompEl = document.getElementById("settings-sender-company");
+
       chrome.runtime.sendMessage(
         {
           type: "AI_GENERATE_EMAIL",
@@ -515,6 +520,9 @@
             prompt: promptText,
             tone: toneSelect.value,
             language: langSelect.value,
+            sender_name: senderNameEl ? senderNameEl.value.trim() : "",
+            sender_position: senderPosEl ? senderPosEl.value.trim() : "",
+            sender_company: senderCompEl ? senderCompEl.value.trim() : "",
           },
         },
         function (resp) {
@@ -1000,6 +1008,16 @@
       var tzSelect = document.getElementById("settings-timezone");
       if (tzSelect && data.timezone) tzSelect.value = data.timezone;
 
+      // Sender profile
+      var senderName = document.getElementById("settings-sender-name");
+      var senderPosition = document.getElementById("settings-sender-position");
+      var senderCompany = document.getElementById("settings-sender-company");
+      var senderPhone = document.getElementById("settings-sender-phone");
+      if (senderName) senderName.value = data.sender_name || "";
+      if (senderPosition) senderPosition.value = data.sender_position || "";
+      if (senderCompany) senderCompany.value = data.sender_company || "";
+      if (senderPhone) senderPhone.value = data.sender_phone || "";
+
       log("Settings loaded");
     });
 
@@ -1007,49 +1025,76 @@
     loadSuppressionList();
   }
 
+  var _suppressionData = []; // cached for client-side filtering
+
   function loadSuppressionList() {
     chrome.runtime.sendMessage({ type: "GET_SUPPRESSION_LIST" }, function (resp) {
-      var listEl = document.getElementById("suppression-list");
-      var emptyEl = document.getElementById("suppression-empty");
-      if (!listEl) return;
-
       if (!resp || resp.error || !resp.data) {
-        if (emptyEl) emptyEl.style.display = "block";
+        _suppressionData = [];
+        renderSuppressionList("");
         return;
       }
+      _suppressionData = resp.data.emails || [];
+      var searchEl = document.getElementById("suppression-search");
+      renderSuppressionList(searchEl ? searchEl.value.trim().toLowerCase() : "");
+    });
+  }
 
-      var emails = resp.data.emails || [];
-      listEl.innerHTML = "";
+  function renderSuppressionList(filter) {
+    var listEl = document.getElementById("suppression-list");
+    var emptyEl = document.getElementById("suppression-empty");
+    var countEl = document.getElementById("suppression-count");
+    if (!listEl) return;
 
-      if (emails.length === 0) {
-        if (emptyEl) emptyEl.style.display = "block";
-        return;
-      }
+    var filtered = filter
+      ? _suppressionData.filter(function (item) { return item.email.toLowerCase().indexOf(filter) !== -1; })
+      : _suppressionData;
 
-      if (emptyEl) emptyEl.style.display = "none";
+    // Update count
+    if (countEl) {
+      countEl.textContent = _suppressionData.length > 0
+        ? (filter ? filtered.length + "/" + _suppressionData.length : _suppressionData.length + " email")
+        : "";
+    }
 
-      emails.forEach(function (item) {
-        var row = document.createElement("div");
-        row.className = "suppression-row";
-        row.innerHTML =
-          '<span class="suppression-email">' + escapeHtml(item.email) + '</span>' +
-          '<span class="suppression-reason">' + (item.reason === "user_unsubscribed" ? "Abone cikildi" : "Manuel") + '</span>' +
-          '<button class="btn-remove-suppression" data-email="' + escapeHtml(item.email) + '">&times;</button>';
-        listEl.appendChild(row);
+    listEl.innerHTML = "";
+
+    if (_suppressionData.length === 0) {
+      if (emptyEl) emptyEl.style.display = "block";
+      return;
+    }
+
+    if (emptyEl) emptyEl.style.display = "none";
+
+    filtered.forEach(function (item) {
+      var row = document.createElement("div");
+      row.className = "suppression-row";
+      row.innerHTML =
+        '<span class="suppression-email">' + escapeHtml(item.email) + '</span>' +
+        '<span class="suppression-reason">' + (item.reason === "user_unsubscribed" ? "Abone cikildi" : "Manuel") + '</span>' +
+        '<button class="btn-remove-suppression" data-email="' + escapeHtml(item.email) + '">&times;</button>';
+      listEl.appendChild(row);
+    });
+
+    // Attach remove handlers
+    listEl.querySelectorAll(".btn-remove-suppression").forEach(function (btn) {
+      btn.addEventListener("click", function () {
+        var email = btn.getAttribute("data-email");
+        chrome.runtime.sendMessage(
+          { type: "REMOVE_SUPPRESSION", payload: { email: email } },
+          function () {
+            loadSuppressionList();
+          }
+        );
       });
+    });
+  }
 
-      // Attach remove handlers
-      listEl.querySelectorAll(".btn-remove-suppression").forEach(function (btn) {
-        btn.addEventListener("click", function () {
-          var email = btn.getAttribute("data-email");
-          chrome.runtime.sendMessage(
-            { type: "REMOVE_SUPPRESSION", payload: { email: email } },
-            function () {
-              loadSuppressionList();
-            }
-          );
-        });
-      });
+  // Suppression search — filter as you type
+  var suppressionSearchEl = document.getElementById("suppression-search");
+  if (suppressionSearchEl) {
+    suppressionSearchEl.addEventListener("input", function () {
+      renderSuppressionList(suppressionSearchEl.value.trim().toLowerCase());
     });
   }
 
@@ -1065,6 +1110,10 @@
         track_clicks: document.getElementById("settings-track-clicks").checked,
         unsubscribe_text: document.getElementById("settings-unsub-text").value.trim(),
         timezone: document.getElementById("settings-timezone").value,
+        sender_name: (document.getElementById("settings-sender-name").value || "").trim(),
+        sender_position: (document.getElementById("settings-sender-position").value || "").trim(),
+        sender_company: (document.getElementById("settings-sender-company").value || "").trim(),
+        sender_phone: (document.getElementById("settings-sender-phone").value || "").trim(),
       };
 
       chrome.runtime.sendMessage(

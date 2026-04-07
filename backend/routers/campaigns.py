@@ -355,6 +355,7 @@ async def send_campaign(
                     track_opens=user.get("track_opens", True),
                     track_clicks=user.get("track_clicks", True),
                     unsubscribe_text=user.get("unsubscribe_text", "Abonelikten cik"),
+                    sender_info=user,
                 )
                 if result["success"]:
                     contact_model.mark_sent(contact["id"])
@@ -534,6 +535,7 @@ async def _send_single_email(
     track_opens: bool = True,
     track_clicks: bool = True,
     unsubscribe_text: str = "Abonelikten cik",
+    sender_info: dict | None = None,
 ) -> dict:
     """Send a single email via Microsoft Graph API."""
     # Build merge context
@@ -544,6 +546,12 @@ async def _send_single_email(
         "company": contact.get("company", ""),
         "position": contact.get("position", ""),
     }
+    # Add sender fields
+    if sender_info:
+        merge_ctx["senderName"] = sender_info.get("sender_name", "")
+        merge_ctx["senderPosition"] = sender_info.get("sender_position", "")
+        merge_ctx["senderCompany"] = sender_info.get("sender_company", "")
+        merge_ctx["senderPhone"] = sender_info.get("sender_phone", "")
     # Add custom fields
     custom = contact.get("custom_fields") or {}
     merge_ctx.update(custom)

@@ -119,6 +119,12 @@ ALTER TABLE users ADD COLUMN IF NOT EXISTS track_clicks BOOLEAN DEFAULT TRUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS unsubscribe_text TEXT DEFAULT 'Abonelikten cik';
 ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Europe/Istanbul';
 
+-- ── Sender profile columns on users ──
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sender_name TEXT DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sender_position TEXT DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sender_company TEXT DEFAULT '';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS sender_phone TEXT DEFAULT '';
+
 -- ── Billing columns on users ──
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_customer_id TEXT;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS stripe_subscription_id TEXT;

@@ -762,6 +762,28 @@ body {
   font-family: inherit;
 }
 
+.suppression-search-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+
+.suppression-search-input {
+  flex: 1;
+  padding: 5px 8px;
+  border: 1px solid #c8c6c4;
+  border-radius: 4px;
+  font-size: 12px;
+  font-family: inherit;
+}
+
+.suppression-count {
+  font-size: 11px;
+  color: #605e5c;
+  white-space: nowrap;
+}
+
 .suppression-list {
   max-height: 200px;
   overflow-y: auto;

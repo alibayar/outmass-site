@@ -23,6 +23,9 @@ class GenerateEmailRequest(BaseModel):
     prompt: str  # e.g. "Write a cold outreach email for a SaaS product"
     tone: str = "professional"  # professional, friendly, formal, casual
     language: str = "tr"  # tr or en
+    sender_name: str = ""
+    sender_position: str = ""
+    sender_company: str = ""
 
 
 SYSTEM_PROMPT = """You are an expert email copywriter. Generate a marketing/outreach email based on the user's description.
@@ -30,7 +33,7 @@ SYSTEM_PROMPT = """You are an expert email copywriter. Generate a marketing/outr
 Rules:
 - Return ONLY valid JSON: {"subject": "...", "body": "..."}
 - The body should be HTML-formatted (use <p>, <br/>, <strong> tags)
-- Include merge placeholders where appropriate: {{firstName}}, {{lastName}}, {{company}}, {{position}}
+- Include merge placeholders where appropriate: {{firstName}}, {{lastName}}, {{company}}, {{position}} for recipients and {{senderName}}, {{senderPosition}}, {{senderCompany}} for the sender
 - Keep the email concise and engaging
 - Match the requested tone and language
 - Do NOT include greetings like "Dear" - start with the actual content after a simple "Merhaba {{firstName}}," or "Hi {{firstName}},"
@@ -64,7 +67,18 @@ async def generate_email(
     lang_hint = "Write in Turkish." if body.language == "tr" else "Write in English."
     tone_hint = f"Tone: {body.tone}."
 
-    user_message = f"{body.prompt}\n\n{lang_hint} {tone_hint}"
+    sender_hint = ""
+    if body.sender_name or body.sender_company or body.sender_position:
+        parts = []
+        if body.sender_name:
+            parts.append(f"Name: {body.sender_name}")
+        if body.sender_position:
+            parts.append(f"Position: {body.sender_position}")
+        if body.sender_company:
+            parts.append(f"Company: {body.sender_company}")
+        sender_hint = "\nSender info: " + ", ".join(parts) + ". Use {{senderName}}, {{senderPosition}}, {{senderCompany}} placeholders for sender fields in the signature."
+
+    user_message = f"{body.prompt}\n\n{lang_hint} {tone_hint}{sender_hint}"
 
     try:
         async with httpx.AsyncClient(timeout=30.0) as client:

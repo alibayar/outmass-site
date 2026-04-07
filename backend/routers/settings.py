@@ -21,6 +21,10 @@ class UpdateSettingsRequest(BaseModel):
     track_clicks: bool | None = None
     unsubscribe_text: str | None = None
     timezone: str | None = None
+    sender_name: str | None = None
+    sender_position: str | None = None
+    sender_company: str | None = None
+    sender_phone: str | None = None
 
 
 class SuppressionRequest(BaseModel):
@@ -39,6 +43,10 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "track_clicks": user.get("track_clicks", True),
         "unsubscribe_text": user.get("unsubscribe_text", "Abonelikten cik"),
         "timezone": user.get("timezone", "Europe/Istanbul"),
+        "sender_name": user.get("sender_name", ""),
+        "sender_position": user.get("sender_position", ""),
+        "sender_company": user.get("sender_company", ""),
+        "sender_phone": user.get("sender_phone", ""),
     }
 
 
@@ -57,6 +65,14 @@ async def update_settings(
         updates["unsubscribe_text"] = body.unsubscribe_text.strip()[:200]
     if body.timezone is not None:
         updates["timezone"] = body.timezone
+    if body.sender_name is not None:
+        updates["sender_name"] = body.sender_name.strip()[:100]
+    if body.sender_position is not None:
+        updates["sender_position"] = body.sender_position.strip()[:100]
+    if body.sender_company is not None:
+        updates["sender_company"] = body.sender_company.strip()[:100]
+    if body.sender_phone is not None:
+        updates["sender_phone"] = body.sender_phone.strip()[:50]
 
     if updates:
         get_db().table("users").update(updates).eq("id", user["id"]).execute()
