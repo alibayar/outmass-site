@@ -389,20 +389,57 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     case "GET_USER_STATE":
       chrome.storage.local.get(
-        ["user", "plan", "emailsSentThisMonth", "accessToken"],
+        ["user", "plan", "emailsSentThisMonth", "accessToken", "backendJwt"],
         function (result) {
-          // Only return user if there is a real access token
           var hasValidAuth = !!(result.user && result.accessToken);
-          sendResponse({
-            user: hasValidAuth ? result.user : null,
-            plan: result.plan || "free",
-            emailsSentThisMonth: result.emailsSentThisMonth || 0,
-          });
 
-          // Clean up stale user data if token is missing
-          if (result.user && !result.accessToken) {
-            log("Stale user data found without token, clearing...");
-            chrome.storage.local.remove(["user"]);
+          if (!hasValidAuth) {
+            sendResponse({
+              user: null,
+              plan: "free",
+              emailsSentThisMonth: 0,
+            });
+            if (result.user && !result.accessToken) {
+              log("Stale user data found without token, clearing...");
+              chrome.storage.local.remove(["user"]);
+            }
+            return;
+          }
+
+          // Refresh plan from backend (catches Stripe upgrades)
+          if (result.backendJwt) {
+            backendFetch("/settings").then(function (resp) {
+              if (resp && resp.data && resp.data.plan) {
+                var freshPlan = resp.data.plan;
+                if (freshPlan !== result.plan) {
+                  chrome.storage.local.set({ plan: freshPlan });
+                  log("Plan refreshed from backend:", freshPlan);
+                }
+                sendResponse({
+                  user: result.user,
+                  plan: freshPlan,
+                  emailsSentThisMonth: resp.data.emails_sent_this_month || 0,
+                });
+              } else {
+                sendResponse({
+                  user: result.user,
+                  plan: result.plan || "free",
+                  emailsSentThisMonth: result.emailsSentThisMonth || 0,
+                });
+              }
+            }).catch(function () {
+              sendResponse({
+                user: result.user,
+                plan: result.plan || "free",
+                emailsSentThisMonth: result.emailsSentThisMonth || 0,
+              });
+            });
+          } else {
+            sendResponse({
+              user: result.user,
+              plan: result.plan || "free",
+              emailsSentThisMonth: result.emailsSentThisMonth || 0,
+            });
           }
         }
       );
