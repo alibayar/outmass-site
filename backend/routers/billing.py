@@ -19,6 +19,7 @@ from pydantic import BaseModel
 
 from config import (
     BACKEND_URL,
+    STRIPE_PORTAL_CONFIG_ID,
     STRIPE_STANDARD_PRICE_ID,
     STRIPE_PRO_PRICE_ID,
     STRIPE_SECRET_KEY,
@@ -238,13 +239,16 @@ async def billing_portal(user: dict = Depends(get_current_user)):
         )
 
     try:
-        session = stripe.billing_portal.Session.create(
-            customer=customer_id,
-            return_url=f"{BACKEND_URL}/billing/status",
-        )
+        portal_kwargs = {
+            "customer": customer_id,
+            "return_url": f"{BACKEND_URL}/billing/status",
+        }
+        if STRIPE_PORTAL_CONFIG_ID:
+            portal_kwargs["configuration"] = STRIPE_PORTAL_CONFIG_ID
+        session = stripe.billing_portal.Session.create(**portal_kwargs)
     except stripe.StripeError as e:
-        logger.error("Stripe portal error: %s", e)
-        raise HTTPException(status_code=502, detail="Failed to create portal session")
+        logger.error("Stripe portal error: %s (customer=%s)", e, customer_id)
+        raise HTTPException(status_code=502, detail=f"Portal error: {str(e)}")
 
     return {"portal_url": session.url}
 

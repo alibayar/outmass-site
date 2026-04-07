@@ -32,6 +32,7 @@ STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
 STRIPE_STANDARD_PRICE_ID = os.getenv("STRIPE_STANDARD_PRICE_ID", "")
 STRIPE_PRO_PRICE_ID = os.getenv("STRIPE_PRO_PRICE_ID", "")
 STRIPE_TEAM_PRICE_ID = os.getenv("STRIPE_TEAM_PRICE_ID", "")
+STRIPE_PORTAL_CONFIG_ID = os.getenv("STRIPE_PORTAL_CONFIG_ID", "")
 
 # ── Redis / Celery ──
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
