@@ -25,9 +25,49 @@ body {
   color: #fff;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sidebar-header h1 {
   font-size: 16px;
   font-weight: 600;
+}
+
+/* ── Connection Status ── */
+.conn-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #a19f9d;
+  display: inline-block;
+  transition: background 0.3s;
+}
+
+.conn-dot.online {
+  background: #6ccb5f;
+}
+
+.conn-dot.offline {
+  background: #f03a17;
+  animation: pulse-dot 1.5s infinite;
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.offline-banner {
+  display: none;
+  background: #fde7e9;
+  color: #a4262c;
+  font-size: 12px;
+  text-align: center;
+  padding: 6px 12px;
+  border-bottom: 1px solid #f3d6d8;
 }
 
 .btn-close {

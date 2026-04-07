@@ -132,16 +132,55 @@
   });
 
   // ── Dashboard ──
+  var outlookPatterns = [
+    "https://outlook.live.com/*",
+    "https://outlook.office.com/*",
+    "https://outlook.office365.com/*"
+  ];
+
+  function isOutlookUrl(url) {
+    if (!url) return false;
+    return (
+      url.startsWith("https://outlook.live.com") ||
+      url.startsWith("https://outlook.office.com") ||
+      url.startsWith("https://outlook.office365.com")
+    );
+  }
+
   btnDashboard.addEventListener("click", function (e) {
     e.preventDefault();
 
     chrome.tabs.query(
       { active: true, currentWindow: true },
       function (tabs) {
-        if (tabs[0]) {
-          chrome.tabs.sendMessage(tabs[0].id, { type: "TOGGLE_SIDEBAR" });
+        var activeTab = tabs[0];
+
+        if (activeTab && isOutlookUrl(activeTab.url)) {
+          // Active tab is Outlook — ensure sidebar is open
+          chrome.tabs.sendMessage(activeTab.id, { type: "SHOW_SIDEBAR" });
+          window.close();
+        } else {
+          // Not on Outlook — find an existing Outlook tab or open one
+          chrome.tabs.query({}, function (allTabs) {
+            var outlookTab = allTabs.find(function (t) {
+              return isOutlookUrl(t.url);
+            });
+
+            if (outlookTab) {
+              // Focus existing Outlook tab and ensure sidebar is open
+              chrome.tabs.update(outlookTab.id, { active: true }, function () {
+                chrome.windows.update(outlookTab.windowId, { focused: true }, function () {
+                  chrome.tabs.sendMessage(outlookTab.id, { type: "SHOW_SIDEBAR" });
+                  window.close();
+                });
+              });
+            } else {
+              // No Outlook tab open — ask background to open Outlook and toggle sidebar
+              chrome.runtime.sendMessage({ type: "OPEN_OUTLOOK_WITH_SIDEBAR" });
+              window.close();
+            }
+          });
         }
-        window.close();
       }
     );
   });

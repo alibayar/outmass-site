@@ -8,12 +8,24 @@
 
   var LOG_PREFIX = "[OutMass-Sidebar]";
   var csvRawText = null; // Raw CSV string for backend upload
+  var _debugEnabled = false;
+
+  try {
+    chrome.storage.local.get("debug", function (r) { _debugEnabled = !!r.debug; });
+  } catch (e) { /* chrome API unavailable in test environment */ }
 
   function log() {
+    if (!_debugEnabled) return;
     var args = [LOG_PREFIX];
     for (var i = 0; i < arguments.length; i++) args.push(arguments[i]);
     console.log.apply(console, args);
   }
+
+  var OUTLOOK_ORIGINS = [
+    "https://outlook.live.com",
+    "https://outlook.office.com",
+    "https://outlook.office365.com"
+  ];
 
   // ── Error Reporting ──
   window.addEventListener("error", function (event) {
@@ -74,7 +86,11 @@
 
   // ── Close ──
   btnClose.addEventListener("click", function () {
-    window.parent.postMessage({ source: "outmass-sidebar", type: "CLOSE_SIDEBAR" }, "*");
+    try {
+      OUTLOOK_ORIGINS.forEach(function (origin) {
+        window.parent.postMessage({ source: "outmass-sidebar", type: "CLOSE_SIDEBAR" }, origin);
+      });
+    } catch (e) { /* postMessage may fail in test/non-iframe context */ }
   });
 
   // ── CSV Upload ──
@@ -106,20 +122,52 @@
     }
   });
 
+  // RFC 4180 compliant CSV line parser — handles quoted fields, escaped quotes
+  function parseCSVLine(line) {
+    var result = [];
+    var current = "";
+    var inQuotes = false;
+    for (var i = 0; i < line.length; i++) {
+      var ch = line[i];
+      if (inQuotes) {
+        if (ch === '"' && i + 1 < line.length && line[i + 1] === '"') {
+          current += '"';
+          i++;
+        } else if (ch === '"') {
+          inQuotes = false;
+        } else {
+          current += ch;
+        }
+      } else {
+        if (ch === '"') {
+          inQuotes = true;
+        } else if (ch === ',') {
+          result.push(current.trim());
+          current = "";
+        } else {
+          current += ch;
+        }
+      }
+    }
+    result.push(current.trim());
+    return result;
+  }
+
   function handleCSV(file) {
     var reader = new FileReader();
     reader.onload = function (e) {
       var text = e.target.result;
       csvRawText = text; // Keep raw CSV for backend
       var lines = text.trim().split("\n");
-      var headers = lines[0].split(",").map(function (h) { return h.trim(); });
+      var headers = parseCSVLine(lines[0]);
       var rows = [];
 
       for (var i = 1; i < lines.length; i++) {
-        var values = lines[i].split(",");
+        if (!lines[i].trim()) continue; // skip empty lines
+        var values = parseCSVLine(lines[i]);
         var row = {};
         headers.forEach(function (h, idx) {
-          row[h] = values[idx] ? values[idx].trim() : "";
+          row[h] = values[idx] !== undefined ? values[idx] : "";
         });
         rows.push(row);
       }
@@ -1086,9 +1134,49 @@
     });
   }
 
+  // ── Connection Status ──
+  var connDot = document.getElementById("conn-dot");
+  var offlineBanner = document.getElementById("offline-banner");
+  var _lastConnState = null;
+
+  function setConnectionState(online) {
+    if (online === _lastConnState) return;
+    _lastConnState = online;
+
+    if (connDot) {
+      connDot.className = "conn-dot " + (online ? "online" : "offline");
+      connDot.title = online ? "Sunucuya bagli" : "Sunucuya baglanilamiyor";
+    }
+    if (offlineBanner) {
+      offlineBanner.style.display = online ? "none" : "block";
+    }
+  }
+
+  function checkConnection() {
+    chrome.runtime.sendMessage({ type: "HEALTH_CHECK" }, function (resp) {
+      if (chrome.runtime.lastError) {
+        setConnectionState(false);
+        return;
+      }
+      setConnectionState(!!(resp && resp.ok));
+    });
+  }
+
+  // Check immediately, then every 30 seconds
+  var _healthInterval = null;
+  function startHealthCheck() {
+    checkConnection();
+    _healthInterval = setInterval(checkConnection, 30000);
+  }
+
+  // Also react to browser online/offline events
+  window.addEventListener("online", checkConnection);
+  window.addEventListener("offline", function () { setConnectionState(false); });
+
   // ── Init ──
   function init() {
     log("Sidebar loaded");
+    startHealthCheck();
     loadQuota();
     updateSendButton();
     loadTemplates();

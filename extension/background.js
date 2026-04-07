@@ -21,9 +21,21 @@ const MS_SCOPES = [
 importScripts("config.js");
 importScripts("graph_api.js");
 
+// Override backend URL from storage (set during install or via settings)
+chrome.storage.local.get(["backendUrl", "debug"], function (result) {
+  if (result.backendUrl) {
+    OUTMASS_BACKEND_URL = result.backendUrl;
+  }
+  if (result.debug) {
+    _debugEnabled = true;
+  }
+});
+
 const LOG_PREFIX = "[OutMass-BG]";
+var _debugEnabled = false;
 
 function log(...args) {
+  if (!_debugEnabled) return;
   console.log(LOG_PREFIX, ...args);
 }
 
@@ -284,6 +296,10 @@ async function syncAuthWithBackend(msAccessToken, user) {
 /**
  * Make an authenticated request to the OutMass backend.
  */
+// Track last successful backend contact for health check optimization
+var _lastBackendOk = 0;
+var HEALTH_CHECK_FRESHNESS_MS = 30000; // 30 seconds
+
 async function backendFetch(endpoint, options) {
   let storage = await chrome.storage.local.get(["backendJwt", "accessToken", "user"]);
 
@@ -327,6 +343,7 @@ async function backendFetch(endpoint, options) {
       return { error: errData.detail || `HTTP ${resp.status}` };
     }
 
+    _lastBackendOk = Date.now();
     return { data: await resp.json(), error: null };
   } catch (err) {
     return { error: err.message };
@@ -604,20 +621,60 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       sendResponse({ ack: true });
       break;
 
+    case "HEALTH_CHECK":
+      // Skip ping if a backend call succeeded recently
+      if (Date.now() - _lastBackendOk < HEALTH_CHECK_FRESHNESS_MS) {
+        sendResponse({ ok: true });
+        break;
+      }
+      fetch(OUTMASS_BACKEND_URL + "/", { method: "GET" })
+        .then(function (resp) {
+          if (resp.ok) _lastBackendOk = Date.now();
+          sendResponse({ ok: resp.ok });
+        })
+        .catch(function () {
+          sendResponse({ ok: false });
+        });
+      return true; // async sendResponse
+
+    case "OPEN_OUTLOOK_WITH_SIDEBAR":
+      chrome.tabs.create({ url: "https://outlook.live.com/mail/" }, function (newTab) {
+        function onUpdated(tabId, changeInfo) {
+          if (tabId === newTab.id && changeInfo.status === "complete") {
+            chrome.tabs.onUpdated.removeListener(onUpdated);
+            // Wait for content script to initialize after page load
+            setTimeout(function () {
+              chrome.tabs.sendMessage(newTab.id, { type: "SHOW_SIDEBAR" });
+            }, 1500);
+          }
+        }
+        chrome.tabs.onUpdated.addListener(onUpdated);
+      });
+      sendResponse({ ack: true });
+      break;
+
     default:
       log("Unknown message type:", message.type);
       sendResponse({ error: "Unknown message type" });
   }
 });
 
-// ── Alarms (follow-up scheduler placeholder) ──
+// ── Alarms ──
+// Follow-up email sending is handled server-side by Celery beat (hourly).
+// This alarm refreshes campaign stats so the UI reflects follow-up results.
 chrome.alarms.onAlarm.addListener(function (alarm) {
   log("Alarm fired:", alarm.name);
 
   if (alarm.name.startsWith("followup_")) {
-    const campaignId = alarm.name.replace("followup_", "");
-    log("Follow-up triggered for campaign:", campaignId);
-    // TODO: Implement follow-up email sending via Graph API
+    var campaignId = alarm.name.replace("followup_", "");
+    log("Follow-up stats refresh for campaign:", campaignId);
+    backendFetch("/campaigns/" + campaignId + "/stats").then(function (result) {
+      if (result && result.data) {
+        log("Campaign stats refreshed:", result.data);
+      }
+    }).catch(function (err) {
+      log("Failed to refresh follow-up stats:", err);
+    });
   }
 });
 

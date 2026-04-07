@@ -11,7 +11,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from config import BACKEND_URL, POSTHOG_API_KEY, POSTHOG_HOST
+from config import CORS_ORIGINS, POSTHOG_API_KEY, POSTHOG_HOST
 from routers import ai, auth, billing, campaigns, settings, templates, tracking
 
 logger = logging.getLogger(__name__)
@@ -51,16 +51,23 @@ async def global_exception_handler(request: Request, exc: Exception):
 # ── CORS ──
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "chrome-extension://acdafphnihddolfhabbndfofheokckhl",
-        "http://localhost:3000",
-        "http://localhost:5173",
-        BACKEND_URL,
-    ],
+    allow_origins=CORS_ORIGINS,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+
+# ── Security Headers ──
+@app.middleware("http")
+async def security_headers(request: Request, call_next):
+    response = await call_next(request)
+    response.headers["X-Content-Type-Options"] = "nosniff"
+    response.headers["X-Frame-Options"] = "DENY"
+    response.headers["X-XSS-Protection"] = "1; mode=block"
+    response.headers["Referrer-Policy"] = "strict-origin-when-cross-origin"
+    response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
+    return response
 
 # ── Routers ──
 app.include_router(auth.router)

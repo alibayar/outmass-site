@@ -24,7 +24,11 @@
   let injectedComposeWindows = new WeakSet();
 
   // ── Logging ──
+  let _debugEnabled = false;
+  chrome.storage.local.get("debug", function (r) { _debugEnabled = !!r.debug; });
+
   function log(...args) {
+    if (!_debugEnabled) return;
     console.log(LOG_PREFIX, ...args);
   }
 
@@ -177,6 +181,9 @@
 
   // ── Message listener from sidebar (postMessage) ──
   window.addEventListener("message", function (event) {
+    // Only accept messages from our extension's chrome-extension:// origin
+    if (event.origin && !event.origin.startsWith("chrome-extension://")) return;
+
     if (event.data && event.data.source === "outmass-sidebar") {
       log("Message from sidebar:", event.data.type);
 
@@ -192,6 +199,12 @@
   chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     if (message.type === "TOGGLE_SIDEBAR") {
       toggleSidebar();
+      sendResponse({ ack: true });
+    } else if (message.type === "SHOW_SIDEBAR") {
+      // Only open, never close
+      if (!sidebarVisible) {
+        toggleSidebar();
+      }
       sendResponse({ ack: true });
     }
   });

@@ -11,17 +11,15 @@ import urllib.parse
 import httpx
 
 from config import (
+    AZURE_CLIENT_ID,
     BACKEND_URL,
     GRAPH_API_BASE,
+    MS_GRAPH_SCOPES,
+    MS_TOKEN_ENDPOINT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
 from workers.celery_app import celery
-
-# Azure app config (same as extension)
-AZURE_CLIENT_ID = "3b6a9f9b-cbb6-4dcb-a3b6-d993de74a1b5"
-MS_TOKEN_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
-MS_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access"
 
 
 @celery.task
@@ -171,7 +169,7 @@ def _get_fresh_access_token(db, user_id: str) -> str | None:
                     "client_id": AZURE_CLIENT_ID,
                     "grant_type": "refresh_token",
                     "refresh_token": refresh_token,
-                    "scope": MS_SCOPES,
+                    "scope": MS_GRAPH_SCOPES,
                 },
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )

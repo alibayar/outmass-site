@@ -50,6 +50,9 @@ celery.conf.update(
 )
 
 # SSL config for Upstash Redis (rediss:// URLs)
+# Upstash Redis requires CERT_NONE because their rediss:// endpoint
+# uses a certificate not in standard CA bundles.
+# See: https://upstash.com/docs/redis/howto/celeryintegration
 if REDIS_URL.startswith("rediss://"):
     celery.conf.update(
         broker_use_ssl={"ssl_cert_reqs": ssl.CERT_NONE},
