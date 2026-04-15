@@ -560,29 +560,51 @@
   // ── Templates ──
   var templateSelect = document.getElementById("template-select");
   var btnSaveTemplate = document.getElementById("btn-save-template");
+  var btnDeleteTemplate = document.getElementById("btn-delete-template");
 
   function loadTemplates() {
-    chrome.runtime.sendMessage({ type: "GET_TEMPLATES" }, function (resp) {
-      if (!resp || resp.error || !resp.data) return;
-      var templates = resp.data.templates || [];
+    try {
+      chrome.runtime.sendMessage({ type: "GET_TEMPLATES" }, function (resp) {
+        if (chrome.runtime.lastError) {
+          log("Templates load error:", chrome.runtime.lastError.message);
+          return;
+        }
 
-      // Clear existing options except first
-      while (templateSelect.options.length > 1) {
-        templateSelect.remove(1);
-      }
+        // Clear existing options except first
+        while (templateSelect && templateSelect.options.length > 1) {
+          templateSelect.remove(1);
+        }
+        if (btnDeleteTemplate) btnDeleteTemplate.disabled = true;
 
-      templates.forEach(function (t) {
-        var opt = document.createElement("option");
-        opt.value = JSON.stringify({ subject: t.subject, body: t.body });
-        opt.textContent = t.name;
-        opt.dataset.templateId = t.id;
-        templateSelect.appendChild(opt);
+        if (!resp || resp.error || !resp.data) {
+          log("Templates: no data or error", resp && resp.error);
+          return;
+        }
+
+        var templates = resp.data.templates || [];
+        templates.forEach(function (t) {
+          var opt = document.createElement("option");
+          opt.value = JSON.stringify({ subject: t.subject, body: t.body });
+          opt.textContent = t.name;
+          opt.dataset.templateId = t.id;
+          templateSelect.appendChild(opt);
+        });
+        log("Templates loaded:", templates.length);
       });
-    });
+    } catch (e) {
+      log("Templates load exception:", e);
+    }
+  }
+
+  function updateDeleteTemplateButton() {
+    if (!btnDeleteTemplate || !templateSelect) return;
+    var selected = templateSelect.options[templateSelect.selectedIndex];
+    btnDeleteTemplate.disabled = !selected || !selected.dataset.templateId;
   }
 
   if (templateSelect) {
     templateSelect.addEventListener("change", function () {
+      updateDeleteTemplateButton();
       if (!templateSelect.value) return;
       try {
         var tmpl = JSON.parse(templateSelect.value);
@@ -596,6 +618,35 @@
     });
   }
 
+  // Delete template
+  if (btnDeleteTemplate) {
+    btnDeleteTemplate.addEventListener("click", function () {
+      var selected = templateSelect.options[templateSelect.selectedIndex];
+      if (!selected || !selected.dataset.templateId) return;
+
+      var templateName = selected.textContent;
+      if (!confirm('"' + templateName + '" sablonu silinsin mi?')) return;
+
+      btnDeleteTemplate.disabled = true;
+      btnDeleteTemplate.textContent = "...";
+
+      chrome.runtime.sendMessage(
+        { type: "DELETE_TEMPLATE", templateId: selected.dataset.templateId },
+        function (resp) {
+          btnDeleteTemplate.textContent = "Sil";
+          if (resp && !resp.error) {
+            log("Template deleted:", templateName);
+            loadTemplates();
+          } else {
+            btnDeleteTemplate.disabled = false;
+            alert("Sablon silinemedi: " + ((resp && resp.error) || "Bilinmeyen hata"));
+          }
+        }
+      );
+    });
+  }
+
+  // Save template
   if (btnSaveTemplate) {
     btnSaveTemplate.addEventListener("click", function () {
       var subject = subjectInput.value.trim();
@@ -621,7 +672,7 @@
 
           if (resp && !resp.error) {
             log("Template saved");
-            loadTemplates(); // Refresh list
+            loadTemplates();
           } else {
             var errMsg = resp && resp.error;
             if (resp && resp.status === 402) {

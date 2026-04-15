@@ -286,6 +286,16 @@ body {
   cursor: not-allowed;
 }
 
+.btn-danger-small {
+  border-color: #d13438;
+  color: #d13438;
+  background: #fff;
+}
+
+.btn-danger-small:hover:not(:disabled) {
+  background: #fde7e9;
+}
+
 /* ── Placeholders hint ── */
 .placeholders {
   margin-top: 6px;
