@@ -93,7 +93,7 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
         )
     except stripe.StripeError as e:
         logger.error("Stripe checkout error: %s", e)
-        raise HTTPException(status_code=502, detail="Failed to create checkout session")
+        raise HTTPException(status_code=502, detail=f"Checkout error: {str(e)}")
 
     return {"checkout_url": session.url}
 

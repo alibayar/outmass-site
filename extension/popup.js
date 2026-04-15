@@ -198,7 +198,8 @@
           chrome.tabs.create({ url: resp.data.checkout_url });
           window.close();
         } else {
-          alert("Odeme sayfasi olusturulamadi.");
+          var errMsg = (resp && resp.error) || "Bilinmeyen hata";
+          alert("Odeme sayfasi olusturulamadi: " + errMsg);
         }
       });
     });
