@@ -9,7 +9,8 @@
     "https://outlook.office.com/*",
     "https://outlook.office365.com/*",
     "https://graph.microsoft.com/*",
-    "https://login.microsoftonline.com/*"
+    "https://login.microsoftonline.com/*",
+    "https://outmass-production.up.railway.app/*"
   ],
   "background": {
     "service_worker": "background.js"
