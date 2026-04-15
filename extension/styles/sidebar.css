@@ -834,6 +834,37 @@ body {
   color: #d13438;
 }
 
+/* ── Feedback / Support ── */
+.feedback-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.feedback-email-link {
+  font-size: 11px;
+  color: #0078d4;
+  text-decoration: none;
+}
+
+.feedback-email-link:hover {
+  text-decoration: underline;
+}
+
+.feedback-status {
+  font-size: 11px;
+  margin-top: 6px;
+  min-height: 16px;
+}
+
+.feedback-status.success {
+  color: #107c10;
+}
+
+.feedback-status.error {
+  color: #d13438;
+}
+
 .no-campaigns {
   text-align: center;
   padding: 24px;

@@ -1290,6 +1290,63 @@
   window.addEventListener("online", checkConnection);
   window.addEventListener("offline", function () { setConnectionState(false); });
 
+  // ── Feedback ──
+  var btnSendFeedback = document.getElementById("btn-send-feedback");
+  var feedbackMessage = document.getElementById("feedback-message");
+  var feedbackStatus = document.getElementById("feedback-status");
+
+  if (btnSendFeedback) {
+    btnSendFeedback.addEventListener("click", function () {
+      var msg = feedbackMessage ? feedbackMessage.value.trim() : "";
+      if (!msg) {
+        if (feedbackStatus) {
+          feedbackStatus.textContent = "Lutfen bir mesaj yazin.";
+          feedbackStatus.className = "feedback-status error";
+        }
+        return;
+      }
+
+      btnSendFeedback.disabled = true;
+      btnSendFeedback.textContent = "Gonderiliyor...";
+
+      // Get user email from settings if available
+      var emailEl = document.getElementById("settings-email");
+      var userEmail = emailEl ? emailEl.textContent : "";
+
+      chrome.runtime.sendMessage(
+        {
+          type: "SEND_FEEDBACK",
+          payload: {
+            message: msg,
+            email: userEmail,
+            context: {
+              url: window.location.href,
+              userAgent: navigator.userAgent,
+              version: "0.1.0",
+            },
+          },
+        },
+        function (resp) {
+          btnSendFeedback.disabled = false;
+          btnSendFeedback.textContent = "Gonder";
+
+          if (resp && !resp.error) {
+            feedbackMessage.value = "";
+            if (feedbackStatus) {
+              feedbackStatus.textContent = "Geri bildiriminiz iletildi!";
+              feedbackStatus.className = "feedback-status success";
+            }
+          } else {
+            if (feedbackStatus) {
+              feedbackStatus.textContent = "Gonderilemedi. Email ile iletebilirsiniz.";
+              feedbackStatus.className = "feedback-status error";
+            }
+          }
+        }
+      );
+    });
+  }
+
   // ── Init ──
   function init() {
     log("Sidebar loaded");

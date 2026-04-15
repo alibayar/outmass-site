@@ -105,6 +105,33 @@ async def report_client_error(body: ClientErrorReport):
     return {"status": "received"}
 
 
+# ── User Feedback ──
+class UserFeedback(BaseModel):
+    message: str
+    email: str = ""
+    context: dict = {}
+
+
+@app.post("/api/feedback")
+async def submit_feedback(body: UserFeedback):
+    """Receive user feedback/bug reports from the extension."""
+    if not body.message.strip():
+        return {"status": "empty"}
+    if POSTHOG_API_KEY:
+        posthog.capture(
+            distinct_id=body.email or "anonymous-user",
+            event="user_feedback",
+            properties={
+                "message": body.message[:1000],
+                "email": body.email,
+                "source": "extension",
+                **body.context,
+            },
+        )
+    logger.info("User feedback from %s: %s", body.email or "anonymous", body.message[:200])
+    return {"status": "received"}
+
+
 # ── Health Check ──
 @app.get("/")
 async def health_check():

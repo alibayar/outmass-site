@@ -32,6 +32,26 @@
     console.log(LOG_PREFIX, ...args);
   }
 
+  // ── Error Reporting ──
+  window.addEventListener("error", function (event) {
+    try {
+      chrome.runtime.sendMessage({
+        type: "REPORT_ERROR",
+        payload: { message: event.message, stack: event.filename + ":" + event.lineno, source: "content_script" },
+      });
+    } catch (e) { /* extension context may be invalid */ }
+  });
+
+  window.addEventListener("unhandledrejection", function (event) {
+    try {
+      var msg = event.reason ? event.reason.message || String(event.reason) : "Unhandled rejection";
+      chrome.runtime.sendMessage({
+        type: "REPORT_ERROR",
+        payload: { message: msg, stack: "", source: "content_script" },
+      });
+    } catch (e) { /* extension context may be invalid */ }
+  });
+
   // ── Sidebar ──
   function createSidebar() {
     if (sidebarIframe) return;

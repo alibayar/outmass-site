@@ -622,6 +622,26 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "SEND_FEEDBACK":
+      backendFetch("/api/feedback", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      }).catch(function () {
+        // Fallback: try without auth (feedback should work even if not logged in)
+        fetch(OUTMASS_BACKEND_URL + "/api/feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(message.payload),
+        }).then(function () {
+          sendResponse({ data: { status: "received" } });
+        }).catch(function () {
+          sendResponse({ error: "Failed to send feedback" });
+        });
+      });
+      return true;
+
     case "CREATE_CHECKOUT":
       backendFetch("/billing/create-checkout", {
         method: "POST",
