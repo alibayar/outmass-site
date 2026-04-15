@@ -177,7 +177,7 @@
       csvDropzone.style.display = "none";
       csvInfo.style.display = "flex";
       csvFilename.textContent = file.name;
-      csvCount.textContent = rows.length + " alici";
+      csvCount.textContent = rows.length + " " + t("csvCountSuffix");
 
       updateSendButton();
       log("CSV loaded:", file.name, rows.length, "rows");
@@ -209,7 +209,7 @@
   // ── Preview ──
   btnPreview.addEventListener("click", function () {
     if (!csvData || csvData.rows.length === 0) {
-      alert("Once bir CSV dosyasi yukleyin.");
+      alert(t("alertUploadCsvFirst"));
       return;
     }
 
@@ -220,7 +220,7 @@
     var previewSubject = mergePlaceholders(subject, firstRow);
     var previewBody = mergePlaceholders(body, firstRow);
 
-    alert("--- ONIZLEME ---\nKonu: " + previewSubject + "\n\n" + previewBody);
+    alert(t("alertPreviewTitle") + previewSubject + "\n\n" + previewBody);
     log("Preview shown for first row");
   });
 
@@ -239,7 +239,7 @@
       var remaining = Math.max(0, limit - sent);
       var planLabel = plan === "pro" ? "Pro Plan" : plan === "standard" ? "Standard Plan" : "Free Plan";
 
-      quotaText.textContent = remaining + "/" + limit + " email kaldi (" + planLabel + ")";
+      quotaText.textContent = t("quotaDefault", [String(remaining), String(limit), planLabel]);
       quotaFill.style.width = (remaining / limit * 100) + "%";
     });
   }
@@ -247,7 +247,7 @@
   // ── Send Campaign ──
   btnSend.addEventListener("click", function () {
     if (!csvData || !csvRawText) {
-      alert("Once bir CSV dosyasi yukleyin.");
+      alert(t("alertUploadCsvFirst"));
       return;
     }
 
@@ -255,7 +255,7 @@
     var body = bodyInput.value.trim();
 
     if (!subject || !body) {
-      alert("Konu ve email icerigi doldurun.");
+      alert(t("alertFillSubjectBody"));
       return;
     }
 
@@ -267,7 +267,7 @@
       var remaining = limit - sent;
 
       if (remaining <= 0) {
-        alert("Plan limitinize ulastiniz (" + limit + " email/ay).\nPlaninizi yukseltin.");
+        alert(t("alertLimitReached", [String(limit)]));
         return;
       }
 
@@ -284,7 +284,7 @@
   });
 
   function startSendFlow(subject, body) {
-    var campaignName = subject.substring(0, 50) || "Kampanya";
+    var campaignName = subject.substring(0, 50) || t("tabCampaign");
 
     // Check schedule
     var scheduledFor = null;
@@ -297,7 +297,7 @@
 
     // Disable button, show progress
     btnSend.disabled = true;
-    btnSend.textContent = scheduledFor ? "Zamanlaniyor..." : "Hazirlaniyor...";
+    btnSend.textContent = scheduledFor ? t("alertScheduling") : t("alertPreparing");
     log("Send flow started", scheduledFor ? "scheduled:" + scheduledFor : "immediate");
 
     // Step 1: Create campaign
@@ -313,7 +313,7 @@
       },
       function (createResp) {
         if (!createResp || createResp.error) {
-          showSendError(createResp ? createResp.error : "Kampanya olusturulamadi");
+          showSendError(createResp ? createResp.error : t("alertCampaignCreateFailed"));
           return;
         }
 
@@ -321,7 +321,7 @@
           ? createResp.data.campaign_id
           : createResp.campaign_id;
         log("Campaign created:", campaignId);
-        btnSend.textContent = "Alicilar yukleniyor...";
+        btnSend.textContent = t("alertContactsUploading");
 
         // Step 2: Upload contacts
         chrome.runtime.sendMessage(
@@ -332,7 +332,7 @@
           },
           function (uploadResp) {
             if (!uploadResp || uploadResp.error) {
-              showSendError(uploadResp ? uploadResp.error : "Alicilar yuklenemedi");
+              showSendError(uploadResp ? uploadResp.error : t("alertContactsUploadFailed"));
               return;
             }
 
@@ -358,7 +358,7 @@
                 function (abResp) {
                   if (abResp && abResp.error) {
                     if (abResp.status === 402) {
-                      alert("A/B testing sadece Pro planda kullanilabilir.");
+                      alert(t("alertAbTestProOnly"));
                     } else {
                       log("A/B test creation failed:", abResp.error);
                     }
@@ -383,16 +383,16 @@
   function proceedToSend(campaignId, count, scheduledFor) {
     // If scheduled, don't send now
     if (scheduledFor) {
-      btnSend.textContent = "Gonder";
+      btnSend.textContent = t("btnSend");
       btnSend.disabled = false;
       var schedDate = new Date(scheduledFor);
-      alert("Basarili! " + count + " aliciya " + schedDate.toLocaleString("tr-TR") + " tarihinde gonderilecek.");
+      alert(t("alertScheduledSuccess", [String(count), schedDate.toLocaleString()]));
       log("Campaign scheduled:", campaignId, "for", scheduledFor);
       maybeCreateFollowup(campaignId);
       return;
     }
 
-    btnSend.textContent = "Gonderiliyor... 0/" + count;
+    btnSend.textContent = t("alertSending") + count;
 
     // Step 3: Send
     chrome.runtime.sendMessage(
@@ -402,12 +402,12 @@
       },
       function (sendResp) {
         if (!sendResp) {
-          showSendError("Gonderim basarisiz");
+          showSendError(t("alertSendFailed"));
           return;
         }
         if (sendResp.error) {
           if (sendResp.status === 402 || sendResp.error === "limit_exceeded") {
-            btnSend.textContent = "Gonder";
+            btnSend.textContent = t("btnSend");
             btnSend.disabled = false;
             showUpgradeModal();
             return;
@@ -420,18 +420,18 @@
         var queued = data.queued || 0;
         var sendErrors = data.errors || [];
         var hasAbTest = data.ab_test;
-        btnSend.textContent = "Gonder";
+        btnSend.textContent = t("btnSend");
         btnSend.disabled = false;
 
         if (queued === 0 && sendErrors.length > 0) {
-          alert("Gonderim basarisiz!\n\nHata: " + sendErrors[0].error);
+          alert(t("alertSendError") + sendErrors[0].error);
           log("Campaign send errors:", sendErrors);
         } else if (hasAbTest) {
-          alert("Basarili! " + queued + " email gonderildi (A/B test).\nKazanan konu satiri otomatik gonderilecek.");
+          alert(t("alertAbSendSuccess", [String(queued)]));
         } else if (sendErrors.length > 0) {
-          alert(queued + " email gonderildi, " + sendErrors.length + " hata olustu.\n\nIlk hata: " + sendErrors[0].error);
+          alert(t("alertPartialSend", [String(queued), String(sendErrors.length)]) + sendErrors[0].error);
         } else {
-          alert("Basarili! " + queued + " email gonderildi.");
+          alert(t("alertSendSuccess", [String(queued)]));
         }
         log("Campaign sent:", queued, "emails, errors:", sendErrors.length);
 
@@ -445,9 +445,9 @@
   }
 
   function showSendError(message) {
-    btnSend.textContent = "Gonder";
+    btnSend.textContent = t("btnSend");
     btnSend.disabled = false;
-    alert("Hata: " + message);
+    alert(t("alertSendError") + message);
     log("Send error:", message);
   }
 
@@ -471,23 +471,23 @@
     var modal = document.createElement("div");
     modal.style.cssText = "background:#fff;border-radius:12px;padding:24px;max-width:320px;width:90%;box-shadow:0 8px 32px rgba(0,0,0,0.2);";
     modal.innerHTML =
-      '<h3 style="margin:0 0 12px;font-size:16px;color:#323130;">AI Email Yazici</h3>' +
-      '<textarea id="ai-prompt" rows="3" placeholder="Ne hakkinda email yazilsin?&#10;Ornek: SaaS urunumuz icin soguk satis emaili" style="width:100%;padding:8px;border:1px solid #c8c6c4;border-radius:4px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>' +
+      '<h3 style="margin:0 0 12px;font-size:16px;color:#323130;">' + t("aiModalTitle") + '</h3>' +
+      '<textarea id="ai-prompt" rows="3" placeholder="' + t("aiPromptPlaceholder") + '" style="width:100%;padding:8px;border:1px solid #c8c6c4;border-radius:4px;font-size:13px;font-family:inherit;resize:vertical;box-sizing:border-box;"></textarea>' +
       '<div style="display:flex;gap:8px;margin-top:8px;">' +
         '<select id="ai-tone" style="flex:1;padding:6px;border:1px solid #c8c6c4;border-radius:4px;font-size:12px;">' +
-          '<option value="professional">Profesyonel</option>' +
-          '<option value="friendly">Samimi</option>' +
-          '<option value="formal">Resmi</option>' +
-          '<option value="casual">Rahat</option>' +
+          '<option value="professional">' + t("aiToneProfessional") + '</option>' +
+          '<option value="friendly">' + t("aiToneFriendly") + '</option>' +
+          '<option value="formal">' + t("aiToneFormal") + '</option>' +
+          '<option value="casual">' + t("aiToneCasual") + '</option>' +
         '</select>' +
         '<select id="ai-lang" style="flex:1;padding:6px;border:1px solid #c8c6c4;border-radius:4px;font-size:12px;">' +
-          '<option value="tr">Turkce</option>' +
-          '<option value="en">English</option>' +
+          '<option value="tr">' + t("aiLangTr") + '</option>' +
+          '<option value="en">' + t("aiLangEn") + '</option>' +
         '</select>' +
       '</div>' +
       '<div style="display:flex;gap:8px;margin-top:12px;">' +
-        '<button id="ai-generate-btn" style="flex:1;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;">Olustur</button>' +
-        '<button id="ai-cancel-btn" style="padding:10px 16px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">Iptal</button>' +
+        '<button id="ai-generate-btn" style="flex:1;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;">' + t("btnAiGenerate") + '</button>' +
+        '<button id="ai-cancel-btn" style="padding:10px 16px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">' + t("btnCancel") + '</button>' +
       '</div>';
 
     overlay.appendChild(modal);
@@ -501,11 +501,11 @@
 
       var promptText = promptInput.value.trim();
       if (!promptText) {
-        alert("Lutfen ne hakkinda email istediginizi yazin.");
+        alert(t("alertAiPromptEmpty"));
         return;
       }
 
-      generateBtn.textContent = "Olusturuluyor...";
+      generateBtn.textContent = t("aiGenerating");
       generateBtn.disabled = true;
 
       // Include sender info from settings for AI context
@@ -526,14 +526,14 @@
           },
         },
         function (resp) {
-          generateBtn.textContent = "Olustur";
+          generateBtn.textContent = t("btnAiGenerate");
           generateBtn.disabled = false;
 
           if (!resp || resp.error) {
             if (resp && resp.status === 402) {
-              alert("AI email yazici sadece Pro planda kullanilabilir.");
+              alert(t("alertAiProOnly"));
             } else {
-              alert("AI olusturma basarisiz: " + (resp ? resp.error : "Bilinmeyen hata"));
+              alert(t("alertAiFailed") + (resp ? resp.error : t("popupUnknownError")));
             }
             return;
           }
@@ -625,7 +625,7 @@
       if (!selected || !selected.dataset.templateId) return;
 
       var templateName = selected.textContent;
-      if (!confirm('"' + templateName + '" sablonu silinsin mi?')) return;
+      if (!confirm(t("templateConfirmDelete", [templateName]))) return;
 
       btnDeleteTemplate.disabled = true;
       btnDeleteTemplate.textContent = "...";
@@ -633,13 +633,13 @@
       chrome.runtime.sendMessage(
         { type: "DELETE_TEMPLATE", templateId: selected.dataset.templateId },
         function (resp) {
-          btnDeleteTemplate.textContent = "Sil";
+          btnDeleteTemplate.textContent = t("btnDeleteTemplate");
           if (resp && !resp.error) {
             log("Template deleted:", templateName);
             loadTemplates();
           } else {
             btnDeleteTemplate.disabled = false;
-            alert("Sablon silinemedi: " + ((resp && resp.error) || "Bilinmeyen hata"));
+            alert(t("alertTemplateDeleteFailed") + ((resp && resp.error) || t("popupUnknownError")));
           }
         }
       );
@@ -652,10 +652,10 @@
       var subject = subjectInput.value.trim();
       var body = bodyInput.value.trim();
       if (!subject && !body) {
-        alert("Once konu ve icerik doldurun.");
+        alert(t("alertTemplateFillFirst"));
         return;
       }
-      var name = prompt("Sablon adi:", subject.substring(0, 40) || "Sablonum");
+      var name = prompt(t("templatePromptName"), subject.substring(0, 40) || t("templateDefaultName"));
       if (!name) return;
 
       btnSaveTemplate.disabled = true;
@@ -668,7 +668,7 @@
         },
         function (resp) {
           btnSaveTemplate.disabled = false;
-          btnSaveTemplate.textContent = "Kaydet";
+          btnSaveTemplate.textContent = t("btnSaveTemplate");
 
           if (resp && !resp.error) {
             log("Template saved");
@@ -676,9 +676,9 @@
           } else {
             var errMsg = resp && resp.error;
             if (resp && resp.status === 402) {
-              alert("Email sablonlari Standard ve Pro planlarda kullanilabilir.");
+              alert(t("alertTemplateStandardOnly"));
             } else {
-              alert("Sablon kaydedilemedi: " + (errMsg || "Bilinmeyen hata"));
+              alert(t("alertTemplateSaveFailed") + (errMsg || t("popupUnknownError")));
             }
           }
         }
@@ -785,13 +785,13 @@
       reportsLoading.style.display = "none";
 
       if (!resp || resp.error) {
-        campaignListEl.innerHTML = '<div class="no-campaigns">Kampanya bulunamadi.</div>';
+        campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsFound") + '</div>';
         return;
       }
 
       var campaigns = resp.data ? resp.data.campaigns : resp.campaigns;
       if (!campaigns || campaigns.length === 0) {
-        campaignListEl.innerHTML = '<div class="no-campaigns">Henuz kampanya yok.</div>';
+        campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsYet") + '</div>';
         return;
       }
 
@@ -807,9 +807,9 @@
           '<div class="campaign-row-name">' + escapeHtml(c.name) + '</div>' +
           '<div class="campaign-row-meta">' +
             '<span>' + date + '</span>' +
-            '<span>' + sent + ' gonderildi</span>' +
-            '<span class="rate">Acilma: ' + openRate + '%</span>' +
-            '<span class="rate">Tiklama: ' + clickRate + '%</span>' +
+            '<span>' + sent + t("reportsSentSuffix") + '</span>' +
+            '<span class="rate">' + t("reportsOpenRate") + openRate + '%</span>' +
+            '<span class="rate">' + t("reportsClickRate") + clickRate + '%</span>' +
           '</div>';
         row.addEventListener("click", function () {
           showCampaignDetail(c.id);
@@ -830,12 +830,12 @@
       { type: "GET_CAMPAIGN_STATS", campaignId: campaignId },
       function (resp) {
         if (!resp || resp.error) {
-          document.getElementById("detail-name").textContent = "Hata";
+          document.getElementById("detail-name").textContent = t("reportsError");
           return;
         }
 
         var stats = resp.data || resp;
-        document.getElementById("detail-name").textContent = stats.name || "Kampanya";
+        document.getElementById("detail-name").textContent = stats.name || t("tabCampaign");
         document.getElementById("stat-sent").textContent = stats.sent_count || 0;
         document.getElementById("stat-opened").textContent = stats.open_count || 0;
         document.getElementById("stat-clicked").textContent = stats.click_count || 0;
@@ -845,7 +845,7 @@
         // Follow-up status
         var followupEl = document.getElementById("followup-status");
         if (stats.pending_followups > 0) {
-          followupEl.textContent = stats.pending_followups + " follow-up bekliyor";
+          followupEl.textContent = stats.pending_followups + t("reportsFollowupPending");
         } else {
           followupEl.textContent = "";
         }
@@ -863,20 +863,20 @@
   if (btnExportCsv) {
     btnExportCsv.addEventListener("click", function () {
       if (!currentDetailCampaignId) return;
-      btnExportCsv.textContent = "Indiriliyor...";
+      btnExportCsv.textContent = t("csvExportDownloading");
       btnExportCsv.disabled = true;
 
       chrome.runtime.sendMessage(
         { type: "EXPORT_CAMPAIGN_CSV", campaignId: currentDetailCampaignId },
         function (resp) {
-          btnExportCsv.textContent = "CSV Indir";
+          btnExportCsv.textContent = t("btnExportCsv");
           btnExportCsv.disabled = false;
 
           if (!resp || resp.error) {
             if (resp && resp.status === 402) {
-              alert("CSV export Standard ve Pro planlarda kullanilabilir.");
+              alert(t("alertCsvExportStandardOnly"));
             } else {
-              alert("Export basarisiz: " + (resp ? resp.error : "Bilinmeyen hata"));
+              alert(t("alertCsvExportFailed") + (resp ? resp.error : t("popupUnknownError")));
             }
             return;
           }
@@ -894,7 +894,7 @@
             a.click();
             URL.revokeObjectURL(url);
           } else {
-            alert("CSV export basarili ancak veri bos.");
+            alert(t("alertCsvExportEmpty"));
           }
         }
       );
@@ -917,9 +917,9 @@
     var chartH = h - 30;
 
     var bars = [
-      { label: "Gonderildi", value: sent, color: "#0078d4" },
-      { label: "Acildi", value: opened, color: "#107c10" },
-      { label: "Tiklandi", value: clicked, color: "#ff8c00" },
+      { label: t("chartSent"), value: sent, color: "#0078d4" },
+      { label: t("chartOpened"), value: opened, color: "#107c10" },
+      { label: t("chartClicked"), value: clicked, color: "#ff8c00" },
     ];
 
     bars.forEach(function (bar, i) {
@@ -970,15 +970,15 @@
     modal.style.cssText = "background:#fff;border-radius:12px;padding:32px 24px;max-width:300px;text-align:center;box-shadow:0 8px 32px rgba(0,0,0,0.2);";
     modal.innerHTML =
       '<div style="font-size:32px;margin-bottom:12px;">🚀</div>' +
-      '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">Planinizi Yukseltin</h3>' +
-      '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">Email limitinize ulastiniz.<br/>Daha fazla email gondermek icin yukseltin.</p>' +
+      '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">' + t("upgradeModalTitle") + '</h3>' +
+      '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">' + t("upgradeModalText") + '</p>' +
       '<ul style="text-align:left;font-size:12px;color:#605e5c;margin:0 0 20px 16px;padding:0;">' +
-        '<li>Standard: 5,000 email/ay — $15/ay</li>' +
-        '<li>Pro: 10,000 email/ay — $25/ay</li>' +
-        '<li>Detayli raporlama + oncelikli destek</li>' +
+        '<li>' + t("upgradeModalStandard") + '</li>' +
+        '<li>' + t("upgradeModalPro") + '</li>' +
+        '<li>' + t("upgradeModalFeatures") + '</li>' +
       '</ul>' +
-      '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">Simdi Yukselt — Standard $15/ay</button>' +
-      '<button id="btn-upgrade-cancel" style="width:100%;padding:8px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">Belki sonra</button>';
+      '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">' + t("upgradeModalBtn") + '</button>' +
+      '<button id="btn-upgrade-cancel" style="width:100%;padding:8px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">' + t("upgradeModalLater") + '</button>';
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
@@ -988,7 +988,7 @@
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
         } else {
-          alert("Odeme sayfasi olusturulamadi. Lutfen tekrar deneyin.");
+          alert(t("alertUpgradeCheckoutFailed"));
         }
         overlay.remove();
       });
@@ -1104,7 +1104,7 @@
     // Update count
     if (countEl) {
       countEl.textContent = _suppressionData.length > 0
-        ? (filter ? filtered.length + "/" + _suppressionData.length : _suppressionData.length + " email")
+        ? (filter ? filtered.length + "/" + _suppressionData.length : _suppressionData.length + " " + t("suppressionEmailSuffix"))
         : "";
     }
 
@@ -1122,7 +1122,7 @@
       row.className = "suppression-row";
       row.innerHTML =
         '<span class="suppression-email">' + escapeHtml(item.email) + '</span>' +
-        '<span class="suppression-reason">' + (item.reason === "user_unsubscribed" ? "Abone cikildi" : "Manuel") + '</span>' +
+        '<span class="suppression-reason">' + (item.reason === "user_unsubscribed" ? t("suppressionReasonUnsub") : t("suppressionReasonManual")) + '</span>' +
         '<button class="btn-remove-suppression" data-email="' + escapeHtml(item.email) + '">&times;</button>';
       listEl.appendChild(row);
     });
@@ -1153,7 +1153,7 @@
   var btnSaveSettings = document.getElementById("settings-btn-save");
   if (btnSaveSettings) {
     btnSaveSettings.addEventListener("click", function () {
-      btnSaveSettings.textContent = "Kaydediliyor...";
+      btnSaveSettings.textContent = t("settingsSaving");
       btnSaveSettings.disabled = true;
 
       var payload = {
@@ -1170,16 +1170,16 @@
       chrome.runtime.sendMessage(
         { type: "UPDATE_SETTINGS", payload: payload },
         function (resp) {
-          btnSaveSettings.textContent = "Ayarlari Kaydet";
+          btnSaveSettings.textContent = t("btnSaveSettings");
           btnSaveSettings.disabled = false;
 
           if (resp && !resp.error) {
-            btnSaveSettings.textContent = "Kaydedildi!";
+            btnSaveSettings.textContent = t("settingsSaved");
             setTimeout(function () {
-              btnSaveSettings.textContent = "Ayarlari Kaydet";
+              btnSaveSettings.textContent = t("btnSaveSettings");
             }, 2000);
           } else {
-            alert("Ayarlar kaydedilemedi: " + (resp ? resp.error : "Bilinmeyen hata"));
+            alert(t("settingsSaveFailed") + (resp ? resp.error : t("popupUnknownError")));
           }
         }
       );
@@ -1194,7 +1194,7 @@
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
         } else {
-          alert("Odeme sayfasi olusturulamadi.");
+          alert(t("settingsCheckoutFailed"));
         }
       });
     });
@@ -1227,7 +1227,7 @@
             input.value = "";
             loadSuppressionList();
           } else {
-            alert("Eklenemedi: " + (resp ? resp.error : "Bilinmeyen hata"));
+            alert(t("alertSendFailed") + ": " + (resp ? resp.error : t("popupUnknownError")));
           }
         }
       );
@@ -1245,7 +1245,7 @@
 
     if (connDot) {
       connDot.className = "conn-dot " + (online ? "online" : "offline");
-      connDot.title = online ? "Sunucuya bagli" : "Sunucuya baglanilamiyor";
+      connDot.title = online ? t("connOnline") : t("connOffline");
     }
     if (offlineBanner) {
       offlineBanner.style.display = online ? "none" : "block";
@@ -1258,7 +1258,7 @@
         // Extension was reloaded/updated — stop polling, show reload hint
         if (_healthInterval) clearInterval(_healthInterval);
         setConnectionState(false);
-        if (offlineBanner) offlineBanner.textContent = "Extension guncellendi. Sayfayi yenileyin.";
+        if (offlineBanner) offlineBanner.textContent = t("extUpdatedReload");
         return;
       }
       chrome.runtime.sendMessage({ type: "HEALTH_CHECK" }, function (resp) {
@@ -1273,7 +1273,7 @@
       if (_healthInterval) clearInterval(_healthInterval);
       setConnectionState(false);
       if (offlineBanner) {
-        offlineBanner.textContent = "Extension guncellendi. Sayfayi yenileyin.";
+        offlineBanner.textContent = t("extUpdatedReload");
         offlineBanner.style.display = "block";
       }
     }
@@ -1300,14 +1300,14 @@
       var msg = feedbackMessage ? feedbackMessage.value.trim() : "";
       if (!msg) {
         if (feedbackStatus) {
-          feedbackStatus.textContent = "Lutfen bir mesaj yazin.";
+          feedbackStatus.textContent = t("feedbackEmpty");
           feedbackStatus.className = "feedback-status error";
         }
         return;
       }
 
       btnSendFeedback.disabled = true;
-      btnSendFeedback.textContent = "Gonderiliyor...";
+      btnSendFeedback.textContent = t("reportsLoading");
 
       // Get user email from settings if available
       var emailEl = document.getElementById("settings-email");
@@ -1328,17 +1328,17 @@
         },
         function (resp) {
           btnSendFeedback.disabled = false;
-          btnSendFeedback.textContent = "Gonder";
+          btnSendFeedback.textContent = t("btnSendFeedback");
 
           if (resp && !resp.error) {
             feedbackMessage.value = "";
             if (feedbackStatus) {
-              feedbackStatus.textContent = "Geri bildiriminiz iletildi!";
+              feedbackStatus.textContent = t("feedbackSent");
               feedbackStatus.className = "feedback-status success";
             }
           } else {
             if (feedbackStatus) {
-              feedbackStatus.textContent = "Gonderilemedi. Email ile iletebilirsiniz.";
+              feedbackStatus.textContent = t("feedbackFailed");
               feedbackStatus.className = "feedback-status error";
             }
           }
@@ -1349,6 +1349,7 @@
 
   // ── Init ──
   function init() {
+    applyI18n();
     log("Sidebar loaded");
     startHealthCheck();
     loadQuota();

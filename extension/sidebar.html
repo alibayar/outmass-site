@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -11,30 +11,30 @@
   <div class="sidebar-header">
     <div class="header-left">
       <h1>OutMass</h1>
-      <span class="conn-dot" id="conn-dot" title="Baglanti kontrol ediliyor..."></span>
+      <span class="conn-dot" id="conn-dot" data-i18n-title="connChecking" title="Checking connection..."></span>
     </div>
-    <button class="btn-close" id="btn-close" title="Kapat">&times;</button>
+    <button class="btn-close" id="btn-close" data-i18n-title="btnClose" title="Close">&times;</button>
   </div>
   <!-- Offline Banner -->
-  <div class="offline-banner" id="offline-banner">
-    Sunucuya baglanilamiyor. Internet baglantinizi kontrol edin.
+  <div class="offline-banner" id="offline-banner" data-i18n="offlineBanner">
+    Cannot connect to server. Check your internet connection.
   </div>
 
   <!-- Tabs -->
   <div class="tab-bar">
-    <button class="tab active" data-tab="campaign">Kampanya</button>
-    <button class="tab" data-tab="reports">Raporlar</button>
-    <button class="tab" data-tab="settings">Ayarlar</button>
+    <button class="tab active" data-tab="campaign" data-i18n="tabCampaign">Campaign</button>
+    <button class="tab" data-tab="reports" data-i18n="tabReports">Reports</button>
+    <button class="tab" data-tab="settings" data-i18n="tabSettings">Settings</button>
   </div>
 
-  <!-- Tab: Kampanya -->
+  <!-- Tab: Campaign -->
   <div class="tab-content active" id="tab-campaign">
     <!-- CSV Upload -->
     <div class="form-group">
-      <label>Alıcı Listesi (CSV)</label>
+      <label data-i18n="csvLabel">Recipient List (CSV)</label>
       <div class="csv-dropzone" id="csv-dropzone">
-        <p>CSV dosyasını sürükleyip bırakın</p>
-        <p class="hint">veya tıklayarak seçin</p>
+        <p data-i18n="csvDropHint">Drag and drop a CSV file</p>
+        <p class="hint" data-i18n="csvDropHintAlt">or click to select</p>
         <input type="file" id="csv-input" accept=".csv" hidden>
       </div>
       <div class="csv-info" id="csv-info" style="display:none;">
@@ -46,58 +46,58 @@
 
     <!-- AI Writer -->
     <div class="ai-writer-section">
-      <button class="btn btn-ai" id="btn-ai-writer">AI ile Yaz</button>
+      <button class="btn btn-ai" id="btn-ai-writer" data-i18n="btnAiWriter">Write with AI</button>
     </div>
 
     <!-- Templates -->
     <div class="template-section">
       <div class="template-row">
         <select id="template-select" class="template-select">
-          <option value="">-- Sablon sec --</option>
+          <option value="" data-i18n="templateDefault">-- Select template --</option>
         </select>
-        <button class="btn btn-small" id="btn-save-template" title="Mevcut icerigi sablon olarak kaydet">Kaydet</button>
-        <button class="btn btn-small btn-danger-small" id="btn-delete-template" title="Secili sablonu sil" disabled>Sil</button>
+        <button class="btn btn-small" id="btn-save-template" data-i18n="btnSaveTemplate" data-i18n-title="templateSaveTitle" title="Save current content as template">Save</button>
+        <button class="btn btn-small btn-danger-small" id="btn-delete-template" data-i18n="btnDeleteTemplate" data-i18n-title="templateDeleteTitle" title="Delete selected template" disabled>Delete</button>
       </div>
     </div>
 
     <!-- Subject -->
     <div class="form-group">
-      <label for="subject">Konu</label>
-      <input type="text" id="subject" placeholder="Merhaba {{firstName}}, size bir teklifimiz var">
+      <label for="subject" data-i18n="labelSubject">Subject</label>
+      <input type="text" id="subject" data-i18n-placeholder="placeholderSubject" placeholder="Hello {{firstName}}, we have an offer for you">
     </div>
 
     <!-- Body -->
     <div class="form-group">
-      <label for="body">Email İçeriği</label>
-      <textarea id="body" rows="8" placeholder="Merhaba {{firstName}},&#10;&#10;{{company}} için harika bir teklifimiz var..."></textarea>
-      <div class="placeholders">
-        Alici: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>
-        Gonderici: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>
+      <label for="body" data-i18n="labelBody">Email Content</label>
+      <textarea id="body" rows="8" data-i18n-placeholder="placeholderBody" placeholder="Hello {{firstName}},&#10;&#10;We have a great offer for {{company}}..."></textarea>
+      <div class="placeholders" data-i18n-html="placeholdersHint">
+        Recipient: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>
+        Sender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>
       </div>
     </div>
 
     <!-- Actions -->
     <div class="form-actions">
-      <button class="btn btn-secondary" id="btn-preview">Önizleme</button>
-      <button class="btn btn-primary" id="btn-send" disabled>Gönder</button>
+      <button class="btn btn-secondary" id="btn-preview" data-i18n="btnPreview">Preview</button>
+      <button class="btn btn-primary" id="btn-send" data-i18n="btnSend" disabled>Send</button>
     </div>
 
     <!-- A/B Test -->
     <div class="ab-test-section">
       <label class="ab-test-toggle">
         <input type="checkbox" id="ab-test-enabled">
-        A/B test (2 konu satiri dene)
+        <span data-i18n="abTestLabel">A/B test (try 2 subject lines)</span>
       </label>
       <div class="ab-test-fields" id="ab-test-fields">
         <div class="form-group">
-          <label for="ab-subject-b">Alternatif konu (B)</label>
-          <input type="text" id="ab-subject-b" placeholder="Ikinci konu satiri...">
+          <label for="ab-subject-b" data-i18n="abSubjectBLabel">Alternative subject (B)</label>
+          <input type="text" id="ab-subject-b" data-i18n-placeholder="abSubjectBPlaceholder" placeholder="Second subject line...">
         </div>
         <div class="form-group">
-          <label for="ab-test-pct">Test orani (%)</label>
+          <label for="ab-test-pct" data-i18n="abTestPctLabel">Test ratio (%)</label>
           <input type="number" id="ab-test-pct" value="20" min="10" max="50" step="5">
         </div>
-        <p class="ab-test-note">Alicilarin bir kismina iki farkli konu gonderilir. Kazanan geri kalanlara gonderilir.</p>
+        <p class="ab-test-note" data-i18n="abTestNote">Two different subjects will be sent to some recipients. The winner will be sent to the rest.</p>
       </div>
     </div>
 
@@ -105,14 +105,14 @@
     <div class="schedule-section">
       <label class="schedule-toggle">
         <input type="checkbox" id="schedule-enabled">
-        Zamanli gonderim
+        <span data-i18n="scheduleLabel">Scheduled sending</span>
       </label>
       <div class="schedule-fields" id="schedule-fields">
         <div class="form-group">
-          <label for="schedule-datetime">Gonderim zamani</label>
+          <label for="schedule-datetime" data-i18n="scheduleDateLabel">Send time</label>
           <input type="datetime-local" id="schedule-datetime">
         </div>
-        <p class="schedule-note">Belirtilen zamanda otomatik gonderilecek.</p>
+        <p class="schedule-note" data-i18n="scheduleNote">Will be sent automatically at the specified time.</p>
       </div>
     </div>
 
@@ -120,185 +120,185 @@
     <div class="followup-section">
       <label class="followup-toggle">
         <input type="checkbox" id="followup-enabled">
-        Açmayanlara otomatik follow-up gönder
+        <span data-i18n="followupLabel">Auto follow-up for non-openers</span>
       </label>
       <div class="followup-fields" id="followup-fields">
         <div class="form-group">
-          <label for="followup-delay">Kaç gün sonra?</label>
+          <label for="followup-delay" data-i18n="followupDelayLabel">After how many days?</label>
           <input type="number" id="followup-delay" value="3" min="1" max="30">
         </div>
         <div class="form-group">
-          <label for="followup-subject">Follow-up Konusu</label>
-          <input type="text" id="followup-subject" placeholder="Tekrar: {{firstName}}, teklifimizi gördünüz mü?">
+          <label for="followup-subject" data-i18n="followupSubjectLabel">Follow-up Subject</label>
+          <input type="text" id="followup-subject" data-i18n-placeholder="followupSubjectPlaceholder" placeholder="Re: {{firstName}}, did you see our offer?">
         </div>
         <div class="form-group">
-          <label for="followup-body">Follow-up İçeriği</label>
-          <textarea id="followup-body" rows="4" placeholder="Merhaba {{firstName}},&#10;&#10;Önceki emailimizi gördünüz mü?"></textarea>
+          <label for="followup-body" data-i18n="followupBodyLabel">Follow-up Content</label>
+          <textarea id="followup-body" rows="4" data-i18n-placeholder="followupBodyPlaceholder" placeholder="Hello {{firstName}},&#10;&#10;Did you see our previous email?"></textarea>
         </div>
-        <p class="followup-note">Ana emaile ek olarak, emaili açmayanlara gönderilecek.</p>
+        <p class="followup-note" data-i18n="followupNote">In addition to the main email, will be sent to non-openers.</p>
       </div>
     </div>
 
     <!-- Quota -->
     <div class="quota-bar">
-      <div class="quota-text" id="quota-text">50/50 email kaldı (Free Plan)</div>
+      <div class="quota-text" id="quota-text">50/50 emails remaining (Free Plan)</div>
       <div class="quota-track">
         <div class="quota-fill" id="quota-fill" style="width: 100%"></div>
       </div>
     </div>
   </div>
 
-  <!-- Tab: Raporlar -->
+  <!-- Tab: Reports -->
   <div class="tab-content" id="tab-reports">
     <!-- Campaign List -->
     <div id="reports-list">
-      <div class="reports-loading" id="reports-loading">Yükleniyor...</div>
+      <div class="reports-loading" id="reports-loading" data-i18n="reportsLoading">Loading...</div>
       <div id="campaign-list"></div>
     </div>
     <!-- Campaign Detail -->
     <div id="reports-detail" style="display:none;">
-      <button class="btn-back" id="btn-reports-back">&larr; Geri</button>
+      <button class="btn-back" id="btn-reports-back" data-i18n="btnBack">&larr; Back</button>
       <h3 id="detail-name"></h3>
       <div class="stat-cards">
         <div class="stat-card">
           <div class="stat-value" id="stat-sent">0</div>
-          <div class="stat-label">Gönderildi</div>
+          <div class="stat-label" data-i18n="statSent">Sent</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="stat-opened">0</div>
-          <div class="stat-label">Açıldı</div>
+          <div class="stat-label" data-i18n="statOpened">Opened</div>
         </div>
         <div class="stat-card">
           <div class="stat-value" id="stat-clicked">0</div>
-          <div class="stat-label">Tıklandı</div>
+          <div class="stat-label" data-i18n="statClicked">Clicked</div>
         </div>
       </div>
       <div class="stat-rates">
-        <span>Açılma: <strong id="stat-open-rate">0%</strong></span>
-        <span>Tıklama: <strong id="stat-click-rate">0%</strong></span>
+        <span data-i18n="statOpenRate">Open rate:</span> <strong id="stat-open-rate">0%</strong>
+        <span data-i18n="statClickRate">Click rate:</span> <strong id="stat-click-rate">0%</strong>
       </div>
       <canvas id="stats-chart" width="320" height="160"></canvas>
       <div id="followup-status" class="followup-status"></div>
-      <button class="btn btn-secondary btn-export" id="btn-export-csv">CSV Indir</button>
+      <button class="btn btn-secondary btn-export" id="btn-export-csv" data-i18n="btnExportCsv">Download CSV</button>
     </div>
   </div>
 
-  <!-- Tab: Ayarlar -->
+  <!-- Tab: Settings -->
   <div class="tab-content" id="tab-settings">
-    <div id="settings-loading" class="reports-loading">Yukleniyor...</div>
+    <div id="settings-loading" class="reports-loading" data-i18n="reportsLoading">Loading...</div>
     <div id="settings-content" style="display:none;">
 
-      <!-- Hesap Bilgisi -->
+      <!-- Account -->
       <div class="settings-section">
-        <h4 class="settings-title">Hesap</h4>
+        <h4 class="settings-title" data-i18n="settingsAccount">Account</h4>
         <div class="settings-info">
           <div class="settings-row">
-            <span class="settings-label">Email</span>
+            <span class="settings-label" data-i18n="settingsEmail">Email</span>
             <span class="settings-value" id="settings-email">-</span>
           </div>
           <div class="settings-row">
-            <span class="settings-label">Plan</span>
+            <span class="settings-label" data-i18n="settingsPlan">Plan</span>
             <span class="settings-value"><span class="plan-badge" id="settings-plan">Free</span></span>
           </div>
           <div class="settings-row">
-            <span class="settings-label">Bu ay gonderilen</span>
+            <span class="settings-label" data-i18n="settingsSentThisMonth">Sent this month</span>
             <span class="settings-value" id="settings-sent-count">0</span>
           </div>
         </div>
         <div class="settings-actions">
-          <button class="btn btn-primary btn-block" id="settings-btn-upgrade">Plani Yukselt</button>
-          <button class="btn btn-secondary btn-block" id="settings-btn-portal" style="display:none;">Aboneligi Yonet</button>
+          <button class="btn btn-primary btn-block" id="settings-btn-upgrade" data-i18n="btnUpgrade">Upgrade Plan</button>
+          <button class="btn btn-secondary btn-block" id="settings-btn-portal" data-i18n="btnManageSub" style="display:none;">Manage Subscription</button>
         </div>
       </div>
 
       <!-- Tracking -->
       <div class="settings-section">
-        <h4 class="settings-title">Takip (Tracking)</h4>
+        <h4 class="settings-title" data-i18n="settingsTracking">Tracking</h4>
         <label class="settings-toggle">
           <input type="checkbox" id="settings-track-opens" checked>
-          Acilma takibi
+          <span data-i18n="settingsTrackOpens">Open tracking</span>
         </label>
         <label class="settings-toggle">
           <input type="checkbox" id="settings-track-clicks" checked>
-          Tiklama takibi
+          <span data-i18n="settingsTrackClicks">Click tracking</span>
         </label>
       </div>
 
-      <!-- Unsubscribe Metni -->
+      <!-- Unsubscribe Link -->
       <div class="settings-section">
-        <h4 class="settings-title">Abonelikten Cikma Linki</h4>
+        <h4 class="settings-title" data-i18n="settingsUnsub">Unsubscribe Link</h4>
         <div class="form-group">
-          <input type="text" id="settings-unsub-text" value="Abonelikten cik" maxlength="200">
-          <p class="hint">Email altinda gorunecek link metni</p>
+          <input type="text" id="settings-unsub-text" value="Unsubscribe" maxlength="200">
+          <p class="hint" data-i18n="settingsUnsubHint">Link text shown at the bottom of emails</p>
         </div>
       </div>
 
       <!-- Timezone -->
       <div class="settings-section">
-        <h4 class="settings-title">Zaman Dilimi</h4>
+        <h4 class="settings-title" data-i18n="settingsTimezone">Timezone</h4>
         <div class="form-group">
           <select id="settings-timezone">
-            <option value="Europe/Istanbul">Turkiye (UTC+3)</option>
-            <option value="Europe/London">Londra (UTC+0/+1)</option>
-            <option value="Europe/Berlin">Berlin (UTC+1/+2)</option>
-            <option value="America/New_York">New York (UTC-5/-4)</option>
-            <option value="America/Los_Angeles">Los Angeles (UTC-8/-7)</option>
-            <option value="Asia/Dubai">Dubai (UTC+4)</option>
-            <option value="UTC">UTC</option>
+            <option value="Europe/Istanbul" data-i18n="tzTurkey">Turkey (UTC+3)</option>
+            <option value="Europe/London" data-i18n="tzLondon">London (UTC+0/+1)</option>
+            <option value="Europe/Berlin" data-i18n="tzBerlin">Berlin (UTC+1/+2)</option>
+            <option value="America/New_York" data-i18n="tzNewYork">New York (UTC-5/-4)</option>
+            <option value="America/Los_Angeles" data-i18n="tzLosAngeles">Los Angeles (UTC-8/-7)</option>
+            <option value="Asia/Dubai" data-i18n="tzDubai">Dubai (UTC+4)</option>
+            <option value="UTC" data-i18n="tzUtc">UTC</option>
           </select>
         </div>
       </div>
 
-      <!-- Gonderici Profili -->
+      <!-- Sender Information -->
       <div class="settings-section">
-        <h4 class="settings-title">Gonderici Bilgileri</h4>
-        <p class="hint">Email imzanizda ve AI ile yazilan emaillerde kullanilir.</p>
+        <h4 class="settings-title" data-i18n="settingsSender">Sender Information</h4>
+        <p class="hint" data-i18n="settingsSenderHint">Used in your email signature and AI-generated emails.</p>
         <div class="form-group">
-          <label for="settings-sender-name">Adiniz</label>
+          <label for="settings-sender-name" data-i18n="settingsSenderName">Your Name</label>
           <input type="text" id="settings-sender-name" placeholder="Ali Bayar" maxlength="100">
         </div>
         <div class="form-group">
-          <label for="settings-sender-position">Pozisyonunuz</label>
-          <input type="text" id="settings-sender-position" placeholder="Kurucu & CEO" maxlength="100">
+          <label for="settings-sender-position" data-i18n="settingsSenderPosition">Your Position</label>
+          <input type="text" id="settings-sender-position" placeholder="Founder & CEO" maxlength="100">
         </div>
         <div class="form-group">
-          <label for="settings-sender-company">Sirketiniz</label>
+          <label for="settings-sender-company" data-i18n="settingsSenderCompany">Your Company</label>
           <input type="text" id="settings-sender-company" placeholder="Metis Information Technologies" maxlength="100">
         </div>
         <div class="form-group">
-          <label for="settings-sender-phone">Telefon (opsiyonel)</label>
+          <label for="settings-sender-phone" data-i18n="settingsSenderPhone">Phone (optional)</label>
           <input type="text" id="settings-sender-phone" placeholder="+90 555 123 4567" maxlength="50">
         </div>
       </div>
 
-      <!-- Kaydet Butonu -->
-      <button class="btn btn-primary btn-block" id="settings-btn-save">Ayarlari Kaydet</button>
+      <!-- Save Button -->
+      <button class="btn btn-primary btn-block" id="settings-btn-save" data-i18n="btnSaveSettings">Save Settings</button>
 
       <!-- Suppression List -->
       <div class="settings-section" style="margin-top:20px;">
-        <h4 class="settings-title">Engellenen Emailler</h4>
-        <p class="hint">Bu listedeki adreslere email gonderilmez.</p>
+        <h4 class="settings-title" data-i18n="settingsSuppression">Blocked Emails</h4>
+        <p class="hint" data-i18n="settingsSuppressionHint">Emails in this list will not receive any campaigns.</p>
         <div class="suppression-add">
-          <input type="email" id="suppression-email-input" placeholder="email@ornek.com">
-          <button class="btn btn-small" id="btn-add-suppression">Ekle</button>
+          <input type="email" id="suppression-email-input" data-i18n-placeholder="settingsSuppressionPlaceholder" placeholder="email@example.com">
+          <button class="btn btn-small" id="btn-add-suppression" data-i18n="btnAdd">Add</button>
         </div>
         <div class="suppression-search-row">
-          <input type="text" id="suppression-search" placeholder="Ara..." class="suppression-search-input">
+          <input type="text" id="suppression-search" data-i18n-placeholder="suppressionSearch" placeholder="Search..." class="suppression-search-input">
           <span class="suppression-count" id="suppression-count"></span>
         </div>
         <div id="suppression-list" class="suppression-list"></div>
-        <div id="suppression-empty" class="hint" style="text-align:center;padding:12px;">Henuz engellenen email yok.</div>
+        <div id="suppression-empty" class="hint" data-i18n="suppressionEmpty" style="text-align:center;padding:12px;">No blocked emails yet.</div>
       </div>
 
-      <!-- Destek -->
+      <!-- Support -->
       <div class="settings-section" style="margin-top:20px;">
-        <h4 class="settings-title">Destek</h4>
+        <h4 class="settings-title" data-i18n="settingsSupport">Support</h4>
         <div class="form-group">
-          <textarea id="feedback-message" rows="3" placeholder="Sorun veya onerinizi yazin..." maxlength="1000"></textarea>
+          <textarea id="feedback-message" rows="3" data-i18n-placeholder="feedbackPlaceholder" placeholder="Describe your issue or suggestion..." maxlength="1000"></textarea>
         </div>
         <div class="feedback-actions">
-          <button class="btn btn-primary btn-small" id="btn-send-feedback">Gonder</button>
-          <a href="mailto:support@outmass.com?subject=OutMass%20Destek" class="feedback-email-link">support@outmass.com</a>
+          <button class="btn btn-primary btn-small" id="btn-send-feedback" data-i18n="btnSendFeedback">Send</button>
+          <a href="mailto:support@outmass.com?subject=OutMass%20Support" class="feedback-email-link">support@outmass.com</a>
         </div>
         <div id="feedback-status" class="feedback-status"></div>
       </div>
@@ -306,6 +306,7 @@
     </div>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="sidebar.js"></script>
 </body>
 </html>

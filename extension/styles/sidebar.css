@@ -871,3 +871,52 @@ body {
   color: #a19f9d;
   font-size: 13px;
 }
+
+/* ── RTL Support (Arabic) ── */
+[dir="rtl"] .sidebar-header {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .header-left {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .tab-bar {
+  direction: rtl;
+}
+
+[dir="rtl"] .form-group label {
+  text-align: right;
+}
+
+[dir="rtl"] .form-actions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .template-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .suppression-add {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .suppression-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .feedback-actions {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .stat-rates {
+  direction: rtl;
+}
+
+[dir="rtl"] .settings-row {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .settings-actions {
+  direction: rtl;
+}

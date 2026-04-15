@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="tr">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -284,29 +284,29 @@
 <body>
   <div class="popup-header">
     <h1>OutMass</h1>
-    <p>Toplu email kampanyalari</p>
+    <p data-i18n="popupSubtitle">Mass email campaigns</p>
   </div>
 
   <div class="popup-body">
     <!-- Login State -->
     <div id="login-section">
-      <p>Outlook hesabinizla baglanarak kampanya olusturmaya baslayin.</p>
+      <p data-i18n="popupLoginHint">Connect with your Outlook account to start creating campaigns.</p>
       <button class="btn-microsoft" id="btn-login">
         <svg viewBox="0 0 21 21"><path d="M0 0h10v10H0zM11 0h10v10H11zM0 11h10v10H0zM11 11h10v10H11z"/></svg>
-        Microsoft ile Baglan
+        <span data-i18n="btnMicrosoftLogin">Sign in with Microsoft</span>
       </button>
     </div>
 
     <!-- Loading State -->
     <div id="loading-section">
       <div class="spinner"></div>
-      <div class="loading-text">Microsoft hesabiniza baglaniliyor...</div>
+      <div class="loading-text" data-i18n="popupLoading">Connecting to your Microsoft account...</div>
     </div>
 
     <!-- Error State -->
     <div id="error-section">
-      <div class="error-message" id="error-text">Bir hata olustu.</div>
-      <button class="btn-retry" id="btn-retry">Tekrar Dene</button>
+      <div class="error-message" id="error-text" data-i18n="popupErrorDefault">An error occurred.</div>
+      <button class="btn-retry" id="btn-retry" data-i18n="btnRetry">Try Again</button>
     </div>
 
     <!-- Connected State -->
@@ -318,10 +318,10 @@
           Plan: <span class="plan-badge" id="user-plan">Free</span>
         </div>
       </div>
-      <a href="#" class="link-dashboard" id="btn-dashboard">Kampanya Panelini Ac</a>
+      <a href="#" class="link-dashboard" id="btn-dashboard" data-i18n="btnDashboard">Open Campaign Panel</a>
       <button class="btn-upgrade-popup" id="btn-upgrade-popup" style="display:none;">Yukselt → Pro</button>
-      <button class="btn-manage-sub" id="btn-manage-sub" style="display:none;">Aboneligi Yonet</button>
-      <button class="btn-logout" id="btn-logout">Cikis Yap</button>
+      <button class="btn-manage-sub" id="btn-manage-sub" style="display:none;" data-i18n="btnManageSub">Manage Subscription</button>
+      <button class="btn-logout" id="btn-logout" data-i18n="btnLogout">Sign Out</button>
     </div>
   </div>
 
@@ -329,6 +329,7 @@
     <a href="#">OutMass v0.1.0</a>
   </div>
 
+  <script src="i18n.js"></script>
   <script src="popup.js"></script>
 </body>
 </html>

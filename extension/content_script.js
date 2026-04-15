@@ -6,6 +6,8 @@
 (function () {
   "use strict";
 
+  function t(key, subs) { return chrome.i18n.getMessage(key, subs) || key; }
+
   const LOG_PREFIX = "[OutMass-CS]";
   const SIDEBAR_WIDTH = 380;
   const COMPOSE_SELECTORS = [
@@ -90,8 +92,8 @@
   function createOutMassButton() {
     const btn = document.createElement("button");
     btn.className = "outmass-toolbar-btn";
-    btn.textContent = "\uD83D\uDCE7 OutMass";
-    btn.title = "OutMass — Kampanya panelini ac";
+    btn.textContent = "\uD83D\uDCE7 " + t("toolbarButton");
+    btn.title = t("toolbarButtonTitle");
     btn.addEventListener("click", function (e) {
       e.preventDefault();
       e.stopPropagation();

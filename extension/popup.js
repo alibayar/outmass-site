@@ -60,7 +60,7 @@
   }
 
   function showConnected(user, plan) {
-    userName.textContent = user.name || user.email || "Bagli";
+    userName.textContent = user.name || user.email || t("popupConnected");
     userEmail.textContent = user.email || "";
 
     var planKey = plan || "free";
@@ -73,11 +73,11 @@
     var btnManage = document.getElementById("btn-manage-sub");
     if (planKey === "free") {
       btnUpgrade.style.display = "block";
-      btnUpgrade.textContent = "Yukselt \u2192 Standard ($15/ay)";
+      btnUpgrade.textContent = t("popupUpgradeStandard");
       btnManage.style.display = "none";
     } else if (planKey === "standard") {
       btnUpgrade.style.display = "block";
-      btnUpgrade.textContent = "Yukselt \u2192 Pro ($25/ay)";
+      btnUpgrade.textContent = t("popupUpgradePro");
       btnManage.style.display = "block";
     } else {
       btnUpgrade.style.display = "none";
@@ -88,7 +88,7 @@
   }
 
   function showError(message) {
-    errorText.textContent = message || "Bilinmeyen bir hata olustu.";
+    errorText.textContent = message || t("popupUnknownError");
     showSection("error");
   }
 
@@ -103,7 +103,7 @@
       }
 
       if (!response) {
-        showError("Yanit alinamadi.");
+        showError(t("popupNoResponse"));
         return;
       }
 
@@ -116,7 +116,7 @@
         // Reload full state to get plan info too
         loadState();
       } else {
-        showError("Kullanici bilgisi alinamadi.");
+        showError(t("popupUserInfoFailed"));
       }
     });
   }
@@ -198,8 +198,8 @@
           chrome.tabs.create({ url: resp.data.checkout_url });
           window.close();
         } else {
-          var errMsg = (resp && resp.error) || "Bilinmeyen hata";
-          alert("Odeme sayfasi olusturulamadi: " + errMsg);
+          var errMsg = (resp && resp.error) || t("popupUnknownError");
+          alert(t("popupCheckoutFailed") + errMsg);
         }
       });
     });
@@ -212,7 +212,7 @@
           chrome.tabs.create({ url: resp.data.portal_url });
           window.close();
         } else {
-          alert("Portal acilamadi.");
+          alert(t("popupPortalFailed"));
         }
       });
     });
@@ -220,4 +220,5 @@
 
   // ── Init ──
   loadState();
+  applyI18n();
 })();
