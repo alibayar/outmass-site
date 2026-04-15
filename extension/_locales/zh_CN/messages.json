@@ -177,7 +177,7 @@
 
   "templatePromptName": { "message": "模板名称：" },
   "templateDefaultName": { "message": "我的模板" },
-  "templateConfirmDelete": { "message": "删除模板"$1"？" },
+  "templateConfirmDelete": { "message": "删除模板「$1」？" },
   "alertTemplateFillFirst": { "message": "请先填写主题和内容。" },
   "alertTemplateStandardOnly": { "message": "邮件模板在 Standard 和 Pro 计划中可用。" },
   "alertTemplateSaveFailed": { "message": "无法保存模板：" },
