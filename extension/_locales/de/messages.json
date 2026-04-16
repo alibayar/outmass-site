@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "Grosse Kampagnen ueber mehrere Tage zu verteilen hilft, Drosselung zu vermeiden. OutMass kann Microsoft-Plattform-Limits nicht ueberschreiben."
+  },
+  "tzMoscow": {
+    "message": "Moskau (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "Indien (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "China (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "Tokio (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "Chicago (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "Denver (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "Sao Paulo (UTC-3)"
   }
 }

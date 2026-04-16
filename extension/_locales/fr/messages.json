@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "Repartir les grandes campagnes sur plusieurs jours evite la limitation et protege votre reputation d'expediteur. OutMass ne peut pas contourner les limites Microsoft."
+  },
+  "tzMoscow": {
+    "message": "Moscou (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "Inde (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "Chine (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "Tokyo (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "Chicago (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "Denver (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "Sao Paulo (UTC-3)"
   }
 }

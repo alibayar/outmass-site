@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "Distribuir campanas grandes en varios dias evita limitaciones y protege tu reputacion. OutMass no puede anular los limites de Microsoft."
+  },
+  "tzMoscow": {
+    "message": "Moscu (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "India (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "China (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "Tokio (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "Chicago (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "Denver (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "Sao Paulo (UTC-3)"
   }
 }

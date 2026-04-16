@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "大規模キャンペーンを複数日に分散することでスロットリングを回避し、送信者の評判を守れます。OutMass は Microsoft のプラットフォーム制限を上書きできません。"
+  },
+  "tzMoscow": {
+    "message": "モスクワ (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "インド (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "中国 (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "東京 (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "シカゴ (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "デンバー (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "サンパウロ (UTC-3)"
   }
 }

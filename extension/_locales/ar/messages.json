@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "توزيع الحملات الكبيرة على عدة أيام يتجنب الاختناق ويحمي سمعة المرسل. لا يمكن لـ OutMass تجاوز حدود Microsoft."
+  },
+  "tzMoscow": {
+    "message": "موسكو (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "الهند (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "الصين (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "طوكيو (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "شيكاغو (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "دنفر (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "ساو باولو (UTC-3)"
   }
 }

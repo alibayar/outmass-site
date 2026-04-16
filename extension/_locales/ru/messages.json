@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "Распределите большие кампании на несколько дней, чтобы избежать ограничений и защитить репутацию отправителя. OutMass не может обойти лимиты Microsoft."
+  },
+  "tzMoscow": {
+    "message": "Москва (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "Индия (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "Китай (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "Токио (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "Чикаго (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "Денвер (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "Сан-Паулу (UTC-3)"
   }
 }

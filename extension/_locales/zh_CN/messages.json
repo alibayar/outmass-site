@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "将大型活动分散到几天可避免限流并保护发件人声誉。OutMass 无法绕过 Microsoft 平台限制。"
+  },
+  "tzMoscow": {
+    "message": "莫斯科 (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "印度 (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "中国 (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "东京 (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "芝加哥 (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "丹佛 (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "圣保罗 (UTC-3)"
   }
 }

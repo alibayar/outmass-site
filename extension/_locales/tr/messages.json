@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "Buyuk kampanyalari gunlere yayarak bu limitlere takilmamak ve gonderici itibarinizi korumak onerilir. OutMass, Microsoft platform limitlerini asamaz."
+  },
+  "tzMoscow": {
+    "message": "Moskova (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "Hindistan (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "Cin (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "Tokyo (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "Chicago (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "Denver (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "Sao Paulo (UTC-3)"
   }
 }

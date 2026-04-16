@@ -580,5 +580,26 @@
   },
   "quotaInfoBody2": {
     "message": "बड़े अभियानों को कई दिनों में फैलाने से थ्रॉटलिंग से बचा जा सकता है। OutMass Microsoft की सीमाओं को पार नहीं कर सकता।"
+  },
+  "tzMoscow": {
+    "message": "मॉस्को (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "भारत (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "चीन (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "टोक्यो (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "शिकागो (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "डेनवर (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "साओ पाउलो (UTC-3)"
   }
 }

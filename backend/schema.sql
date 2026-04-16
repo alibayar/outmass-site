@@ -116,8 +116,8 @@ CREATE TABLE IF NOT EXISTS ab_tests (
 -- ── Settings columns on users ──
 ALTER TABLE users ADD COLUMN IF NOT EXISTS track_opens BOOLEAN DEFAULT TRUE;
 ALTER TABLE users ADD COLUMN IF NOT EXISTS track_clicks BOOLEAN DEFAULT TRUE;
-ALTER TABLE users ADD COLUMN IF NOT EXISTS unsubscribe_text TEXT DEFAULT 'Abonelikten cik';
-ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'Europe/Istanbul';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS unsubscribe_text TEXT DEFAULT 'Unsubscribe';
+ALTER TABLE users ADD COLUMN IF NOT EXISTS timezone TEXT DEFAULT 'UTC';
 
 -- ── AI generation counter ──
 ALTER TABLE users ADD COLUMN IF NOT EXISTS ai_generations_this_month INT DEFAULT 0;

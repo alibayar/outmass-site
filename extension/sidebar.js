@@ -1081,9 +1081,23 @@
       var unsubText = document.getElementById("settings-unsub-text");
       if (unsubText && data.unsubscribe_text) unsubText.value = data.unsubscribe_text;
 
-      // Timezone
+      // Timezone — auto-detect browser timezone if user has default UTC
       var tzSelect = document.getElementById("settings-timezone");
-      if (tzSelect && data.timezone) tzSelect.value = data.timezone;
+      if (tzSelect) {
+        var tz = data.timezone || "UTC";
+        // If user is still on default UTC, try auto-detecting their browser timezone
+        if (tz === "UTC") {
+          try {
+            var browserTz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+            // Only use if it's in our supported list
+            var supported = Array.from(tzSelect.options).map(function (o) { return o.value; });
+            if (browserTz && supported.indexOf(browserTz) !== -1) {
+              tz = browserTz;
+            }
+          } catch (e) { /* ignore, keep UTC */ }
+        }
+        tzSelect.value = tz;
+      }
 
       // Sender profile
       var senderName = document.getElementById("settings-sender-name");
