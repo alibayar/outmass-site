@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "$1 E-Mails in Ihrem Kontingent uebrig.\nCSV enthaelt $2 Empfaenger.\nNur die ersten $1 werden gesendet."
+  },
+  "settingsLanguage": {
+    "message": "Oberflaechensprache"
+  },
+  "settingsLanguageHint": {
+    "message": "Wird sofort aktiv. Ueberschreibt Ihre Browsersprache nur fuer diese Erweiterung."
+  },
+  "langAuto": {
+    "message": "Automatisch (Browsersprache)"
   }
 }

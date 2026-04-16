@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "クォータに$1通のメールが残っています。\nCSVには$2人の受信者があります。\n最初の$1人にのみ送信されます。"
+  },
+  "settingsLanguage": {
+    "message": "インターフェース言語"
+  },
+  "settingsLanguageHint": {
+    "message": "すぐに適用されます。この拡張機能のみブラウザー言語を上書きします。"
+  },
+  "langAuto": {
+    "message": "自動（ブラウザー言語）"
   }
 }

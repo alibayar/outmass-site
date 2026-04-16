@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "تبقى $1 رسالة في حصتك.\nيحتوي CSV على $2 مستلماً.\nسيتم إرسال أول $1 فقط."
+  },
+  "settingsLanguage": {
+    "message": "لغة الواجهة"
+  },
+  "settingsLanguageHint": {
+    "message": "يُطبّق فورًا. يتجاوز لغة المتصفح لهذه الإضافة فقط."
+  },
+  "langAuto": {
+    "message": "تلقائي (لغة المتصفح)"
   }
 }

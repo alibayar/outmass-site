@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "$1 correos restantes en tu cuota.\nEl CSV tiene $2 destinatarios.\nSolo se enviaran los primeros $1."
+  },
+  "settingsLanguage": {
+    "message": "Idioma de la interfaz"
+  },
+  "settingsLanguageHint": {
+    "message": "Se aplica de inmediato. Anula el idioma de tu navegador solo para esta extension."
+  },
+  "langAuto": {
+    "message": "Automatico (Idioma del navegador)"
   }
 }

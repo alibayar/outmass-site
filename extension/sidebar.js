@@ -1427,9 +1427,27 @@
     });
   }
 
+  // ── Language selector ──
+  var langSelect = document.getElementById("settings-language");
+  if (langSelect) {
+    // Load current preference
+    try {
+      chrome.storage.local.get("uiLanguage", function (r) {
+        if (r && r.uiLanguage) langSelect.value = r.uiLanguage;
+      });
+    } catch (e) { /* ignore */ }
+
+    langSelect.addEventListener("change", function () {
+      var newLang = langSelect.value;
+      chrome.storage.local.set({ uiLanguage: newLang }, function () {
+        // Reload sidebar to apply new language
+        window.location.reload();
+      });
+    });
+  }
+
   // ── Init ──
   function init() {
-    applyI18n();
     log("Sidebar loaded");
     startHealthCheck();
     loadQuota();
@@ -1437,5 +1455,14 @@
     loadTemplates();
   }
 
-  init();
+  // Load i18n override first (if user picked a specific language), then apply
+  if (typeof initI18n === "function") {
+    initI18n().then(function () {
+      applyI18n();
+      init();
+    });
+  } else {
+    applyI18n();
+    init();
+  }
 })();

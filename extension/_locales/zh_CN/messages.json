@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "您的配额中剩余 $1 封邮件。\nCSV 有 $2 个收件人。\n仅发送给前 $1 个收件人。"
+  },
+  "settingsLanguage": {
+    "message": "界面语言"
+  },
+  "settingsLanguageHint": {
+    "message": "立即生效。仅对此扩展覆盖您的浏览器语言。"
+  },
+  "langAuto": {
+    "message": "自动（浏览器语言）"
   }
 }

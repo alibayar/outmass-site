@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "Kotanizda $1 email hakkiniz kaldi.\nCSV'de $2 alici var.\nYalnizca ilk $1 aliciya gonderilecek."
+  },
+  "settingsLanguage": {
+    "message": "Arayuz Dili"
+  },
+  "settingsLanguageHint": {
+    "message": "Aninda uygulanir. Sadece bu extension icin tarayici dilinizi gecersiz kilar."
+  },
+  "langAuto": {
+    "message": "Otomatik (Tarayici dili)"
   }
 }

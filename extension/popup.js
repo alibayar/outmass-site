@@ -219,6 +219,13 @@
   }
 
   // ── Init ──
-  loadState();
-  applyI18n();
+  if (typeof initI18n === "function") {
+    initI18n().then(function () {
+      applyI18n();
+      loadState();
+    });
+  } else {
+    applyI18n();
+    loadState();
+  }
 })();

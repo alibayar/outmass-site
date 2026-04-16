@@ -36,3 +36,6 @@ playwright-report/
 # Test data files
 *test_contact*.csv
 test_*.csv
+
+# Playwright visual regression screenshots
+e2e/screenshots/

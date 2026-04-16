@@ -589,5 +589,14 @@
   },
   "alertPartialCsvQuota": {
     "message": "$1 emails remaining in your quota.\nCSV has $2 recipients.\nOnly the first $1 will be sent."
+  },
+  "settingsLanguage": {
+    "message": "Interface Language"
+  },
+  "settingsLanguageHint": {
+    "message": "Takes effect immediately. Overrides your browser language for this extension only."
+  },
+  "langAuto": {
+    "message": "Auto (Browser default)"
   }
 }
