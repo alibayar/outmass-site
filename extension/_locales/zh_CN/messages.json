@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "您好 {{firstName}}，\n\n我们为 {{company}} 准备了一个很好的方案..."
   },
-  "placeholderRecipient": {
-    "message": "收件人："
-  },
-  "placeholderSender": {
-    "message": "发件人："
-  },
   "placeholdersHint": {
     "message": "收件人：<code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>发件人：<code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "退订链接"
-  },
-  "settingsUnsubDefault": {
-    "message": "退订"
   },
   "settingsUnsubHint": {
     "message": "显示在邮件底部的链接文字"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "无法打开门户。"
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — 打开活动面板"
   },
   "alertUploadCsvFirst": {
     "message": "请先上传 CSV 文件。"
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "圣保罗 (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "您的配额中剩余 $1 封邮件。\nCSV 有 $2 个收件人。\n仅发送给前 $1 个收件人。"
   }
 }

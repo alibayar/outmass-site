@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "Hallo {{firstName}},\n\nWir haben ein tolles Angebot für {{company}}..."
   },
-  "placeholderRecipient": {
-    "message": "Empfänger:"
-  },
-  "placeholderSender": {
-    "message": "Absender:"
-  },
   "placeholdersHint": {
     "message": "Empfänger: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Absender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "Abmeldelink"
-  },
-  "settingsUnsubDefault": {
-    "message": "Abmelden"
   },
   "settingsUnsubHint": {
     "message": "Linktext am Ende der E-Mails"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "Portal konnte nicht geöffnet werden."
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — Kampagnen-Panel öffnen"
   },
   "alertUploadCsvFirst": {
     "message": "Bitte laden Sie zuerst eine CSV-Datei hoch."
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "Sao Paulo (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "$1 E-Mails in Ihrem Kontingent uebrig.\nCSV enthaelt $2 Empfaenger.\nNur die ersten $1 werden gesendet."
   }
 }

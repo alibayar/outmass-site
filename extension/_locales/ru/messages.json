@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "Здравствуйте, {{firstName}},\n\nУ нас есть отличное предложение для {{company}}..."
   },
-  "placeholderRecipient": {
-    "message": "Получатель:"
-  },
-  "placeholderSender": {
-    "message": "Отправитель:"
-  },
   "placeholdersHint": {
     "message": "Получатель: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Отправитель: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "Ссылка отписки"
-  },
-  "settingsUnsubDefault": {
-    "message": "Отписаться"
   },
   "settingsUnsubHint": {
     "message": "Текст ссылки внизу каждого письма"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "Не удалось открыть портал."
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — Открыть панель кампаний"
   },
   "alertUploadCsvFirst": {
     "message": "Сначала загрузите CSV-файл."
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "Сан-Паулу (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "Осталось $1 писем в вашей квоте.\nВ CSV $2 получателей.\nБудут отправлены только первые $1."
   }
 }

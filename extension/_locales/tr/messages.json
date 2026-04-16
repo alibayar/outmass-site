@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "Merhaba {{firstName}},\n\n{{company}} için harika bir teklifimiz var..."
   },
-  "placeholderRecipient": {
-    "message": "Alıcı:"
-  },
-  "placeholderSender": {
-    "message": "Gönderen:"
-  },
   "placeholdersHint": {
     "message": "Alıcı: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Gönderen: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "Abonelik İptal Bağlantısı"
-  },
-  "settingsUnsubDefault": {
-    "message": "Aboneliği iptal et"
   },
   "settingsUnsubHint": {
     "message": "E-postaların altında gösterilen bağlantı metni"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "Portal açılamadı."
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — Kampanya panelini aç"
   },
   "alertUploadCsvFirst": {
     "message": "Lütfen önce bir CSV dosyası yükleyin."
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "Sao Paulo (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "Kotanizda $1 email hakkiniz kaldi.\nCSV'de $2 alici var.\nYalnizca ilk $1 aliciya gonderilecek."
   }
 }

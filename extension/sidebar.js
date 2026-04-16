@@ -300,11 +300,7 @@
       }
 
       if (csvData.rows.length > remaining) {
-        alert(
-          remaining + " email hakkiniz kaldi.\n" +
-          "CSV'de " + csvData.rows.length + " alici var.\n" +
-          "Ilk " + remaining + " aliciya gonderilecek."
-        );
+        alert(t("alertPartialCsvQuota", [String(remaining), String(csvData.rows.length)]));
       }
 
       startSendFlow(subject, body);

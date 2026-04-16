@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "مرحبًا {{firstName}}،\n\nلدينا عرض رائع لـ {{company}}..."
   },
-  "placeholderRecipient": {
-    "message": "المستلم:"
-  },
-  "placeholderSender": {
-    "message": "المرسل:"
-  },
   "placeholdersHint": {
     "message": "المستلم: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>المرسل: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "رابط إلغاء الاشتراك"
-  },
-  "settingsUnsubDefault": {
-    "message": "إلغاء الاشتراك"
   },
   "settingsUnsubHint": {
     "message": "نص الرابط المعروض أسفل الرسائل"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "تعذّر فتح البوابة."
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — فتح لوحة الحملات"
   },
   "alertUploadCsvFirst": {
     "message": "يُرجى رفع ملف CSV أولًا."
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "ساو باولو (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "تبقى $1 رسالة في حصتك.\nيحتوي CSV على $2 مستلماً.\nسيتم إرسال أول $1 فقط."
   }
 }

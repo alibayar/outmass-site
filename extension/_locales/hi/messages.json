@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "नमस्ते {{firstName}},\n\n{{company}} के लिए हमारे पास एक शानदार ऑफ़र है..."
   },
-  "placeholderRecipient": {
-    "message": "प्राप्तकर्ता:"
-  },
-  "placeholderSender": {
-    "message": "प्रेषक:"
-  },
   "placeholdersHint": {
     "message": "प्राप्तकर्ता: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>प्रेषक: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "अनसब्सक्राइब लिंक"
-  },
-  "settingsUnsubDefault": {
-    "message": "सदस्यता रद्द करें"
   },
   "settingsUnsubHint": {
     "message": "ईमेल के नीचे दिखाया जाने वाला लिंक टेक्स्ट"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "पोर्टल नहीं खुल सका।"
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — अभियान पैनल खोलें"
   },
   "alertUploadCsvFirst": {
     "message": "कृपया पहले एक CSV फ़ाइल अपलोड करें।"
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "साओ पाउलो (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "आपके कोटे में $1 ईमेल शेष हैं।\nCSV में $2 प्राप्तकर्ता हैं।\nकेवल पहले $1 को भेजा जाएगा।"
   }
 }

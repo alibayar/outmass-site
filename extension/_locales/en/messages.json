@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "Hello {{firstName}},\n\nWe have a great offer for {{company}}..."
   },
-  "placeholderRecipient": {
-    "message": "Recipient:"
-  },
-  "placeholderSender": {
-    "message": "Sender:"
-  },
   "placeholdersHint": {
     "message": "Recipient: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Sender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "Unsubscribe Link"
-  },
-  "settingsUnsubDefault": {
-    "message": "Unsubscribe"
   },
   "settingsUnsubHint": {
     "message": "Link text shown at the bottom of emails"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "Could not open portal."
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — Open campaign panel"
   },
   "alertUploadCsvFirst": {
     "message": "Please upload a CSV file first."
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "Sao Paulo (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "$1 emails remaining in your quota.\nCSV has $2 recipients.\nOnly the first $1 will be sent."
   }
 }

@@ -77,12 +77,6 @@
   "placeholderBody": {
     "message": "{{firstName}}様\n\n{{company}}様に素晴らしいご提案がございます..."
   },
-  "placeholderRecipient": {
-    "message": "受信者："
-  },
-  "placeholderSender": {
-    "message": "送信者："
-  },
   "placeholdersHint": {
     "message": "受信者：<code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>送信者：<code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
   },
@@ -208,9 +202,6 @@
   },
   "settingsUnsub": {
     "message": "配信停止リンク"
-  },
-  "settingsUnsubDefault": {
-    "message": "配信停止"
   },
   "settingsUnsubHint": {
     "message": "メール下部に表示されるリンクテキスト"
@@ -358,12 +349,6 @@
   },
   "popupPortalFailed": {
     "message": "ポータルを開けませんでした。"
-  },
-  "toolbarButton": {
-    "message": "OutMass"
-  },
-  "toolbarButtonTitle": {
-    "message": "OutMass — キャンペーンパネルを開く"
   },
   "alertUploadCsvFirst": {
     "message": "先にCSVファイルをアップロードしてください。"
@@ -601,5 +586,8 @@
   },
   "tzSaoPaulo": {
     "message": "サンパウロ (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "クォータに$1通のメールが残っています。\nCSVには$2人の受信者があります。\n最初の$1人にのみ送信されます。"
   }
 }
