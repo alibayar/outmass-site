@@ -85,63 +85,27 @@ chrome.runtime.onInstalled.addListener(function (details) {
   log("Redirect URI:", AZURE_REDIRECT_URI);
 });
 
-// ── Microsoft OAuth 2.0 Flow ──
+// ── Microsoft OAuth 2.0 Flow (Web Auth — backend does code exchange) ──
 
 /**
- * Generate a random string for PKCE code verifier.
- */
-function generateCodeVerifier() {
-  const array = new Uint8Array(32);
-  crypto.getRandomValues(array);
-  return base64UrlEncode(array);
-}
-
-/**
- * Create SHA-256 code challenge from verifier (PKCE).
- */
-async function generateCodeChallenge(verifier) {
-  const encoder = new TextEncoder();
-  const data = encoder.encode(verifier);
-  const digest = await crypto.subtle.digest("SHA-256", data);
-  return base64UrlEncode(new Uint8Array(digest));
-}
-
-/**
- * Base64-URL encode a Uint8Array.
- */
-function base64UrlEncode(buffer) {
-  let str = "";
-  for (let i = 0; i < buffer.length; i++) {
-    str += String.fromCharCode(buffer[i]);
-  }
-  return btoa(str).replace(/\+/g, "-").replace(/\//g, "_").replace(/=+$/, "");
-}
-
-/**
- * Start the Microsoft OAuth login flow.
- * Uses PKCE (no client secret needed for public clients).
+ * Start the Microsoft OAuth login flow (Web Auth Flow).
+ * Opens MS auth page with backend callback URL. Backend does the code
+ * exchange with client_secret, then redirects back to extension with
+ * OutMass JWT in the URL fragment.
  */
 async function startMSLogin() {
-  log("Starting MS OAuth flow...");
+  log("Starting MS OAuth flow (Web)...");
 
-  const codeVerifier = generateCodeVerifier();
-  const codeChallenge = await generateCodeChallenge(codeVerifier);
+  // Extension tells backend where to redirect at the end (passed via state)
+  const extRedirectUri = chrome.identity.getRedirectURL("auth");
 
-  const authUrl =
-    MS_AUTH_ENDPOINT +
-    "?client_id=" + encodeURIComponent(AZURE_CLIENT_ID) +
-    "&response_type=code" +
-    "&redirect_uri=" + encodeURIComponent(AZURE_REDIRECT_URI) +
-    "&scope=" + encodeURIComponent(MS_SCOPES) +
-    "&response_mode=query" +
-    "&code_challenge=" + encodeURIComponent(codeChallenge) +
-    "&code_challenge_method=S256" +
-    "&prompt=select_account";
+  // Kick off auth via backend /auth/login which redirects to MS
+  const authUrl = OUTMASS_BACKEND_URL + "/auth/login";
 
   return new Promise((resolve) => {
     chrome.identity.launchWebAuthFlow(
       { url: authUrl, interactive: true },
-      async function (redirectUrl) {
+      function (redirectUrl) {
         if (chrome.runtime.lastError) {
           log("Auth flow error:", chrome.runtime.lastError.message);
           resolve({ error: chrome.runtime.lastError.message });
@@ -155,142 +119,54 @@ async function startMSLogin() {
 
         log("Auth redirect received");
 
-        // Extract authorization code from redirect URL
-        const url = new URL(redirectUrl);
-        const code = url.searchParams.get("code");
-        const error = url.searchParams.get("error");
-
-        if (error) {
-          const errorDesc = url.searchParams.get("error_description") || error;
-          log("Auth error:", errorDesc);
-          resolve({ error: errorDesc });
+        // Parse URL fragment (#jwt=...&email=...&name=...&plan=...)
+        let fragment = "";
+        try {
+          const u = new URL(redirectUrl);
+          fragment = u.hash.startsWith("#") ? u.hash.substring(1) : u.hash;
+        } catch (e) {
+          resolve({ error: "Invalid redirect URL" });
           return;
         }
 
-        if (!code) {
-          resolve({ error: "No authorization code received" });
+        const params = new URLSearchParams(fragment);
+        const jwtToken = params.get("jwt");
+        const email = params.get("email");
+        const name = params.get("name");
+        const plan = params.get("plan") || "free";
+        const errorMsg = params.get("error");
+
+        if (errorMsg) {
+          resolve({ error: errorMsg });
           return;
         }
 
-        // Exchange code for tokens
-        const tokenResult = await exchangeCodeForTokens(code, codeVerifier);
-        resolve(tokenResult);
+        if (!jwtToken || !email) {
+          resolve({ error: "Incomplete auth response from backend" });
+          return;
+        }
+
+        const user = { email: email, name: name || email };
+
+        // Save auth state
+        chrome.storage.local.set(
+          {
+            backendJwt: jwtToken,
+            user: user,
+            plan: plan,
+            // accessToken is managed server-side now; extension no longer needs it
+            accessToken: null,
+            refreshToken: null,
+            expiresAt: null,
+          },
+          function () {
+            log("LOGIN_SUCCESS:", email);
+            resolve({ error: null, user: user });
+          }
+        );
       }
     );
   });
-}
-
-/**
- * Exchange authorization code for access + refresh tokens.
- */
-async function exchangeCodeForTokens(code, codeVerifier) {
-  try {
-    const body = new URLSearchParams({
-      client_id: AZURE_CLIENT_ID,
-      grant_type: "authorization_code",
-      code: code,
-      redirect_uri: AZURE_REDIRECT_URI,
-      code_verifier: codeVerifier,
-      scope: MS_SCOPES,
-    });
-
-    const resp = await fetch(MS_TOKEN_ENDPOINT, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: body.toString(),
-    });
-
-    if (!resp.ok) {
-      const errData = await resp.json().catch(() => ({}));
-      log("Token exchange failed:", resp.status, errData);
-      return {
-        error: errData.error_description || `Token exchange failed (${resp.status})`,
-      };
-    }
-
-    const tokens = await resp.json();
-    const expiresAt = Date.now() + tokens.expires_in * 1000;
-
-    // Save tokens to storage
-    await chrome.storage.local.set({
-      accessToken: tokens.access_token,
-      refreshToken: tokens.refresh_token || null,
-      expiresAt: expiresAt,
-    });
-
-    log("Tokens saved, fetching user profile...");
-
-    // Fetch user profile
-    const profile = await fetchUserProfile();
-
-    if (profile.error) {
-      log("Profile fetch failed:", profile.error);
-      // Tokens are saved, but we couldn't get profile
-      return {
-        error: null,
-        user: { email: "Unknown", name: "Unknown" },
-      };
-    }
-
-    const user = {
-      email: profile.mail || "Unknown",
-      name: profile.displayName || "Unknown",
-    };
-
-    // Save user info
-    await chrome.storage.local.set({ user: user });
-
-    log("LOGIN_SUCCESS:", user.email);
-
-    // Sync with backend (wait for it so plan info is ready)
-    await syncAuthWithBackend(tokens.access_token, user).catch(function (e) {
-      log("Backend sync failed (non-blocking):", e.message);
-    });
-
-    return { error: null, user: user };
-  } catch (err) {
-    log("Token exchange error:", err.message);
-    return { error: err.message };
-  }
-}
-
-/**
- * Sync authentication with OutMass backend.
- * Sends MS access token → backend verifies → returns JWT.
- */
-async function syncAuthWithBackend(msAccessToken, user) {
-  try {
-    // Get refresh token to store server-side for follow-up emails
-    const storage = await chrome.storage.local.get(["refreshToken"]);
-
-    const resp = await fetch(OUTMASS_BACKEND_URL + "/auth/microsoft", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        access_token: msAccessToken,
-        microsoft_id: user.microsoftId || "",
-        email: user.email,
-        name: user.name,
-        refresh_token: storage.refreshToken || null,
-      }),
-    });
-
-    if (!resp.ok) {
-      log("Backend auth failed:", resp.status);
-      return;
-    }
-
-    const data = await resp.json();
-    await chrome.storage.local.set({
-      backendJwt: data.jwt,
-      plan: data.user.plan || "free",
-      emailsSentThisMonth: data.user.emailsSentThisMonth || 0,
-    });
-
-    log("Backend sync OK, JWT saved, plan:", data.user.plan);
-  } catch (err) {
-    log("Backend sync error:", err.message);
-  }
 }
 
 /**
@@ -301,17 +177,10 @@ var _lastBackendOk = 0;
 var HEALTH_CHECK_FRESHNESS_MS = 30000; // 30 seconds
 
 async function backendFetch(endpoint, options) {
-  let storage = await chrome.storage.local.get(["backendJwt", "accessToken", "user"]);
-
-  // Auto-sync if we have MS token but no backend JWT yet
-  if (!storage.backendJwt && storage.accessToken && storage.user) {
-    log("No backendJwt found, auto-syncing with backend...");
-    await syncAuthWithBackend(storage.accessToken, storage.user);
-    storage = await chrome.storage.local.get(["backendJwt", "accessToken"]);
-  }
+  let storage = await chrome.storage.local.get(["backendJwt"]);
 
   if (!storage.backendJwt) {
-    return { error: "Not synced with backend. Please re-login." };
+    return { error: "Not authenticated. Please login." };
   }
 
   const headers = {
@@ -319,14 +188,6 @@ async function backendFetch(endpoint, options) {
     Authorization: "Bearer " + storage.backendJwt,
     ...(options?.headers || {}),
   };
-
-  // Get a fresh MS token (refresh if expired)
-  const tokenResult = await getValidToken();
-  if (tokenResult.token) {
-    headers["X-MS-Token"] = tokenResult.token;
-  } else if (storage.accessToken) {
-    headers["X-MS-Token"] = storage.accessToken;
-  }
 
   try {
     const resp = await fetch(OUTMASS_BACKEND_URL + endpoint, {
@@ -389,9 +250,9 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     case "GET_USER_STATE":
       chrome.storage.local.get(
-        ["user", "plan", "emailsSentThisMonth", "accessToken", "backendJwt"],
+        ["user", "plan", "emailsSentThisMonth", "backendJwt"],
         function (result) {
-          var hasValidAuth = !!(result.user && result.accessToken);
+          var hasValidAuth = !!(result.user && result.backendJwt);
 
           if (!hasValidAuth) {
             sendResponse({
@@ -399,8 +260,8 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
               plan: "free",
               emailsSentThisMonth: 0,
             });
-            if (result.user && !result.accessToken) {
-              log("Stale user data found without token, clearing...");
+            if (result.user && !result.backendJwt) {
+              log("Stale user data found without JWT, clearing...");
               chrome.storage.local.remove(["user"]);
             }
             return;

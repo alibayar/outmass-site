@@ -230,11 +230,10 @@ async def send_campaign(
     campaign_id: str,
     user: dict = Depends(get_current_user),
     authorization: str = Header(...),
-    x_ms_token: str = Header(..., alias="X-MS-Token"),
 ):
     """
     Start sending emails for a campaign.
-    Requires X-MS-Token header with the user's Microsoft access token.
+    Uses stored refresh_token (Web flow) to get fresh MS access token.
     MVP: synchronous send (no Celery).
     """
     campaign = campaign_model.get_campaign(campaign_id)
@@ -246,19 +245,15 @@ async def send_campaign(
     if campaign["status"] == "sent":
         raise HTTPException(status_code=409, detail="Campaign already sent")
 
-    # ── Save access token for follow-up worker ──
-    from database import get_db as _get_db
+    # ── Get fresh access token via refresh_token (Web flow) ──
+    from models.ms_token import get_fresh_access_token
 
-    _db = _get_db()
-    _existing = _db.table("user_tokens").select("id").eq("user_id", user["id"]).execute()
-    if _existing.data and len(_existing.data) > 0:
-        _db.table("user_tokens").update(
-            {"access_token": x_ms_token}
-        ).eq("user_id", user["id"]).execute()
-    else:
-        _db.table("user_tokens").insert(
-            {"user_id": user["id"], "access_token": x_ms_token}
-        ).execute()
+    x_ms_token = get_fresh_access_token(user["id"])
+    if not x_ms_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Could not refresh Microsoft token. Please log out and log in again.",
+        )
 
     # ── Freemium check ──
     sent_this_month = user.get("emails_sent_this_month", 0)

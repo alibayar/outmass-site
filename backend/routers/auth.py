@@ -1,23 +1,35 @@
 """
 OutMass — Auth Router
-POST /auth/microsoft  → verify MS token, upsert user, return JWT
+GET  /auth/callback    → OAuth callback, code exchange, redirect to extension with JWT
+POST /auth/microsoft   → legacy SPA flow (kept for backward compat)
 GET  /auth/me          → current user info
 """
 
+import logging
+import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi.responses import RedirectResponse, HTMLResponse
 from jose import jwt
 from pydantic import BaseModel
 
 from config import (
+    AZURE_CLIENT_ID,
+    AZURE_CLIENT_SECRET,
+    AZURE_EXTENSION_ID,
+    AZURE_REDIRECT_URI,
     GRAPH_API_BASE,
     JWT_ALGORITHM,
     JWT_EXPIRATION_HOURS,
     JWT_SECRET,
+    MS_GRAPH_SCOPES,
+    MS_TOKEN_ENDPOINT,
 )
 from models import user as user_model
+
+logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -71,6 +83,154 @@ async def get_current_user(authorization: str = Header(...)) -> dict:
 
 
 # ── Endpoints ──
+
+
+@router.get("/login")
+async def login_redirect():
+    """Redirect user to Microsoft login. Used by extension launchWebAuthFlow."""
+    params = {
+        "client_id": AZURE_CLIENT_ID,
+        "response_type": "code",
+        "redirect_uri": AZURE_REDIRECT_URI,
+        "response_mode": "query",
+        "scope": MS_GRAPH_SCOPES,
+        "prompt": "select_account",
+    }
+    auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(params)}"
+    return RedirectResponse(url=auth_url)
+
+
+@router.get("/callback")
+async def auth_callback(
+    code: str = Query(None),
+    error: str = Query(None),
+    error_description: str = Query(None),
+):
+    """
+    OAuth redirect endpoint. Microsoft redirects here after user login.
+    Exchanges code for tokens (using client_secret), stores refresh_token,
+    then redirects to extension with OutMass JWT in URL fragment.
+    """
+    if error:
+        return _error_page(error_description or error)
+
+    if not code:
+        return _error_page("No authorization code received")
+
+    if not AZURE_CLIENT_SECRET:
+        return _error_page("Server misconfigured: AZURE_CLIENT_SECRET not set")
+
+    # Exchange code for tokens using Web platform (client_secret)
+    async with httpx.AsyncClient() as client:
+        try:
+            token_resp = await client.post(
+                MS_TOKEN_ENDPOINT,
+                data={
+                    "client_id": AZURE_CLIENT_ID,
+                    "client_secret": AZURE_CLIENT_SECRET,
+                    "grant_type": "authorization_code",
+                    "code": code,
+                    "redirect_uri": AZURE_REDIRECT_URI,
+                    "scope": MS_GRAPH_SCOPES,
+                },
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+            )
+        except httpx.HTTPError as e:
+            logger.error("Token exchange network error: %s", e)
+            return _error_page("Could not reach Microsoft")
+
+    if token_resp.status_code != 200:
+        err = token_resp.json() if token_resp.content else {}
+        logger.error("Token exchange failed: %s %s", token_resp.status_code, err)
+        return _error_page(err.get("error_description", "Token exchange failed"))
+
+    tokens = token_resp.json()
+    access_token = tokens.get("access_token")
+    refresh_token = tokens.get("refresh_token")
+
+    if not access_token:
+        return _error_page("No access token received")
+
+    # Fetch user profile
+    async with httpx.AsyncClient() as client:
+        profile_resp = await client.get(
+            f"{GRAPH_API_BASE}/me",
+            headers={"Authorization": f"Bearer {access_token}"},
+        )
+
+    if profile_resp.status_code != 200:
+        logger.error("Profile fetch failed: %s", profile_resp.text)
+        return _error_page("Could not fetch user profile")
+
+    profile = profile_resp.json()
+    ms_id = profile.get("id", "")
+    email = profile.get("mail") or profile.get("userPrincipalName") or ""
+    name = profile.get("displayName", "")
+
+    if not ms_id or not email:
+        return _error_page("Incomplete user profile from Microsoft")
+
+    # Upsert user in DB
+    user = user_model.upsert_user(
+        microsoft_id=ms_id,
+        email=email,
+        name=name,
+    )
+
+    # Save refresh_token for server-side token refresh (worker, scheduled sending)
+    if refresh_token:
+        from database import get_db
+
+        db = get_db()
+        existing = (
+            db.table("user_tokens")
+            .select("id")
+            .eq("user_id", user["id"])
+            .execute()
+        )
+        if existing.data:
+            db.table("user_tokens").update(
+                {"refresh_token": refresh_token}
+            ).eq("user_id", user["id"]).execute()
+        else:
+            db.table("user_tokens").insert(
+                {"user_id": user["id"], "refresh_token": refresh_token}
+            ).execute()
+
+    # Monthly reset check
+    _check_monthly_reset(user)
+
+    # Issue OutMass JWT
+    outmass_jwt = create_jwt(user["id"], user["email"])
+
+    # Build redirect URL to extension with JWT in URL fragment (hash)
+    # Fragment is not sent to server, only visible to extension
+    ext_redirect = f"https://{AZURE_EXTENSION_ID}.chromiumapp.org/auth"
+    params = {
+        "jwt": outmass_jwt,
+        "email": user["email"],
+        "name": user.get("name", ""),
+        "plan": user.get("plan", "free"),
+    }
+    fragment = urllib.parse.urlencode(params)
+    return RedirectResponse(url=f"{ext_redirect}#{fragment}")
+
+
+def _error_page(message: str) -> HTMLResponse:
+    """Minimal HTML error page shown when auth fails."""
+    safe_message = (
+        message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    )
+    html = f"""<!DOCTYPE html>
+<html><head><title>OutMass Auth Error</title>
+<style>body{{font-family:sans-serif;padding:40px;max-width:500px;margin:auto;text-align:center;color:#323130}}
+h1{{color:#a4262c}}.msg{{background:#fde7e9;padding:12px;border-radius:4px;margin:20px 0}}</style>
+</head><body>
+<h1>Authentication Failed</h1>
+<div class="msg">{safe_message}</div>
+<p>Please close this window and try again.</p>
+</body></html>"""
+    return HTMLResponse(content=html, status_code=400)
 
 
 @router.post("/microsoft", response_model=AuthResponse)
