@@ -5,6 +5,7 @@
   "tabCampaign": { "message": "अभियान" },
   "tabReports": { "message": "रिपोर्ट" },
   "tabSettings": { "message": "सेटिंग्स" },
+  "tabAccount": { "message": "खाता" },
 
   "connChecking": { "message": "कनेक्शन जाँच रहा है..." },
   "connOnline": { "message": "सर्वर से जुड़ा हुआ" },

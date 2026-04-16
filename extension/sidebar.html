@@ -25,6 +25,7 @@
     <button class="tab active" data-tab="campaign" data-i18n="tabCampaign">Campaign</button>
     <button class="tab" data-tab="reports" data-i18n="tabReports">Reports</button>
     <button class="tab" data-tab="settings" data-i18n="tabSettings">Settings</button>
+    <button class="tab" data-tab="account" data-i18n="tabAccount">Account</button>
   </div>
 
   <!-- Tab: Campaign -->
@@ -74,12 +75,6 @@
         Recipient: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>
         Sender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>
       </div>
-    </div>
-
-    <!-- Actions -->
-    <div class="form-actions">
-      <button class="btn btn-secondary" id="btn-preview" data-i18n="btnPreview">Preview</button>
-      <button class="btn btn-primary" id="btn-send" data-i18n="btnSend" disabled>Send</button>
     </div>
 
     <!-- A/B Test -->
@@ -139,6 +134,12 @@
       </div>
     </div>
 
+    <!-- Actions (moved below all options) -->
+    <div class="form-actions">
+      <button class="btn btn-secondary" id="btn-preview" data-i18n="btnPreview">Preview</button>
+      <button class="btn btn-primary" id="btn-send" data-i18n="btnSend" disabled>Send</button>
+    </div>
+
     <!-- Quota -->
     <div class="quota-bar">
       <div class="quota-text" id="quota-text">50/50 emails remaining (Free Plan)</div>
@@ -188,26 +189,25 @@
     <div id="settings-loading" class="reports-loading" data-i18n="reportsLoading">Loading...</div>
     <div id="settings-content" style="display:none;">
 
-      <!-- Account -->
+      <!-- Sender Information (moved to top) -->
       <div class="settings-section">
-        <h4 class="settings-title" data-i18n="settingsAccount">Account</h4>
-        <div class="settings-info">
-          <div class="settings-row">
-            <span class="settings-label" data-i18n="settingsEmail">Email</span>
-            <span class="settings-value" id="settings-email">-</span>
-          </div>
-          <div class="settings-row">
-            <span class="settings-label" data-i18n="settingsPlan">Plan</span>
-            <span class="settings-value"><span class="plan-badge" id="settings-plan">Free</span></span>
-          </div>
-          <div class="settings-row">
-            <span class="settings-label" data-i18n="settingsSentThisMonth">Sent this month</span>
-            <span class="settings-value" id="settings-sent-count">0</span>
-          </div>
+        <h4 class="settings-title" data-i18n="settingsSender">Sender Information</h4>
+        <p class="hint" data-i18n="settingsSenderHint">Used in your email signature and AI-generated emails.</p>
+        <div class="form-group">
+          <label for="settings-sender-name" data-i18n="settingsSenderName">Your Name</label>
+          <input type="text" id="settings-sender-name" placeholder="Ali Bayar" maxlength="100">
         </div>
-        <div class="settings-actions">
-          <button class="btn btn-primary btn-block" id="settings-btn-upgrade" data-i18n="btnUpgrade">Upgrade Plan</button>
-          <button class="btn btn-secondary btn-block" id="settings-btn-portal" data-i18n="btnManageSub" style="display:none;">Manage Subscription</button>
+        <div class="form-group">
+          <label for="settings-sender-position" data-i18n="settingsSenderPosition">Your Position</label>
+          <input type="text" id="settings-sender-position" placeholder="Founder & CEO" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="settings-sender-company" data-i18n="settingsSenderCompany">Your Company</label>
+          <input type="text" id="settings-sender-company" placeholder="Metis Information Technologies" maxlength="100">
+        </div>
+        <div class="form-group">
+          <label for="settings-sender-phone" data-i18n="settingsSenderPhone">Phone (optional)</label>
+          <input type="text" id="settings-sender-phone" placeholder="+90 555 123 4567" maxlength="50">
         </div>
       </div>
 
@@ -249,32 +249,10 @@
         </div>
       </div>
 
-      <!-- Sender Information -->
-      <div class="settings-section">
-        <h4 class="settings-title" data-i18n="settingsSender">Sender Information</h4>
-        <p class="hint" data-i18n="settingsSenderHint">Used in your email signature and AI-generated emails.</p>
-        <div class="form-group">
-          <label for="settings-sender-name" data-i18n="settingsSenderName">Your Name</label>
-          <input type="text" id="settings-sender-name" placeholder="Ali Bayar" maxlength="100">
-        </div>
-        <div class="form-group">
-          <label for="settings-sender-position" data-i18n="settingsSenderPosition">Your Position</label>
-          <input type="text" id="settings-sender-position" placeholder="Founder & CEO" maxlength="100">
-        </div>
-        <div class="form-group">
-          <label for="settings-sender-company" data-i18n="settingsSenderCompany">Your Company</label>
-          <input type="text" id="settings-sender-company" placeholder="Metis Information Technologies" maxlength="100">
-        </div>
-        <div class="form-group">
-          <label for="settings-sender-phone" data-i18n="settingsSenderPhone">Phone (optional)</label>
-          <input type="text" id="settings-sender-phone" placeholder="+90 555 123 4567" maxlength="50">
-        </div>
-      </div>
-
       <!-- Save Button -->
       <button class="btn btn-primary btn-block" id="settings-btn-save" data-i18n="btnSaveSettings">Save Settings</button>
 
-      <!-- Suppression List -->
+      <!-- Suppression List (at bottom — variable length) -->
       <div class="settings-section" style="margin-top:20px;">
         <h4 class="settings-title" data-i18n="settingsSuppression">Blocked Emails</h4>
         <p class="hint" data-i18n="settingsSuppressionHint">Emails in this list will not receive any campaigns.</p>
@@ -288,6 +266,37 @@
         </div>
         <div id="suppression-list" class="suppression-list"></div>
         <div id="suppression-empty" class="hint" data-i18n="suppressionEmpty" style="text-align:center;padding:12px;">No blocked emails yet.</div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Tab: Account -->
+  <div class="tab-content" id="tab-account">
+    <div id="account-loading" class="reports-loading" data-i18n="reportsLoading">Loading...</div>
+    <div id="account-content" style="display:none;">
+
+      <!-- Account Info -->
+      <div class="settings-section">
+        <h4 class="settings-title" data-i18n="settingsAccount">Account</h4>
+        <div class="settings-info">
+          <div class="settings-row">
+            <span class="settings-label" data-i18n="settingsEmail">Email</span>
+            <span class="settings-value" id="account-email">-</span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label" data-i18n="settingsPlan">Plan</span>
+            <span class="settings-value"><span class="plan-badge" id="account-plan">Free</span></span>
+          </div>
+          <div class="settings-row">
+            <span class="settings-label" data-i18n="settingsSentThisMonth">Sent this month</span>
+            <span class="settings-value" id="account-sent-count">0</span>
+          </div>
+        </div>
+        <div class="settings-actions">
+          <button class="btn btn-primary btn-block" id="account-btn-upgrade" data-i18n="btnUpgrade">Upgrade Plan</button>
+          <button class="btn btn-secondary btn-block" id="account-btn-portal" data-i18n="btnManageSub" style="display:none;">Manage Subscription</button>
+        </div>
       </div>
 
       <!-- Support -->

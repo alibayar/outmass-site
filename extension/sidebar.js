@@ -79,6 +79,9 @@
       if (target === "settings") {
         loadSettings();
       }
+      if (target === "account") {
+        loadAccount();
+      }
 
       log("Tab switched to:", target);
     });
@@ -1022,29 +1025,6 @@
 
       var data = resp.data || resp;
 
-      // Account info
-      var emailEl = document.getElementById("settings-email");
-      var planEl = document.getElementById("settings-plan");
-      var sentEl = document.getElementById("settings-sent-count");
-      if (emailEl) emailEl.textContent = data.email || "-";
-      if (planEl) {
-        var plan = data.plan || "free";
-        planEl.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
-        planEl.className = "plan-badge " + plan;
-      }
-      if (sentEl) sentEl.textContent = data.emails_sent_this_month || 0;
-
-      // Plan buttons
-      var btnUpgrade = document.getElementById("settings-btn-upgrade");
-      var btnPortal = document.getElementById("settings-btn-portal");
-      if (data.plan === "free") {
-        if (btnUpgrade) btnUpgrade.style.display = "block";
-        if (btnPortal) btnPortal.style.display = "none";
-      } else {
-        if (btnUpgrade) btnUpgrade.style.display = "none";
-        if (btnPortal) btnPortal.style.display = "block";
-      }
-
       // Tracking
       var trackOpens = document.getElementById("settings-track-opens");
       var trackClicks = document.getElementById("settings-track-clicks");
@@ -1074,6 +1054,50 @@
 
     // Load suppression list
     loadSuppressionList();
+  }
+
+  // ── Account (plan, usage, support) ──
+  function loadAccount() {
+    var accountLoading = document.getElementById("account-loading");
+    var accountContent = document.getElementById("account-content");
+
+    if (accountLoading) accountLoading.style.display = "block";
+    if (accountContent) accountContent.style.display = "none";
+
+    chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
+      if (accountLoading) accountLoading.style.display = "none";
+      if (accountContent) accountContent.style.display = "block";
+
+      if (!resp || resp.error) {
+        log("Account load failed:", resp ? resp.error : "unknown");
+        return;
+      }
+
+      var data = resp.data || resp;
+
+      var emailEl = document.getElementById("account-email");
+      var planEl = document.getElementById("account-plan");
+      var sentEl = document.getElementById("account-sent-count");
+      if (emailEl) emailEl.textContent = data.email || "-";
+      if (planEl) {
+        var plan = data.plan || "free";
+        planEl.textContent = plan.charAt(0).toUpperCase() + plan.slice(1);
+        planEl.className = "plan-badge " + plan;
+      }
+      if (sentEl) sentEl.textContent = data.emails_sent_this_month || 0;
+
+      var btnUpgrade = document.getElementById("account-btn-upgrade");
+      var btnPortal = document.getElementById("account-btn-portal");
+      if (data.plan === "free") {
+        if (btnUpgrade) btnUpgrade.style.display = "block";
+        if (btnPortal) btnPortal.style.display = "none";
+      } else {
+        if (btnUpgrade) btnUpgrade.style.display = "none";
+        if (btnPortal) btnPortal.style.display = "block";
+      }
+
+      log("Account loaded");
+    });
   }
 
   var _suppressionData = []; // cached for client-side filtering
@@ -1186,10 +1210,10 @@
     });
   }
 
-  // Upgrade button
-  var settingsBtnUpgrade = document.getElementById("settings-btn-upgrade");
-  if (settingsBtnUpgrade) {
-    settingsBtnUpgrade.addEventListener("click", function () {
+  // Upgrade button (in Account tab)
+  var accountBtnUpgrade = document.getElementById("account-btn-upgrade");
+  if (accountBtnUpgrade) {
+    accountBtnUpgrade.addEventListener("click", function () {
       chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "standard" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
@@ -1200,10 +1224,10 @@
     });
   }
 
-  // Manage subscription button
-  var settingsBtnPortal = document.getElementById("settings-btn-portal");
-  if (settingsBtnPortal) {
-    settingsBtnPortal.addEventListener("click", function () {
+  // Manage subscription button (in Account tab)
+  var accountBtnPortal = document.getElementById("account-btn-portal");
+  if (accountBtnPortal) {
+    accountBtnPortal.addEventListener("click", function () {
       chrome.runtime.sendMessage({ type: "OPEN_PORTAL" }, function (resp) {
         if (resp && resp.data && resp.data.portal_url) {
           window.open(resp.data.portal_url, "_blank");
@@ -1309,9 +1333,9 @@
       btnSendFeedback.disabled = true;
       btnSendFeedback.textContent = t("reportsLoading");
 
-      // Get user email from settings if available
-      var emailEl = document.getElementById("settings-email");
-      var userEmail = emailEl ? emailEl.textContent : "";
+      // Get user email from account tab if loaded
+      var emailEl = document.getElementById("account-email");
+      var userEmail = emailEl && emailEl.textContent !== "-" ? emailEl.textContent : "";
 
       chrome.runtime.sendMessage(
         {

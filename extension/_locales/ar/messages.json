@@ -5,6 +5,7 @@
   "tabCampaign": { "message": "الحملة" },
   "tabReports": { "message": "التقارير" },
   "tabSettings": { "message": "الإعدادات" },
+  "tabAccount": { "message": "الحساب" },
 
   "connChecking": { "message": "جارٍ التحقق من الاتصال..." },
   "connOnline": { "message": "متصل بالخادم" },

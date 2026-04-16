@@ -5,6 +5,7 @@
   "tabCampaign": { "message": "Kampanya" },
   "tabReports": { "message": "Raporlar" },
   "tabSettings": { "message": "Ayarlar" },
+  "tabAccount": { "message": "Hesap" },
 
   "connChecking": { "message": "Bağlantı kontrol ediliyor..." },
   "connOnline": { "message": "Sunucuya bağlandı" },

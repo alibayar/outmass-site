@@ -5,6 +5,7 @@
   "tabCampaign": { "message": "キャンペーン" },
   "tabReports": { "message": "レポート" },
   "tabSettings": { "message": "設定" },
+  "tabAccount": { "message": "アカウント" },
 
   "connChecking": { "message": "接続を確認中..." },
   "connOnline": { "message": "サーバーに接続済み" },

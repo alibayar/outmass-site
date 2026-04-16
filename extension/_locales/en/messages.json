@@ -5,6 +5,7 @@
   "tabCampaign": { "message": "Campaign" },
   "tabReports": { "message": "Reports" },
   "tabSettings": { "message": "Settings" },
+  "tabAccount": { "message": "Account" },
 
   "connChecking": { "message": "Checking connection..." },
   "connOnline": { "message": "Connected to server" },

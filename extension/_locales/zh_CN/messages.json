@@ -5,6 +5,7 @@
   "tabCampaign": { "message": "活动" },
   "tabReports": { "message": "报告" },
   "tabSettings": { "message": "设置" },
+  "tabAccount": { "message": "账户" },
 
   "connChecking": { "message": "正在检查连接..." },
   "connOnline": { "message": "已连接到服务器" },
