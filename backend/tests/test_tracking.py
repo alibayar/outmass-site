@@ -73,11 +73,16 @@ def test_click_redirect_missing_url(client, fake_db):
 
 
 def test_unsubscribe_page_get(client, fake_db):
-    """GET /unsubscribe/{id} should return HTML form."""
-    resp = client.get("/unsubscribe/contact-001")
+    """GET /unsubscribe/{id} should return HTML form with contact's email."""
+    with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
+         patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
+        resp = client.get("/unsubscribe/contact-001")
     assert resp.status_code == 200
     assert "text/html" in resp.headers["content-type"]
-    assert "Abonelikten Cik" in resp.text
+    # Default lang is English (no Accept-Language header)
+    assert "Unsubscribe" in resp.text
+    # Contact's email should appear on the page
+    assert "user@example.com" in resp.text
 
 
 def test_unsubscribe_post(client, fake_db):
@@ -88,11 +93,25 @@ def test_unsubscribe_post(client, fake_db):
          patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
         resp = client.post("/unsubscribe/contact-001")
     assert resp.status_code == 200
-    assert "Basariyla Cikildi" in resp.text
+    assert "Successfully Unsubscribed" in resp.text
 
 
 def test_unsubscribe_post_not_found(client, fake_db):
-    """POST /unsubscribe with unknown contact should 404."""
+    """POST /unsubscribe with unknown contact returns 'invalid link' page (200)."""
     with patch("routers.tracking.contact_model.get_contact", return_value=None):
         resp = client.post("/unsubscribe/nonexistent")
-    assert resp.status_code == 404
+    # Returns 200 with 'invalid or expired' page (better UX than 404)
+    assert resp.status_code == 200
+    assert "invalid" in resp.text.lower() or "expired" in resp.text.lower()
+
+
+def test_unsubscribe_undo(client, fake_db):
+    """POST /unsubscribe/{id}/undo should reverse the unsubscribe."""
+    UNSUBBED = {**FAKE_CONTACT, "unsubscribed": True}
+    fake_db.set_table("contacts", FakeQueryBuilder([UNSUBBED]))
+    fake_db.set_table("suppression_list", FakeQueryBuilder([]))
+    with patch("routers.tracking.contact_model.get_contact", return_value=UNSUBBED), \
+         patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
+        resp = client.post("/unsubscribe/contact-001/undo")
+    assert resp.status_code == 200
+    assert "restored" in resp.text.lower()
