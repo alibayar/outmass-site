@@ -22,10 +22,24 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 class GenerateEmailRequest(BaseModel):
     prompt: str  # e.g. "Write a cold outreach email for a SaaS product"
     tone: str = "professional"  # professional, friendly, formal, casual
-    language: str = "tr"  # tr or en
+    language: str = "en"  # en, tr, de, fr, es, ru, ar, hi, zh, ja
     sender_name: str = ""
     sender_position: str = ""
     sender_company: str = ""
+
+
+_LANG_NAMES = {
+    "en": "English",
+    "tr": "Turkish",
+    "de": "German",
+    "fr": "French",
+    "es": "Spanish",
+    "ru": "Russian",
+    "ar": "Arabic",
+    "hi": "Hindi",
+    "zh": "Chinese (Simplified)",
+    "ja": "Japanese",
+}
 
 
 SYSTEM_PROMPT = """You are an expert email copywriter. Generate a marketing/outreach email based on the user's description.
@@ -64,7 +78,8 @@ async def generate_email(
     if not body.prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt is required")
 
-    lang_hint = "Write in Turkish." if body.language == "tr" else "Write in English."
+    lang_name = _LANG_NAMES.get(body.language, "English")
+    lang_hint = f"Write in {lang_name}."
     tone_hint = f"Tone: {body.tone}."
 
     sender_hint = ""

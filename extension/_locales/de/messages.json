@@ -1,209 +1,563 @@
 {
-  "appName": { "message": "OutMass" },
-  "appDesc": { "message": "Massen-E-Mail-Kampagnen direkt aus Outlook Web" },
-
-  "tabCampaign": { "message": "Kampagne" },
-  "tabReports": { "message": "Berichte" },
-  "tabSettings": { "message": "Einstellungen" },
-  "tabAccount": { "message": "Konto" },
-
-  "connChecking": { "message": "Verbindung wird gepr\u00fcft..." },
-  "connOnline": { "message": "Mit Server verbunden" },
-  "connOffline": { "message": "Keine Verbindung zum Server" },
-  "offlineBanner": { "message": "Keine Verbindung zum Server. Pr\u00fcfen Sie Ihre Internetverbindung." },
-  "extUpdatedReload": { "message": "Erweiterung aktualisiert. Bitte laden Sie die Seite neu." },
-  "btnClose": { "message": "Schlie\u00dfen" },
-
-  "csvLabel": { "message": "Empf\u00e4ngerliste (CSV)" },
-  "csvDropHint": { "message": "CSV-Datei hierher ziehen" },
-  "csvDropHintAlt": { "message": "oder klicken zum Ausw\u00e4hlen" },
-  "csvCountSuffix": { "message": "Empf\u00e4nger" },
-
-  "btnAiWriter": { "message": "Mit KI schreiben" },
-  "templateDefault": { "message": "-- Vorlage ausw\u00e4hlen --" },
-  "btnSaveTemplate": { "message": "Speichern" },
-  "btnDeleteTemplate": { "message": "L\u00f6schen" },
-  "templateDeleteTitle": { "message": "Ausgew\u00e4hlte Vorlage l\u00f6schen" },
-  "templateSaveTitle": { "message": "Aktuellen Inhalt als Vorlage speichern" },
-
-  "labelSubject": { "message": "Betreff" },
-  "placeholderSubject": { "message": "Hallo {{firstName}}, wir haben ein Angebot f\u00fcr Sie" },
-  "labelBody": { "message": "E-Mail-Inhalt" },
-  "placeholderBody": { "message": "Hallo {{firstName}},\n\nWir haben ein tolles Angebot f\u00fcr {{company}}..." },
-  "placeholderRecipient": { "message": "Empf\u00e4nger:" },
-  "placeholderSender": { "message": "Absender:" },
-  "placeholdersHint": { "message": "Empf\u00e4nger: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Absender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>" },
-
-  "btnPreview": { "message": "Vorschau" },
-  "btnSend": { "message": "Senden" },
-
-  "abTestLabel": { "message": "A/B-Test (2 Betreffzeilen testen)" },
-  "abSubjectBLabel": { "message": "Alternativer Betreff (B)" },
-  "abSubjectBPlaceholder": { "message": "Zweite Betreffzeile..." },
-  "abTestPctLabel": { "message": "Testanteil (%)" },
-  "abTestNote": { "message": "Zwei verschiedene Betreffs werden an einen Teil der Empf\u00e4nger gesendet. Der Gewinner wird an den Rest gesendet." },
-
-  "scheduleLabel": { "message": "Geplanter Versand" },
-  "scheduleDateLabel": { "message": "Versandzeitpunkt" },
-  "scheduleNote": { "message": "Wird automatisch zum angegebenen Zeitpunkt versendet." },
-
-  "followupLabel": { "message": "Automatische Nachfass-E-Mail bei Nicht-\u00d6ffnern" },
-  "followupDelayLabel": { "message": "Nach wie vielen Tagen?" },
-  "followupSubjectLabel": { "message": "Nachfass-Betreff" },
-  "followupSubjectPlaceholder": { "message": "Re: {{firstName}}, haben Sie unser Angebot gesehen?" },
-  "followupBodyLabel": { "message": "Nachfass-Inhalt" },
-  "followupBodyPlaceholder": { "message": "Hallo {{firstName}},\n\nHaben Sie unsere vorherige E-Mail gesehen?" },
-  "followupNote": { "message": "Wird zus\u00e4tzlich zur Haupt-E-Mail an Nicht-\u00d6ffner gesendet." },
-
-  "quotaDefault": { "message": "$1/$2 E-Mails verbleibend ($3-Plan)" },
-
-  "reportsLoading": { "message": "Wird geladen..." },
-  "btnBack": { "message": "Zur\u00fcck" },
-  "statSent": { "message": "Gesendet" },
-  "statOpened": { "message": "Ge\u00f6ffnet" },
-  "statClicked": { "message": "Geklickt" },
-  "statOpenRate": { "message": "\u00d6ffnungsrate:" },
-  "statClickRate": { "message": "Klickrate:" },
-  "btnExportCsv": { "message": "CSV herunterladen" },
-  "noCampaignsFound": { "message": "Keine Kampagnen gefunden." },
-  "noCampaignsYet": { "message": "Noch keine Kampagnen." },
-  "chartSent": { "message": "Gesendet" },
-  "chartOpened": { "message": "Ge\u00f6ffnet" },
-  "chartClicked": { "message": "Geklickt" },
-
-  "settingsAccount": { "message": "Konto" },
-  "settingsEmail": { "message": "E-Mail" },
-  "settingsPlan": { "message": "Plan" },
-  "settingsSentThisMonth": { "message": "Diesen Monat gesendet" },
-  "btnUpgrade": { "message": "Plan upgraden" },
-  "btnManageSub": { "message": "Abonnement verwalten" },
-
-  "settingsTracking": { "message": "Tracking" },
-  "settingsTrackOpens": { "message": "\u00d6ffnungs-Tracking" },
-  "settingsTrackClicks": { "message": "Klick-Tracking" },
-
-  "settingsUnsub": { "message": "Abmeldelink" },
-  "settingsUnsubDefault": { "message": "Abmelden" },
-  "settingsUnsubHint": { "message": "Linktext am Ende der E-Mails" },
-
-  "settingsTimezone": { "message": "Zeitzone" },
-  "tzTurkey": { "message": "T\u00fcrkei (UTC+3)" },
-  "tzLondon": { "message": "London (UTC+0/+1)" },
-  "tzBerlin": { "message": "Berlin (UTC+1/+2)" },
-  "tzNewYork": { "message": "New York (UTC-5/-4)" },
-  "tzLosAngeles": { "message": "Los Angeles (UTC-8/-7)" },
-  "tzDubai": { "message": "Dubai (UTC+4)" },
-  "tzUtc": { "message": "UTC" },
-
-  "settingsSender": { "message": "Absenderinformationen" },
-  "settingsSenderHint": { "message": "Wird in Ihrer E-Mail-Signatur und KI-generierten E-Mails verwendet." },
-  "settingsSenderName": { "message": "Ihr Name" },
-  "settingsSenderPosition": { "message": "Ihre Position" },
-  "settingsSenderCompany": { "message": "Ihr Unternehmen" },
-  "settingsSenderPhone": { "message": "Telefon (optional)" },
-
-  "btnSaveSettings": { "message": "Einstellungen speichern" },
-  "settingsSaving": { "message": "Wird gespeichert..." },
-  "settingsSaved": { "message": "Gespeichert!" },
-
-  "settingsSuppression": { "message": "Blockierte E-Mails" },
-  "settingsSuppressionHint": { "message": "E-Mails in dieser Liste erhalten keine Kampagnen." },
-  "settingsSuppressionPlaceholder": { "message": "email@beispiel.de" },
-  "btnAdd": { "message": "Hinzuf\u00fcgen" },
-  "suppressionSearch": { "message": "Suchen..." },
-  "suppressionEmpty": { "message": "Noch keine blockierten E-Mails." },
-  "suppressionReasonUnsub": { "message": "Abgemeldet" },
-  "suppressionReasonManual": { "message": "Manuell" },
-  "suppressionEmailSuffix": { "message": "E-Mail" },
-
-  "settingsSupport": { "message": "Support" },
-  "feedbackPlaceholder": { "message": "Beschreiben Sie Ihr Problem oder Ihren Vorschlag..." },
-  "btnSendFeedback": { "message": "Senden" },
-  "feedbackEmpty": { "message": "Bitte schreiben Sie eine Nachricht." },
-  "feedbackSent": { "message": "Ihr Feedback wurde gesendet!" },
-  "feedbackFailed": { "message": "Konnte nicht gesendet werden. Sie k\u00f6nnen uns stattdessen per E-Mail kontaktieren." },
-
-  "popupSubtitle": { "message": "Massen-E-Mail-Kampagnen" },
-  "popupLoginHint": { "message": "Verbinden Sie Ihr Outlook-Konto, um Kampagnen zu erstellen." },
-  "btnMicrosoftLogin": { "message": "Mit Microsoft anmelden" },
-  "popupLoading": { "message": "Verbindung mit Ihrem Microsoft-Konto..." },
-  "popupErrorDefault": { "message": "Ein Fehler ist aufgetreten." },
-  "btnRetry": { "message": "Erneut versuchen" },
-  "btnDashboard": { "message": "Kampagnen-Panel \u00f6ffnen" },
-  "btnLogout": { "message": "Abmelden" },
-  "popupConnected": { "message": "Verbunden" },
-  "popupNoResponse": { "message": "Keine Antwort erhalten." },
-  "popupUserInfoFailed": { "message": "Benutzerinformationen konnten nicht abgerufen werden." },
-  "popupUnknownError": { "message": "Ein unbekannter Fehler ist aufgetreten." },
-  "popupUpgradeStandard": { "message": "Upgrade \u2192 Standard (15\u00a0$/Monat)" },
-  "popupUpgradePro": { "message": "Upgrade \u2192 Pro (25\u00a0$/Monat)" },
-  "popupCheckoutFailed": { "message": "Zahlungsseite konnte nicht erstellt werden: " },
-  "popupPortalFailed": { "message": "Portal konnte nicht ge\u00f6ffnet werden." },
-
-  "toolbarButton": { "message": "OutMass" },
-  "toolbarButtonTitle": { "message": "OutMass \u2014 Kampagnen-Panel \u00f6ffnen" },
-
-  "alertUploadCsvFirst": { "message": "Bitte laden Sie zuerst eine CSV-Datei hoch." },
-  "alertFillSubjectBody": { "message": "Bitte f\u00fcllen Sie Betreff und E-Mail-Inhalt aus." },
-  "alertPreviewTitle": { "message": "--- VORSCHAU ---\nBetreff: " },
-  "alertScheduling": { "message": "Wird geplant..." },
-  "alertPreparing": { "message": "Wird vorbereitet..." },
-  "alertCampaignCreateFailed": { "message": "Kampagne konnte nicht erstellt werden" },
-  "alertContactsUploading": { "message": "Kontakte werden hochgeladen..." },
-  "alertContactsUploadFailed": { "message": "Kontakte konnten nicht hochgeladen werden" },
-  "alertAbTestProOnly": { "message": "A/B-Tests sind nur im Pro-Plan verf\u00fcgbar." },
-  "alertScheduledSuccess": { "message": "Erfolg! Wird an $1 Empf\u00e4nger am $2 gesendet." },
-  "alertSending": { "message": "Wird gesendet... 0/" },
-  "alertSendFailed": { "message": "Senden fehlgeschlagen" },
-  "alertSendError": { "message": "Senden fehlgeschlagen!\n\nFehler: " },
-  "alertAbSendSuccess": { "message": "Erfolg! $1 E-Mails gesendet (A/B-Test).\nDie beste Betreffzeile wird automatisch versendet." },
-  "alertPartialSend": { "message": "$1 E-Mails gesendet, $2 Fehler aufgetreten.\n\nErster Fehler: " },
-  "alertSendSuccess": { "message": "Erfolg! $1 E-Mails gesendet." },
-  "alertLimitReached": { "message": "Sie haben Ihr Planlimit erreicht ($1 E-Mails/Monat).\nBitte upgraden Sie Ihren Plan." },
-
-  "aiModalTitle": { "message": "KI-E-Mail-Assistent" },
-  "aiPromptPlaceholder": { "message": "Worum soll es in der E-Mail gehen?\n\nBeispiel: Kaltakquise-E-Mail f\u00fcr unser SaaS-Produkt" },
-  "aiToneProfessional": { "message": "Professionell" },
-  "aiToneFriendly": { "message": "Freundlich" },
-  "aiToneFormal": { "message": "Formell" },
-  "aiToneCasual": { "message": "Locker" },
-  "aiLangTr": { "message": "T\u00fcrkisch" },
-  "aiLangEn": { "message": "Englisch" },
-  "btnAiGenerate": { "message": "Generieren" },
-  "btnCancel": { "message": "Abbrechen" },
-  "alertAiPromptEmpty": { "message": "Bitte beschreiben Sie, welche Art von E-Mail Sie m\u00f6chten." },
-  "aiGenerating": { "message": "Wird generiert..." },
-  "alertAiProOnly": { "message": "Der KI-E-Mail-Assistent ist nur im Pro-Plan verf\u00fcgbar." },
-  "alertAiFailed": { "message": "KI-Generierung fehlgeschlagen: " },
-
-  "templatePromptName": { "message": "Vorlagenname:" },
-  "templateDefaultName": { "message": "Meine Vorlage" },
-  "templateConfirmDelete": { "message": "Vorlage \"$1\" l\u00f6schen?" },
-  "alertTemplateFillFirst": { "message": "Bitte f\u00fcllen Sie zuerst Betreff und Inhalt aus." },
-  "alertTemplateStandardOnly": { "message": "E-Mail-Vorlagen sind in den Pl\u00e4nen Standard und Pro verf\u00fcgbar." },
-  "alertTemplateSaveFailed": { "message": "Vorlage konnte nicht gespeichert werden: " },
-  "alertTemplateDeleteFailed": { "message": "Vorlage konnte nicht gel\u00f6scht werden: " },
-
-  "csvExportDownloading": { "message": "Wird heruntergeladen..." },
-  "alertCsvExportStandardOnly": { "message": "CSV-Export ist in den Pl\u00e4nen Standard und Pro verf\u00fcgbar." },
-  "alertCsvExportFailed": { "message": "Export fehlgeschlagen: " },
-  "alertCsvExportEmpty": { "message": "CSV-Export erfolgreich, aber die Daten sind leer." },
-
-  "reportsSentSuffix": { "message": " gesendet" },
-  "reportsOpenRate": { "message": "\u00d6ffnungen: " },
-  "reportsClickRate": { "message": "Klicks: " },
-  "reportsError": { "message": "Fehler" },
-  "reportsFollowupPending": { "message": " Nachfass-E-Mails ausstehend" },
-
-  "upgradeModalTitle": { "message": "Plan upgraden" },
-  "upgradeModalText": { "message": "Sie haben Ihr E-Mail-Limit erreicht.<br/>Upgraden Sie, um mehr E-Mails zu senden." },
-  "upgradeModalStandard": { "message": "Standard: 5.000 E-Mails/Monat \u2014 15\u00a0$/Monat" },
-  "upgradeModalPro": { "message": "Pro: 10.000 E-Mails/Monat \u2014 25\u00a0$/Monat" },
-  "upgradeModalFeatures": { "message": "Detaillierte Berichte + bevorzugter Support" },
-  "upgradeModalBtn": { "message": "Jetzt upgraden \u2014 Standard 15\u00a0$/Monat" },
-  "upgradeModalLater": { "message": "Vielleicht sp\u00e4ter" },
-  "alertUpgradeCheckoutFailed": { "message": "Zahlungsseite konnte nicht erstellt werden. Bitte versuchen Sie es erneut." },
-
-  "settingsSaveFailed": { "message": "Einstellungen konnten nicht gespeichert werden: " },
-  "settingsCheckoutFailed": { "message": "Zahlungsseite konnte nicht erstellt werden." }
+  "appName": {
+    "message": "OutMass"
+  },
+  "appDesc": {
+    "message": "Massen-E-Mail-Kampagnen direkt aus Outlook Web"
+  },
+  "tabCampaign": {
+    "message": "Kampagne"
+  },
+  "tabReports": {
+    "message": "Berichte"
+  },
+  "tabSettings": {
+    "message": "Einstellungen"
+  },
+  "tabAccount": {
+    "message": "Konto"
+  },
+  "connChecking": {
+    "message": "Verbindung wird geprüft..."
+  },
+  "connOnline": {
+    "message": "Mit Server verbunden"
+  },
+  "connOffline": {
+    "message": "Keine Verbindung zum Server"
+  },
+  "offlineBanner": {
+    "message": "Keine Verbindung zum Server. Prüfen Sie Ihre Internetverbindung."
+  },
+  "extUpdatedReload": {
+    "message": "Erweiterung aktualisiert. Bitte laden Sie die Seite neu."
+  },
+  "btnClose": {
+    "message": "Schließen"
+  },
+  "csvLabel": {
+    "message": "Empfängerliste (CSV)"
+  },
+  "csvDropHint": {
+    "message": "CSV-Datei hierher ziehen"
+  },
+  "csvDropHintAlt": {
+    "message": "oder klicken zum Auswählen"
+  },
+  "csvCountSuffix": {
+    "message": "Empfänger"
+  },
+  "btnAiWriter": {
+    "message": "Mit KI schreiben"
+  },
+  "templateDefault": {
+    "message": "-- Vorlage auswählen --"
+  },
+  "btnSaveTemplate": {
+    "message": "Speichern"
+  },
+  "btnDeleteTemplate": {
+    "message": "Löschen"
+  },
+  "templateDeleteTitle": {
+    "message": "Ausgewählte Vorlage löschen"
+  },
+  "templateSaveTitle": {
+    "message": "Aktuellen Inhalt als Vorlage speichern"
+  },
+  "labelSubject": {
+    "message": "Betreff"
+  },
+  "placeholderSubject": {
+    "message": "Hallo {{firstName}}, wir haben ein Angebot für Sie"
+  },
+  "labelBody": {
+    "message": "E-Mail-Inhalt"
+  },
+  "placeholderBody": {
+    "message": "Hallo {{firstName}},\n\nWir haben ein tolles Angebot für {{company}}..."
+  },
+  "placeholderRecipient": {
+    "message": "Empfänger:"
+  },
+  "placeholderSender": {
+    "message": "Absender:"
+  },
+  "placeholdersHint": {
+    "message": "Empfänger: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Absender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "Vorschau"
+  },
+  "btnSend": {
+    "message": "Senden"
+  },
+  "abTestLabel": {
+    "message": "A/B-Test (2 Betreffzeilen testen)"
+  },
+  "abSubjectBLabel": {
+    "message": "Alternativer Betreff (B)"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "Zweite Betreffzeile..."
+  },
+  "abTestPctLabel": {
+    "message": "Testanteil (%)"
+  },
+  "abTestNote": {
+    "message": "Zwei verschiedene Betreffs werden an einen Teil der Empfänger gesendet. Der Gewinner wird an den Rest gesendet."
+  },
+  "scheduleLabel": {
+    "message": "Geplanter Versand"
+  },
+  "scheduleDateLabel": {
+    "message": "Versandzeitpunkt"
+  },
+  "scheduleNote": {
+    "message": "Wird automatisch zum angegebenen Zeitpunkt versendet."
+  },
+  "followupLabel": {
+    "message": "Automatische Nachfass-E-Mail bei Nicht-Öffnern"
+  },
+  "followupDelayLabel": {
+    "message": "Nach wie vielen Tagen?"
+  },
+  "followupSubjectLabel": {
+    "message": "Nachfass-Betreff"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}, haben Sie unser Angebot gesehen?"
+  },
+  "followupBodyLabel": {
+    "message": "Nachfass-Inhalt"
+  },
+  "followupBodyPlaceholder": {
+    "message": "Hallo {{firstName}},\n\nHaben Sie unsere vorherige E-Mail gesehen?"
+  },
+  "followupNote": {
+    "message": "Wird zusätzlich zur Haupt-E-Mail an Nicht-Öffner gesendet."
+  },
+  "quotaDefault": {
+    "message": "$1/$2 E-Mails verbleibend ($3-Plan)"
+  },
+  "reportsLoading": {
+    "message": "Wird geladen..."
+  },
+  "btnBack": {
+    "message": "Zurück"
+  },
+  "statSent": {
+    "message": "Gesendet"
+  },
+  "statOpened": {
+    "message": "Geöffnet"
+  },
+  "statClicked": {
+    "message": "Geklickt"
+  },
+  "statOpenRate": {
+    "message": "Öffnungsrate:"
+  },
+  "statClickRate": {
+    "message": "Klickrate:"
+  },
+  "btnExportCsv": {
+    "message": "CSV herunterladen"
+  },
+  "noCampaignsFound": {
+    "message": "Keine Kampagnen gefunden."
+  },
+  "noCampaignsYet": {
+    "message": "Noch keine Kampagnen."
+  },
+  "chartSent": {
+    "message": "Gesendet"
+  },
+  "chartOpened": {
+    "message": "Geöffnet"
+  },
+  "chartClicked": {
+    "message": "Geklickt"
+  },
+  "settingsAccount": {
+    "message": "Konto"
+  },
+  "settingsEmail": {
+    "message": "E-Mail"
+  },
+  "settingsPlan": {
+    "message": "Plan"
+  },
+  "settingsSentThisMonth": {
+    "message": "Diesen Monat gesendet"
+  },
+  "btnUpgrade": {
+    "message": "Plan upgraden"
+  },
+  "btnManageSub": {
+    "message": "Abonnement verwalten"
+  },
+  "settingsTracking": {
+    "message": "Tracking"
+  },
+  "settingsTrackOpens": {
+    "message": "Öffnungs-Tracking"
+  },
+  "settingsTrackClicks": {
+    "message": "Klick-Tracking"
+  },
+  "settingsUnsub": {
+    "message": "Abmeldelink"
+  },
+  "settingsUnsubDefault": {
+    "message": "Abmelden"
+  },
+  "settingsUnsubHint": {
+    "message": "Linktext am Ende der E-Mails"
+  },
+  "settingsTimezone": {
+    "message": "Zeitzone"
+  },
+  "tzTurkey": {
+    "message": "Türkei (UTC+3)"
+  },
+  "tzLondon": {
+    "message": "London (UTC+0/+1)"
+  },
+  "tzBerlin": {
+    "message": "Berlin (UTC+1/+2)"
+  },
+  "tzNewYork": {
+    "message": "New York (UTC-5/-4)"
+  },
+  "tzLosAngeles": {
+    "message": "Los Angeles (UTC-8/-7)"
+  },
+  "tzDubai": {
+    "message": "Dubai (UTC+4)"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "Absenderinformationen"
+  },
+  "settingsSenderHint": {
+    "message": "Wird in Ihrer E-Mail-Signatur und KI-generierten E-Mails verwendet."
+  },
+  "settingsSenderName": {
+    "message": "Ihr Name"
+  },
+  "settingsSenderPosition": {
+    "message": "Ihre Position"
+  },
+  "settingsSenderCompany": {
+    "message": "Ihr Unternehmen"
+  },
+  "settingsSenderPhone": {
+    "message": "Telefon (optional)"
+  },
+  "btnSaveSettings": {
+    "message": "Einstellungen speichern"
+  },
+  "settingsSaving": {
+    "message": "Wird gespeichert..."
+  },
+  "settingsSaved": {
+    "message": "Gespeichert!"
+  },
+  "settingsSuppression": {
+    "message": "Blockierte E-Mails"
+  },
+  "settingsSuppressionHint": {
+    "message": "E-Mails in dieser Liste erhalten keine Kampagnen."
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "email@beispiel.de"
+  },
+  "btnAdd": {
+    "message": "Hinzufügen"
+  },
+  "suppressionSearch": {
+    "message": "Suchen..."
+  },
+  "suppressionEmpty": {
+    "message": "Noch keine blockierten E-Mails."
+  },
+  "suppressionReasonUnsub": {
+    "message": "Abgemeldet"
+  },
+  "suppressionReasonManual": {
+    "message": "Manuell"
+  },
+  "suppressionEmailSuffix": {
+    "message": "E-Mail"
+  },
+  "settingsSupport": {
+    "message": "Support"
+  },
+  "feedbackPlaceholder": {
+    "message": "Beschreiben Sie Ihr Problem oder Ihren Vorschlag..."
+  },
+  "btnSendFeedback": {
+    "message": "Senden"
+  },
+  "feedbackEmpty": {
+    "message": "Bitte schreiben Sie eine Nachricht."
+  },
+  "feedbackSent": {
+    "message": "Ihr Feedback wurde gesendet!"
+  },
+  "feedbackFailed": {
+    "message": "Konnte nicht gesendet werden. Sie können uns stattdessen per E-Mail kontaktieren."
+  },
+  "popupSubtitle": {
+    "message": "Massen-E-Mail-Kampagnen"
+  },
+  "popupLoginHint": {
+    "message": "Verbinden Sie Ihr Outlook-Konto, um Kampagnen zu erstellen."
+  },
+  "btnMicrosoftLogin": {
+    "message": "Mit Microsoft anmelden"
+  },
+  "popupLoading": {
+    "message": "Verbindung mit Ihrem Microsoft-Konto..."
+  },
+  "popupErrorDefault": {
+    "message": "Ein Fehler ist aufgetreten."
+  },
+  "btnRetry": {
+    "message": "Erneut versuchen"
+  },
+  "btnDashboard": {
+    "message": "Kampagnen-Panel öffnen"
+  },
+  "btnLogout": {
+    "message": "Abmelden"
+  },
+  "popupConnected": {
+    "message": "Verbunden"
+  },
+  "popupNoResponse": {
+    "message": "Keine Antwort erhalten."
+  },
+  "popupUserInfoFailed": {
+    "message": "Benutzerinformationen konnten nicht abgerufen werden."
+  },
+  "popupUnknownError": {
+    "message": "Ein unbekannter Fehler ist aufgetreten."
+  },
+  "popupUpgradeStandard": {
+    "message": "Upgrade → Standard (15 $/Monat)"
+  },
+  "popupUpgradePro": {
+    "message": "Upgrade → Pro (25 $/Monat)"
+  },
+  "popupCheckoutFailed": {
+    "message": "Zahlungsseite konnte nicht erstellt werden: "
+  },
+  "popupPortalFailed": {
+    "message": "Portal konnte nicht geöffnet werden."
+  },
+  "toolbarButton": {
+    "message": "OutMass"
+  },
+  "toolbarButtonTitle": {
+    "message": "OutMass — Kampagnen-Panel öffnen"
+  },
+  "alertUploadCsvFirst": {
+    "message": "Bitte laden Sie zuerst eine CSV-Datei hoch."
+  },
+  "alertFillSubjectBody": {
+    "message": "Bitte füllen Sie Betreff und E-Mail-Inhalt aus."
+  },
+  "alertPreviewTitle": {
+    "message": "--- VORSCHAU ---\nBetreff: "
+  },
+  "alertScheduling": {
+    "message": "Wird geplant..."
+  },
+  "alertPreparing": {
+    "message": "Wird vorbereitet..."
+  },
+  "alertCampaignCreateFailed": {
+    "message": "Kampagne konnte nicht erstellt werden"
+  },
+  "alertContactsUploading": {
+    "message": "Kontakte werden hochgeladen..."
+  },
+  "alertContactsUploadFailed": {
+    "message": "Kontakte konnten nicht hochgeladen werden"
+  },
+  "alertAbTestProOnly": {
+    "message": "A/B-Tests sind nur im Pro-Plan verfügbar."
+  },
+  "alertScheduledSuccess": {
+    "message": "Erfolg! Wird an $1 Empfänger am $2 gesendet."
+  },
+  "alertSending": {
+    "message": "Wird gesendet... 0/"
+  },
+  "alertSendFailed": {
+    "message": "Senden fehlgeschlagen"
+  },
+  "alertSendError": {
+    "message": "Senden fehlgeschlagen!\n\nFehler: "
+  },
+  "alertAbSendSuccess": {
+    "message": "Erfolg! $1 E-Mails gesendet (A/B-Test).\nDie beste Betreffzeile wird automatisch versendet."
+  },
+  "alertPartialSend": {
+    "message": "$1 E-Mails gesendet, $2 Fehler aufgetreten.\n\nErster Fehler: "
+  },
+  "alertSendSuccess": {
+    "message": "Erfolg! $1 E-Mails gesendet."
+  },
+  "alertLimitReached": {
+    "message": "Sie haben Ihr Planlimit erreicht ($1 E-Mails/Monat).\nBitte upgraden Sie Ihren Plan."
+  },
+  "aiModalTitle": {
+    "message": "KI-E-Mail-Assistent"
+  },
+  "aiPromptPlaceholder": {
+    "message": "Worum soll es in der E-Mail gehen?\n\nBeispiel: Kaltakquise-E-Mail für unser SaaS-Produkt"
+  },
+  "aiToneProfessional": {
+    "message": "Professionell"
+  },
+  "aiToneFriendly": {
+    "message": "Freundlich"
+  },
+  "aiToneFormal": {
+    "message": "Formell"
+  },
+  "aiToneCasual": {
+    "message": "Locker"
+  },
+  "aiLangTr": {
+    "message": "Türkisch"
+  },
+  "aiLangEn": {
+    "message": "Englisch"
+  },
+  "aiLangDe": {
+    "message": "Deutsch"
+  },
+  "aiLangFr": {
+    "message": "Franzoesisch"
+  },
+  "aiLangEs": {
+    "message": "Spanisch"
+  },
+  "aiLangRu": {
+    "message": "Russisch"
+  },
+  "aiLangAr": {
+    "message": "Arabisch"
+  },
+  "aiLangHi": {
+    "message": "Hindi"
+  },
+  "aiLangZh": {
+    "message": "Chinesisch"
+  },
+  "aiLangJa": {
+    "message": "Japanisch"
+  },
+  "btnAiGenerate": {
+    "message": "Generieren"
+  },
+  "btnCancel": {
+    "message": "Abbrechen"
+  },
+  "alertAiPromptEmpty": {
+    "message": "Bitte beschreiben Sie, welche Art von E-Mail Sie möchten."
+  },
+  "aiGenerating": {
+    "message": "Wird generiert..."
+  },
+  "alertAiProOnly": {
+    "message": "Der KI-E-Mail-Assistent ist nur im Pro-Plan verfügbar."
+  },
+  "alertAiFailed": {
+    "message": "KI-Generierung fehlgeschlagen: "
+  },
+  "templatePromptName": {
+    "message": "Vorlagenname:"
+  },
+  "templateDefaultName": {
+    "message": "Meine Vorlage"
+  },
+  "templateConfirmDelete": {
+    "message": "Vorlage \"$1\" löschen?"
+  },
+  "alertTemplateFillFirst": {
+    "message": "Bitte füllen Sie zuerst Betreff und Inhalt aus."
+  },
+  "alertTemplateStandardOnly": {
+    "message": "E-Mail-Vorlagen sind in den Plänen Standard und Pro verfügbar."
+  },
+  "alertTemplateSaveFailed": {
+    "message": "Vorlage konnte nicht gespeichert werden: "
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "Vorlage konnte nicht gelöscht werden: "
+  },
+  "csvExportDownloading": {
+    "message": "Wird heruntergeladen..."
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "CSV-Export ist in den Plänen Standard und Pro verfügbar."
+  },
+  "alertCsvExportFailed": {
+    "message": "Export fehlgeschlagen: "
+  },
+  "alertCsvExportEmpty": {
+    "message": "CSV-Export erfolgreich, aber die Daten sind leer."
+  },
+  "reportsSentSuffix": {
+    "message": " gesendet"
+  },
+  "reportsOpenRate": {
+    "message": "Öffnungen: "
+  },
+  "reportsClickRate": {
+    "message": "Klicks: "
+  },
+  "reportsError": {
+    "message": "Fehler"
+  },
+  "reportsFollowupPending": {
+    "message": " Nachfass-E-Mails ausstehend"
+  },
+  "upgradeModalTitle": {
+    "message": "Plan upgraden"
+  },
+  "upgradeModalText": {
+    "message": "Sie haben Ihr E-Mail-Limit erreicht.<br/>Upgraden Sie, um mehr E-Mails zu senden."
+  },
+  "upgradeModalStandard": {
+    "message": "Standard: 5.000 E-Mails/Monat — 15 $/Monat"
+  },
+  "upgradeModalPro": {
+    "message": "Pro: 10.000 E-Mails/Monat — 25 $/Monat"
+  },
+  "upgradeModalFeatures": {
+    "message": "Detaillierte Berichte + bevorzugter Support"
+  },
+  "upgradeModalBtn": {
+    "message": "Jetzt upgraden — Standard 15 $/Monat"
+  },
+  "upgradeModalLater": {
+    "message": "Vielleicht später"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "Zahlungsseite konnte nicht erstellt werden. Bitte versuchen Sie es erneut."
+  },
+  "settingsSaveFailed": {
+    "message": "Einstellungen konnten nicht gespeichert werden: "
+  },
+  "settingsCheckoutFailed": {
+    "message": "Zahlungsseite konnte nicht erstellt werden."
+  }
 }

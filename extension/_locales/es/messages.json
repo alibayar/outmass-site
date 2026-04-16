@@ -1,209 +1,563 @@
 {
-  "appName": { "message": "OutMass" },
-  "appDesc": { "message": "Campa\u00f1as de correo masivo directamente desde Outlook Web" },
-
-  "tabCampaign": { "message": "Campa\u00f1a" },
-  "tabReports": { "message": "Informes" },
-  "tabSettings": { "message": "Configuraci\u00f3n" },
-  "tabAccount": { "message": "Cuenta" },
-
-  "connChecking": { "message": "Verificando conexi\u00f3n..." },
-  "connOnline": { "message": "Conectado al servidor" },
-  "connOffline": { "message": "No se puede conectar al servidor" },
-  "offlineBanner": { "message": "No se puede conectar al servidor. Compruebe su conexi\u00f3n a Internet." },
-  "extUpdatedReload": { "message": "Extensi\u00f3n actualizada. Recargue la p\u00e1gina." },
-  "btnClose": { "message": "Cerrar" },
-
-  "csvLabel": { "message": "Lista de destinatarios (CSV)" },
-  "csvDropHint": { "message": "Arrastre y suelte un archivo CSV" },
-  "csvDropHintAlt": { "message": "o haga clic para seleccionar" },
-  "csvCountSuffix": { "message": "destinatarios" },
-
-  "btnAiWriter": { "message": "Redactar con IA" },
-  "templateDefault": { "message": "-- Seleccionar plantilla --" },
-  "btnSaveTemplate": { "message": "Guardar" },
-  "btnDeleteTemplate": { "message": "Eliminar" },
-  "templateDeleteTitle": { "message": "Eliminar plantilla seleccionada" },
-  "templateSaveTitle": { "message": "Guardar el contenido actual como plantilla" },
-
-  "labelSubject": { "message": "Asunto" },
-  "placeholderSubject": { "message": "Hola {{firstName}}, tenemos una oferta para ti" },
-  "labelBody": { "message": "Contenido del correo" },
-  "placeholderBody": { "message": "Hola {{firstName}},\n\nTenemos una gran oferta para {{company}}..." },
-  "placeholderRecipient": { "message": "Destinatario:" },
-  "placeholderSender": { "message": "Remitente:" },
-  "placeholdersHint": { "message": "Destinatario: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Remitente: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>" },
-
-  "btnPreview": { "message": "Vista previa" },
-  "btnSend": { "message": "Enviar" },
-
-  "abTestLabel": { "message": "A/B test (probar 2 l\u00edneas de asunto)" },
-  "abSubjectBLabel": { "message": "Asunto alternativo (B)" },
-  "abSubjectBPlaceholder": { "message": "Segunda l\u00ednea de asunto..." },
-  "abTestPctLabel": { "message": "Porcentaje de prueba (%)" },
-  "abTestNote": { "message": "Se enviar\u00e1n dos asuntos diferentes a una parte de los destinatarios. El ganador se enviar\u00e1 al resto." },
-
-  "scheduleLabel": { "message": "Env\u00edo programado" },
-  "scheduleDateLabel": { "message": "Hora de env\u00edo" },
-  "scheduleNote": { "message": "Se enviar\u00e1 autom\u00e1ticamente a la hora indicada." },
-
-  "followupLabel": { "message": "Seguimiento autom\u00e1tico para quienes no abrieron" },
-  "followupDelayLabel": { "message": "\u00bfDespu\u00e9s de cu\u00e1ntos d\u00edas?" },
-  "followupSubjectLabel": { "message": "Asunto del seguimiento" },
-  "followupSubjectPlaceholder": { "message": "Re: {{firstName}}, \u00bfviste nuestra oferta?" },
-  "followupBodyLabel": { "message": "Contenido del seguimiento" },
-  "followupBodyPlaceholder": { "message": "Hola {{firstName}},\n\n\u00bfViste nuestro correo anterior?" },
-  "followupNote": { "message": "Adem\u00e1s del correo principal, se enviar\u00e1 a quienes no lo abrieron." },
-
-  "quotaDefault": { "message": "$1/$2 correos restantes (Plan $3)" },
-
-  "reportsLoading": { "message": "Cargando..." },
-  "btnBack": { "message": "Volver" },
-  "statSent": { "message": "Enviados" },
-  "statOpened": { "message": "Abiertos" },
-  "statClicked": { "message": "Clics" },
-  "statOpenRate": { "message": "Tasa de apertura:" },
-  "statClickRate": { "message": "Tasa de clics:" },
-  "btnExportCsv": { "message": "Descargar CSV" },
-  "noCampaignsFound": { "message": "No se encontraron campa\u00f1as." },
-  "noCampaignsYet": { "message": "A\u00fan no hay campa\u00f1as." },
-  "chartSent": { "message": "Enviados" },
-  "chartOpened": { "message": "Abiertos" },
-  "chartClicked": { "message": "Clics" },
-
-  "settingsAccount": { "message": "Cuenta" },
-  "settingsEmail": { "message": "Correo" },
-  "settingsPlan": { "message": "Plan" },
-  "settingsSentThisMonth": { "message": "Enviados este mes" },
-  "btnUpgrade": { "message": "Mejorar plan" },
-  "btnManageSub": { "message": "Gestionar suscripci\u00f3n" },
-
-  "settingsTracking": { "message": "Seguimiento" },
-  "settingsTrackOpens": { "message": "Seguimiento de aperturas" },
-  "settingsTrackClicks": { "message": "Seguimiento de clics" },
-
-  "settingsUnsub": { "message": "Enlace de cancelaci\u00f3n" },
-  "settingsUnsubDefault": { "message": "Cancelar suscripci\u00f3n" },
-  "settingsUnsubHint": { "message": "Texto del enlace que aparece al final de los correos" },
-
-  "settingsTimezone": { "message": "Zona horaria" },
-  "tzTurkey": { "message": "Turqu\u00eda (UTC+3)" },
-  "tzLondon": { "message": "Londres (UTC+0/+1)" },
-  "tzBerlin": { "message": "Berl\u00edn (UTC+1/+2)" },
-  "tzNewYork": { "message": "Nueva York (UTC-5/-4)" },
-  "tzLosAngeles": { "message": "Los \u00c1ngeles (UTC-8/-7)" },
-  "tzDubai": { "message": "Dub\u00e1i (UTC+4)" },
-  "tzUtc": { "message": "UTC" },
-
-  "settingsSender": { "message": "Informaci\u00f3n del remitente" },
-  "settingsSenderHint": { "message": "Se usa en tu firma de correo y en los correos generados por IA." },
-  "settingsSenderName": { "message": "Tu nombre" },
-  "settingsSenderPosition": { "message": "Tu cargo" },
-  "settingsSenderCompany": { "message": "Tu empresa" },
-  "settingsSenderPhone": { "message": "Tel\u00e9fono (opcional)" },
-
-  "btnSaveSettings": { "message": "Guardar configuraci\u00f3n" },
-  "settingsSaving": { "message": "Guardando..." },
-  "settingsSaved": { "message": "\u00a1Guardado!" },
-
-  "settingsSuppression": { "message": "Correos bloqueados" },
-  "settingsSuppressionHint": { "message": "Los correos de esta lista no recibir\u00e1n ninguna campa\u00f1a." },
-  "settingsSuppressionPlaceholder": { "message": "email@ejemplo.com" },
-  "btnAdd": { "message": "A\u00f1adir" },
-  "suppressionSearch": { "message": "Buscar..." },
-  "suppressionEmpty": { "message": "A\u00fan no hay correos bloqueados." },
-  "suppressionReasonUnsub": { "message": "Dado de baja" },
-  "suppressionReasonManual": { "message": "Manual" },
-  "suppressionEmailSuffix": { "message": "correo" },
-
-  "settingsSupport": { "message": "Soporte" },
-  "feedbackPlaceholder": { "message": "Describe tu problema o sugerencia..." },
-  "btnSendFeedback": { "message": "Enviar" },
-  "feedbackEmpty": { "message": "Por favor, escribe un mensaje." },
-  "feedbackSent": { "message": "\u00a1Tu comentario ha sido enviado!" },
-  "feedbackFailed": { "message": "No se pudo enviar. Puedes escribirnos por correo." },
-
-  "popupSubtitle": { "message": "Campa\u00f1as de correo masivo" },
-  "popupLoginHint": { "message": "Conecta tu cuenta de Outlook para empezar a crear campa\u00f1as." },
-  "btnMicrosoftLogin": { "message": "Iniciar sesi\u00f3n con Microsoft" },
-  "popupLoading": { "message": "Conectando con tu cuenta de Microsoft..." },
-  "popupErrorDefault": { "message": "Ha ocurrido un error." },
-  "btnRetry": { "message": "Reintentar" },
-  "btnDashboard": { "message": "Abrir panel de campa\u00f1as" },
-  "btnLogout": { "message": "Cerrar sesi\u00f3n" },
-  "popupConnected": { "message": "Conectado" },
-  "popupNoResponse": { "message": "No se recibi\u00f3 respuesta." },
-  "popupUserInfoFailed": { "message": "No se pudo obtener la informaci\u00f3n del usuario." },
-  "popupUnknownError": { "message": "Ha ocurrido un error desconocido." },
-  "popupUpgradeStandard": { "message": "Mejorar \u2192 Standard (15\u00a0$/mes)" },
-  "popupUpgradePro": { "message": "Mejorar \u2192 Pro (25\u00a0$/mes)" },
-  "popupCheckoutFailed": { "message": "No se pudo crear la p\u00e1gina de pago: " },
-  "popupPortalFailed": { "message": "No se pudo abrir el portal." },
-
-  "toolbarButton": { "message": "OutMass" },
-  "toolbarButtonTitle": { "message": "OutMass \u2014 Abrir panel de campa\u00f1as" },
-
-  "alertUploadCsvFirst": { "message": "Primero sube un archivo CSV." },
-  "alertFillSubjectBody": { "message": "Completa el asunto y el contenido del correo." },
-  "alertPreviewTitle": { "message": "--- VISTA PREVIA ---\nAsunto: " },
-  "alertScheduling": { "message": "Programando..." },
-  "alertPreparing": { "message": "Preparando..." },
-  "alertCampaignCreateFailed": { "message": "No se pudo crear la campa\u00f1a" },
-  "alertContactsUploading": { "message": "Subiendo contactos..." },
-  "alertContactsUploadFailed": { "message": "No se pudieron subir los contactos" },
-  "alertAbTestProOnly": { "message": "Las pruebas A/B solo est\u00e1n disponibles en el plan Pro." },
-  "alertScheduledSuccess": { "message": "\u00a1Listo! Se enviar\u00e1 a $1 destinatarios el $2." },
-  "alertSending": { "message": "Enviando... 0/" },
-  "alertSendFailed": { "message": "Error en el env\u00edo" },
-  "alertSendError": { "message": "\u00a1Error en el env\u00edo!\n\nError: " },
-  "alertAbSendSuccess": { "message": "\u00a1Listo! $1 correos enviados (A/B test).\nEl asunto ganador se enviar\u00e1 autom\u00e1ticamente." },
-  "alertPartialSend": { "message": "$1 correos enviados, $2 errores.\n\nPrimer error: " },
-  "alertSendSuccess": { "message": "\u00a1Listo! $1 correos enviados." },
-  "alertLimitReached": { "message": "Has alcanzado el l\u00edmite de tu plan ($1 correos/mes).\nMejora tu plan para continuar." },
-
-  "aiModalTitle": { "message": "Redactor de correos con IA" },
-  "aiPromptPlaceholder": { "message": "\u00bfDe qu\u00e9 debe tratar el correo?\n\nEjemplo: Correo de captaci\u00f3n para nuestro producto SaaS" },
-  "aiToneProfessional": { "message": "Profesional" },
-  "aiToneFriendly": { "message": "Amigable" },
-  "aiToneFormal": { "message": "Formal" },
-  "aiToneCasual": { "message": "Informal" },
-  "aiLangTr": { "message": "Turco" },
-  "aiLangEn": { "message": "Ingl\u00e9s" },
-  "btnAiGenerate": { "message": "Generar" },
-  "btnCancel": { "message": "Cancelar" },
-  "alertAiPromptEmpty": { "message": "Describe qu\u00e9 tipo de correo deseas." },
-  "aiGenerating": { "message": "Generando..." },
-  "alertAiProOnly": { "message": "El redactor con IA solo est\u00e1 disponible en el plan Pro." },
-  "alertAiFailed": { "message": "Error en la generaci\u00f3n con IA: " },
-
-  "templatePromptName": { "message": "Nombre de la plantilla:" },
-  "templateDefaultName": { "message": "Mi plantilla" },
-  "templateConfirmDelete": { "message": "\u00bfEliminar la plantilla \"$1\"?" },
-  "alertTemplateFillFirst": { "message": "Primero completa el asunto y el contenido." },
-  "alertTemplateStandardOnly": { "message": "Las plantillas est\u00e1n disponibles en los planes Standard y Pro." },
-  "alertTemplateSaveFailed": { "message": "No se pudo guardar la plantilla: " },
-  "alertTemplateDeleteFailed": { "message": "No se pudo eliminar la plantilla: " },
-
-  "csvExportDownloading": { "message": "Descargando..." },
-  "alertCsvExportStandardOnly": { "message": "La exportaci\u00f3n CSV est\u00e1 disponible en los planes Standard y Pro." },
-  "alertCsvExportFailed": { "message": "Error en la exportaci\u00f3n: " },
-  "alertCsvExportEmpty": { "message": "Exportaci\u00f3n CSV correcta, pero los datos est\u00e1n vac\u00edos." },
-
-  "reportsSentSuffix": { "message": " enviados" },
-  "reportsOpenRate": { "message": "Aperturas: " },
-  "reportsClickRate": { "message": "Clics: " },
-  "reportsError": { "message": "Error" },
-  "reportsFollowupPending": { "message": " seguimientos pendientes" },
-
-  "upgradeModalTitle": { "message": "Mejorar tu plan" },
-  "upgradeModalText": { "message": "Has alcanzado tu l\u00edmite de correos.<br/>Mejora tu plan para enviar m\u00e1s." },
-  "upgradeModalStandard": { "message": "Standard: 5.000 correos/mes \u2014 15\u00a0$/mes" },
-  "upgradeModalPro": { "message": "Pro: 10.000 correos/mes \u2014 25\u00a0$/mes" },
-  "upgradeModalFeatures": { "message": "Informes detallados + soporte prioritario" },
-  "upgradeModalBtn": { "message": "Mejorar ahora \u2014 Standard 15\u00a0$/mes" },
-  "upgradeModalLater": { "message": "Quiz\u00e1s m\u00e1s tarde" },
-  "alertUpgradeCheckoutFailed": { "message": "No se pudo crear la p\u00e1gina de pago. Int\u00e9ntalo de nuevo." },
-
-  "settingsSaveFailed": { "message": "No se pudo guardar la configuraci\u00f3n: " },
-  "settingsCheckoutFailed": { "message": "No se pudo crear la p\u00e1gina de pago." }
+  "appName": {
+    "message": "OutMass"
+  },
+  "appDesc": {
+    "message": "Campañas de correo masivo directamente desde Outlook Web"
+  },
+  "tabCampaign": {
+    "message": "Campaña"
+  },
+  "tabReports": {
+    "message": "Informes"
+  },
+  "tabSettings": {
+    "message": "Configuración"
+  },
+  "tabAccount": {
+    "message": "Cuenta"
+  },
+  "connChecking": {
+    "message": "Verificando conexión..."
+  },
+  "connOnline": {
+    "message": "Conectado al servidor"
+  },
+  "connOffline": {
+    "message": "No se puede conectar al servidor"
+  },
+  "offlineBanner": {
+    "message": "No se puede conectar al servidor. Compruebe su conexión a Internet."
+  },
+  "extUpdatedReload": {
+    "message": "Extensión actualizada. Recargue la página."
+  },
+  "btnClose": {
+    "message": "Cerrar"
+  },
+  "csvLabel": {
+    "message": "Lista de destinatarios (CSV)"
+  },
+  "csvDropHint": {
+    "message": "Arrastre y suelte un archivo CSV"
+  },
+  "csvDropHintAlt": {
+    "message": "o haga clic para seleccionar"
+  },
+  "csvCountSuffix": {
+    "message": "destinatarios"
+  },
+  "btnAiWriter": {
+    "message": "Redactar con IA"
+  },
+  "templateDefault": {
+    "message": "-- Seleccionar plantilla --"
+  },
+  "btnSaveTemplate": {
+    "message": "Guardar"
+  },
+  "btnDeleteTemplate": {
+    "message": "Eliminar"
+  },
+  "templateDeleteTitle": {
+    "message": "Eliminar plantilla seleccionada"
+  },
+  "templateSaveTitle": {
+    "message": "Guardar el contenido actual como plantilla"
+  },
+  "labelSubject": {
+    "message": "Asunto"
+  },
+  "placeholderSubject": {
+    "message": "Hola {{firstName}}, tenemos una oferta para ti"
+  },
+  "labelBody": {
+    "message": "Contenido del correo"
+  },
+  "placeholderBody": {
+    "message": "Hola {{firstName}},\n\nTenemos una gran oferta para {{company}}..."
+  },
+  "placeholderRecipient": {
+    "message": "Destinatario:"
+  },
+  "placeholderSender": {
+    "message": "Remitente:"
+  },
+  "placeholdersHint": {
+    "message": "Destinatario: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Remitente: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "Vista previa"
+  },
+  "btnSend": {
+    "message": "Enviar"
+  },
+  "abTestLabel": {
+    "message": "A/B test (probar 2 líneas de asunto)"
+  },
+  "abSubjectBLabel": {
+    "message": "Asunto alternativo (B)"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "Segunda línea de asunto..."
+  },
+  "abTestPctLabel": {
+    "message": "Porcentaje de prueba (%)"
+  },
+  "abTestNote": {
+    "message": "Se enviarán dos asuntos diferentes a una parte de los destinatarios. El ganador se enviará al resto."
+  },
+  "scheduleLabel": {
+    "message": "Envío programado"
+  },
+  "scheduleDateLabel": {
+    "message": "Hora de envío"
+  },
+  "scheduleNote": {
+    "message": "Se enviará automáticamente a la hora indicada."
+  },
+  "followupLabel": {
+    "message": "Seguimiento automático para quienes no abrieron"
+  },
+  "followupDelayLabel": {
+    "message": "¿Después de cuántos días?"
+  },
+  "followupSubjectLabel": {
+    "message": "Asunto del seguimiento"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}, ¿viste nuestra oferta?"
+  },
+  "followupBodyLabel": {
+    "message": "Contenido del seguimiento"
+  },
+  "followupBodyPlaceholder": {
+    "message": "Hola {{firstName}},\n\n¿Viste nuestro correo anterior?"
+  },
+  "followupNote": {
+    "message": "Además del correo principal, se enviará a quienes no lo abrieron."
+  },
+  "quotaDefault": {
+    "message": "$1/$2 correos restantes (Plan $3)"
+  },
+  "reportsLoading": {
+    "message": "Cargando..."
+  },
+  "btnBack": {
+    "message": "Volver"
+  },
+  "statSent": {
+    "message": "Enviados"
+  },
+  "statOpened": {
+    "message": "Abiertos"
+  },
+  "statClicked": {
+    "message": "Clics"
+  },
+  "statOpenRate": {
+    "message": "Tasa de apertura:"
+  },
+  "statClickRate": {
+    "message": "Tasa de clics:"
+  },
+  "btnExportCsv": {
+    "message": "Descargar CSV"
+  },
+  "noCampaignsFound": {
+    "message": "No se encontraron campañas."
+  },
+  "noCampaignsYet": {
+    "message": "Aún no hay campañas."
+  },
+  "chartSent": {
+    "message": "Enviados"
+  },
+  "chartOpened": {
+    "message": "Abiertos"
+  },
+  "chartClicked": {
+    "message": "Clics"
+  },
+  "settingsAccount": {
+    "message": "Cuenta"
+  },
+  "settingsEmail": {
+    "message": "Correo"
+  },
+  "settingsPlan": {
+    "message": "Plan"
+  },
+  "settingsSentThisMonth": {
+    "message": "Enviados este mes"
+  },
+  "btnUpgrade": {
+    "message": "Mejorar plan"
+  },
+  "btnManageSub": {
+    "message": "Gestionar suscripción"
+  },
+  "settingsTracking": {
+    "message": "Seguimiento"
+  },
+  "settingsTrackOpens": {
+    "message": "Seguimiento de aperturas"
+  },
+  "settingsTrackClicks": {
+    "message": "Seguimiento de clics"
+  },
+  "settingsUnsub": {
+    "message": "Enlace de cancelación"
+  },
+  "settingsUnsubDefault": {
+    "message": "Cancelar suscripción"
+  },
+  "settingsUnsubHint": {
+    "message": "Texto del enlace que aparece al final de los correos"
+  },
+  "settingsTimezone": {
+    "message": "Zona horaria"
+  },
+  "tzTurkey": {
+    "message": "Turquía (UTC+3)"
+  },
+  "tzLondon": {
+    "message": "Londres (UTC+0/+1)"
+  },
+  "tzBerlin": {
+    "message": "Berlín (UTC+1/+2)"
+  },
+  "tzNewYork": {
+    "message": "Nueva York (UTC-5/-4)"
+  },
+  "tzLosAngeles": {
+    "message": "Los Ángeles (UTC-8/-7)"
+  },
+  "tzDubai": {
+    "message": "Dubái (UTC+4)"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "Información del remitente"
+  },
+  "settingsSenderHint": {
+    "message": "Se usa en tu firma de correo y en los correos generados por IA."
+  },
+  "settingsSenderName": {
+    "message": "Tu nombre"
+  },
+  "settingsSenderPosition": {
+    "message": "Tu cargo"
+  },
+  "settingsSenderCompany": {
+    "message": "Tu empresa"
+  },
+  "settingsSenderPhone": {
+    "message": "Teléfono (opcional)"
+  },
+  "btnSaveSettings": {
+    "message": "Guardar configuración"
+  },
+  "settingsSaving": {
+    "message": "Guardando..."
+  },
+  "settingsSaved": {
+    "message": "¡Guardado!"
+  },
+  "settingsSuppression": {
+    "message": "Correos bloqueados"
+  },
+  "settingsSuppressionHint": {
+    "message": "Los correos de esta lista no recibirán ninguna campaña."
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "email@ejemplo.com"
+  },
+  "btnAdd": {
+    "message": "Añadir"
+  },
+  "suppressionSearch": {
+    "message": "Buscar..."
+  },
+  "suppressionEmpty": {
+    "message": "Aún no hay correos bloqueados."
+  },
+  "suppressionReasonUnsub": {
+    "message": "Dado de baja"
+  },
+  "suppressionReasonManual": {
+    "message": "Manual"
+  },
+  "suppressionEmailSuffix": {
+    "message": "correo"
+  },
+  "settingsSupport": {
+    "message": "Soporte"
+  },
+  "feedbackPlaceholder": {
+    "message": "Describe tu problema o sugerencia..."
+  },
+  "btnSendFeedback": {
+    "message": "Enviar"
+  },
+  "feedbackEmpty": {
+    "message": "Por favor, escribe un mensaje."
+  },
+  "feedbackSent": {
+    "message": "¡Tu comentario ha sido enviado!"
+  },
+  "feedbackFailed": {
+    "message": "No se pudo enviar. Puedes escribirnos por correo."
+  },
+  "popupSubtitle": {
+    "message": "Campañas de correo masivo"
+  },
+  "popupLoginHint": {
+    "message": "Conecta tu cuenta de Outlook para empezar a crear campañas."
+  },
+  "btnMicrosoftLogin": {
+    "message": "Iniciar sesión con Microsoft"
+  },
+  "popupLoading": {
+    "message": "Conectando con tu cuenta de Microsoft..."
+  },
+  "popupErrorDefault": {
+    "message": "Ha ocurrido un error."
+  },
+  "btnRetry": {
+    "message": "Reintentar"
+  },
+  "btnDashboard": {
+    "message": "Abrir panel de campañas"
+  },
+  "btnLogout": {
+    "message": "Cerrar sesión"
+  },
+  "popupConnected": {
+    "message": "Conectado"
+  },
+  "popupNoResponse": {
+    "message": "No se recibió respuesta."
+  },
+  "popupUserInfoFailed": {
+    "message": "No se pudo obtener la información del usuario."
+  },
+  "popupUnknownError": {
+    "message": "Ha ocurrido un error desconocido."
+  },
+  "popupUpgradeStandard": {
+    "message": "Mejorar → Standard (15 $/mes)"
+  },
+  "popupUpgradePro": {
+    "message": "Mejorar → Pro (25 $/mes)"
+  },
+  "popupCheckoutFailed": {
+    "message": "No se pudo crear la página de pago: "
+  },
+  "popupPortalFailed": {
+    "message": "No se pudo abrir el portal."
+  },
+  "toolbarButton": {
+    "message": "OutMass"
+  },
+  "toolbarButtonTitle": {
+    "message": "OutMass — Abrir panel de campañas"
+  },
+  "alertUploadCsvFirst": {
+    "message": "Primero sube un archivo CSV."
+  },
+  "alertFillSubjectBody": {
+    "message": "Completa el asunto y el contenido del correo."
+  },
+  "alertPreviewTitle": {
+    "message": "--- VISTA PREVIA ---\nAsunto: "
+  },
+  "alertScheduling": {
+    "message": "Programando..."
+  },
+  "alertPreparing": {
+    "message": "Preparando..."
+  },
+  "alertCampaignCreateFailed": {
+    "message": "No se pudo crear la campaña"
+  },
+  "alertContactsUploading": {
+    "message": "Subiendo contactos..."
+  },
+  "alertContactsUploadFailed": {
+    "message": "No se pudieron subir los contactos"
+  },
+  "alertAbTestProOnly": {
+    "message": "Las pruebas A/B solo están disponibles en el plan Pro."
+  },
+  "alertScheduledSuccess": {
+    "message": "¡Listo! Se enviará a $1 destinatarios el $2."
+  },
+  "alertSending": {
+    "message": "Enviando... 0/"
+  },
+  "alertSendFailed": {
+    "message": "Error en el envío"
+  },
+  "alertSendError": {
+    "message": "¡Error en el envío!\n\nError: "
+  },
+  "alertAbSendSuccess": {
+    "message": "¡Listo! $1 correos enviados (A/B test).\nEl asunto ganador se enviará automáticamente."
+  },
+  "alertPartialSend": {
+    "message": "$1 correos enviados, $2 errores.\n\nPrimer error: "
+  },
+  "alertSendSuccess": {
+    "message": "¡Listo! $1 correos enviados."
+  },
+  "alertLimitReached": {
+    "message": "Has alcanzado el límite de tu plan ($1 correos/mes).\nMejora tu plan para continuar."
+  },
+  "aiModalTitle": {
+    "message": "Redactor de correos con IA"
+  },
+  "aiPromptPlaceholder": {
+    "message": "¿De qué debe tratar el correo?\n\nEjemplo: Correo de captación para nuestro producto SaaS"
+  },
+  "aiToneProfessional": {
+    "message": "Profesional"
+  },
+  "aiToneFriendly": {
+    "message": "Amigable"
+  },
+  "aiToneFormal": {
+    "message": "Formal"
+  },
+  "aiToneCasual": {
+    "message": "Informal"
+  },
+  "aiLangTr": {
+    "message": "Turco"
+  },
+  "aiLangEn": {
+    "message": "Inglés"
+  },
+  "aiLangDe": {
+    "message": "Aleman"
+  },
+  "aiLangFr": {
+    "message": "Frances"
+  },
+  "aiLangEs": {
+    "message": "Espanol"
+  },
+  "aiLangRu": {
+    "message": "Ruso"
+  },
+  "aiLangAr": {
+    "message": "Arabe"
+  },
+  "aiLangHi": {
+    "message": "Hindi"
+  },
+  "aiLangZh": {
+    "message": "Chino"
+  },
+  "aiLangJa": {
+    "message": "Japones"
+  },
+  "btnAiGenerate": {
+    "message": "Generar"
+  },
+  "btnCancel": {
+    "message": "Cancelar"
+  },
+  "alertAiPromptEmpty": {
+    "message": "Describe qué tipo de correo deseas."
+  },
+  "aiGenerating": {
+    "message": "Generando..."
+  },
+  "alertAiProOnly": {
+    "message": "El redactor con IA solo está disponible en el plan Pro."
+  },
+  "alertAiFailed": {
+    "message": "Error en la generación con IA: "
+  },
+  "templatePromptName": {
+    "message": "Nombre de la plantilla:"
+  },
+  "templateDefaultName": {
+    "message": "Mi plantilla"
+  },
+  "templateConfirmDelete": {
+    "message": "¿Eliminar la plantilla \"$1\"?"
+  },
+  "alertTemplateFillFirst": {
+    "message": "Primero completa el asunto y el contenido."
+  },
+  "alertTemplateStandardOnly": {
+    "message": "Las plantillas están disponibles en los planes Standard y Pro."
+  },
+  "alertTemplateSaveFailed": {
+    "message": "No se pudo guardar la plantilla: "
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "No se pudo eliminar la plantilla: "
+  },
+  "csvExportDownloading": {
+    "message": "Descargando..."
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "La exportación CSV está disponible en los planes Standard y Pro."
+  },
+  "alertCsvExportFailed": {
+    "message": "Error en la exportación: "
+  },
+  "alertCsvExportEmpty": {
+    "message": "Exportación CSV correcta, pero los datos están vacíos."
+  },
+  "reportsSentSuffix": {
+    "message": " enviados"
+  },
+  "reportsOpenRate": {
+    "message": "Aperturas: "
+  },
+  "reportsClickRate": {
+    "message": "Clics: "
+  },
+  "reportsError": {
+    "message": "Error"
+  },
+  "reportsFollowupPending": {
+    "message": " seguimientos pendientes"
+  },
+  "upgradeModalTitle": {
+    "message": "Mejorar tu plan"
+  },
+  "upgradeModalText": {
+    "message": "Has alcanzado tu límite de correos.<br/>Mejora tu plan para enviar más."
+  },
+  "upgradeModalStandard": {
+    "message": "Standard: 5.000 correos/mes — 15 $/mes"
+  },
+  "upgradeModalPro": {
+    "message": "Pro: 10.000 correos/mes — 25 $/mes"
+  },
+  "upgradeModalFeatures": {
+    "message": "Informes detallados + soporte prioritario"
+  },
+  "upgradeModalBtn": {
+    "message": "Mejorar ahora — Standard 15 $/mes"
+  },
+  "upgradeModalLater": {
+    "message": "Quizás más tarde"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "No se pudo crear la página de pago. Inténtalo de nuevo."
+  },
+  "settingsSaveFailed": {
+    "message": "No se pudo guardar la configuración: "
+  },
+  "settingsCheckoutFailed": {
+    "message": "No se pudo crear la página de pago."
+  }
 }

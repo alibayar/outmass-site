@@ -484,8 +484,16 @@
           '<option value="casual">' + t("aiToneCasual") + '</option>' +
         '</select>' +
         '<select id="ai-lang" style="flex:1;padding:6px;border:1px solid #c8c6c4;border-radius:4px;font-size:12px;">' +
-          '<option value="tr">' + t("aiLangTr") + '</option>' +
           '<option value="en">' + t("aiLangEn") + '</option>' +
+          '<option value="tr">' + t("aiLangTr") + '</option>' +
+          '<option value="de">' + t("aiLangDe") + '</option>' +
+          '<option value="fr">' + t("aiLangFr") + '</option>' +
+          '<option value="es">' + t("aiLangEs") + '</option>' +
+          '<option value="ru">' + t("aiLangRu") + '</option>' +
+          '<option value="ar">' + t("aiLangAr") + '</option>' +
+          '<option value="hi">' + t("aiLangHi") + '</option>' +
+          '<option value="zh">' + t("aiLangZh") + '</option>' +
+          '<option value="ja">' + t("aiLangJa") + '</option>' +
         '</select>' +
       '</div>' +
       '<div style="display:flex;gap:8px;margin-top:12px;">' +
@@ -495,6 +503,19 @@
 
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
+
+    // Pre-select language matching the user's browser UI language
+    try {
+      var uiLang = (chrome.i18n.getUILanguage() || "en").split("-")[0].toLowerCase();
+      if (uiLang === "zh_cn" || uiLang === "zh_tw") uiLang = "zh";
+      var langSelectEl = document.getElementById("ai-lang");
+      if (langSelectEl) {
+        var supported = ["en", "tr", "de", "fr", "es", "ru", "ar", "hi", "zh", "ja"];
+        if (supported.indexOf(uiLang) !== -1) {
+          langSelectEl.value = uiLang;
+        }
+      }
+    } catch (e) { /* fallback to English */ }
 
     document.getElementById("ai-generate-btn").addEventListener("click", function () {
       var promptInput = document.getElementById("ai-prompt");

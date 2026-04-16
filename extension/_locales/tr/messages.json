@@ -1,209 +1,563 @@
 {
-  "appName": { "message": "OutMass" },
-  "appDesc": { "message": "Outlook Web üzerinden toplu e-posta kampanyaları" },
-
-  "tabCampaign": { "message": "Kampanya" },
-  "tabReports": { "message": "Raporlar" },
-  "tabSettings": { "message": "Ayarlar" },
-  "tabAccount": { "message": "Hesap" },
-
-  "connChecking": { "message": "Bağlantı kontrol ediliyor..." },
-  "connOnline": { "message": "Sunucuya bağlandı" },
-  "connOffline": { "message": "Sunucuya bağlanılamıyor" },
-  "offlineBanner": { "message": "Sunucuya bağlanılamıyor. İnternet bağlantınızı kontrol edin." },
-  "extUpdatedReload": { "message": "Eklenti güncellendi. Lütfen sayfayı yenileyin." },
-  "btnClose": { "message": "Kapat" },
-
-  "csvLabel": { "message": "Alıcı Listesi (CSV)" },
-  "csvDropHint": { "message": "CSV dosyasını sürükleyip bırakın" },
-  "csvDropHintAlt": { "message": "veya tıklayarak seçin" },
-  "csvCountSuffix": { "message": "alıcı" },
-
-  "btnAiWriter": { "message": "Yapay Zeka ile Yaz" },
-  "templateDefault": { "message": "-- Şablon seçin --" },
-  "btnSaveTemplate": { "message": "Kaydet" },
-  "btnDeleteTemplate": { "message": "Sil" },
-  "templateDeleteTitle": { "message": "Seçili şablonu sil" },
-  "templateSaveTitle": { "message": "Mevcut içeriği şablon olarak kaydet" },
-
-  "labelSubject": { "message": "Konu" },
-  "placeholderSubject": { "message": "Merhaba {{firstName}}, sizin için bir teklifimiz var" },
-  "labelBody": { "message": "E-posta İçeriği" },
-  "placeholderBody": { "message": "Merhaba {{firstName}},\n\n{{company}} için harika bir teklifimiz var..." },
-  "placeholderRecipient": { "message": "Alıcı:" },
-  "placeholderSender": { "message": "Gönderen:" },
-  "placeholdersHint": { "message": "Alıcı: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Gönderen: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>" },
-
-  "btnPreview": { "message": "Önizleme" },
-  "btnSend": { "message": "Gönder" },
-
-  "abTestLabel": { "message": "A/B testi (2 farklı konu satırı dene)" },
-  "abSubjectBLabel": { "message": "Alternatif konu (B)" },
-  "abSubjectBPlaceholder": { "message": "İkinci konu satırı..." },
-  "abTestPctLabel": { "message": "Test oranı (%)" },
-  "abTestNote": { "message": "Alıcıların bir kısmına iki farklı konu gönderilir. Kazanan konu geri kalanına gönderilir." },
-
-  "scheduleLabel": { "message": "Zamanlanmış gönderim" },
-  "scheduleDateLabel": { "message": "Gönderim zamanı" },
-  "scheduleNote": { "message": "Belirtilen zamanda otomatik olarak gönderilecektir." },
-
-  "followupLabel": { "message": "Açmayanlara otomatik hatırlatma" },
-  "followupDelayLabel": { "message": "Kaç gün sonra?" },
-  "followupSubjectLabel": { "message": "Hatırlatma Konusu" },
-  "followupSubjectPlaceholder": { "message": "Re: {{firstName}}, teklifimizi gördünüz mü?" },
-  "followupBodyLabel": { "message": "Hatırlatma İçeriği" },
-  "followupBodyPlaceholder": { "message": "Merhaba {{firstName}},\n\nÖnceki e-postamızı gördünüz mü?" },
-  "followupNote": { "message": "Ana e-postaya ek olarak, açmayanlara gönderilecektir." },
-
-  "quotaDefault": { "message": "$1/$2 e-posta kaldı ($3 Planı)" },
-
-  "reportsLoading": { "message": "Yükleniyor..." },
-  "btnBack": { "message": "Geri" },
-  "statSent": { "message": "Gönderildi" },
-  "statOpened": { "message": "Açıldı" },
-  "statClicked": { "message": "Tıklandı" },
-  "statOpenRate": { "message": "Açılma oranı:" },
-  "statClickRate": { "message": "Tıklanma oranı:" },
-  "btnExportCsv": { "message": "CSV İndir" },
-  "noCampaignsFound": { "message": "Kampanya bulunamadı." },
-  "noCampaignsYet": { "message": "Henüz kampanya yok." },
-  "chartSent": { "message": "Gönderildi" },
-  "chartOpened": { "message": "Açıldı" },
-  "chartClicked": { "message": "Tıklandı" },
-
-  "settingsAccount": { "message": "Hesap" },
-  "settingsEmail": { "message": "E-posta" },
-  "settingsPlan": { "message": "Plan" },
-  "settingsSentThisMonth": { "message": "Bu ay gönderilen" },
-  "btnUpgrade": { "message": "Planı Yükselt" },
-  "btnManageSub": { "message": "Aboneliği Yönet" },
-
-  "settingsTracking": { "message": "Takip" },
-  "settingsTrackOpens": { "message": "Açılma takibi" },
-  "settingsTrackClicks": { "message": "Tıklanma takibi" },
-
-  "settingsUnsub": { "message": "Abonelik İptal Bağlantısı" },
-  "settingsUnsubDefault": { "message": "Aboneliği iptal et" },
-  "settingsUnsubHint": { "message": "E-postaların altında gösterilen bağlantı metni" },
-
-  "settingsTimezone": { "message": "Saat Dilimi" },
-  "tzTurkey": { "message": "Türkiye (UTC+3)" },
-  "tzLondon": { "message": "Londra (UTC+0/+1)" },
-  "tzBerlin": { "message": "Berlin (UTC+1/+2)" },
-  "tzNewYork": { "message": "New York (UTC-5/-4)" },
-  "tzLosAngeles": { "message": "Los Angeles (UTC-8/-7)" },
-  "tzDubai": { "message": "Dubai (UTC+4)" },
-  "tzUtc": { "message": "UTC" },
-
-  "settingsSender": { "message": "Gönderen Bilgileri" },
-  "settingsSenderHint": { "message": "E-posta imzanızda ve yapay zeka ile oluşturulan e-postalarda kullanılır." },
-  "settingsSenderName": { "message": "Adınız" },
-  "settingsSenderPosition": { "message": "Pozisyonunuz" },
-  "settingsSenderCompany": { "message": "Şirketiniz" },
-  "settingsSenderPhone": { "message": "Telefon (isteğe bağlı)" },
-
-  "btnSaveSettings": { "message": "Ayarları Kaydet" },
-  "settingsSaving": { "message": "Kaydediliyor..." },
-  "settingsSaved": { "message": "Kaydedildi!" },
-
-  "settingsSuppression": { "message": "Engellenen E-postalar" },
-  "settingsSuppressionHint": { "message": "Bu listedeki e-postalar hiçbir kampanya almayacaktır." },
-  "settingsSuppressionPlaceholder": { "message": "eposta@ornek.com" },
-  "btnAdd": { "message": "Ekle" },
-  "suppressionSearch": { "message": "Ara..." },
-  "suppressionEmpty": { "message": "Henüz engellenen e-posta yok." },
-  "suppressionReasonUnsub": { "message": "Abonelik iptal" },
-  "suppressionReasonManual": { "message": "Manuel" },
-  "suppressionEmailSuffix": { "message": "e-posta" },
-
-  "settingsSupport": { "message": "Destek" },
-  "feedbackPlaceholder": { "message": "Sorununuzu veya önerinizi açıklayın..." },
-  "btnSendFeedback": { "message": "Gönder" },
-  "feedbackEmpty": { "message": "Lütfen bir mesaj yazın." },
-  "feedbackSent": { "message": "Geri bildiriminiz gönderildi!" },
-  "feedbackFailed": { "message": "Gönderilemedi. Bunun yerine bize e-posta atabilirsiniz." },
-
-  "popupSubtitle": { "message": "Toplu e-posta kampanyaları" },
-  "popupLoginHint": { "message": "Kampanya oluşturmaya başlamak için Outlook hesabınızla bağlanın." },
-  "btnMicrosoftLogin": { "message": "Microsoft ile Giriş Yap" },
-  "popupLoading": { "message": "Microsoft hesabınıza bağlanılıyor..." },
-  "popupErrorDefault": { "message": "Bir hata oluştu." },
-  "btnRetry": { "message": "Tekrar Dene" },
-  "btnDashboard": { "message": "Kampanya Panelini Aç" },
-  "btnLogout": { "message": "Çıkış Yap" },
-  "popupConnected": { "message": "Bağlandı" },
-  "popupNoResponse": { "message": "Yanıt alınamadı." },
-  "popupUserInfoFailed": { "message": "Kullanıcı bilgileri alınamadı." },
-  "popupUnknownError": { "message": "Bilinmeyen bir hata oluştu." },
-  "popupUpgradeStandard": { "message": "Yükselt → Standard (₺15/ay)" },
-  "popupUpgradePro": { "message": "Yükselt → Pro (₺25/ay)" },
-  "popupCheckoutFailed": { "message": "Ödeme sayfası oluşturulamadı: " },
-  "popupPortalFailed": { "message": "Portal açılamadı." },
-
-  "toolbarButton": { "message": "OutMass" },
-  "toolbarButtonTitle": { "message": "OutMass — Kampanya panelini aç" },
-
-  "alertUploadCsvFirst": { "message": "Lütfen önce bir CSV dosyası yükleyin." },
-  "alertFillSubjectBody": { "message": "Lütfen konu ve e-posta içeriğini doldurun." },
-  "alertPreviewTitle": { "message": "--- ÖNİZLEME ---\nKonu: " },
-  "alertScheduling": { "message": "Zamanlanıyor..." },
-  "alertPreparing": { "message": "Hazırlanıyor..." },
-  "alertCampaignCreateFailed": { "message": "Kampanya oluşturulamadı" },
-  "alertContactsUploading": { "message": "Kişiler yükleniyor..." },
-  "alertContactsUploadFailed": { "message": "Kişiler yüklenemedi" },
-  "alertAbTestProOnly": { "message": "A/B testi yalnızca Pro planda kullanılabilir." },
-  "alertScheduledSuccess": { "message": "Başarılı! $2 tarihinde $1 alıcıya gönderilecek." },
-  "alertSending": { "message": "Gönderiliyor... 0/" },
-  "alertSendFailed": { "message": "Gönderim başarısız" },
-  "alertSendError": { "message": "Gönderim başarısız!\n\nHata: " },
-  "alertAbSendSuccess": { "message": "Başarılı! $1 e-posta gönderildi (A/B testi).\nKazanan konu satırı otomatik olarak gönderilecek." },
-  "alertPartialSend": { "message": "$1 e-posta gönderildi, $2 hata oluştu.\n\nİlk hata: " },
-  "alertSendSuccess": { "message": "Başarılı! $1 e-posta gönderildi." },
-  "alertLimitReached": { "message": "Plan limitinize ulaştınız ($1 e-posta/ay).\nLütfen planınızı yükseltin." },
-
-  "aiModalTitle": { "message": "Yapay Zeka E-posta Yazarı" },
-  "aiPromptPlaceholder": { "message": "E-posta ne hakkında olsun?\n\nÖrnek: SaaS ürünümüz için soğuk satış e-postası" },
-  "aiToneProfessional": { "message": "Profesyonel" },
-  "aiToneFriendly": { "message": "Samimi" },
-  "aiToneFormal": { "message": "Resmi" },
-  "aiToneCasual": { "message": "Rahat" },
-  "aiLangTr": { "message": "Türkçe" },
-  "aiLangEn": { "message": "İngilizce" },
-  "btnAiGenerate": { "message": "Oluştur" },
-  "btnCancel": { "message": "İptal" },
-  "alertAiPromptEmpty": { "message": "Lütfen ne tür bir e-posta istediğinizi açıklayın." },
-  "aiGenerating": { "message": "Oluşturuluyor..." },
-  "alertAiProOnly": { "message": "Yapay zeka e-posta yazarı yalnızca Pro planda kullanılabilir." },
-  "alertAiFailed": { "message": "Yapay zeka oluşturma başarısız: " },
-
-  "templatePromptName": { "message": "Şablon adı:" },
-  "templateDefaultName": { "message": "Şablonum" },
-  "templateConfirmDelete": { "message": "\"$1\" şablonu silinsin mi?" },
-  "alertTemplateFillFirst": { "message": "Lütfen önce konu ve içeriği doldurun." },
-  "alertTemplateStandardOnly": { "message": "E-posta şablonları Standard ve Pro planlarda kullanılabilir." },
-  "alertTemplateSaveFailed": { "message": "Şablon kaydedilemedi: " },
-  "alertTemplateDeleteFailed": { "message": "Şablon silinemedi: " },
-
-  "csvExportDownloading": { "message": "İndiriliyor..." },
-  "alertCsvExportStandardOnly": { "message": "CSV dışa aktarma Standard ve Pro planlarda kullanılabilir." },
-  "alertCsvExportFailed": { "message": "Dışa aktarma başarısız: " },
-  "alertCsvExportEmpty": { "message": "CSV dışa aktarma başarılı ancak veri boş." },
-
-  "reportsSentSuffix": { "message": " gönderildi" },
-  "reportsOpenRate": { "message": "Açılma: " },
-  "reportsClickRate": { "message": "Tıklanma: " },
-  "reportsError": { "message": "Hata" },
-  "reportsFollowupPending": { "message": " hatırlatma bekliyor" },
-
-  "upgradeModalTitle": { "message": "Planınızı Yükseltin" },
-  "upgradeModalText": { "message": "E-posta limitinize ulaştınız.<br/>Daha fazla e-posta göndermek için planınızı yükseltin." },
-  "upgradeModalStandard": { "message": "Standard: 5.000 e-posta/ay — $15/ay" },
-  "upgradeModalPro": { "message": "Pro: 10.000 e-posta/ay — $25/ay" },
-  "upgradeModalFeatures": { "message": "Detaylı raporlar + öncelikli destek" },
-  "upgradeModalBtn": { "message": "Şimdi Yükselt — Standard $15/ay" },
-  "upgradeModalLater": { "message": "Belki sonra" },
-  "alertUpgradeCheckoutFailed": { "message": "Ödeme sayfası oluşturulamadı. Lütfen tekrar deneyin." },
-
-  "settingsSaveFailed": { "message": "Ayarlar kaydedilemedi: " },
-  "settingsCheckoutFailed": { "message": "Ödeme sayfası oluşturulamadı." }
+  "appName": {
+    "message": "OutMass"
+  },
+  "appDesc": {
+    "message": "Outlook Web üzerinden toplu e-posta kampanyaları"
+  },
+  "tabCampaign": {
+    "message": "Kampanya"
+  },
+  "tabReports": {
+    "message": "Raporlar"
+  },
+  "tabSettings": {
+    "message": "Ayarlar"
+  },
+  "tabAccount": {
+    "message": "Hesap"
+  },
+  "connChecking": {
+    "message": "Bağlantı kontrol ediliyor..."
+  },
+  "connOnline": {
+    "message": "Sunucuya bağlandı"
+  },
+  "connOffline": {
+    "message": "Sunucuya bağlanılamıyor"
+  },
+  "offlineBanner": {
+    "message": "Sunucuya bağlanılamıyor. İnternet bağlantınızı kontrol edin."
+  },
+  "extUpdatedReload": {
+    "message": "Eklenti güncellendi. Lütfen sayfayı yenileyin."
+  },
+  "btnClose": {
+    "message": "Kapat"
+  },
+  "csvLabel": {
+    "message": "Alıcı Listesi (CSV)"
+  },
+  "csvDropHint": {
+    "message": "CSV dosyasını sürükleyip bırakın"
+  },
+  "csvDropHintAlt": {
+    "message": "veya tıklayarak seçin"
+  },
+  "csvCountSuffix": {
+    "message": "alıcı"
+  },
+  "btnAiWriter": {
+    "message": "Yapay Zeka ile Yaz"
+  },
+  "templateDefault": {
+    "message": "-- Şablon seçin --"
+  },
+  "btnSaveTemplate": {
+    "message": "Kaydet"
+  },
+  "btnDeleteTemplate": {
+    "message": "Sil"
+  },
+  "templateDeleteTitle": {
+    "message": "Seçili şablonu sil"
+  },
+  "templateSaveTitle": {
+    "message": "Mevcut içeriği şablon olarak kaydet"
+  },
+  "labelSubject": {
+    "message": "Konu"
+  },
+  "placeholderSubject": {
+    "message": "Merhaba {{firstName}}, sizin için bir teklifimiz var"
+  },
+  "labelBody": {
+    "message": "E-posta İçeriği"
+  },
+  "placeholderBody": {
+    "message": "Merhaba {{firstName}},\n\n{{company}} için harika bir teklifimiz var..."
+  },
+  "placeholderRecipient": {
+    "message": "Alıcı:"
+  },
+  "placeholderSender": {
+    "message": "Gönderen:"
+  },
+  "placeholdersHint": {
+    "message": "Alıcı: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Gönderen: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "Önizleme"
+  },
+  "btnSend": {
+    "message": "Gönder"
+  },
+  "abTestLabel": {
+    "message": "A/B testi (2 farklı konu satırı dene)"
+  },
+  "abSubjectBLabel": {
+    "message": "Alternatif konu (B)"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "İkinci konu satırı..."
+  },
+  "abTestPctLabel": {
+    "message": "Test oranı (%)"
+  },
+  "abTestNote": {
+    "message": "Alıcıların bir kısmına iki farklı konu gönderilir. Kazanan konu geri kalanına gönderilir."
+  },
+  "scheduleLabel": {
+    "message": "Zamanlanmış gönderim"
+  },
+  "scheduleDateLabel": {
+    "message": "Gönderim zamanı"
+  },
+  "scheduleNote": {
+    "message": "Belirtilen zamanda otomatik olarak gönderilecektir."
+  },
+  "followupLabel": {
+    "message": "Açmayanlara otomatik hatırlatma"
+  },
+  "followupDelayLabel": {
+    "message": "Kaç gün sonra?"
+  },
+  "followupSubjectLabel": {
+    "message": "Hatırlatma Konusu"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}, teklifimizi gördünüz mü?"
+  },
+  "followupBodyLabel": {
+    "message": "Hatırlatma İçeriği"
+  },
+  "followupBodyPlaceholder": {
+    "message": "Merhaba {{firstName}},\n\nÖnceki e-postamızı gördünüz mü?"
+  },
+  "followupNote": {
+    "message": "Ana e-postaya ek olarak, açmayanlara gönderilecektir."
+  },
+  "quotaDefault": {
+    "message": "$1/$2 e-posta kaldı ($3 Planı)"
+  },
+  "reportsLoading": {
+    "message": "Yükleniyor..."
+  },
+  "btnBack": {
+    "message": "Geri"
+  },
+  "statSent": {
+    "message": "Gönderildi"
+  },
+  "statOpened": {
+    "message": "Açıldı"
+  },
+  "statClicked": {
+    "message": "Tıklandı"
+  },
+  "statOpenRate": {
+    "message": "Açılma oranı:"
+  },
+  "statClickRate": {
+    "message": "Tıklanma oranı:"
+  },
+  "btnExportCsv": {
+    "message": "CSV İndir"
+  },
+  "noCampaignsFound": {
+    "message": "Kampanya bulunamadı."
+  },
+  "noCampaignsYet": {
+    "message": "Henüz kampanya yok."
+  },
+  "chartSent": {
+    "message": "Gönderildi"
+  },
+  "chartOpened": {
+    "message": "Açıldı"
+  },
+  "chartClicked": {
+    "message": "Tıklandı"
+  },
+  "settingsAccount": {
+    "message": "Hesap"
+  },
+  "settingsEmail": {
+    "message": "E-posta"
+  },
+  "settingsPlan": {
+    "message": "Plan"
+  },
+  "settingsSentThisMonth": {
+    "message": "Bu ay gönderilen"
+  },
+  "btnUpgrade": {
+    "message": "Planı Yükselt"
+  },
+  "btnManageSub": {
+    "message": "Aboneliği Yönet"
+  },
+  "settingsTracking": {
+    "message": "Takip"
+  },
+  "settingsTrackOpens": {
+    "message": "Açılma takibi"
+  },
+  "settingsTrackClicks": {
+    "message": "Tıklanma takibi"
+  },
+  "settingsUnsub": {
+    "message": "Abonelik İptal Bağlantısı"
+  },
+  "settingsUnsubDefault": {
+    "message": "Aboneliği iptal et"
+  },
+  "settingsUnsubHint": {
+    "message": "E-postaların altında gösterilen bağlantı metni"
+  },
+  "settingsTimezone": {
+    "message": "Saat Dilimi"
+  },
+  "tzTurkey": {
+    "message": "Türkiye (UTC+3)"
+  },
+  "tzLondon": {
+    "message": "Londra (UTC+0/+1)"
+  },
+  "tzBerlin": {
+    "message": "Berlin (UTC+1/+2)"
+  },
+  "tzNewYork": {
+    "message": "New York (UTC-5/-4)"
+  },
+  "tzLosAngeles": {
+    "message": "Los Angeles (UTC-8/-7)"
+  },
+  "tzDubai": {
+    "message": "Dubai (UTC+4)"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "Gönderen Bilgileri"
+  },
+  "settingsSenderHint": {
+    "message": "E-posta imzanızda ve yapay zeka ile oluşturulan e-postalarda kullanılır."
+  },
+  "settingsSenderName": {
+    "message": "Adınız"
+  },
+  "settingsSenderPosition": {
+    "message": "Pozisyonunuz"
+  },
+  "settingsSenderCompany": {
+    "message": "Şirketiniz"
+  },
+  "settingsSenderPhone": {
+    "message": "Telefon (isteğe bağlı)"
+  },
+  "btnSaveSettings": {
+    "message": "Ayarları Kaydet"
+  },
+  "settingsSaving": {
+    "message": "Kaydediliyor..."
+  },
+  "settingsSaved": {
+    "message": "Kaydedildi!"
+  },
+  "settingsSuppression": {
+    "message": "Engellenen E-postalar"
+  },
+  "settingsSuppressionHint": {
+    "message": "Bu listedeki e-postalar hiçbir kampanya almayacaktır."
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "eposta@ornek.com"
+  },
+  "btnAdd": {
+    "message": "Ekle"
+  },
+  "suppressionSearch": {
+    "message": "Ara..."
+  },
+  "suppressionEmpty": {
+    "message": "Henüz engellenen e-posta yok."
+  },
+  "suppressionReasonUnsub": {
+    "message": "Abonelik iptal"
+  },
+  "suppressionReasonManual": {
+    "message": "Manuel"
+  },
+  "suppressionEmailSuffix": {
+    "message": "e-posta"
+  },
+  "settingsSupport": {
+    "message": "Destek"
+  },
+  "feedbackPlaceholder": {
+    "message": "Sorununuzu veya önerinizi açıklayın..."
+  },
+  "btnSendFeedback": {
+    "message": "Gönder"
+  },
+  "feedbackEmpty": {
+    "message": "Lütfen bir mesaj yazın."
+  },
+  "feedbackSent": {
+    "message": "Geri bildiriminiz gönderildi!"
+  },
+  "feedbackFailed": {
+    "message": "Gönderilemedi. Bunun yerine bize e-posta atabilirsiniz."
+  },
+  "popupSubtitle": {
+    "message": "Toplu e-posta kampanyaları"
+  },
+  "popupLoginHint": {
+    "message": "Kampanya oluşturmaya başlamak için Outlook hesabınızla bağlanın."
+  },
+  "btnMicrosoftLogin": {
+    "message": "Microsoft ile Giriş Yap"
+  },
+  "popupLoading": {
+    "message": "Microsoft hesabınıza bağlanılıyor..."
+  },
+  "popupErrorDefault": {
+    "message": "Bir hata oluştu."
+  },
+  "btnRetry": {
+    "message": "Tekrar Dene"
+  },
+  "btnDashboard": {
+    "message": "Kampanya Panelini Aç"
+  },
+  "btnLogout": {
+    "message": "Çıkış Yap"
+  },
+  "popupConnected": {
+    "message": "Bağlandı"
+  },
+  "popupNoResponse": {
+    "message": "Yanıt alınamadı."
+  },
+  "popupUserInfoFailed": {
+    "message": "Kullanıcı bilgileri alınamadı."
+  },
+  "popupUnknownError": {
+    "message": "Bilinmeyen bir hata oluştu."
+  },
+  "popupUpgradeStandard": {
+    "message": "Yükselt → Standard (₺15/ay)"
+  },
+  "popupUpgradePro": {
+    "message": "Yükselt → Pro (₺25/ay)"
+  },
+  "popupCheckoutFailed": {
+    "message": "Ödeme sayfası oluşturulamadı: "
+  },
+  "popupPortalFailed": {
+    "message": "Portal açılamadı."
+  },
+  "toolbarButton": {
+    "message": "OutMass"
+  },
+  "toolbarButtonTitle": {
+    "message": "OutMass — Kampanya panelini aç"
+  },
+  "alertUploadCsvFirst": {
+    "message": "Lütfen önce bir CSV dosyası yükleyin."
+  },
+  "alertFillSubjectBody": {
+    "message": "Lütfen konu ve e-posta içeriğini doldurun."
+  },
+  "alertPreviewTitle": {
+    "message": "--- ÖNİZLEME ---\nKonu: "
+  },
+  "alertScheduling": {
+    "message": "Zamanlanıyor..."
+  },
+  "alertPreparing": {
+    "message": "Hazırlanıyor..."
+  },
+  "alertCampaignCreateFailed": {
+    "message": "Kampanya oluşturulamadı"
+  },
+  "alertContactsUploading": {
+    "message": "Kişiler yükleniyor..."
+  },
+  "alertContactsUploadFailed": {
+    "message": "Kişiler yüklenemedi"
+  },
+  "alertAbTestProOnly": {
+    "message": "A/B testi yalnızca Pro planda kullanılabilir."
+  },
+  "alertScheduledSuccess": {
+    "message": "Başarılı! $2 tarihinde $1 alıcıya gönderilecek."
+  },
+  "alertSending": {
+    "message": "Gönderiliyor... 0/"
+  },
+  "alertSendFailed": {
+    "message": "Gönderim başarısız"
+  },
+  "alertSendError": {
+    "message": "Gönderim başarısız!\n\nHata: "
+  },
+  "alertAbSendSuccess": {
+    "message": "Başarılı! $1 e-posta gönderildi (A/B testi).\nKazanan konu satırı otomatik olarak gönderilecek."
+  },
+  "alertPartialSend": {
+    "message": "$1 e-posta gönderildi, $2 hata oluştu.\n\nİlk hata: "
+  },
+  "alertSendSuccess": {
+    "message": "Başarılı! $1 e-posta gönderildi."
+  },
+  "alertLimitReached": {
+    "message": "Plan limitinize ulaştınız ($1 e-posta/ay).\nLütfen planınızı yükseltin."
+  },
+  "aiModalTitle": {
+    "message": "Yapay Zeka E-posta Yazarı"
+  },
+  "aiPromptPlaceholder": {
+    "message": "E-posta ne hakkında olsun?\n\nÖrnek: SaaS ürünümüz için soğuk satış e-postası"
+  },
+  "aiToneProfessional": {
+    "message": "Profesyonel"
+  },
+  "aiToneFriendly": {
+    "message": "Samimi"
+  },
+  "aiToneFormal": {
+    "message": "Resmi"
+  },
+  "aiToneCasual": {
+    "message": "Rahat"
+  },
+  "aiLangTr": {
+    "message": "Türkçe"
+  },
+  "aiLangEn": {
+    "message": "İngilizce"
+  },
+  "aiLangDe": {
+    "message": "Almanca"
+  },
+  "aiLangFr": {
+    "message": "Fransizca"
+  },
+  "aiLangEs": {
+    "message": "Ispanyolca"
+  },
+  "aiLangRu": {
+    "message": "Rusca"
+  },
+  "aiLangAr": {
+    "message": "Arapca"
+  },
+  "aiLangHi": {
+    "message": "Hintce"
+  },
+  "aiLangZh": {
+    "message": "Cince"
+  },
+  "aiLangJa": {
+    "message": "Japonca"
+  },
+  "btnAiGenerate": {
+    "message": "Oluştur"
+  },
+  "btnCancel": {
+    "message": "İptal"
+  },
+  "alertAiPromptEmpty": {
+    "message": "Lütfen ne tür bir e-posta istediğinizi açıklayın."
+  },
+  "aiGenerating": {
+    "message": "Oluşturuluyor..."
+  },
+  "alertAiProOnly": {
+    "message": "Yapay zeka e-posta yazarı yalnızca Pro planda kullanılabilir."
+  },
+  "alertAiFailed": {
+    "message": "Yapay zeka oluşturma başarısız: "
+  },
+  "templatePromptName": {
+    "message": "Şablon adı:"
+  },
+  "templateDefaultName": {
+    "message": "Şablonum"
+  },
+  "templateConfirmDelete": {
+    "message": "\"$1\" şablonu silinsin mi?"
+  },
+  "alertTemplateFillFirst": {
+    "message": "Lütfen önce konu ve içeriği doldurun."
+  },
+  "alertTemplateStandardOnly": {
+    "message": "E-posta şablonları Standard ve Pro planlarda kullanılabilir."
+  },
+  "alertTemplateSaveFailed": {
+    "message": "Şablon kaydedilemedi: "
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "Şablon silinemedi: "
+  },
+  "csvExportDownloading": {
+    "message": "İndiriliyor..."
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "CSV dışa aktarma Standard ve Pro planlarda kullanılabilir."
+  },
+  "alertCsvExportFailed": {
+    "message": "Dışa aktarma başarısız: "
+  },
+  "alertCsvExportEmpty": {
+    "message": "CSV dışa aktarma başarılı ancak veri boş."
+  },
+  "reportsSentSuffix": {
+    "message": " gönderildi"
+  },
+  "reportsOpenRate": {
+    "message": "Açılma: "
+  },
+  "reportsClickRate": {
+    "message": "Tıklanma: "
+  },
+  "reportsError": {
+    "message": "Hata"
+  },
+  "reportsFollowupPending": {
+    "message": " hatırlatma bekliyor"
+  },
+  "upgradeModalTitle": {
+    "message": "Planınızı Yükseltin"
+  },
+  "upgradeModalText": {
+    "message": "E-posta limitinize ulaştınız.<br/>Daha fazla e-posta göndermek için planınızı yükseltin."
+  },
+  "upgradeModalStandard": {
+    "message": "Standard: 5.000 e-posta/ay — $15/ay"
+  },
+  "upgradeModalPro": {
+    "message": "Pro: 10.000 e-posta/ay — $25/ay"
+  },
+  "upgradeModalFeatures": {
+    "message": "Detaylı raporlar + öncelikli destek"
+  },
+  "upgradeModalBtn": {
+    "message": "Şimdi Yükselt — Standard $15/ay"
+  },
+  "upgradeModalLater": {
+    "message": "Belki sonra"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "Ödeme sayfası oluşturulamadı. Lütfen tekrar deneyin."
+  },
+  "settingsSaveFailed": {
+    "message": "Ayarlar kaydedilemedi: "
+  },
+  "settingsCheckoutFailed": {
+    "message": "Ödeme sayfası oluşturulamadı."
+  }
 }

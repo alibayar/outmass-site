@@ -1,209 +1,563 @@
 {
-  "appName": { "message": "OutMass" },
-  "appDesc": { "message": "حملات بريد إلكتروني جماعية مباشرة من Outlook Web" },
-
-  "tabCampaign": { "message": "الحملة" },
-  "tabReports": { "message": "التقارير" },
-  "tabSettings": { "message": "الإعدادات" },
-  "tabAccount": { "message": "الحساب" },
-
-  "connChecking": { "message": "جارٍ التحقق من الاتصال..." },
-  "connOnline": { "message": "متصل بالخادم" },
-  "connOffline": { "message": "تعذّر الاتصال بالخادم" },
-  "offlineBanner": { "message": "تعذّر الاتصال بالخادم. تحقق من اتصالك بالإنترنت." },
-  "extUpdatedReload": { "message": "تم تحديث الإضافة. يُرجى إعادة تحميل الصفحة." },
-  "btnClose": { "message": "إغلاق" },
-
-  "csvLabel": { "message": "قائمة المستلمين (CSV)" },
-  "csvDropHint": { "message": "اسحب ملف CSV وأفلته هنا" },
-  "csvDropHintAlt": { "message": "أو انقر للاختيار" },
-  "csvCountSuffix": { "message": "مستلمين" },
-
-  "btnAiWriter": { "message": "الكتابة بالذكاء الاصطناعي" },
-  "templateDefault": { "message": "-- اختر قالبًا --" },
-  "btnSaveTemplate": { "message": "حفظ" },
-  "btnDeleteTemplate": { "message": "حذف" },
-  "templateDeleteTitle": { "message": "حذف القالب المحدد" },
-  "templateSaveTitle": { "message": "حفظ المحتوى الحالي كقالب" },
-
-  "labelSubject": { "message": "الموضوع" },
-  "placeholderSubject": { "message": "مرحبًا {{firstName}}، لدينا عرض لك" },
-  "labelBody": { "message": "محتوى البريد الإلكتروني" },
-  "placeholderBody": { "message": "مرحبًا {{firstName}}،\n\nلدينا عرض رائع لـ {{company}}..." },
-  "placeholderRecipient": { "message": "المستلم:" },
-  "placeholderSender": { "message": "المرسل:" },
-  "placeholdersHint": { "message": "المستلم: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>المرسل: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>" },
-
-  "btnPreview": { "message": "معاينة" },
-  "btnSend": { "message": "إرسال" },
-
-  "abTestLabel": { "message": "اختبار A/B (جرّب سطرَي موضوع)" },
-  "abSubjectBLabel": { "message": "الموضوع البديل (B)" },
-  "abSubjectBPlaceholder": { "message": "سطر الموضوع الثاني..." },
-  "abTestPctLabel": { "message": "نسبة الاختبار (%)" },
-  "abTestNote": { "message": "سيتم إرسال موضوعين مختلفين لبعض المستلمين. سيُرسل الفائز إلى الباقين." },
-
-  "scheduleLabel": { "message": "الإرسال المجدول" },
-  "scheduleDateLabel": { "message": "وقت الإرسال" },
-  "scheduleNote": { "message": "سيتم الإرسال تلقائيًا في الوقت المحدد." },
-
-  "followupLabel": { "message": "متابعة تلقائية لمن لم يفتحوا" },
-  "followupDelayLabel": { "message": "بعد كم يوم؟" },
-  "followupSubjectLabel": { "message": "موضوع المتابعة" },
-  "followupSubjectPlaceholder": { "message": "Re: {{firstName}}، هل رأيت عرضنا؟" },
-  "followupBodyLabel": { "message": "محتوى المتابعة" },
-  "followupBodyPlaceholder": { "message": "مرحبًا {{firstName}}،\n\nهل اطلعت على رسالتنا السابقة؟" },
-  "followupNote": { "message": "بالإضافة إلى البريد الأساسي، سيُرسل لمن لم يفتحوه." },
-
-  "quotaDefault": { "message": "متبقي $1/$2 بريد إلكتروني (خطة $3)" },
-
-  "reportsLoading": { "message": "جارٍ التحميل..." },
-  "btnBack": { "message": "رجوع" },
-  "statSent": { "message": "مُرسل" },
-  "statOpened": { "message": "مفتوح" },
-  "statClicked": { "message": "نقرات" },
-  "statOpenRate": { "message": "معدل الفتح:" },
-  "statClickRate": { "message": "معدل النقر:" },
-  "btnExportCsv": { "message": "تنزيل CSV" },
-  "noCampaignsFound": { "message": "لم يتم العثور على حملات." },
-  "noCampaignsYet": { "message": "لا توجد حملات بعد." },
-  "chartSent": { "message": "مُرسل" },
-  "chartOpened": { "message": "مفتوح" },
-  "chartClicked": { "message": "نقرات" },
-
-  "settingsAccount": { "message": "الحساب" },
-  "settingsEmail": { "message": "البريد الإلكتروني" },
-  "settingsPlan": { "message": "الخطة" },
-  "settingsSentThisMonth": { "message": "المُرسل هذا الشهر" },
-  "btnUpgrade": { "message": "ترقية الخطة" },
-  "btnManageSub": { "message": "إدارة الاشتراك" },
-
-  "settingsTracking": { "message": "التتبع" },
-  "settingsTrackOpens": { "message": "تتبع الفتح" },
-  "settingsTrackClicks": { "message": "تتبع النقرات" },
-
-  "settingsUnsub": { "message": "رابط إلغاء الاشتراك" },
-  "settingsUnsubDefault": { "message": "إلغاء الاشتراك" },
-  "settingsUnsubHint": { "message": "نص الرابط المعروض أسفل الرسائل" },
-
-  "settingsTimezone": { "message": "المنطقة الزمنية" },
-  "tzTurkey": { "message": "تركيا (UTC+3)" },
-  "tzLondon": { "message": "لندن (UTC+0/+1)" },
-  "tzBerlin": { "message": "برلين (UTC+1/+2)" },
-  "tzNewYork": { "message": "نيويورك (UTC-5/-4)" },
-  "tzLosAngeles": { "message": "لوس أنجلوس (UTC-8/-7)" },
-  "tzDubai": { "message": "دبي (UTC+4)" },
-  "tzUtc": { "message": "UTC" },
-
-  "settingsSender": { "message": "معلومات المرسل" },
-  "settingsSenderHint": { "message": "تُستخدم في توقيعك والرسائل المُنشأة بالذكاء الاصطناعي." },
-  "settingsSenderName": { "message": "اسمك" },
-  "settingsSenderPosition": { "message": "منصبك" },
-  "settingsSenderCompany": { "message": "شركتك" },
-  "settingsSenderPhone": { "message": "الهاتف (اختياري)" },
-
-  "btnSaveSettings": { "message": "حفظ الإعدادات" },
-  "settingsSaving": { "message": "جارٍ الحفظ..." },
-  "settingsSaved": { "message": "تم الحفظ!" },
-
-  "settingsSuppression": { "message": "العناوين المحظورة" },
-  "settingsSuppressionHint": { "message": "العناوين في هذه القائمة لن تتلقى أي حملات." },
-  "settingsSuppressionPlaceholder": { "message": "email@example.com" },
-  "btnAdd": { "message": "إضافة" },
-  "suppressionSearch": { "message": "بحث..." },
-  "suppressionEmpty": { "message": "لا توجد عناوين محظورة بعد." },
-  "suppressionReasonUnsub": { "message": "ألغى الاشتراك" },
-  "suppressionReasonManual": { "message": "يدوي" },
-  "suppressionEmailSuffix": { "message": "بريد إلكتروني" },
-
-  "settingsSupport": { "message": "الدعم" },
-  "feedbackPlaceholder": { "message": "صف مشكلتك أو اقتراحك..." },
-  "btnSendFeedback": { "message": "إرسال" },
-  "feedbackEmpty": { "message": "يُرجى كتابة رسالة." },
-  "feedbackSent": { "message": "تم إرسال ملاحظاتك!" },
-  "feedbackFailed": { "message": "تعذّر الإرسال. يمكنك مراسلتنا عبر البريد الإلكتروني." },
-
-  "popupSubtitle": { "message": "حملات بريد إلكتروني جماعية" },
-  "popupLoginHint": { "message": "سجّل الدخول بحساب Outlook لبدء إنشاء الحملات." },
-  "btnMicrosoftLogin": { "message": "تسجيل الدخول عبر Microsoft" },
-  "popupLoading": { "message": "جارٍ الاتصال بحساب Microsoft الخاص بك..." },
-  "popupErrorDefault": { "message": "حدث خطأ." },
-  "btnRetry": { "message": "إعادة المحاولة" },
-  "btnDashboard": { "message": "فتح لوحة الحملات" },
-  "btnLogout": { "message": "تسجيل الخروج" },
-  "popupConnected": { "message": "متصل" },
-  "popupNoResponse": { "message": "لم يتم تلقي استجابة." },
-  "popupUserInfoFailed": { "message": "تعذّر استرداد معلومات المستخدم." },
-  "popupUnknownError": { "message": "حدث خطأ غير معروف." },
-  "popupUpgradeStandard": { "message": "ترقية إلى Standard ($15/شهر)" },
-  "popupUpgradePro": { "message": "ترقية إلى Pro ($25/شهر)" },
-  "popupCheckoutFailed": { "message": "تعذّر إنشاء صفحة الدفع: " },
-  "popupPortalFailed": { "message": "تعذّر فتح البوابة." },
-
-  "toolbarButton": { "message": "OutMass" },
-  "toolbarButtonTitle": { "message": "OutMass — فتح لوحة الحملات" },
-
-  "alertUploadCsvFirst": { "message": "يُرجى رفع ملف CSV أولًا." },
-  "alertFillSubjectBody": { "message": "يُرجى ملء الموضوع ومحتوى البريد." },
-  "alertPreviewTitle": { "message": "--- معاينة ---\nالموضوع: " },
-  "alertScheduling": { "message": "جارٍ الجدولة..." },
-  "alertPreparing": { "message": "جارٍ التحضير..." },
-  "alertCampaignCreateFailed": { "message": "تعذّر إنشاء الحملة" },
-  "alertContactsUploading": { "message": "جارٍ رفع جهات الاتصال..." },
-  "alertContactsUploadFailed": { "message": "تعذّر رفع جهات الاتصال" },
-  "alertAbTestProOnly": { "message": "اختبار A/B متاح فقط في خطة Pro." },
-  "alertScheduledSuccess": { "message": "تم بنجاح! سيُرسل إلى $1 مستلمين في $2." },
-  "alertSending": { "message": "جارٍ الإرسال... 0/" },
-  "alertSendFailed": { "message": "فشل الإرسال" },
-  "alertSendError": { "message": "فشل الإرسال!\n\nالخطأ: " },
-  "alertAbSendSuccess": { "message": "تم بنجاح! تم إرسال $1 رسالة (اختبار A/B).\nسيُرسل الموضوع الفائز تلقائيًا." },
-  "alertPartialSend": { "message": "تم إرسال $1 رسالة، حدثت $2 أخطاء.\n\nالخطأ الأول: " },
-  "alertSendSuccess": { "message": "تم بنجاح! تم إرسال $1 رسالة." },
-  "alertLimitReached": { "message": "لقد وصلت إلى حد خطتك ($1 رسالة/شهر).\nيُرجى ترقية خطتك." },
-
-  "aiModalTitle": { "message": "كاتب البريد بالذكاء الاصطناعي" },
-  "aiPromptPlaceholder": { "message": "عن ماذا يجب أن يكون البريد الإلكتروني؟\n\nمثال: رسالة تواصل بارد لمنتج SaaS الخاص بنا" },
-  "aiToneProfessional": { "message": "مهني" },
-  "aiToneFriendly": { "message": "ودّي" },
-  "aiToneFormal": { "message": "رسمي" },
-  "aiToneCasual": { "message": "غير رسمي" },
-  "aiLangTr": { "message": "التركية" },
-  "aiLangEn": { "message": "الإنجليزية" },
-  "btnAiGenerate": { "message": "إنشاء" },
-  "btnCancel": { "message": "إلغاء" },
-  "alertAiPromptEmpty": { "message": "يُرجى وصف نوع البريد الذي تريده." },
-  "aiGenerating": { "message": "جارٍ الإنشاء..." },
-  "alertAiProOnly": { "message": "كاتب البريد بالذكاء الاصطناعي متاح فقط في خطة Pro." },
-  "alertAiFailed": { "message": "فشل إنشاء الذكاء الاصطناعي: " },
-
-  "templatePromptName": { "message": "اسم القالب:" },
-  "templateDefaultName": { "message": "القالب الخاص بي" },
-  "templateConfirmDelete": { "message": "حذف القالب \"$1\"؟" },
-  "alertTemplateFillFirst": { "message": "يُرجى ملء الموضوع والمحتوى أولًا." },
-  "alertTemplateStandardOnly": { "message": "قوالب البريد متاحة في خطتَي Standard وPro." },
-  "alertTemplateSaveFailed": { "message": "تعذّر حفظ القالب: " },
-  "alertTemplateDeleteFailed": { "message": "تعذّر حذف القالب: " },
-
-  "csvExportDownloading": { "message": "جارٍ التنزيل..." },
-  "alertCsvExportStandardOnly": { "message": "تصدير CSV متاح في خطتَي Standard وPro." },
-  "alertCsvExportFailed": { "message": "فشل التصدير: " },
-  "alertCsvExportEmpty": { "message": "تم تصدير CSV بنجاح لكن البيانات فارغة." },
-
-  "reportsSentSuffix": { "message": " مُرسل" },
-  "reportsOpenRate": { "message": "الفتح: " },
-  "reportsClickRate": { "message": "النقر: " },
-  "reportsError": { "message": "خطأ" },
-  "reportsFollowupPending": { "message": " متابعات في الانتظار" },
-
-  "upgradeModalTitle": { "message": "ترقية خطتك" },
-  "upgradeModalText": { "message": "لقد وصلت إلى حد الرسائل.<br/>قم بالترقية لإرسال المزيد." },
-  "upgradeModalStandard": { "message": "Standard: 5,000 رسالة/شهر — $15/شهر" },
-  "upgradeModalPro": { "message": "Pro: 10,000 رسالة/شهر — $25/شهر" },
-  "upgradeModalFeatures": { "message": "تقارير مفصّلة + دعم ذو أولوية" },
-  "upgradeModalBtn": { "message": "ترقية الآن — Standard $15/شهر" },
-  "upgradeModalLater": { "message": "ربما لاحقًا" },
-  "alertUpgradeCheckoutFailed": { "message": "تعذّر إنشاء صفحة الدفع. يُرجى المحاولة مرة أخرى." },
-
-  "settingsSaveFailed": { "message": "تعذّر حفظ الإعدادات: " },
-  "settingsCheckoutFailed": { "message": "تعذّر إنشاء صفحة الدفع." }
+  "appName": {
+    "message": "OutMass"
+  },
+  "appDesc": {
+    "message": "حملات بريد إلكتروني جماعية مباشرة من Outlook Web"
+  },
+  "tabCampaign": {
+    "message": "الحملة"
+  },
+  "tabReports": {
+    "message": "التقارير"
+  },
+  "tabSettings": {
+    "message": "الإعدادات"
+  },
+  "tabAccount": {
+    "message": "الحساب"
+  },
+  "connChecking": {
+    "message": "جارٍ التحقق من الاتصال..."
+  },
+  "connOnline": {
+    "message": "متصل بالخادم"
+  },
+  "connOffline": {
+    "message": "تعذّر الاتصال بالخادم"
+  },
+  "offlineBanner": {
+    "message": "تعذّر الاتصال بالخادم. تحقق من اتصالك بالإنترنت."
+  },
+  "extUpdatedReload": {
+    "message": "تم تحديث الإضافة. يُرجى إعادة تحميل الصفحة."
+  },
+  "btnClose": {
+    "message": "إغلاق"
+  },
+  "csvLabel": {
+    "message": "قائمة المستلمين (CSV)"
+  },
+  "csvDropHint": {
+    "message": "اسحب ملف CSV وأفلته هنا"
+  },
+  "csvDropHintAlt": {
+    "message": "أو انقر للاختيار"
+  },
+  "csvCountSuffix": {
+    "message": "مستلمين"
+  },
+  "btnAiWriter": {
+    "message": "الكتابة بالذكاء الاصطناعي"
+  },
+  "templateDefault": {
+    "message": "-- اختر قالبًا --"
+  },
+  "btnSaveTemplate": {
+    "message": "حفظ"
+  },
+  "btnDeleteTemplate": {
+    "message": "حذف"
+  },
+  "templateDeleteTitle": {
+    "message": "حذف القالب المحدد"
+  },
+  "templateSaveTitle": {
+    "message": "حفظ المحتوى الحالي كقالب"
+  },
+  "labelSubject": {
+    "message": "الموضوع"
+  },
+  "placeholderSubject": {
+    "message": "مرحبًا {{firstName}}، لدينا عرض لك"
+  },
+  "labelBody": {
+    "message": "محتوى البريد الإلكتروني"
+  },
+  "placeholderBody": {
+    "message": "مرحبًا {{firstName}}،\n\nلدينا عرض رائع لـ {{company}}..."
+  },
+  "placeholderRecipient": {
+    "message": "المستلم:"
+  },
+  "placeholderSender": {
+    "message": "المرسل:"
+  },
+  "placeholdersHint": {
+    "message": "المستلم: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>المرسل: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "معاينة"
+  },
+  "btnSend": {
+    "message": "إرسال"
+  },
+  "abTestLabel": {
+    "message": "اختبار A/B (جرّب سطرَي موضوع)"
+  },
+  "abSubjectBLabel": {
+    "message": "الموضوع البديل (B)"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "سطر الموضوع الثاني..."
+  },
+  "abTestPctLabel": {
+    "message": "نسبة الاختبار (%)"
+  },
+  "abTestNote": {
+    "message": "سيتم إرسال موضوعين مختلفين لبعض المستلمين. سيُرسل الفائز إلى الباقين."
+  },
+  "scheduleLabel": {
+    "message": "الإرسال المجدول"
+  },
+  "scheduleDateLabel": {
+    "message": "وقت الإرسال"
+  },
+  "scheduleNote": {
+    "message": "سيتم الإرسال تلقائيًا في الوقت المحدد."
+  },
+  "followupLabel": {
+    "message": "متابعة تلقائية لمن لم يفتحوا"
+  },
+  "followupDelayLabel": {
+    "message": "بعد كم يوم؟"
+  },
+  "followupSubjectLabel": {
+    "message": "موضوع المتابعة"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}، هل رأيت عرضنا؟"
+  },
+  "followupBodyLabel": {
+    "message": "محتوى المتابعة"
+  },
+  "followupBodyPlaceholder": {
+    "message": "مرحبًا {{firstName}}،\n\nهل اطلعت على رسالتنا السابقة؟"
+  },
+  "followupNote": {
+    "message": "بالإضافة إلى البريد الأساسي، سيُرسل لمن لم يفتحوه."
+  },
+  "quotaDefault": {
+    "message": "متبقي $1/$2 بريد إلكتروني (خطة $3)"
+  },
+  "reportsLoading": {
+    "message": "جارٍ التحميل..."
+  },
+  "btnBack": {
+    "message": "رجوع"
+  },
+  "statSent": {
+    "message": "مُرسل"
+  },
+  "statOpened": {
+    "message": "مفتوح"
+  },
+  "statClicked": {
+    "message": "نقرات"
+  },
+  "statOpenRate": {
+    "message": "معدل الفتح:"
+  },
+  "statClickRate": {
+    "message": "معدل النقر:"
+  },
+  "btnExportCsv": {
+    "message": "تنزيل CSV"
+  },
+  "noCampaignsFound": {
+    "message": "لم يتم العثور على حملات."
+  },
+  "noCampaignsYet": {
+    "message": "لا توجد حملات بعد."
+  },
+  "chartSent": {
+    "message": "مُرسل"
+  },
+  "chartOpened": {
+    "message": "مفتوح"
+  },
+  "chartClicked": {
+    "message": "نقرات"
+  },
+  "settingsAccount": {
+    "message": "الحساب"
+  },
+  "settingsEmail": {
+    "message": "البريد الإلكتروني"
+  },
+  "settingsPlan": {
+    "message": "الخطة"
+  },
+  "settingsSentThisMonth": {
+    "message": "المُرسل هذا الشهر"
+  },
+  "btnUpgrade": {
+    "message": "ترقية الخطة"
+  },
+  "btnManageSub": {
+    "message": "إدارة الاشتراك"
+  },
+  "settingsTracking": {
+    "message": "التتبع"
+  },
+  "settingsTrackOpens": {
+    "message": "تتبع الفتح"
+  },
+  "settingsTrackClicks": {
+    "message": "تتبع النقرات"
+  },
+  "settingsUnsub": {
+    "message": "رابط إلغاء الاشتراك"
+  },
+  "settingsUnsubDefault": {
+    "message": "إلغاء الاشتراك"
+  },
+  "settingsUnsubHint": {
+    "message": "نص الرابط المعروض أسفل الرسائل"
+  },
+  "settingsTimezone": {
+    "message": "المنطقة الزمنية"
+  },
+  "tzTurkey": {
+    "message": "تركيا (UTC+3)"
+  },
+  "tzLondon": {
+    "message": "لندن (UTC+0/+1)"
+  },
+  "tzBerlin": {
+    "message": "برلين (UTC+1/+2)"
+  },
+  "tzNewYork": {
+    "message": "نيويورك (UTC-5/-4)"
+  },
+  "tzLosAngeles": {
+    "message": "لوس أنجلوس (UTC-8/-7)"
+  },
+  "tzDubai": {
+    "message": "دبي (UTC+4)"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "معلومات المرسل"
+  },
+  "settingsSenderHint": {
+    "message": "تُستخدم في توقيعك والرسائل المُنشأة بالذكاء الاصطناعي."
+  },
+  "settingsSenderName": {
+    "message": "اسمك"
+  },
+  "settingsSenderPosition": {
+    "message": "منصبك"
+  },
+  "settingsSenderCompany": {
+    "message": "شركتك"
+  },
+  "settingsSenderPhone": {
+    "message": "الهاتف (اختياري)"
+  },
+  "btnSaveSettings": {
+    "message": "حفظ الإعدادات"
+  },
+  "settingsSaving": {
+    "message": "جارٍ الحفظ..."
+  },
+  "settingsSaved": {
+    "message": "تم الحفظ!"
+  },
+  "settingsSuppression": {
+    "message": "العناوين المحظورة"
+  },
+  "settingsSuppressionHint": {
+    "message": "العناوين في هذه القائمة لن تتلقى أي حملات."
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "email@example.com"
+  },
+  "btnAdd": {
+    "message": "إضافة"
+  },
+  "suppressionSearch": {
+    "message": "بحث..."
+  },
+  "suppressionEmpty": {
+    "message": "لا توجد عناوين محظورة بعد."
+  },
+  "suppressionReasonUnsub": {
+    "message": "ألغى الاشتراك"
+  },
+  "suppressionReasonManual": {
+    "message": "يدوي"
+  },
+  "suppressionEmailSuffix": {
+    "message": "بريد إلكتروني"
+  },
+  "settingsSupport": {
+    "message": "الدعم"
+  },
+  "feedbackPlaceholder": {
+    "message": "صف مشكلتك أو اقتراحك..."
+  },
+  "btnSendFeedback": {
+    "message": "إرسال"
+  },
+  "feedbackEmpty": {
+    "message": "يُرجى كتابة رسالة."
+  },
+  "feedbackSent": {
+    "message": "تم إرسال ملاحظاتك!"
+  },
+  "feedbackFailed": {
+    "message": "تعذّر الإرسال. يمكنك مراسلتنا عبر البريد الإلكتروني."
+  },
+  "popupSubtitle": {
+    "message": "حملات بريد إلكتروني جماعية"
+  },
+  "popupLoginHint": {
+    "message": "سجّل الدخول بحساب Outlook لبدء إنشاء الحملات."
+  },
+  "btnMicrosoftLogin": {
+    "message": "تسجيل الدخول عبر Microsoft"
+  },
+  "popupLoading": {
+    "message": "جارٍ الاتصال بحساب Microsoft الخاص بك..."
+  },
+  "popupErrorDefault": {
+    "message": "حدث خطأ."
+  },
+  "btnRetry": {
+    "message": "إعادة المحاولة"
+  },
+  "btnDashboard": {
+    "message": "فتح لوحة الحملات"
+  },
+  "btnLogout": {
+    "message": "تسجيل الخروج"
+  },
+  "popupConnected": {
+    "message": "متصل"
+  },
+  "popupNoResponse": {
+    "message": "لم يتم تلقي استجابة."
+  },
+  "popupUserInfoFailed": {
+    "message": "تعذّر استرداد معلومات المستخدم."
+  },
+  "popupUnknownError": {
+    "message": "حدث خطأ غير معروف."
+  },
+  "popupUpgradeStandard": {
+    "message": "ترقية إلى Standard ($15/شهر)"
+  },
+  "popupUpgradePro": {
+    "message": "ترقية إلى Pro ($25/شهر)"
+  },
+  "popupCheckoutFailed": {
+    "message": "تعذّر إنشاء صفحة الدفع: "
+  },
+  "popupPortalFailed": {
+    "message": "تعذّر فتح البوابة."
+  },
+  "toolbarButton": {
+    "message": "OutMass"
+  },
+  "toolbarButtonTitle": {
+    "message": "OutMass — فتح لوحة الحملات"
+  },
+  "alertUploadCsvFirst": {
+    "message": "يُرجى رفع ملف CSV أولًا."
+  },
+  "alertFillSubjectBody": {
+    "message": "يُرجى ملء الموضوع ومحتوى البريد."
+  },
+  "alertPreviewTitle": {
+    "message": "--- معاينة ---\nالموضوع: "
+  },
+  "alertScheduling": {
+    "message": "جارٍ الجدولة..."
+  },
+  "alertPreparing": {
+    "message": "جارٍ التحضير..."
+  },
+  "alertCampaignCreateFailed": {
+    "message": "تعذّر إنشاء الحملة"
+  },
+  "alertContactsUploading": {
+    "message": "جارٍ رفع جهات الاتصال..."
+  },
+  "alertContactsUploadFailed": {
+    "message": "تعذّر رفع جهات الاتصال"
+  },
+  "alertAbTestProOnly": {
+    "message": "اختبار A/B متاح فقط في خطة Pro."
+  },
+  "alertScheduledSuccess": {
+    "message": "تم بنجاح! سيُرسل إلى $1 مستلمين في $2."
+  },
+  "alertSending": {
+    "message": "جارٍ الإرسال... 0/"
+  },
+  "alertSendFailed": {
+    "message": "فشل الإرسال"
+  },
+  "alertSendError": {
+    "message": "فشل الإرسال!\n\nالخطأ: "
+  },
+  "alertAbSendSuccess": {
+    "message": "تم بنجاح! تم إرسال $1 رسالة (اختبار A/B).\nسيُرسل الموضوع الفائز تلقائيًا."
+  },
+  "alertPartialSend": {
+    "message": "تم إرسال $1 رسالة، حدثت $2 أخطاء.\n\nالخطأ الأول: "
+  },
+  "alertSendSuccess": {
+    "message": "تم بنجاح! تم إرسال $1 رسالة."
+  },
+  "alertLimitReached": {
+    "message": "لقد وصلت إلى حد خطتك ($1 رسالة/شهر).\nيُرجى ترقية خطتك."
+  },
+  "aiModalTitle": {
+    "message": "كاتب البريد بالذكاء الاصطناعي"
+  },
+  "aiPromptPlaceholder": {
+    "message": "عن ماذا يجب أن يكون البريد الإلكتروني؟\n\nمثال: رسالة تواصل بارد لمنتج SaaS الخاص بنا"
+  },
+  "aiToneProfessional": {
+    "message": "مهني"
+  },
+  "aiToneFriendly": {
+    "message": "ودّي"
+  },
+  "aiToneFormal": {
+    "message": "رسمي"
+  },
+  "aiToneCasual": {
+    "message": "غير رسمي"
+  },
+  "aiLangTr": {
+    "message": "التركية"
+  },
+  "aiLangEn": {
+    "message": "الإنجليزية"
+  },
+  "aiLangDe": {
+    "message": "الألمانية"
+  },
+  "aiLangFr": {
+    "message": "الفرنسية"
+  },
+  "aiLangEs": {
+    "message": "الإسبانية"
+  },
+  "aiLangRu": {
+    "message": "الروسية"
+  },
+  "aiLangAr": {
+    "message": "العربية"
+  },
+  "aiLangHi": {
+    "message": "الهندية"
+  },
+  "aiLangZh": {
+    "message": "الصينية"
+  },
+  "aiLangJa": {
+    "message": "اليابانية"
+  },
+  "btnAiGenerate": {
+    "message": "إنشاء"
+  },
+  "btnCancel": {
+    "message": "إلغاء"
+  },
+  "alertAiPromptEmpty": {
+    "message": "يُرجى وصف نوع البريد الذي تريده."
+  },
+  "aiGenerating": {
+    "message": "جارٍ الإنشاء..."
+  },
+  "alertAiProOnly": {
+    "message": "كاتب البريد بالذكاء الاصطناعي متاح فقط في خطة Pro."
+  },
+  "alertAiFailed": {
+    "message": "فشل إنشاء الذكاء الاصطناعي: "
+  },
+  "templatePromptName": {
+    "message": "اسم القالب:"
+  },
+  "templateDefaultName": {
+    "message": "القالب الخاص بي"
+  },
+  "templateConfirmDelete": {
+    "message": "حذف القالب \"$1\"؟"
+  },
+  "alertTemplateFillFirst": {
+    "message": "يُرجى ملء الموضوع والمحتوى أولًا."
+  },
+  "alertTemplateStandardOnly": {
+    "message": "قوالب البريد متاحة في خطتَي Standard وPro."
+  },
+  "alertTemplateSaveFailed": {
+    "message": "تعذّر حفظ القالب: "
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "تعذّر حذف القالب: "
+  },
+  "csvExportDownloading": {
+    "message": "جارٍ التنزيل..."
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "تصدير CSV متاح في خطتَي Standard وPro."
+  },
+  "alertCsvExportFailed": {
+    "message": "فشل التصدير: "
+  },
+  "alertCsvExportEmpty": {
+    "message": "تم تصدير CSV بنجاح لكن البيانات فارغة."
+  },
+  "reportsSentSuffix": {
+    "message": " مُرسل"
+  },
+  "reportsOpenRate": {
+    "message": "الفتح: "
+  },
+  "reportsClickRate": {
+    "message": "النقر: "
+  },
+  "reportsError": {
+    "message": "خطأ"
+  },
+  "reportsFollowupPending": {
+    "message": " متابعات في الانتظار"
+  },
+  "upgradeModalTitle": {
+    "message": "ترقية خطتك"
+  },
+  "upgradeModalText": {
+    "message": "لقد وصلت إلى حد الرسائل.<br/>قم بالترقية لإرسال المزيد."
+  },
+  "upgradeModalStandard": {
+    "message": "Standard: 5,000 رسالة/شهر — $15/شهر"
+  },
+  "upgradeModalPro": {
+    "message": "Pro: 10,000 رسالة/شهر — $25/شهر"
+  },
+  "upgradeModalFeatures": {
+    "message": "تقارير مفصّلة + دعم ذو أولوية"
+  },
+  "upgradeModalBtn": {
+    "message": "ترقية الآن — Standard $15/شهر"
+  },
+  "upgradeModalLater": {
+    "message": "ربما لاحقًا"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "تعذّر إنشاء صفحة الدفع. يُرجى المحاولة مرة أخرى."
+  },
+  "settingsSaveFailed": {
+    "message": "تعذّر حفظ الإعدادات: "
+  },
+  "settingsCheckoutFailed": {
+    "message": "تعذّر إنشاء صفحة الدفع."
+  }
 }
