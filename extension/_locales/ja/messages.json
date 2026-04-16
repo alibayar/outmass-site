@@ -348,10 +348,10 @@
     "message": "不明なエラーが発生しました。"
   },
   "popupUpgradeStandard": {
-    "message": "アップグレード → Standard（$15/月）"
+    "message": "アップグレード → Starter ($9/月)"
   },
   "popupUpgradePro": {
-    "message": "アップグレード → Pro（$25/月）"
+    "message": "アップグレード → Pro ($19/月)"
   },
   "popupCheckoutFailed": {
     "message": "決済ページを作成できませんでした："
@@ -537,16 +537,16 @@
     "message": "メール送信の上限に達しました。<br/>アップグレードしてより多くのメールを送信しましょう。"
   },
   "upgradeModalStandard": {
-    "message": "Standard：5,000通/月 — $15/月"
+    "message": "Starter: 2,000通/月 — $9/月"
   },
   "upgradeModalPro": {
-    "message": "Pro：10,000通/月 — $25/月"
+    "message": "Pro: 10,000通/月 — $19/月"
   },
   "upgradeModalFeatures": {
     "message": "詳細レポート + 優先サポート"
   },
   "upgradeModalBtn": {
-    "message": "今すぐアップグレード — Standard $15/月"
+    "message": "今すぐアップグレード — Starter $9/月"
   },
   "upgradeModalLater": {
     "message": "後で"

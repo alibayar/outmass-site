@@ -10,7 +10,7 @@ def test_get_settings(authed_client, test_user):
     assert resp.status_code == 200
     data = resp.json()
     assert data["email"] == test_user["email"]
-    assert data["plan"] in ("free", "standard", "pro")
+    assert data["plan"] in ("free", "starter", "pro")
     assert "track_opens" in data
     assert "track_clicks" in data
     assert "timezone" in data

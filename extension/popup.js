@@ -75,7 +75,7 @@
       btnUpgrade.style.display = "block";
       btnUpgrade.textContent = t("popupUpgradeStandard");
       btnManage.style.display = "none";
-    } else if (planKey === "standard") {
+    } else if (planKey === "starter") {
       btnUpgrade.style.display = "block";
       btnUpgrade.textContent = t("popupUpgradePro");
       btnManage.style.display = "block";
@@ -192,7 +192,7 @@
   if (btnUpgradePopup) {
     btnUpgradePopup.addEventListener("click", function () {
       var currentPlan = userPlan.textContent.toLowerCase();
-      var targetPlan = currentPlan === "standard" ? "pro" : "standard";
+      var targetPlan = currentPlan === "starter" ? "pro" : "starter";
       chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: targetPlan }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           chrome.tabs.create({ url: resp.data.checkout_url });

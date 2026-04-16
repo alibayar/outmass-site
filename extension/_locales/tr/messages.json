@@ -348,10 +348,10 @@
     "message": "Bilinmeyen bir hata oluştu."
   },
   "popupUpgradeStandard": {
-    "message": "Yükselt → Standard (₺15/ay)"
+    "message": "Yukselt → Starter ($9/ay)"
   },
   "popupUpgradePro": {
-    "message": "Yükselt → Pro (₺25/ay)"
+    "message": "Yukselt → Pro ($19/ay)"
   },
   "popupCheckoutFailed": {
     "message": "Ödeme sayfası oluşturulamadı: "
@@ -537,16 +537,16 @@
     "message": "E-posta limitinize ulaştınız.<br/>Daha fazla e-posta göndermek için planınızı yükseltin."
   },
   "upgradeModalStandard": {
-    "message": "Standard: 5.000 e-posta/ay — $15/ay"
+    "message": "Starter: 2.000 email/ay — $9/ay"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10.000 e-posta/ay — $25/ay"
+    "message": "Pro: 10.000 email/ay — $19/ay"
   },
   "upgradeModalFeatures": {
     "message": "Detaylı raporlar + öncelikli destek"
   },
   "upgradeModalBtn": {
-    "message": "Şimdi Yükselt — Standard $15/ay"
+    "message": "Simdi Yukselt — Starter $9/ay"
   },
   "upgradeModalLater": {
     "message": "Belki sonra"

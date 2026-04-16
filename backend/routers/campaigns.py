@@ -20,7 +20,7 @@ from pydantic import BaseModel
 from config import (
     BACKEND_URL,
     FREE_PLAN_MONTHLY_LIMIT,
-    STANDARD_PLAN_MONTHLY_LIMIT,
+    STARTER_PLAN_MONTHLY_LIMIT,
     PRO_PLAN_MONTHLY_LIMIT,
     GRAPH_API_BASE,
     RATE_LIMIT_WAIT_SECONDS,
@@ -81,7 +81,7 @@ async def create_campaign(
                 detail={
                     "error": "feature_locked",
                     "message": "Zamanli gonderim Standard ve Pro planlarda kullanilabilir",
-                    "required_plan": "standard",
+                    "required_plan": "starter",
                 },
             )
 
@@ -144,7 +144,7 @@ async def export_campaign_csv(
             detail={
                 "error": "feature_locked",
                 "message": "CSV export Standard ve Pro planlarda kullanilabilir",
-                "required_plan": "standard",
+                "required_plan": "starter",
             },
         )
 
@@ -265,8 +265,8 @@ async def send_campaign(
 
     if plan == "free":
         limit = FREE_PLAN_MONTHLY_LIMIT
-    elif plan == "standard":
-        limit = STANDARD_PLAN_MONTHLY_LIMIT
+    elif plan == "starter":
+        limit = STARTER_PLAN_MONTHLY_LIMIT
     else:
         limit = PRO_PLAN_MONTHLY_LIMIT
 

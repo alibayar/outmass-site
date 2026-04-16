@@ -29,7 +29,7 @@ def _require_standard_plus(user: dict):
             detail={
                 "error": "feature_locked",
                 "message": "Email sablonlari Standard ve Pro planlarda kullanilabilir",
-                "required_plan": "standard",
+                "required_plan": "starter",
             },
         )
 

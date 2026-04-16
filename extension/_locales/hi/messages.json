@@ -348,10 +348,10 @@
     "message": "एक अज्ञात त्रुटि हुई।"
   },
   "popupUpgradeStandard": {
-    "message": "अपग्रेड करें → Standard ($15/माह)"
+    "message": "अपग्रेड → Starter ($9/माह)"
   },
   "popupUpgradePro": {
-    "message": "अपग्रेड करें → Pro ($25/माह)"
+    "message": "अपग्रेड → Pro ($19/माह)"
   },
   "popupCheckoutFailed": {
     "message": "भुगतान पेज नहीं बन सका: "
@@ -537,16 +537,16 @@
     "message": "आपकी ईमेल सीमा पूरी हो गई है।<br/>अधिक भेजने के लिए अपग्रेड करें।"
   },
   "upgradeModalStandard": {
-    "message": "Standard: 5,000 ईमेल/माह — $15/माह"
+    "message": "Starter: 2,000 ईमेल/माह — $9/माह"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10,000 ईमेल/माह — $25/माह"
+    "message": "Pro: 10,000 ईमेल/माह — $19/माह"
   },
   "upgradeModalFeatures": {
     "message": "विस्तृत रिपोर्ट + प्राथमिकता सहायता"
   },
   "upgradeModalBtn": {
-    "message": "अभी अपग्रेड करें — Standard $15/माह"
+    "message": "अभी अपग्रेड करें — Starter $9/माह"
   },
   "upgradeModalLater": {
     "message": "शायद बाद में"

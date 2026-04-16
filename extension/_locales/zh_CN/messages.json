@@ -348,10 +348,10 @@
     "message": "发生未知错误。"
   },
   "popupUpgradeStandard": {
-    "message": "升级至 Standard（$15/月）"
+    "message": "升级到 Starter ($9/月)"
   },
   "popupUpgradePro": {
-    "message": "升级至 Pro（$25/月）"
+    "message": "升级到 Pro ($19/月)"
   },
   "popupCheckoutFailed": {
     "message": "无法创建付款页面："
@@ -537,16 +537,16 @@
     "message": "您已达到邮件发送上限。<br/>升级以发送更多邮件。"
   },
   "upgradeModalStandard": {
-    "message": "Standard：5,000 封邮件/月 — $15/月"
+    "message": "Starter: 2,000 封邮件/月 — $9/月"
   },
   "upgradeModalPro": {
-    "message": "Pro：10,000 封邮件/月 — $25/月"
+    "message": "Pro: 10,000 封邮件/月 — $19/月"
   },
   "upgradeModalFeatures": {
     "message": "详细报告 + 优先支持"
   },
   "upgradeModalBtn": {
-    "message": "立即升级 — Standard $15/月"
+    "message": "立即升级 — Starter $9/月"
   },
   "upgradeModalLater": {
     "message": "以后再说"

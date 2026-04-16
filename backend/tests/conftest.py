@@ -121,7 +121,7 @@ FAKE_USER = {
 }
 
 FAKE_PRO_USER = {**FAKE_USER, "plan": "pro"}
-FAKE_STANDARD_USER = {**FAKE_USER, "plan": "standard"}
+FAKE_STARTER_USER = {**FAKE_USER, "plan": "starter"}
 
 
 @pytest.fixture()
@@ -156,16 +156,16 @@ def auth_bypass_pro():
 
 @pytest.fixture()
 def auth_bypass_standard():
-    """Bypass JWT auth — inject FAKE_STANDARD_USER."""
+    """Bypass JWT auth — inject FAKE_STARTER_USER."""
     from routers.auth import get_current_user
 
     async def _override():
-        return FAKE_STANDARD_USER
+        return FAKE_STARTER_USER
 
     from main import app
 
     app.dependency_overrides[get_current_user] = _override
-    yield FAKE_STANDARD_USER
+    yield FAKE_STARTER_USER
     app.dependency_overrides.pop(get_current_user, None)
 
 

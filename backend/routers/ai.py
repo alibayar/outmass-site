@@ -11,7 +11,8 @@ import httpx
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
-from config import ANTHROPIC_API_KEY
+from config import ANTHROPIC_API_KEY, AI_GENERATION_MONTHLY_LIMIT
+from database import get_db
 from routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -61,13 +62,13 @@ async def generate_email(
     body: GenerateEmailRequest,
     user: dict = Depends(get_current_user),
 ):
-    """Generate email content using AI. Pro plan only."""
+    """Generate email content using AI. Pro plan only, rate-limited per month."""
     if user.get("plan", "free") != "pro":
         raise HTTPException(
             status_code=402,
             detail={
                 "error": "feature_locked",
-                "message": "AI email yazici sadece Pro planda kullanilabilir",
+                "message": "AI email writer is only available on the Pro plan",
                 "required_plan": "pro",
             },
         )
@@ -77,6 +78,19 @@ async def generate_email(
 
     if not body.prompt.strip():
         raise HTTPException(status_code=400, detail="Prompt is required")
+
+    # ── Monthly AI generation limit check ──
+    ai_used = user.get("ai_generations_this_month", 0) or 0
+    if ai_used >= AI_GENERATION_MONTHLY_LIMIT:
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "ai_limit_reached",
+                "message": f"Monthly AI generation limit reached ({AI_GENERATION_MONTHLY_LIMIT}). Resets next month.",
+                "used": ai_used,
+                "limit": AI_GENERATION_MONTHLY_LIMIT,
+            },
+        )
 
     lang_name = _LANG_NAMES.get(body.language, "English")
     lang_hint = f"Write in {lang_name}."
@@ -126,9 +140,19 @@ async def generate_email(
         except (json.JSONDecodeError, ValueError):
             result = {"subject": "", "body": content}
 
+        # Increment AI generation counter (best-effort)
+        try:
+            get_db().table("users").update(
+                {"ai_generations_this_month": ai_used + 1}
+            ).eq("id", user["id"]).execute()
+        except Exception as e:
+            logger.warning("Failed to increment ai_generations_this_month: %s", e)
+
         return {
             "subject": result.get("subject", ""),
             "body": result.get("body", ""),
+            "ai_used": ai_used + 1,
+            "ai_limit": AI_GENERATION_MONTHLY_LIMIT,
         }
 
     except httpx.TimeoutException:

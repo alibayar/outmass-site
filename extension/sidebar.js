@@ -238,9 +238,9 @@
     chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (result) {
       var sent = result.emailsSentThisMonth || 0;
       var plan = result.plan || "free";
-      var limit = plan === "pro" ? 10000 : plan === "standard" ? 5000 : 50;
+      var limit = plan === "pro" ? 10000 : plan === "starter" ? 2000 : 50;
       var remaining = Math.max(0, limit - sent);
-      var planLabel = plan === "pro" ? "Pro Plan" : plan === "standard" ? "Standard Plan" : "Free Plan";
+      var planLabel = plan === "pro" ? "Pro Plan" : plan === "starter" ? "Starter Plan" : "Free Plan";
 
       quotaText.textContent = t("quotaDefault", [String(remaining), String(limit), planLabel]);
       quotaFill.style.width = (remaining / limit * 100) + "%";
@@ -266,7 +266,7 @@
     chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (storage) {
       var sent = storage.emailsSentThisMonth || 0;
       var plan = storage.plan || "free";
-      var limit = plan === "pro" ? 10000 : plan === "standard" ? 5000 : 50;
+      var limit = plan === "pro" ? 10000 : plan === "starter" ? 2000 : 50;
       var remaining = limit - sent;
 
       if (remaining <= 0) {
@@ -1008,7 +1008,7 @@
     document.body.appendChild(overlay);
 
     document.getElementById("btn-upgrade").addEventListener("click", function () {
-      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "standard" }, function (resp) {
+      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "starter" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
         } else {
@@ -1235,7 +1235,7 @@
   var accountBtnUpgrade = document.getElementById("account-btn-upgrade");
   if (accountBtnUpgrade) {
     accountBtnUpgrade.addEventListener("click", function () {
-      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "standard" }, function (resp) {
+      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "starter" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
         } else {

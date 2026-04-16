@@ -348,10 +348,10 @@
     "message": "An unknown error occurred."
   },
   "popupUpgradeStandard": {
-    "message": "Upgrade → Standard ($15/mo)"
+    "message": "Upgrade → Starter ($9/mo)"
   },
   "popupUpgradePro": {
-    "message": "Upgrade → Pro ($25/mo)"
+    "message": "Upgrade → Pro ($19/mo)"
   },
   "popupCheckoutFailed": {
     "message": "Could not create payment page: "
@@ -537,16 +537,16 @@
     "message": "You've reached your email limit.<br/>Upgrade to send more emails."
   },
   "upgradeModalStandard": {
-    "message": "Standard: 5,000 emails/month — $15/mo"
+    "message": "Starter: 2,000 emails/month — $9/mo"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10,000 emails/month — $25/mo"
+    "message": "Pro: 10,000 emails/month — $19/mo"
   },
   "upgradeModalFeatures": {
     "message": "Detailed reports + priority support"
   },
   "upgradeModalBtn": {
-    "message": "Upgrade Now — Standard $15/mo"
+    "message": "Upgrade Now — Starter $9/mo"
   },
   "upgradeModalLater": {
     "message": "Maybe later"

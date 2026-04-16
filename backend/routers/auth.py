@@ -329,7 +329,9 @@ def _check_monthly_reset(user: dict):
             get_db().table("users").update(
                 {
                     "emails_sent_this_month": 0,
+                    "ai_generations_this_month": 0,
                     "month_reset_date": today.isoformat(),
                 }
             ).eq("id", user["id"]).execute()
             user["emails_sent_this_month"] = 0
+            user["ai_generations_this_month"] = 0

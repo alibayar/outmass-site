@@ -348,10 +348,10 @@
     "message": "حدث خطأ غير معروف."
   },
   "popupUpgradeStandard": {
-    "message": "ترقية إلى Standard ($15/شهر)"
+    "message": "الترقية → Starter ($9/شهر)"
   },
   "popupUpgradePro": {
-    "message": "ترقية إلى Pro ($25/شهر)"
+    "message": "الترقية → Pro ($19/شهر)"
   },
   "popupCheckoutFailed": {
     "message": "تعذّر إنشاء صفحة الدفع: "
@@ -537,16 +537,16 @@
     "message": "لقد وصلت إلى حد الرسائل.<br/>قم بالترقية لإرسال المزيد."
   },
   "upgradeModalStandard": {
-    "message": "Standard: 5,000 رسالة/شهر — $15/شهر"
+    "message": "Starter: 2,000 بريد/شهر — $9/شهر"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10,000 رسالة/شهر — $25/شهر"
+    "message": "Pro: 10,000 بريد/شهر — $19/شهر"
   },
   "upgradeModalFeatures": {
     "message": "تقارير مفصّلة + دعم ذو أولوية"
   },
   "upgradeModalBtn": {
-    "message": "ترقية الآن — Standard $15/شهر"
+    "message": "الترقية الآن — Starter $9/شهر"
   },
   "upgradeModalLater": {
     "message": "ربما لاحقًا"

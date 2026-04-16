@@ -29,7 +29,7 @@ if not JWT_SECRET or JWT_SECRET.startswith("change-me"):
 # ── Stripe ──
 STRIPE_SECRET_KEY = os.getenv("STRIPE_SECRET_KEY", "")
 STRIPE_WEBHOOK_SECRET = os.getenv("STRIPE_WEBHOOK_SECRET", "")
-STRIPE_STANDARD_PRICE_ID = os.getenv("STRIPE_STANDARD_PRICE_ID", "")
+STRIPE_STARTER_PRICE_ID = os.getenv("STRIPE_STARTER_PRICE_ID", "") or os.getenv("STRIPE_STANDARD_PRICE_ID", "")
 STRIPE_PRO_PRICE_ID = os.getenv("STRIPE_PRO_PRICE_ID", "")
 STRIPE_TEAM_PRICE_ID = os.getenv("STRIPE_TEAM_PRICE_ID", "")
 STRIPE_PORTAL_CONFIG_ID = os.getenv("STRIPE_PORTAL_CONFIG_ID", "")
@@ -66,9 +66,16 @@ POSTHOG_HOST = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
 # ── AI ──
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
-# ── Limits ──
+# ── Plan Limits ──
 FREE_PLAN_MONTHLY_LIMIT = 50
-STANDARD_PLAN_MONTHLY_LIMIT = 5000
+STARTER_PLAN_MONTHLY_LIMIT = 2000
 PRO_PLAN_MONTHLY_LIMIT = 10000
+
+# Legacy alias (keep for back-compat until all code migrated)
+STANDARD_PLAN_MONTHLY_LIMIT = STARTER_PLAN_MONTHLY_LIMIT
+
+# AI generation limit (per month, Pro only)
+AI_GENERATION_MONTHLY_LIMIT = 50
+
 SEND_DELAY_SECONDS = 1
 RATE_LIMIT_WAIT_SECONDS = 60

@@ -348,10 +348,10 @@
     "message": "Ha ocurrido un error desconocido."
   },
   "popupUpgradeStandard": {
-    "message": "Mejorar → Standard (15 $/mes)"
+    "message": "Mejorar → Starter ($9/mes)"
   },
   "popupUpgradePro": {
-    "message": "Mejorar → Pro (25 $/mes)"
+    "message": "Mejorar → Pro ($19/mes)"
   },
   "popupCheckoutFailed": {
     "message": "No se pudo crear la página de pago: "
@@ -537,16 +537,16 @@
     "message": "Has alcanzado tu límite de correos.<br/>Mejora tu plan para enviar más."
   },
   "upgradeModalStandard": {
-    "message": "Standard: 5.000 correos/mes — 15 $/mes"
+    "message": "Starter: 2.000 correos/mes — $9/mes"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10.000 correos/mes — 25 $/mes"
+    "message": "Pro: 10.000 correos/mes — $19/mes"
   },
   "upgradeModalFeatures": {
     "message": "Informes detallados + soporte prioritario"
   },
   "upgradeModalBtn": {
-    "message": "Mejorar ahora — Standard 15 $/mes"
+    "message": "Mejorar ahora — Starter $9/mes"
   },
   "upgradeModalLater": {
     "message": "Quizás más tarde"

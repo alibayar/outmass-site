@@ -348,10 +348,10 @@
     "message": "Une erreur inconnue est survenue."
   },
   "popupUpgradeStandard": {
-    "message": "Passer au Standard (15 $/mois)"
+    "message": "Passer à Starter ($9/mois)"
   },
   "popupUpgradePro": {
-    "message": "Passer au Pro (25 $/mois)"
+    "message": "Passer à Pro ($19/mois)"
   },
   "popupCheckoutFailed": {
     "message": "Impossible de créer la page de paiement : "
@@ -537,16 +537,16 @@
     "message": "Vous avez atteint votre limite d'e-mails.<br/>Passez à un plan supérieur pour envoyer plus d'e-mails."
   },
   "upgradeModalStandard": {
-    "message": "Standard : 5 000 e-mails/mois — 15 $/mois"
+    "message": "Starter : 2 000 e-mails/mois — $9/mois"
   },
   "upgradeModalPro": {
-    "message": "Pro : 10 000 e-mails/mois — 25 $/mois"
+    "message": "Pro : 10 000 e-mails/mois — $19/mois"
   },
   "upgradeModalFeatures": {
     "message": "Rapports détaillés + support prioritaire"
   },
   "upgradeModalBtn": {
-    "message": "Passer au Standard — 15 $/mois"
+    "message": "Passer à Starter $9/mois"
   },
   "upgradeModalLater": {
     "message": "Peut-être plus tard"

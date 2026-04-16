@@ -18,7 +18,7 @@ from config import (
     PRO_PLAN_MONTHLY_LIMIT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
-    STANDARD_PLAN_MONTHLY_LIMIT,
+    STARTER_PLAN_MONTHLY_LIMIT,
 )
 from workers.celery_app import celery
 from workers.followup_worker import _get_fresh_access_token
@@ -58,8 +58,8 @@ def process_scheduled_campaigns():
         plan = user.get("plan", "free")
         if plan == "free":
             limit = FREE_PLAN_MONTHLY_LIMIT
-        elif plan == "standard":
-            limit = STANDARD_PLAN_MONTHLY_LIMIT
+        elif plan == "starter":
+            limit = STARTER_PLAN_MONTHLY_LIMIT
         else:
             limit = PRO_PLAN_MONTHLY_LIMIT
 

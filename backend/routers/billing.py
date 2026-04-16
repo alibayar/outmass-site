@@ -20,12 +20,12 @@ from pydantic import BaseModel
 from config import (
     BACKEND_URL,
     STRIPE_PORTAL_CONFIG_ID,
-    STRIPE_STANDARD_PRICE_ID,
+    STRIPE_STARTER_PRICE_ID,
     STRIPE_PRO_PRICE_ID,
     STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET,
     FREE_PLAN_MONTHLY_LIMIT,
-    STANDARD_PLAN_MONTHLY_LIMIT,
+    STARTER_PLAN_MONTHLY_LIMIT,
     PRO_PLAN_MONTHLY_LIMIT,
 )
 from database import get_db
@@ -40,7 +40,7 @@ stripe.api_key = STRIPE_SECRET_KEY
 # ── Plan limits ──────────────────────────────────────────────────────────────
 PLAN_LIMITS = {
     "free": FREE_PLAN_MONTHLY_LIMIT,
-    "standard": STANDARD_PLAN_MONTHLY_LIMIT,
+    "starter": STARTER_PLAN_MONTHLY_LIMIT,
     "pro": PRO_PLAN_MONTHLY_LIMIT,
 }
 
@@ -68,8 +68,8 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
     if not STRIPE_SECRET_KEY:
         raise HTTPException(status_code=503, detail="Stripe not configured")
 
-    if body.plan == "standard":
-        price_id = STRIPE_STANDARD_PRICE_ID
+    if body.plan == "starter":
+        price_id = STRIPE_STARTER_PRICE_ID
     else:
         price_id = STRIPE_PRO_PRICE_ID
 
@@ -139,8 +139,8 @@ async def stripe_webhook(request: Request):
             try:
                 sub = stripe.Subscription.retrieve(subscription_id)
                 sub_price_id = sub["items"]["data"][0]["price"]["id"] if sub["items"]["data"] else ""
-                if sub_price_id == STRIPE_STANDARD_PRICE_ID:
-                    plan = "standard"
+                if sub_price_id == STRIPE_STARTER_PRICE_ID:
+                    plan = "starter"
             except Exception:
                 pass
 
@@ -179,8 +179,8 @@ async def stripe_webhook(request: Request):
                 # Determine plan from subscription price
                 try:
                     sub_price_id = data_object["items"]["data"][0]["price"]["id"] if data_object.get("items", {}).get("data") else ""
-                    if sub_price_id == STRIPE_STANDARD_PRICE_ID:
-                        update_data["plan"] = "standard"
+                    if sub_price_id == STRIPE_STARTER_PRICE_ID:
+                        update_data["plan"] = "starter"
                     else:
                         update_data["plan"] = "pro"
                 except (KeyError, IndexError):

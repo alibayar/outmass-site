@@ -30,7 +30,7 @@ def test_template_crud_standard_user(authed_client, test_user, cleanup):
     original_plan = test_user.get("plan", "free")
 
     # Upgrade to standard for test
-    get_db().table("users").update({"plan": "standard"}).eq(
+    get_db().table("users").update({"plan": "starter"}).eq(
         "id", test_user["id"]
     ).execute()
 
@@ -104,7 +104,7 @@ def test_csv_export_blocked_for_free(authed_client, test_user, cleanup):
 def test_csv_export_works_for_standard(authed_client, test_user, cleanup):
     """Standard plan users can export CSV."""
     original_plan = test_user.get("plan", "free")
-    get_db().table("users").update({"plan": "standard"}).eq(
+    get_db().table("users").update({"plan": "starter"}).eq(
         "id", test_user["id"]
     ).execute()
 
@@ -181,7 +181,7 @@ def test_scheduled_sending_blocked_for_free(authed_client, test_user, cleanup):
 def test_scheduled_sending_works_for_standard(authed_client, test_user, cleanup):
     """Standard plan users can schedule campaigns."""
     original_plan = test_user.get("plan", "free")
-    get_db().table("users").update({"plan": "standard"}).eq(
+    get_db().table("users").update({"plan": "starter"}).eq(
         "id", test_user["id"]
     ).execute()
 
