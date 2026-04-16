@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "Could not create payment page."
+  },
+  "quotaInfoTitle": {
+    "message": "About email limits"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook also enforces daily sending limits (~300/day personal, ~10,000/day Business). Our quota is in addition to these."
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft enforces sending limits on Outlook accounts in addition to our plan quota. The stricter of the two applies:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (personal): ~300 emails/day"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10,000 emails/day"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: 30 messages/minute throttle"
+  },
+  "quotaInfoBody2": {
+    "message": "Spacing large campaigns across multiple days helps avoid throttling and protects your sender reputation. OutMass cannot override Microsoft platform limits."
   }
 }

@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "Ödeme sayfası oluşturulamadı."
+  },
+  "quotaInfoTitle": {
+    "message": "Email limitleri hakkinda"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook gunluk gonderim limiti uygular (~300/gun kisisel, ~10.000/gun Business). Bizim kotamiz bunlarin ustunedir."
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft, Outlook hesaplari icin bizim plan kotamizin yaninda kendi gonderim limitini de uygular. Hangisi daha kisitliysa o gecerlidir:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (kisisel): gunde ~300 email"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: gunde ~10.000 email"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: dakikada 30 mesaj sinirlamasi"
+  },
+  "quotaInfoBody2": {
+    "message": "Buyuk kampanyalari gunlere yayarak bu limitlere takilmamak ve gonderici itibarinizi korumak onerilir. OutMass, Microsoft platform limitlerini asamaz."
   }
 }

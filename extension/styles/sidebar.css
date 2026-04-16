@@ -366,6 +366,39 @@ body {
   font-size: 12px;
   color: #605e5c;
   margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quota-info-btn {
+  width: 14px;
+  height: 14px;
+  border: none;
+  background: #c8c6c4;
+  color: #fff;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: 700;
+  font-family: serif;
+  cursor: pointer;
+  padding: 0;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.quota-info-btn:hover {
+  background: #0078d4;
+}
+
+.quota-disclaimer {
+  font-size: 10px;
+  color: #a19f9d;
+  margin-top: 6px;
+  line-height: 1.35;
+  font-style: italic;
 }
 
 .quota-track {

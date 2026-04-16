@@ -247,6 +247,31 @@
     });
   }
 
+  // Quota info modal (platform limit disclaimer)
+  var quotaInfoBtn = document.getElementById("quota-info-btn");
+  if (quotaInfoBtn) {
+    quotaInfoBtn.addEventListener("click", function () {
+      var overlay = document.createElement("div");
+      overlay.style.cssText = "position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.5);z-index:10000;display:flex;align-items:center;justify-content:center;padding:20px;";
+      var modal = document.createElement("div");
+      modal.style.cssText = "background:#fff;border-radius:12px;padding:24px;max-width:340px;width:100%;box-shadow:0 8px 32px rgba(0,0,0,0.2);font-size:13px;line-height:1.5;";
+      modal.innerHTML =
+        '<h3 style="margin:0 0 12px;font-size:15px;color:#323130;">' + t("quotaInfoTitle") + '</h3>' +
+        '<p style="margin:0 0 10px;color:#605e5c;">' + t("quotaInfoBody1") + '</p>' +
+        '<ul style="margin:8px 0 10px 18px;color:#605e5c;padding:0;">' +
+          '<li>' + t("quotaInfoOutlookCom") + '</li>' +
+          '<li>' + t("quotaInfoMs365") + '</li>' +
+          '<li>' + t("quotaInfoExchange") + '</li>' +
+        '</ul>' +
+        '<p style="margin:0 0 14px;color:#605e5c;font-size:12px;">' + t("quotaInfoBody2") + '</p>' +
+        '<button id="quota-info-close" style="width:100%;padding:8px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit;">' + t("btnClose") + '</button>';
+      overlay.appendChild(modal);
+      document.body.appendChild(overlay);
+      document.getElementById("quota-info-close").addEventListener("click", function () { overlay.remove(); });
+      overlay.addEventListener("click", function (e) { if (e.target === overlay) overlay.remove(); });
+    });
+  }
+
   // ── Send Campaign ──
   btnSend.addEventListener("click", function () {
     if (!csvData || !csvRawText) {

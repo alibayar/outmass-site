@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "Не удалось создать страницу оплаты."
+  },
+  "quotaInfoTitle": {
+    "message": "О лимитах email"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook также применяет дневные лимиты (~300/день личный, ~10 000/день Business). Наша квота действует сверх этого."
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft применяет лимиты отправки на аккаунты Outlook помимо нашей квоты. Применяется более строгий:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (личный): ~300 писем/день"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10 000 писем/день"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: ограничение 30 сообщений/мин"
+  },
+  "quotaInfoBody2": {
+    "message": "Распределите большие кампании на несколько дней, чтобы избежать ограничений и защитить репутацию отправителя. OutMass не может обойти лимиты Microsoft."
   }
 }

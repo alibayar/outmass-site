@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "No se pudo crear la página de pago."
+  },
+  "quotaInfoTitle": {
+    "message": "Acerca de los limites de correos"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook tambien aplica limites diarios (~300/dia personal, ~10.000/dia Business). Nuestra cuota es adicional."
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft aplica limites de envio en cuentas Outlook ademas de la cuota de nuestro plan. Se aplica el mas estricto:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (personal): ~300 correos/dia"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10.000 correos/dia"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: limite de 30 mensajes/minuto"
+  },
+  "quotaInfoBody2": {
+    "message": "Distribuir campanas grandes en varios dias evita limitaciones y protege tu reputacion. OutMass no puede anular los limites de Microsoft."
   }
 }

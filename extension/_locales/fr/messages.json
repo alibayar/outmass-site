@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "Impossible de créer la page de paiement."
+  },
+  "quotaInfoTitle": {
+    "message": "A propos des limites d'e-mails"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook applique egalement des limites quotidiennes (~300/jour personnel, ~10 000/jour Business). Notre quota s'ajoute a ces limites."
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft applique des limites d'envoi aux comptes Outlook en plus de notre quota de plan. La plus stricte s'applique :"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (personnel) : ~300 e-mails/jour"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business : ~10 000 e-mails/jour"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online : limite de 30 messages/minute"
+  },
+  "quotaInfoBody2": {
+    "message": "Repartir les grandes campagnes sur plusieurs jours evite la limitation et protege votre reputation d'expediteur. OutMass ne peut pas contourner les limites Microsoft."
   }
 }

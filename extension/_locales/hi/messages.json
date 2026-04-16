@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "भुगतान पेज नहीं बन सका।"
+  },
+  "quotaInfoTitle": {
+    "message": "ईमेल सीमाओं के बारे में"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook दैनिक सीमाएँ भी लागू करता है (~300/दिन व्यक्तिगत, ~10,000/दिन Business)। हमारा कोटा इसके अतिरिक्त है।"
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft हमारी योजना के साथ-साथ Outlook खातों पर भेजने की सीमाएँ लागू करता है। जो भी अधिक कड़ी है वह लागू होती है:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (व्यक्तिगत): ~300 ईमेल/दिन"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10,000 ईमेल/दिन"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: 30 संदेश/मिनट सीमा"
+  },
+  "quotaInfoBody2": {
+    "message": "बड़े अभियानों को कई दिनों में फैलाने से थ्रॉटलिंग से बचा जा सकता है। OutMass Microsoft की सीमाओं को पार नहीं कर सकता।"
   }
 }

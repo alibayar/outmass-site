@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "決済ページを作成できませんでした。"
+  },
+  "quotaInfoTitle": {
+    "message": "メール制限について"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook は日次送信制限（個人 ~300/日、Business ~10,000/日）も適用します。当社のクォータはこれに加えてです。"
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft は当社のプランクォータに加えて Outlook アカウントに送信制限を適用します。より厳しい方が適用されます："
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com（個人）：~300通/日"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business：~10,000通/日"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online：30メッセージ/分のスロットル"
+  },
+  "quotaInfoBody2": {
+    "message": "大規模キャンペーンを複数日に分散することでスロットリングを回避し、送信者の評判を守れます。OutMass は Microsoft のプラットフォーム制限を上書きできません。"
   }
 }

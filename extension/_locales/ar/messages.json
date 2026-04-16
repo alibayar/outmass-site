@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "تعذّر إنشاء صفحة الدفع."
+  },
+  "quotaInfoTitle": {
+    "message": "حول حدود البريد الإلكتروني"
+  },
+  "quotaDisclaimer": {
+    "message": "يفرض Microsoft Outlook أيضًا حدودًا يومية (~300/يوم شخصي، ~10,000/يوم Business). حصتنا إضافية."
+  },
+  "quotaInfoBody1": {
+    "message": "تفرض Microsoft حدود إرسال على حسابات Outlook بالإضافة إلى حصة خطتنا. الأكثر صرامة هو الساري:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (شخصي): ~300 رسالة/يوم"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10,000 رسالة/يوم"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: حد 30 رسالة/دقيقة"
+  },
+  "quotaInfoBody2": {
+    "message": "توزيع الحملات الكبيرة على عدة أيام يتجنب الاختناق ويحمي سمعة المرسل. لا يمكن لـ OutMass تجاوز حدود Microsoft."
   }
 }

@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "无法创建付款页面。"
+  },
+  "quotaInfoTitle": {
+    "message": "关于邮件限制"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook 还强制执行每日发送限制（个人~300/天，Business ~10,000/天）。我们的配额是额外的。"
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft 在我们的计划配额之外还对 Outlook 账户实施发送限制。以更严格的为准："
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com（个人）：约 300 封/天"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business：约 10,000 封/天"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online：每分钟 30 条限流"
+  },
+  "quotaInfoBody2": {
+    "message": "将大型活动分散到几天可避免限流并保护发件人声誉。OutMass 无法绕过 Microsoft 平台限制。"
   }
 }

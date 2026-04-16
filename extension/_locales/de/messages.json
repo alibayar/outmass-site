@@ -559,5 +559,26 @@
   },
   "settingsCheckoutFailed": {
     "message": "Zahlungsseite konnte nicht erstellt werden."
+  },
+  "quotaInfoTitle": {
+    "message": "Ueber E-Mail-Limits"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook setzt taegliche Sendelimits (~300/Tag persoenlich, ~10.000/Tag Business). Unser Kontingent kommt zusaetzlich."
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft erzwingt Sendelimits fuer Outlook-Konten zusaetzlich zu unserem Plankontingent. Das strengere gilt:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (persoenlich): ~300 E-Mails/Tag"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10.000 E-Mails/Tag"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: 30 Nachrichten/Minute-Drosselung"
+  },
+  "quotaInfoBody2": {
+    "message": "Grosse Kampagnen ueber mehrere Tage zu verteilen hilft, Drosselung zu vermeiden. OutMass kann Microsoft-Plattform-Limits nicht ueberschreiben."
   }
 }

@@ -142,9 +142,15 @@
 
     <!-- Quota -->
     <div class="quota-bar">
-      <div class="quota-text" id="quota-text">50/50 emails remaining (Free Plan)</div>
+      <div class="quota-text">
+        <span id="quota-text">50/50 emails remaining (Free Plan)</span>
+        <button class="quota-info-btn" id="quota-info-btn" data-i18n-title="quotaInfoTitle" title="About email limits" aria-label="info">i</button>
+      </div>
       <div class="quota-track">
         <div class="quota-fill" id="quota-fill" style="width: 100%"></div>
+      </div>
+      <div class="quota-disclaimer" data-i18n="quotaDisclaimer">
+        Microsoft Outlook also enforces daily sending limits (~300/day personal, ~10,000/day Business). Our quota is in addition to these.
       </div>
     </div>
   </div>
