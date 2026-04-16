@@ -1,34 +1,5 @@
 /* OutMass — Content Script Styles */
 
-/* ── Toolbar Button ── */
-.outmass-toolbar-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  background: #0078d4;
-  color: #fff;
-  border: none;
-  border-radius: 4px;
-  padding: 6px 12px;
-  font-size: 13px;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  font-weight: 600;
-  cursor: pointer;
-  margin-left: 8px;
-  height: 32px;
-  line-height: 1;
-  transition: background 0.15s ease;
-  z-index: 1000;
-}
-
-.outmass-toolbar-btn:hover {
-  background: #106ebe;
-}
-
-.outmass-toolbar-btn:active {
-  background: #005a9e;
-}
-
 /* ── Sidebar Wrapper ── */
 #outmass-sidebar-wrapper {
   position: fixed;
