@@ -315,7 +315,10 @@ body {
 .form-actions {
   display: flex;
   gap: 8px;
+  margin-top: 20px;
   margin-bottom: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #edebe9;
 }
 
 .btn {
