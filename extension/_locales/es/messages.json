@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "juan@example.com,Juan,Martinez,Pionero Labs,Director de Ventas"
+  },
+  "btnTestSend": {
+    "message": "Envio de prueba"
+  },
+  "testSendPrompt": {
+    "message": "Se enviara un correo de prueba a tu direccion. ¿Continuar?"
+  },
+  "testSendSuccess": {
+    "message": "Correo de prueba enviado a $EMAIL$. Revisa tu bandeja.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "Envio de prueba fallido: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "Completa asunto y contenido antes de la prueba."
+  },
+  "warnSubjectLong": {
+    "message": "Asunto supera 78 caracteres — puede cortarse en movil."
+  },
+  "warnAllCaps": {
+    "message": "Muchas mayusculas en el asunto — parece spam."
+  },
+  "warnSpamWords": {
+    "message": "Posibles palabras spam: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ enlaces en el contenido — puede activar filtros.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "¿Enviar de todos modos?"
+  },
+  "csvErrTooLarge": {
+    "message": "Archivo CSV demasiado grande (max 5 MB)."
+  },
+  "csvErrEncoding": {
+    "message": "Codificacion CSV no reconocida. Guarda como UTF-8."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "El CSV debe tener una columna 'email'."
+  },
+  "csvDupRemoved": {
+    "message": "duplicados eliminados"
+  },
+  "campaignNameDuplicate": {
+    "message": "Ya existe una campana llamada \"$NAME$\". ¿Continuar?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "Vista previa"
+  },
+  "reportsTabActive": {
+    "message": "Activas"
+  },
+  "reportsTabArchived": {
+    "message": "Archivadas"
+  },
+  "btnArchive": {
+    "message": "Archivar"
+  },
+  "btnUnarchive": {
+    "message": "Desarchivar"
+  },
+  "archiveConfirm": {
+    "message": "¿Archivar esta campana? Puedes restaurarla desde la pestana Archivadas."
+  },
+  "onbTitle": {
+    "message": "Bienvenido a OutMass"
+  },
+  "onbStep1": {
+    "message": "Paso 1 — Sube un CSV de destinatarios. La primera columna debe ser 'email'."
+  },
+  "onbStep2": {
+    "message": "Paso 2 — Escribe asunto y contenido. Usa {{firstName}} para personalizar."
+  },
+  "onbStep3": {
+    "message": "Paso 3 — Revisa con Vista previa o Envio de prueba, luego Enviar."
+  },
+  "onbNext": {
+    "message": "Siguiente"
+  },
+  "onbBack": {
+    "message": "Atras"
+  },
+  "onbFinish": {
+    "message": "Finalizar"
+  },
+  "btnExportList": {
+    "message": "Exportar todo"
   }
 }

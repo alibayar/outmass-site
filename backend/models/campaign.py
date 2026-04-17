@@ -59,12 +59,13 @@ def get_campaign(campaign_id: str) -> dict | None:
     return None
 
 
-def list_campaigns(user_id: str) -> list[dict]:
+def list_campaigns(user_id: str, archived: bool = False) -> list[dict]:
     result = (
         get_db()
         .table("campaigns")
         .select("*")
         .eq("user_id", user_id)
+        .eq("archived", archived)
         .order("created_at", desc=True)
         .limit(100)
         .execute()
@@ -74,6 +75,13 @@ def list_campaigns(user_id: str) -> list[dict]:
 
 def update_campaign(campaign_id: str, updates: dict):
     get_db().table("campaigns").update(updates).eq("id", campaign_id).execute()
+
+
+def set_archived(campaign_id: str, archived: bool):
+    """Toggle a campaign's archived flag."""
+    get_db().table("campaigns").update({"archived": archived}).eq(
+        "id", campaign_id
+    ).execute()
 
 
 def increment_stat(campaign_id: str, field: str, count: int = 1):

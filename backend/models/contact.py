@@ -6,6 +6,7 @@ import re
 from datetime import datetime, timezone
 
 from database import get_db
+from utils.email_classifier import is_role_account, is_disposable
 
 # Simple email regex for validation
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
@@ -31,6 +32,8 @@ def bulk_insert(
     skipped_invalid = 0
     skipped_duplicate = 0
     skipped_suppressed = 0
+    warn_role = 0
+    warn_disposable = 0
 
     for c in contacts:
         raw = (c.get("email") or "").strip().lower()
@@ -43,6 +46,11 @@ def bulk_insert(
         if raw in seen:
             skipped_duplicate += 1
             continue
+        # A.4: role-account + disposable warnings (counted, not skipped)
+        if is_role_account(raw):
+            warn_role += 1
+        if is_disposable(raw):
+            warn_disposable += 1
         seen.add(raw)
         rows.append(
             {
@@ -76,6 +84,8 @@ def bulk_insert(
             "skipped_invalid": skipped_invalid,
             "skipped_duplicate": skipped_duplicate,
             "skipped_suppressed": skipped_suppressed,
+            "warn_role": warn_role,
+            "warn_disposable": warn_disposable,
         }
 
     result = get_db().table("contacts").insert(rows).execute()
@@ -85,6 +95,8 @@ def bulk_insert(
         "skipped_invalid": skipped_invalid,
         "skipped_duplicate": skipped_duplicate,
         "skipped_suppressed": skipped_suppressed,
+        "warn_role": warn_role,
+        "warn_disposable": warn_disposable,
     }
 
 

@@ -107,9 +107,39 @@ async def create_campaign(
 
 
 @router.get("")
-async def list_campaigns(user: dict = Depends(get_current_user)):
-    campaigns = campaign_model.list_campaigns(user["id"])
+async def list_campaigns(
+    archived: bool = False,
+    user: dict = Depends(get_current_user),
+):
+    campaigns = campaign_model.list_campaigns(user["id"], archived=archived)
     return {"campaigns": campaigns}
+
+
+@router.get("/export-list")
+async def export_campaign_list(user: dict = Depends(get_current_user)):
+    """Export all of the user's campaigns + summary stats as CSV."""
+    active = campaign_model.list_campaigns(user["id"], archived=False)
+    archived = campaign_model.list_campaigns(user["id"], archived=True)
+    all_campaigns = active + archived
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    writer.writerow([
+        "name", "status", "created_at", "sent_count",
+        "open_count", "click_count", "total_contacts", "archived",
+    ])
+    for c in all_campaigns:
+        writer.writerow([
+            c.get("name", ""),
+            c.get("status", ""),
+            c.get("created_at", ""),
+            c.get("sent_count", 0),
+            c.get("open_count", 0),
+            c.get("click_count", 0),
+            c.get("total_contacts", 0),
+            c.get("archived", False),
+        ])
+    return {"csv_data": output.getvalue(), "filename": "outmass_campaigns.csv"}
 
 
 @router.get("/{campaign_id}/stats")
@@ -287,6 +317,8 @@ async def upload_contacts(
         "skipped_invalid": result["skipped_invalid"],
         "skipped_duplicate": result["skipped_duplicate"],
         "skipped_suppressed": result["skipped_suppressed"],
+        "warn_role": result.get("warn_role", 0),
+        "warn_disposable": result.get("warn_disposable", 0),
         "preview": preview,
     }
 
@@ -560,6 +592,33 @@ async def test_send(
         )
 
     return {"success": True, "sent_to": user["email"]}
+
+
+# ── D.2: Archive Endpoints ──
+
+
+@router.post("/{campaign_id}/archive")
+async def archive_campaign(
+    campaign_id: str,
+    user: dict = Depends(get_current_user),
+):
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign_model.set_archived(campaign_id, True)
+    return {"campaign_id": campaign_id, "archived": True}
+
+
+@router.post("/{campaign_id}/unarchive")
+async def unarchive_campaign(
+    campaign_id: str,
+    user: dict = Depends(get_current_user),
+):
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    campaign_model.set_archived(campaign_id, False)
+    return {"campaign_id": campaign_id, "archived": False}
 
 
 # ── Follow-up Endpoints ──

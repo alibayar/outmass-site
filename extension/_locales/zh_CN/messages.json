@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "wang@example.com,王芳,,先锋实验室,销售副总裁"
+  },
+  "btnTestSend": {
+    "message": "测试发送"
+  },
+  "testSendPrompt": {
+    "message": "将向您自己的邮箱发送一封测试邮件。继续?"
+  },
+  "testSendSuccess": {
+    "message": "测试邮件已发送到 $EMAIL$。请查收。",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "测试发送失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "发送测试前请填写主题和正文。"
+  },
+  "warnSubjectLong": {
+    "message": "主题超过 78 个字符 — 在手机上可能被截断。"
+  },
+  "warnAllCaps": {
+    "message": "主题大写字母过多 — 看起来像垃圾邮件。"
+  },
+  "warnSpamWords": {
+    "message": "可能的垃圾邮件词: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "正文中有 $N$ 个链接 — 可能触发垃圾邮件过滤。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "仍然继续发送?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV 文件过大(最大 5 MB)。"
+  },
+  "csvErrEncoding": {
+    "message": "无法识别 CSV 编码。请另存为 UTF-8。"
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV 必须包含 'email' 列。"
+  },
+  "csvDupRemoved": {
+    "message": "已删除重复项"
+  },
+  "campaignNameDuplicate": {
+    "message": "名为 \"$NAME$\" 的活动已存在。继续?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "预览"
+  },
+  "reportsTabActive": {
+    "message": "活动中"
+  },
+  "reportsTabArchived": {
+    "message": "已归档"
+  },
+  "btnArchive": {
+    "message": "归档"
+  },
+  "btnUnarchive": {
+    "message": "取消归档"
+  },
+  "archiveConfirm": {
+    "message": "归档该活动?可从\"已归档\"选项卡恢复。"
+  },
+  "onbTitle": {
+    "message": "欢迎使用 OutMass"
+  },
+  "onbStep1": {
+    "message": "第 1 步 — 上传收件人 CSV。第一列必须为 'email'。"
+  },
+  "onbStep2": {
+    "message": "第 2 步 — 撰写主题和正文。使用 {{firstName}} 进行个性化。"
+  },
+  "onbStep3": {
+    "message": "第 3 步 — 点击预览或测试发送核对,然后点发送。"
+  },
+  "onbNext": {
+    "message": "下一步"
+  },
+  "onbBack": {
+    "message": "返回"
+  },
+  "onbFinish": {
+    "message": "完成"
+  },
+  "btnExportList": {
+    "message": "导出全部"
   }
 }

@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "omar@example.com,عمر,ابراهيم,مختبرات الرواد,مدير المبيعات"
+  },
+  "btnTestSend": {
+    "message": "إرسال اختباري"
+  },
+  "testSendPrompt": {
+    "message": "سيتم إرسال بريد تجريبي إلى عنوانك. المتابعة؟"
+  },
+  "testSendSuccess": {
+    "message": "تم إرسال بريد تجريبي إلى $EMAIL$. تحقق من صندوق الوارد.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "فشل الإرسال التجريبي: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "أدخل الموضوع والمحتوى قبل الإرسال التجريبي."
+  },
+  "warnSubjectLong": {
+    "message": "الموضوع يتجاوز 78 حرفاً — قد يُقطع في الهاتف."
+  },
+  "warnAllCaps": {
+    "message": "يستخدم الموضوع كثيراً من الحروف الكبيرة — يبدو كبريد مزعج."
+  },
+  "warnSpamWords": {
+    "message": "كلمات قد تكون بريداً مزعجاً: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ روابط في المحتوى — قد تُفعِّل مرشح البريد المزعج.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "هل تريد المتابعة على أي حال؟"
+  },
+  "csvErrTooLarge": {
+    "message": "ملف CSV كبير جداً (حد أقصى 5 ميجابايت)."
+  },
+  "csvErrEncoding": {
+    "message": "ترميز CSV غير معروف. احفظ الملف بصيغة UTF-8."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "يجب أن يحتوي CSV على عمود 'email'."
+  },
+  "csvDupRemoved": {
+    "message": "تمت إزالة التكرارات"
+  },
+  "campaignNameDuplicate": {
+    "message": "توجد حملة باسم \"$NAME$\" مسبقاً. المتابعة؟",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "معاينة"
+  },
+  "reportsTabActive": {
+    "message": "نشطة"
+  },
+  "reportsTabArchived": {
+    "message": "مؤرشفة"
+  },
+  "btnArchive": {
+    "message": "أرشفة"
+  },
+  "btnUnarchive": {
+    "message": "إلغاء الأرشفة"
+  },
+  "archiveConfirm": {
+    "message": "أرشفة هذه الحملة؟ يمكنك استعادتها من تبويب المؤرشفة."
+  },
+  "onbTitle": {
+    "message": "مرحباً بك في OutMass"
+  },
+  "onbStep1": {
+    "message": "الخطوة 1 — ارفع ملف CSV للمستلمين. العمود الأول يجب أن يكون 'email'."
+  },
+  "onbStep2": {
+    "message": "الخطوة 2 — اكتب الموضوع والمحتوى. استخدم {{firstName}} للتخصيص."
+  },
+  "onbStep3": {
+    "message": "الخطوة 3 — تحقق بـ معاينة أو إرسال اختباري، ثم اضغط إرسال."
+  },
+  "onbNext": {
+    "message": "التالي"
+  },
+  "onbBack": {
+    "message": "رجوع"
+  },
+  "onbFinish": {
+    "message": "إنهاء"
+  },
+  "btnExportList": {
+    "message": "تصدير الكل"
   }
 }

@@ -156,15 +156,36 @@
     return result;
   }
 
+  var CSV_MAX_BYTES = 5 * 1024 * 1024; // 5 MB (backend enforces same limit)
+
   function handleCSV(file) {
+    // A.3: size limit check before reading
+    if (file.size > CSV_MAX_BYTES) {
+      alert(t("csvErrTooLarge"));
+      return;
+    }
     var reader = new FileReader();
     reader.onload = function (e) {
       var text = e.target.result;
-      csvRawText = text; // Keep raw CSV for backend
-      var lines = text.trim().split("\n");
-      var headers = parseCSVLine(lines[0]);
+      // A.3: strip UTF-8 BOM
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      // A.3: reject botched encoding (replacement chars)
+      if (text.indexOf("\uFFFD") >= 0) {
+        alert(t("csvErrEncoding"));
+        return;
+      }
+      csvRawText = text; // keep (normalized) raw CSV for backend upload
+      var lines = text.trim().split(/\r?\n/);
+      var headers = parseCSVLine(lines[0]).map(function (h) { return h.trim(); });
+      var lowerHeaders = headers.map(function (h) { return h.toLowerCase(); });
+      // A.3: mandatory email column
+      if (lowerHeaders.indexOf("email") < 0) {
+        alert(t("csvErrNoEmailColumn"));
+        return;
+      }
       var rows = [];
-
+      var seen = {};
+      var dupCount = 0;
       for (var i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue; // skip empty lines
         var values = parseCSVLine(lines[i]);
@@ -172,6 +193,12 @@
         headers.forEach(function (h, idx) {
           row[h] = values[idx] !== undefined ? values[idx] : "";
         });
+        // A.1 mirror: lowercase + dedupe on email
+        var em = (row.email || row.Email || row.EMAIL || "").trim().toLowerCase();
+        if (!em) continue;
+        row.email = em;
+        if (seen[em]) { dupCount++; continue; }
+        seen[em] = true;
         rows.push(row);
       }
 
@@ -180,12 +207,14 @@
       csvDropzone.style.display = "none";
       csvInfo.style.display = "flex";
       csvFilename.textContent = file.name;
-      csvCount.textContent = rows.length + " " + t("csvCountSuffix");
+      var msg = rows.length + " " + t("csvCountSuffix");
+      if (dupCount > 0) msg += " (" + dupCount + " " + t("csvDupRemoved") + ")";
+      csvCount.textContent = msg;
 
       updateSendButton();
-      log("CSV loaded:", file.name, rows.length, "rows");
+      log("CSV loaded:", file.name, rows.length, "rows,", dupCount, "duplicates removed");
     };
-    reader.readAsText(file);
+    reader.readAsText(file, "UTF-8");
   }
 
   btnClearCsv.addEventListener("click", function () {
@@ -243,7 +272,7 @@
   subjectInput.addEventListener("input", updateSendButton);
   bodyInput.addEventListener("input", updateSendButton);
 
-  // ── Preview ──
+  // ── Preview (D.1: HTML modal, was plain-text alert) ──
   btnPreview.addEventListener("click", function () {
     if (!csvData || csvData.rows.length === 0) {
       alert(t("alertUploadCsvFirst"));
@@ -257,13 +286,107 @@
     var previewSubject = mergePlaceholders(subject, firstRow);
     var previewBody = mergePlaceholders(body, firstRow);
 
-    alert(t("alertPreviewTitle") + previewSubject + "\n\n" + previewBody);
+    showPreviewModal(previewSubject, previewBody);
     log("Preview shown for first row");
   });
 
   function mergePlaceholders(template, row) {
     return template.replace(/\{\{(\w+)\}\}/g, function (match, key) {
       return row[key] !== undefined ? row[key] : match;
+    });
+  }
+
+  // ── C.4: Test Send button ──
+  var btnTestSend = document.getElementById("btn-test-send");
+  if (btnTestSend) {
+    btnTestSend.addEventListener("click", function () {
+      var subject = subjectInput.value.trim();
+      var body = bodyInput.value.trim();
+      if (!subject || !body) { alert(t("testSendNeedsContent")); return; }
+      if (!confirm(t("testSendPrompt"))) return;
+
+      btnTestSend.disabled = true;
+      var original = btnTestSend.textContent;
+      btnTestSend.textContent = "…";
+
+      var sample = (csvData && csvData.rows && csvData.rows[0]) || {};
+      // Step 1: create an ephemeral campaign
+      chrome.runtime.sendMessage(
+        { type: "CREATE_CAMPAIGN",
+          payload: { name: "__test_send__", subject: subject, body: body } },
+        function (createResp) {
+          if (!createResp || createResp.error) {
+            alert(t("testSendFailed", [createResp ? createResp.error : "create failed"]));
+            btnTestSend.disabled = false; btnTestSend.textContent = original; return;
+          }
+          var cid = createResp.data ? createResp.data.campaign_id : createResp.campaign_id;
+          // Step 2: test-send to the user's own inbox
+          chrome.runtime.sendMessage(
+            { type: "TEST_SEND", campaignId: cid, payload: { sample: sample } },
+            function (resp) {
+              btnTestSend.disabled = false; btnTestSend.textContent = original;
+              if (!resp || resp.error) {
+                alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
+                return;
+              }
+              var data = resp.data || resp;
+              alert(t("testSendSuccess", [data.sent_to || ""]));
+            }
+          );
+        }
+      );
+    });
+  }
+
+  // ── C.5: Content warnings (spam words, ALL CAPS, long subject, link count) ──
+  var SPAM_WORDS = [
+    "free!!!", "act now", "100% guaranteed", "click here", "buy now",
+    "limited time", "urgent", "winner", "congratulations", "$$$", "cash bonus"
+  ];
+
+  function getContentWarnings(subject, body) {
+    var warnings = [];
+    if (subject.length > 78) warnings.push(t("warnSubjectLong"));
+    var letters = subject.replace(/[^A-Za-z]/g, "");
+    if (letters.length >= 8) {
+      var upper = subject.replace(/[^A-Z]/g, "").length;
+      if (upper / letters.length > 0.5) warnings.push(t("warnAllCaps"));
+    }
+    var combined = (subject + " " + body).toLowerCase();
+    var hits = SPAM_WORDS.filter(function (w) { return combined.indexOf(w) >= 0; });
+    if (hits.length > 0) warnings.push(t("warnSpamWords", [hits.slice(0, 3).join(", ")]));
+    var linkCount = (body.match(/https?:\/\//gi) || []).length;
+    if (linkCount >= 5) warnings.push(t("warnTooManyLinks", [String(linkCount)]));
+    return warnings;
+  }
+
+  function showPreviewModal(subject, bodyHtml) {
+    var existing = document.getElementById("preview-modal");
+    if (existing) existing.remove();
+    var wrap = document.createElement("div");
+    wrap.id = "preview-modal";
+    wrap.className = "om-modal-overlay";
+    wrap.innerHTML =
+      '<div class="om-modal">' +
+        '<div class="om-modal-header">' +
+          '<span>' + t("previewSubjectLabel") + '</span>' +
+          '<button type="button" class="om-modal-close" aria-label="Close">&times;</button>' +
+        '</div>' +
+        '<div class="om-modal-subject"></div>' +
+        '<iframe class="om-modal-iframe" sandbox=""></iframe>' +
+      '</div>';
+    document.body.appendChild(wrap);
+    wrap.querySelector(".om-modal-subject").textContent = subject;
+    var iframe = wrap.querySelector(".om-modal-iframe");
+    // sandbox="" fully isolates the iframe: no JS, no same-origin privileges.
+    iframe.srcdoc =
+      '<!doctype html><meta charset="utf-8">' +
+      '<body style="font:14px system-ui,-apple-system,Segoe UI,Arial;margin:16px;color:#323130;line-height:1.5">' +
+      bodyHtml + '</body>';
+    wrap.addEventListener("click", function (e) {
+      if (e.target === wrap || e.target.classList.contains("om-modal-close")) {
+        wrap.remove();
+      }
     });
   }
 
@@ -322,6 +445,13 @@
       return;
     }
 
+    // C.5: soft content warnings — allow user to override
+    var warnings = getContentWarnings(subject, body);
+    if (warnings.length > 0) {
+      var bullets = "• " + warnings.join("\n• ");
+      if (!confirm(bullets + "\n\n" + t("warnContinueAnyway"))) return;
+    }
+
     // Check quota first
     chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (storage) {
       var sent = storage.emailsSentThisMonth || 0;
@@ -342,6 +472,17 @@
     });
   });
 
+  // B.2: cache of existing campaign names (lowercase) for duplicate warning
+  var _cachedCampaignNames = null;
+
+  function fetchCampaignNames(cb) {
+    chrome.runtime.sendMessage({ type: "GET_CAMPAIGNS" }, function (resp) {
+      var list = (resp && resp.data && resp.data.campaigns) || [];
+      _cachedCampaignNames = list.map(function (c) { return (c.name || "").toLowerCase(); });
+      cb();
+    });
+  }
+
   function startSendFlow(subject, body) {
     // Use explicit campaign name if user provided one,
     // otherwise fall back to subject + date suffix for uniqueness
@@ -356,6 +497,16 @@
       campaignName = subj + " — " + dateSuffix;
     }
 
+    // B.2: warn if a campaign with this name already exists
+    fetchCampaignNames(function () {
+      if (_cachedCampaignNames.indexOf(campaignName.toLowerCase()) >= 0) {
+        if (!confirm(t("campaignNameDuplicate", [campaignName]))) return;
+      }
+      _startSendFlowInner(campaignName, subject, body);
+    });
+  }
+
+  function _startSendFlowInner(campaignName, subject, body) {
     // Check schedule
     var scheduledFor = null;
     if (scheduleCheckbox && scheduleCheckbox.checked) {
@@ -881,49 +1032,105 @@
   var reportsLoading = document.getElementById("reports-loading");
   var btnReportsBack = document.getElementById("btn-reports-back");
 
+  // D.2: track which sub-tab (Active / Archived) is selected
+  var _reportsArchived = false;
+
   function loadReports() {
     reportsList.style.display = "block";
     reportsDetail.style.display = "none";
     reportsLoading.style.display = "block";
     campaignListEl.innerHTML = "";
 
-    chrome.runtime.sendMessage({ type: "GET_CAMPAIGNS" }, function (resp) {
-      reportsLoading.style.display = "none";
+    chrome.runtime.sendMessage(
+      { type: "GET_CAMPAIGNS", archived: _reportsArchived },
+      function (resp) {
+        reportsLoading.style.display = "none";
 
-      if (!resp || resp.error) {
-        campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsFound") + '</div>';
-        return;
-      }
+        if (!resp || resp.error) {
+          campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsFound") + '</div>';
+          return;
+        }
 
-      var campaigns = resp.data ? resp.data.campaigns : resp.campaigns;
-      if (!campaigns || campaigns.length === 0) {
-        campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsYet") + '</div>';
-        return;
-      }
+        var campaigns = resp.data ? resp.data.campaigns : resp.campaigns;
+        if (!campaigns || campaigns.length === 0) {
+          campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsYet") + '</div>';
+          return;
+        }
 
-      campaigns.forEach(function (c) {
-        var sent = c.sent_count || 0;
-        var openRate = sent > 0 ? Math.round((c.open_count / sent) * 100) : 0;
-        var clickRate = sent > 0 ? Math.round((c.click_count / sent) * 100) : 0;
-        var date = c.created_at ? new Date(c.created_at).toLocaleDateString("tr-TR") : "";
+        campaigns.forEach(function (c) {
+          var sent = c.sent_count || 0;
+          var openRate = sent > 0 ? Math.round((c.open_count / sent) * 100) : 0;
+          var clickRate = sent > 0 ? Math.round((c.click_count / sent) * 100) : 0;
+          var date = c.created_at ? new Date(c.created_at).toLocaleDateString("tr-TR") : "";
 
-        var row = document.createElement("div");
-        row.className = "campaign-row";
-        row.innerHTML =
-          '<div class="campaign-row-name">' + escapeHtml(c.name) + '</div>' +
-          '<div class="campaign-row-meta">' +
-            '<span>' + date + '</span>' +
-            '<span>' + sent + t("reportsSentSuffix") + '</span>' +
-            '<span class="rate">' + t("reportsOpenRate") + openRate + '%</span>' +
-            '<span class="rate">' + t("reportsClickRate") + clickRate + '%</span>' +
-          '</div>';
-        row.addEventListener("click", function () {
-          showCampaignDetail(c.id);
+          var row = document.createElement("div");
+          row.className = "campaign-row";
+          var archiveLabel = _reportsArchived ? t("btnUnarchive") : t("btnArchive");
+          row.innerHTML =
+            '<div class="campaign-row-name">' + escapeHtml(c.name) + '</div>' +
+            '<div class="campaign-row-meta">' +
+              '<span>' + date + '</span>' +
+              '<span>' + sent + t("reportsSentSuffix") + '</span>' +
+              '<span class="rate">' + t("reportsOpenRate") + openRate + '%</span>' +
+              '<span class="rate">' + t("reportsClickRate") + clickRate + '%</span>' +
+              '<button class="campaign-archive-btn" data-id="' + c.id + '">' + archiveLabel + '</button>' +
+            '</div>';
+          row.addEventListener("click", function (e) {
+            if (e.target && e.target.classList.contains("campaign-archive-btn")) return;
+            showCampaignDetail(c.id);
+          });
+          var archBtn = row.querySelector(".campaign-archive-btn");
+          if (archBtn) {
+            archBtn.addEventListener("click", function (e) {
+              e.stopPropagation();
+              if (!_reportsArchived && !confirm(t("archiveConfirm"))) return;
+              var msgType = _reportsArchived ? "UNARCHIVE_CAMPAIGN" : "ARCHIVE_CAMPAIGN";
+              chrome.runtime.sendMessage({ type: msgType, campaignId: c.id }, function () {
+                loadReports();
+              });
+            });
+          }
+          campaignListEl.appendChild(row);
         });
-        campaignListEl.appendChild(row);
-      });
 
-      log("Reports loaded:", campaigns.length, "campaigns");
+        log("Reports loaded:", campaigns.length, "campaigns (archived=" + _reportsArchived + ")");
+      }
+    );
+  }
+
+  // D.2: wire sub-tab switching (Active / Archived)
+  document.querySelectorAll(".reports-subtabs .sub-tab").forEach(function (el) {
+    el.addEventListener("click", function () {
+      document.querySelectorAll(".reports-subtabs .sub-tab").forEach(function (s) {
+        s.classList.remove("active");
+      });
+      el.classList.add("active");
+      _reportsArchived = el.getAttribute("data-archived") === "true";
+      loadReports();
+    });
+  });
+
+  // D.4: Export all campaigns as CSV
+  var btnExportList = document.getElementById("btn-export-list");
+  if (btnExportList) {
+    btnExportList.addEventListener("click", function () {
+      chrome.runtime.sendMessage({ type: "EXPORT_CAMPAIGN_LIST" }, function (resp) {
+        if (!resp || resp.error) {
+          alert(resp && resp.error ? resp.error : t("popupUnknownError"));
+          return;
+        }
+        var data = resp.data || resp;
+        if (!data.csv_data) { alert(t("alertCsvExportEmpty")); return; }
+        var blob = new Blob(["\uFEFF" + data.csv_data], { type: "text/csv;charset=utf-8" });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement("a");
+        a.href = url;
+        a.download = data.filename || "outmass_campaigns.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+      });
     });
   }
 
@@ -1507,6 +1714,55 @@
     });
   }
 
+  // ── D.3: Onboarding wizard (first-run only) ──
+  var ONB_STEPS = ["onbStep1", "onbStep2", "onbStep3"];
+  var _onbStep = 0;
+
+  function showOnboardingIfFirstRun() {
+    var overlay = document.getElementById("onboarding-overlay");
+    if (!overlay) return;
+    chrome.storage.local.get("onboardingDone", function (r) {
+      if (r.onboardingDone) return;
+      _onbStep = 0;
+      renderOnbStep();
+      overlay.style.display = "flex";
+    });
+  }
+
+  function renderOnbStep() {
+    var body = document.getElementById("onb-step-body");
+    if (!body) return;
+    body.textContent = t(ONB_STEPS[_onbStep]);
+    document.getElementById("onb-progress").textContent = (_onbStep + 1) + " / " + ONB_STEPS.length;
+    document.getElementById("onb-prev").disabled = _onbStep === 0;
+    document.getElementById("onb-next").textContent =
+      _onbStep === ONB_STEPS.length - 1 ? t("onbFinish") : t("onbNext");
+  }
+
+  function finishOnboarding() {
+    chrome.storage.local.set({ onboardingDone: true });
+    var overlay = document.getElementById("onboarding-overlay");
+    if (overlay) overlay.style.display = "none";
+  }
+
+  var _onbNextBtn = document.getElementById("onb-next");
+  if (_onbNextBtn) {
+    _onbNextBtn.addEventListener("click", function () {
+      if (_onbStep < ONB_STEPS.length - 1) { _onbStep++; renderOnbStep(); return; }
+      finishOnboarding();
+    });
+  }
+  var _onbPrevBtn = document.getElementById("onb-prev");
+  if (_onbPrevBtn) {
+    _onbPrevBtn.addEventListener("click", function () {
+      if (_onbStep > 0) { _onbStep--; renderOnbStep(); }
+    });
+  }
+  var _onbSkipBtn = document.getElementById("onb-skip");
+  if (_onbSkipBtn) {
+    _onbSkipBtn.addEventListener("click", finishOnboarding);
+  }
+
   // ── Init ──
   function init() {
     log("Sidebar loaded");
@@ -1514,6 +1770,7 @@
     loadQuota();
     updateSendButton();
     loadTemplates();
+    showOnboardingIfFirstRun();
   }
 
   // Load i18n override first (if user picked a specific language), then apply

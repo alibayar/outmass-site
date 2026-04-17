@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "thomas@example.com,Thomas,Weber,Pioneer Labs,Vertriebsleiter"
+  },
+  "btnTestSend": {
+    "message": "Testversand"
+  },
+  "testSendPrompt": {
+    "message": "Eine Test-E-Mail wird an Ihre eigene Adresse gesendet. Fortfahren?"
+  },
+  "testSendSuccess": {
+    "message": "Test-E-Mail an $EMAIL$ gesendet. Pruefen Sie Ihren Posteingang.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "Testversand fehlgeschlagen: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "Betreff und Inhalt erforderlich."
+  },
+  "warnSubjectLong": {
+    "message": "Betreff ueber 78 Zeichen — kann mobil abgeschnitten werden."
+  },
+  "warnAllCaps": {
+    "message": "Viele Grossbuchstaben im Betreff — wirkt wie Spam."
+  },
+  "warnSpamWords": {
+    "message": "Moegliche Spam-Woerter: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ Links im Inhalt — koennte Spam-Filter ausloesen.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "Trotzdem senden?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV-Datei zu gross (max. 5 MB)."
+  },
+  "csvErrEncoding": {
+    "message": "CSV-Kodierung nicht erkannt. Als UTF-8 speichern."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV muss eine 'email'-Spalte enthalten."
+  },
+  "csvDupRemoved": {
+    "message": "Duplikate entfernt"
+  },
+  "campaignNameDuplicate": {
+    "message": "Eine Kampagne namens \"$NAME$\" existiert bereits. Fortfahren?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "Vorschau"
+  },
+  "reportsTabActive": {
+    "message": "Aktiv"
+  },
+  "reportsTabArchived": {
+    "message": "Archiviert"
+  },
+  "btnArchive": {
+    "message": "Archivieren"
+  },
+  "btnUnarchive": {
+    "message": "Aus Archiv"
+  },
+  "archiveConfirm": {
+    "message": "Diese Kampagne archivieren? Sie kann im Archiv-Tab wiederhergestellt werden."
+  },
+  "onbTitle": {
+    "message": "Willkommen bei OutMass"
+  },
+  "onbStep1": {
+    "message": "Schritt 1 — Empfaenger-CSV hochladen. Erste Spalte muss 'email' sein."
+  },
+  "onbStep2": {
+    "message": "Schritt 2 — Betreff und Inhalt schreiben. Nutze {{firstName}} zur Personalisierung."
+  },
+  "onbStep3": {
+    "message": "Schritt 3 — Vorschau oder Testversand prüfen, dann Senden."
+  },
+  "onbNext": {
+    "message": "Weiter"
+  },
+  "onbBack": {
+    "message": "Zurueck"
+  },
+  "onbFinish": {
+    "message": "Fertig"
+  },
+  "btnExportList": {
+    "message": "Alle exportieren"
   }
 }

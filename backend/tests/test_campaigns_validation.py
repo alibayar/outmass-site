@@ -186,6 +186,52 @@ def test_upload_rejects_too_many_rows_for_free_plan(client, fake_db, auth_bypass
     assert resp.status_code == 413
 
 
+def test_archive_campaign_sets_flag(client, fake_db, auth_bypass):
+    campaign = {
+        "id": "cA1", "user_id": FAKE_USER["id"], "status": "sent",
+        "archived": False, "subject": "s", "body": "b", "name": "n",
+        "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
+    }
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
+    resp = client.post("/campaigns/cA1/archive")
+    assert resp.status_code == 200
+    assert resp.json()["archived"] is True
+
+
+def test_unarchive_campaign_clears_flag(client, fake_db, auth_bypass):
+    campaign = {
+        "id": "cA2", "user_id": FAKE_USER["id"], "status": "sent",
+        "archived": True, "subject": "s", "body": "b", "name": "n",
+        "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
+    }
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
+    resp = client.post("/campaigns/cA2/unarchive")
+    assert resp.status_code == 200
+    assert resp.json()["archived"] is False
+
+
+def test_archive_404_for_other_user(client, fake_db, auth_bypass):
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[]))
+    resp = client.post("/campaigns/nonexistent/archive")
+    assert resp.status_code == 404
+
+
+def test_export_campaign_list_returns_csv(client, fake_db, auth_bypass):
+    campaigns = [
+        {"id": "cE1", "user_id": FAKE_USER["id"], "name": "First",
+         "status": "sent", "created_at": "2026-04-10T10:00:00Z",
+         "sent_count": 5, "open_count": 3, "click_count": 1,
+         "total_contacts": 5, "archived": False},
+    ]
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=campaigns))
+    resp = client.get("/campaigns/export-list")
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["filename"] == "outmass_campaigns.csv"
+    assert "First" in body["csv_data"]
+    assert "name,status" in body["csv_data"]
+
+
 def test_upload_strips_utf8_bom(client, fake_db, auth_bypass):
     campaign = {
         "id": "cU4", "user_id": FAKE_USER["id"], "status": "draft",

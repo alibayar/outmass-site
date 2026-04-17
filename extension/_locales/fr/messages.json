@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "pierre@example.com,Pierre,Bernard,Pionnier Labs,VP des Ventes"
+  },
+  "btnTestSend": {
+    "message": "Envoi test"
+  },
+  "testSendPrompt": {
+    "message": "Un e-mail de test sera envoye a votre adresse. Continuer ?"
+  },
+  "testSendSuccess": {
+    "message": "E-mail de test envoye a $EMAIL$. Verifiez votre boite de reception.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "Envoi test echoue : $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "Remplissez sujet et contenu avant l'envoi test."
+  },
+  "warnSubjectLong": {
+    "message": "Sujet de plus de 78 caracteres — peut etre tronque sur mobile."
+  },
+  "warnAllCaps": {
+    "message": "Trop de majuscules dans le sujet — ressemble a du spam."
+  },
+  "warnSpamWords": {
+    "message": "Mots potentiellement spam : $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ liens dans le contenu — peut declencher des filtres.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "Envoyer malgre tout ?"
+  },
+  "csvErrTooLarge": {
+    "message": "Fichier CSV trop volumineux (max 5 Mo)."
+  },
+  "csvErrEncoding": {
+    "message": "Encodage CSV non reconnu. Enregistrez en UTF-8."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "Le CSV doit avoir une colonne 'email'."
+  },
+  "csvDupRemoved": {
+    "message": "doublons supprimes"
+  },
+  "campaignNameDuplicate": {
+    "message": "Une campagne nommee \"$NAME$\" existe deja. Continuer ?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "Apercu"
+  },
+  "reportsTabActive": {
+    "message": "Actives"
+  },
+  "reportsTabArchived": {
+    "message": "Archivees"
+  },
+  "btnArchive": {
+    "message": "Archiver"
+  },
+  "btnUnarchive": {
+    "message": "Desarchiver"
+  },
+  "archiveConfirm": {
+    "message": "Archiver cette campagne ? Restauration possible depuis l'onglet Archives."
+  },
+  "onbTitle": {
+    "message": "Bienvenue sur OutMass"
+  },
+  "onbStep1": {
+    "message": "Etape 1 — Importez un CSV des destinataires. La premiere colonne doit etre 'email'."
+  },
+  "onbStep2": {
+    "message": "Etape 2 — Redigez sujet et contenu. Utilisez {{firstName}} pour personnaliser."
+  },
+  "onbStep3": {
+    "message": "Etape 3 — Verifiez via Apercu ou Envoi test, puis cliquez Envoyer."
+  },
+  "onbNext": {
+    "message": "Suivant"
+  },
+  "onbBack": {
+    "message": "Retour"
+  },
+  "onbFinish": {
+    "message": "Terminer"
+  },
+  "btnExportList": {
+    "message": "Exporter tout"
   }
 }

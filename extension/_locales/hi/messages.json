@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "amit@example.com,Amit,Kumar,Pioneer Labs,VP Sales"
+  },
+  "btnTestSend": {
+    "message": "टेस्ट भेजें"
+  },
+  "testSendPrompt": {
+    "message": "आपके अपने पते पर एक टेस्ट ईमेल भेजा जाएगा। जारी रखें?"
+  },
+  "testSendSuccess": {
+    "message": "$EMAIL$ पर टेस्ट ईमेल भेजा गया। इनबॉक्स देखें।",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "टेस्ट भेजना विफल: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "टेस्ट से पहले विषय और सामग्री भरें।"
+  },
+  "warnSubjectLong": {
+    "message": "विषय 78 अक्षरों से अधिक है — मोबाइल पर कट सकता है।"
+  },
+  "warnAllCaps": {
+    "message": "विषय में कई बड़े अक्षर हैं — स्पैम जैसा दिखता है।"
+  },
+  "warnSpamWords": {
+    "message": "संभावित स्पैम शब्द: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "सामग्री में $N$ लिंक — स्पैम फ़िल्टर ट्रिगर कर सकता है।",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "फिर भी भेजें?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV बहुत बड़ा है (अधिकतम 5 MB)।"
+  },
+  "csvErrEncoding": {
+    "message": "CSV एन्कोडिंग पहचानी नहीं गई। UTF-8 में सहेजें।"
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV में 'email' कॉलम होना चाहिए।"
+  },
+  "csvDupRemoved": {
+    "message": "डुप्लिकेट हटाए गए"
+  },
+  "campaignNameDuplicate": {
+    "message": "\"$NAME$\" नाम का अभियान पहले से है। जारी रखें?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "पूर्वावलोकन"
+  },
+  "reportsTabActive": {
+    "message": "सक्रिय"
+  },
+  "reportsTabArchived": {
+    "message": "संग्रहीत"
+  },
+  "btnArchive": {
+    "message": "संग्रहित"
+  },
+  "btnUnarchive": {
+    "message": "संग्रह से निकालें"
+  },
+  "archiveConfirm": {
+    "message": "इस अभियान को संग्रहित करें? संग्रहीत टैब से बहाल कर सकते हैं।"
+  },
+  "onbTitle": {
+    "message": "OutMass में आपका स्वागत है"
+  },
+  "onbStep1": {
+    "message": "चरण 1 — प्राप्तकर्ताओं का CSV अपलोड करें। पहला कॉलम 'email' हो।"
+  },
+  "onbStep2": {
+    "message": "चरण 2 — विषय और सामग्री लिखें। {{firstName}} का उपयोग करें।"
+  },
+  "onbStep3": {
+    "message": "चरण 3 — पूर्वावलोकन या टेस्ट भेजें से जाँचें, फिर भेजें दबाएँ।"
+  },
+  "onbNext": {
+    "message": "आगे"
+  },
+  "onbBack": {
+    "message": "वापस"
+  },
+  "onbFinish": {
+    "message": "समाप्त"
+  },
+  "btnExportList": {
+    "message": "सभी निर्यात"
   }
 }

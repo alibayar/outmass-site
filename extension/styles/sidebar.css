@@ -968,3 +968,117 @@ body {
 [dir="rtl"] .settings-actions {
   direction: rtl;
 }
+
+/* ── Shared modal overlay (preview, onboarding, etc.) ── */
+.om-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  z-index: 10001;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.om-modal {
+  background: #fff;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 520px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  overflow: hidden;
+}
+.om-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid #edebe9;
+  font-weight: 600;
+  color: #323130;
+}
+.om-modal-close {
+  background: none;
+  border: none;
+  font-size: 22px;
+  cursor: pointer;
+  color: #605e5c;
+  line-height: 1;
+  padding: 0 4px;
+}
+.om-modal-subject {
+  padding: 10px 16px;
+  font-weight: 600;
+  color: #323130;
+  border-bottom: 1px solid #edebe9;
+  word-break: break-word;
+}
+.om-modal-iframe {
+  flex: 1;
+  border: none;
+  min-height: 360px;
+  background: #fafafa;
+}
+.om-modal-body {
+  padding: 16px;
+  color: #323130;
+  line-height: 1.5;
+  font-size: 14px;
+  min-height: 90px;
+}
+.om-modal-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 16px;
+  border-top: 1px solid #edebe9;
+  gap: 8px;
+}
+.onb-progress {
+  color: #605e5c;
+  font-size: 12px;
+}
+
+/* ── Reports tab: sub-tabs + export row ── */
+.reports-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  gap: 8px;
+}
+.reports-subtabs {
+  display: flex;
+  gap: 4px;
+}
+.sub-tab {
+  background: none;
+  border: 1px solid transparent;
+  padding: 4px 10px;
+  font-size: 12px;
+  color: #605e5c;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.sub-tab.active {
+  background: #f3f2f1;
+  color: #323130;
+  border-color: #edebe9;
+  font-weight: 600;
+}
+.campaign-archive-btn {
+  background: none;
+  border: 1px solid #edebe9;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: #605e5c;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-left: 8px;
+}
+.campaign-archive-btn:hover {
+  background: #f3f2f1;
+}

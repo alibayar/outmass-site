@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "alex@example.com,Александр,Смирнов,Пионер Лабс,Руководитель продаж"
+  },
+  "btnTestSend": {
+    "message": "Тестовая отправка"
+  },
+  "testSendPrompt": {
+    "message": "Тестовое письмо будет отправлено на ваш адрес. Продолжить?"
+  },
+  "testSendSuccess": {
+    "message": "Тестовое письмо отправлено на $EMAIL$. Проверьте входящие.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "Тестовая отправка не удалась: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "Заполните тему и содержимое перед тестом."
+  },
+  "warnSubjectLong": {
+    "message": "Тема длиннее 78 символов — может обрезаться на мобильных."
+  },
+  "warnAllCaps": {
+    "message": "Много заглавных букв в теме — похоже на спам."
+  },
+  "warnSpamWords": {
+    "message": "Возможные спам-слова: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ ссылок в тексте — может сработать спам-фильтр.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "Всё равно отправить?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV слишком большой (макс 5 МБ)."
+  },
+  "csvErrEncoding": {
+    "message": "Кодировка CSV не распознана. Сохраните файл в UTF-8."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV должен содержать столбец 'email'."
+  },
+  "csvDupRemoved": {
+    "message": "дубликаты удалены"
+  },
+  "campaignNameDuplicate": {
+    "message": "Кампания \"$NAME$\" уже существует. Продолжить?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "Предпросмотр"
+  },
+  "reportsTabActive": {
+    "message": "Активные"
+  },
+  "reportsTabArchived": {
+    "message": "Архив"
+  },
+  "btnArchive": {
+    "message": "В архив"
+  },
+  "btnUnarchive": {
+    "message": "Из архива"
+  },
+  "archiveConfirm": {
+    "message": "Архивировать эту кампанию? Её можно восстановить из вкладки Архив."
+  },
+  "onbTitle": {
+    "message": "Добро пожаловать в OutMass"
+  },
+  "onbStep1": {
+    "message": "Шаг 1 — Загрузите CSV с получателями. Первый столбец — 'email'."
+  },
+  "onbStep2": {
+    "message": "Шаг 2 — Напишите тему и текст. {{firstName}} — для персонализации."
+  },
+  "onbStep3": {
+    "message": "Шаг 3 — Проверьте через Предпросмотр или Тестовую отправку, затем Отправить."
+  },
+  "onbNext": {
+    "message": "Далее"
+  },
+  "onbBack": {
+    "message": "Назад"
+  },
+  "onbFinish": {
+    "message": "Готово"
+  },
+  "btnExportList": {
+    "message": "Экспорт всех"
   }
 }

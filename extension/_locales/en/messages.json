@@ -619,5 +619,97 @@
   },
   "csvTemplateRow3": {
     "message": "mike@example.com,Michael,Johnson,Pioneer Labs,VP of Sales"
+  },
+  "btnTestSend": {
+    "message": "Test Send"
+  },
+  "testSendPrompt": {
+    "message": "A test email will be sent to your own address. Continue?"
+  },
+  "testSendSuccess": {
+    "message": "Test email sent to $EMAIL$. Check your inbox.",
+    "placeholders": { "email": { "content": "$1" } }
+  },
+  "testSendFailed": {
+    "message": "Test send failed: $ERROR$",
+    "placeholders": { "error": { "content": "$1" } }
+  },
+  "testSendNeedsContent": {
+    "message": "Enter subject and body before sending a test."
+  },
+  "warnSubjectLong": {
+    "message": "Subject is over 78 characters — may be truncated on mobile."
+  },
+  "warnAllCaps": {
+    "message": "Subject uses many capital letters — looks like spam."
+  },
+  "warnSpamWords": {
+    "message": "Possible spam words detected: $LIST$",
+    "placeholders": { "list": { "content": "$1" } }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ links in body — may trigger spam filters.",
+    "placeholders": { "n": { "content": "$1" } }
+  },
+  "warnContinueAnyway": {
+    "message": "Continue sending anyway?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV file too large (max 5 MB)."
+  },
+  "csvErrEncoding": {
+    "message": "CSV encoding not recognized. Save the file as UTF-8."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV must have an 'email' column."
+  },
+  "csvDupRemoved": {
+    "message": "duplicates removed"
+  },
+  "campaignNameDuplicate": {
+    "message": "A campaign named \"$NAME$\" already exists. Continue?",
+    "placeholders": { "name": { "content": "$1" } }
+  },
+  "previewSubjectLabel": {
+    "message": "Preview"
+  },
+  "reportsTabActive": {
+    "message": "Active"
+  },
+  "reportsTabArchived": {
+    "message": "Archived"
+  },
+  "btnArchive": {
+    "message": "Archive"
+  },
+  "btnUnarchive": {
+    "message": "Unarchive"
+  },
+  "archiveConfirm": {
+    "message": "Archive this campaign? You can restore it later from the Archived tab."
+  },
+  "onbTitle": {
+    "message": "Welcome to OutMass"
+  },
+  "onbStep1": {
+    "message": "Step 1 — Upload a CSV of recipients. The first column must be 'email'."
+  },
+  "onbStep2": {
+    "message": "Step 2 — Write your subject and body. Use {{firstName}} to personalize each email."
+  },
+  "onbStep3": {
+    "message": "Step 3 — Click Preview or Test Send to double-check, then hit Send."
+  },
+  "onbNext": {
+    "message": "Next"
+  },
+  "onbBack": {
+    "message": "Back"
+  },
+  "onbFinish": {
+    "message": "Finish"
+  },
+  "btnExportList": {
+    "message": "Export All"
   }
 }

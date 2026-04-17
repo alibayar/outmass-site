@@ -362,7 +362,38 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       return true;
 
     case "GET_CAMPAIGNS":
-      backendFetch("/campaigns").then(function (result) {
+      backendFetch("/campaigns" + (message.archived ? "?archived=true" : "")).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "TEST_SEND":
+      backendFetch("/campaigns/" + message.campaignId + "/test-send", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "ARCHIVE_CAMPAIGN":
+      backendFetch("/campaigns/" + message.campaignId + "/archive", {
+        method: "POST",
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "UNARCHIVE_CAMPAIGN":
+      backendFetch("/campaigns/" + message.campaignId + "/unarchive", {
+        method: "POST",
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "EXPORT_CAMPAIGN_LIST":
+      backendFetch("/campaigns/export-list").then(function (result) {
         sendResponse(result);
       });
       return true;

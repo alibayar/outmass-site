@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "ayse@example.com,Ayse,Kaya,Pioneer Yazilim,Satis Muduru"
+  },
+  "btnTestSend": {
+    "message": "Test Gonder"
+  },
+  "testSendPrompt": {
+    "message": "Kendi adresinize bir test e-postasi gonderilecek. Devam?"
+  },
+  "testSendSuccess": {
+    "message": "$EMAIL$ adresine test e-postasi gonderildi. Gelen kutunuzu kontrol edin.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "Test gonderim basarisiz: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "Test gondermeden once konu ve icerigi doldurun."
+  },
+  "warnSubjectLong": {
+    "message": "Konu 78 karakterden uzun — mobilde kesilebilir."
+  },
+  "warnAllCaps": {
+    "message": "Konuda cok fazla buyuk harf var — spam gibi gorunuyor."
+  },
+  "warnSpamWords": {
+    "message": "Olasi spam kelimeleri: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "Icerikte $N$ bag — spam filtresi tetikleyebilir.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "Yine de gondermeye devam?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV cok buyuk (maks 5 MB)."
+  },
+  "csvErrEncoding": {
+    "message": "CSV kodlamasi tanimlanamadi. Dosyayi UTF-8 olarak kaydedin."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV 'email' sutunu icermeli."
+  },
+  "csvDupRemoved": {
+    "message": "tekrar kaldirildi"
+  },
+  "campaignNameDuplicate": {
+    "message": "\"$NAME$\" adinda bir kampanya zaten var. Devam?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "Onizleme"
+  },
+  "reportsTabActive": {
+    "message": "Aktif"
+  },
+  "reportsTabArchived": {
+    "message": "Arsivli"
+  },
+  "btnArchive": {
+    "message": "Arsivle"
+  },
+  "btnUnarchive": {
+    "message": "Arsivden cikar"
+  },
+  "archiveConfirm": {
+    "message": "Bu kampanyayi arsivle? Sonra Arsivli sekmesinden geri alabilirsin."
+  },
+  "onbTitle": {
+    "message": "OutMass'a Hos Geldin"
+  },
+  "onbStep1": {
+    "message": "Adim 1 — Alici listesi olan bir CSV yukle. Ilk sutun 'email' olmali."
+  },
+  "onbStep2": {
+    "message": "Adim 2 — Konuyu ve icerigi yaz. Kisisellestirmek icin {{firstName}} kullan."
+  },
+  "onbStep3": {
+    "message": "Adim 3 — Onizleme veya Test Gonder ile kontrol et, sonra Gonder'e bas."
+  },
+  "onbNext": {
+    "message": "Ileri"
+  },
+  "onbBack": {
+    "message": "Geri"
+  },
+  "onbFinish": {
+    "message": "Bitir"
+  },
+  "btnExportList": {
+    "message": "Tumunu Indir"
   }
 }

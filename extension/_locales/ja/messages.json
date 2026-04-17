@@ -619,5 +619,117 @@
   },
   "csvTemplateRow3": {
     "message": "suzuki@example.com,鈴木,一郎,パイオニアラボ,営業本部長"
+  },
+  "btnTestSend": {
+    "message": "テスト送信"
+  },
+  "testSendPrompt": {
+    "message": "ご自身のアドレスにテストメールが送信されます。続行しますか?"
+  },
+  "testSendSuccess": {
+    "message": "$EMAIL$ にテストメールを送信しました。受信トレイを確認してください。",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "テスト送信失敗: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "テスト送信前に件名と本文を入力してください。"
+  },
+  "warnSubjectLong": {
+    "message": "件名が 78 文字を超えています — モバイルで切れる可能性があります。"
+  },
+  "warnAllCaps": {
+    "message": "件名に大文字が多いです — スパムに見える可能性があります。"
+  },
+  "warnSpamWords": {
+    "message": "スパムの可能性がある単語: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "本文に $N$ 個のリンク — スパムフィルターを作動させる可能性。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "それでも送信しますか?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV ファイルが大きすぎます(最大 5 MB)。"
+  },
+  "csvErrEncoding": {
+    "message": "CSV エンコーディングを認識できません。UTF-8 で保存してください。"
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV には 'email' 列が必要です。"
+  },
+  "csvDupRemoved": {
+    "message": "重複を削除"
+  },
+  "campaignNameDuplicate": {
+    "message": "\"$NAME$\" という名前のキャンペーンは既に存在します。続行しますか?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "プレビュー"
+  },
+  "reportsTabActive": {
+    "message": "アクティブ"
+  },
+  "reportsTabArchived": {
+    "message": "アーカイブ済み"
+  },
+  "btnArchive": {
+    "message": "アーカイブ"
+  },
+  "btnUnarchive": {
+    "message": "アーカイブ解除"
+  },
+  "archiveConfirm": {
+    "message": "このキャンペーンをアーカイブしますか?「アーカイブ済み」タブから復元できます。"
+  },
+  "onbTitle": {
+    "message": "OutMass へようこそ"
+  },
+  "onbStep1": {
+    "message": "ステップ 1 — 受信者の CSV をアップロード。最初の列は 'email' にします。"
+  },
+  "onbStep2": {
+    "message": "ステップ 2 — 件名と本文を書く。{{firstName}} でパーソナライズ。"
+  },
+  "onbStep3": {
+    "message": "ステップ 3 — プレビューまたはテスト送信で確認し、送信をクリック。"
+  },
+  "onbNext": {
+    "message": "次へ"
+  },
+  "onbBack": {
+    "message": "戻る"
+  },
+  "onbFinish": {
+    "message": "完了"
+  },
+  "btnExportList": {
+    "message": "すべてエクスポート"
   }
 }
