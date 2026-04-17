@@ -274,7 +274,8 @@
       var plan = result.plan || "free";
       var limit = plan === "pro" ? 10000 : plan === "starter" ? 2000 : 50;
       var remaining = Math.max(0, limit - sent);
-      var planLabel = plan === "pro" ? "Pro Plan" : plan === "starter" ? "Starter Plan" : "Free Plan";
+      // quotaDefault template already has "Plan" suffix, so pass just the tier name
+      var planLabel = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "Free";
 
       quotaText.textContent = t("quotaDefault", [String(remaining), String(limit), planLabel]);
       quotaFill.style.width = (remaining / limit * 100) + "%";
