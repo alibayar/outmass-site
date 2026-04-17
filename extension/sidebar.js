@@ -689,6 +689,15 @@
         var tmpl = JSON.parse(templateSelect.value);
         subjectInput.value = tmpl.subject || "";
         bodyInput.value = tmpl.body || "";
+
+        // Auto-fill campaign name with template name if input is empty
+        var selected = templateSelect.options[templateSelect.selectedIndex];
+        var templateName = selected ? selected.textContent : "";
+        var nameInput = document.getElementById("campaign-name");
+        if (nameInput && !nameInput.value.trim() && templateName) {
+          nameInput.value = templateName;
+        }
+
         updateSendButton();
         log("Template loaded");
       } catch (e) {
@@ -734,7 +743,13 @@
         alert(t("alertTemplateFillFirst"));
         return;
       }
-      var name = prompt(t("templatePromptName"), subject.substring(0, 40) || t("templateDefaultName"));
+      // Suggest the campaign name first (if user filled it),
+      // then fall back to subject prefix, then a default placeholder.
+      var nameInput = document.getElementById("campaign-name");
+      var suggested = (nameInput && nameInput.value.trim())
+        || subject.substring(0, 40)
+        || t("templateDefaultName");
+      var name = prompt(t("templatePromptName"), suggested);
       if (!name) return;
 
       btnSaveTemplate.disabled = true;
