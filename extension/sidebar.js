@@ -278,16 +278,18 @@
       alert(t("alertUploadCsvFirst"));
       return;
     }
-
     var subject = subjectInput.value;
     var body = bodyInput.value;
     var firstRow = csvData.rows[0];
 
-    var previewSubject = mergePlaceholders(subject, firstRow);
-    var previewBody = mergePlaceholders(body, firstRow);
-
-    showPreviewModal(previewSubject, previewBody);
-    log("Preview shown for first row");
+    getSenderDefaults(function (sender) {
+      // Merge CSV row first, then sender defaults for unresolved placeholders
+      var mergeCtx = Object.assign({}, sender, firstRow);
+      var previewSubject = mergePlaceholders(subject, mergeCtx);
+      var previewBody = mergePlaceholders(body, mergeCtx);
+      showPreviewModal(previewSubject, textToHtml(previewBody));
+      log("Preview shown for first row");
+    });
   });
 
   function mergePlaceholders(template, row) {
@@ -412,6 +414,33 @@
     }
 
     return warnings;
+  }
+
+  // Mirror of backend _text_to_html — pass-through if HTML, else escape
+  // special chars + paragraphs on blank lines + <br> on single newlines.
+  function textToHtml(body) {
+    if (!body) return "";
+    if (/<[a-z!/][^>]*>/i.test(body)) return body;
+    var esc = body.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    esc = esc.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    var parts = esc.split(/\n\n+/).map(function (p) { return p.replace(/\n/g, "<br>"); });
+    return "<p>" + parts.join("</p><p>") + "</p>";
+  }
+
+  // Fetch sender profile from backend; cached after first call.
+  var _senderCache = null;
+  function getSenderDefaults(cb) {
+    if (_senderCache) { cb(_senderCache); return; }
+    chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
+      var d = (resp && resp.data) || resp || {};
+      _senderCache = {
+        senderName: d.sender_name || "",
+        senderPosition: d.sender_position || "",
+        senderCompany: d.sender_company || "",
+        senderPhone: d.sender_phone || "",
+      };
+      cb(_senderCache);
+    });
   }
 
   function showPreviewModal(subject, bodyHtml) {
