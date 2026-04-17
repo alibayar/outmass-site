@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OutMass — Promo Tile 440×280</title>
+<style>
+  /* ───────────────────────────────────────────────────────────
+     Chrome Web Store small promo tile — exactly 440×280 px.
+
+     EASIEST CAPTURE (scaling-independent):
+       1. F12 → Elements panel.
+       2. Right-click the <div id="tile"> element.
+       3. "Capture node screenshot".
+       4. PNG downloads as exactly 440×280.
+     ─────────────────────────────────────────────────────────── */
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    background: #f5f5f5;      /* Grey page background so the tile boundary is clear */
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    padding: 20px;
+  }
+
+  #tile {
+    width: 440px;
+    height: 280px;
+    overflow: hidden;
+    color: #fff;
+    /* Outlook-blue → deep-purple gradient */
+    background: linear-gradient(135deg, #0078d4 0%, #4b2e8e 100%);
+    position: relative;
+    border-radius: 0;         /* Store wants square corners */
+  }
+  #tile::before {
+    content: "";
+    position: absolute; inset: 0;
+    background:
+      radial-gradient(circle at 85% 20%, rgba(255,255,255,0.12) 0%, transparent 40%),
+      radial-gradient(circle at 15% 90%, rgba(255,255,255,0.08) 0%, transparent 40%);
+    pointer-events: none;
+  }
+
+  .inner {
+    position: relative;
+    z-index: 1;
+    padding: 28px 32px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo {
+    width: 48px; height: 48px;
+    background: #fff;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    color: #0078d4;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.5px;
+  }
+  .logo img { width: 36px; height: 36px; }
+  .brand {
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -0.5px;
+  }
+
+  .tagline {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.25;
+    letter-spacing: -0.3px;
+  }
+  .tagline em {
+    font-style: normal;
+    background: linear-gradient(90deg, #ffd966, #ffb347);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .features {
+    display: flex;
+    gap: 16px;
+    font-size: 13px;
+    font-weight: 500;
+    opacity: 0.92;
+  }
+  .feature {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .dot {
+    width: 6px; height: 6px;
+    background: #50e3c2;
+    border-radius: 50%;
+  }
+</style>
+</head>
+<body>
+  <div id="tile">
+    <div class="inner">
+      <div class="top">
+        <div class="logo">
+          <span class="logo-text">OM</span>
+          <img class="logo-img" src="../../extension/icons/icon128.png" alt=""
+               onload="this.previousElementSibling.style.display='none'"
+               onerror="this.remove()">
+        </div>
+        <div class="brand">OutMass</div>
+      </div>
+
+      <div class="tagline">
+        Mass email, <em>inside Outlook</em>
+      </div>
+
+      <div class="features">
+        <div class="feature"><div class="dot"></div>Mail merge</div>
+        <div class="feature"><div class="dot"></div>AI writer</div>
+        <div class="feature"><div class="dot"></div>Tracking</div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

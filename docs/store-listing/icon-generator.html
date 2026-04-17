@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>OutMass — Icon Generator (16 / 48 / 128)</title>
+<style>
+  body {
+    font-family: -apple-system, "Segoe UI", system-ui, sans-serif;
+    background: #f5f5f5;
+    padding: 30px;
+    color: #323130;
+  }
+  h1 { font-size: 20px; margin-bottom: 6px; }
+  .hint { font-size: 13px; color: #605e5c; margin-bottom: 24px; }
+  .row {
+    display: flex;
+    gap: 32px;
+    align-items: flex-end;
+    margin-bottom: 32px;
+    flex-wrap: wrap;
+  }
+  .box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    align-items: center;
+  }
+  canvas {
+    background: #fff;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    image-rendering: pixelated;  /* Preview at 1:1 — but visually upscaled for the small ones */
+  }
+  canvas.preview-16 { width: 64px; height: 64px; image-rendering: pixelated; }
+  canvas.preview-48 { width: 96px; height: 96px; }
+  canvas.preview-128 { width: 128px; height: 128px; }
+  .size-label { font-size: 12px; color: #605e5c; }
+  button {
+    background: #0078d4;
+    color: #fff;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  button:hover { background: #106ebe; }
+  .download-all {
+    background: #107c10;
+    padding: 10px 20px;
+    font-size: 14px;
+  }
+</style>
+</head>
+<body>
+
+<h1>OutMass extension icons</h1>
+<p class="hint">
+  Previews below render at actual size. Click "Download all" to save icon16.png, icon48.png, icon128.png.
+  Replace the existing files in <code>extension/icons/</code>.
+</p>
+
+<div class="row">
+  <div class="box">
+    <canvas id="c16" width="16" height="16" class="preview-16"></canvas>
+    <div class="size-label">16×16 (toolbar)</div>
+  </div>
+  <div class="box">
+    <canvas id="c48" width="48" height="48" class="preview-48"></canvas>
+    <div class="size-label">48×48 (extensions page)</div>
+  </div>
+  <div class="box">
+    <canvas id="c128" width="128" height="128" class="preview-128"></canvas>
+    <div class="size-label">128×128 (store + promo tile)</div>
+  </div>
+</div>
+
+<button class="download-all" onclick="downloadAll()">Download all 3 icons</button>
+
+<script>
+function drawIcon(canvas, size) {
+  const ctx = canvas.getContext("2d");
+  ctx.clearRect(0, 0, size, size);
+
+  // Rounded-square gradient background (matches promo tile)
+  const radius = Math.round(size * 0.22);
+  const grad = ctx.createLinearGradient(0, 0, size, size);
+  grad.addColorStop(0, "#0078d4");
+  grad.addColorStop(1, "#4b2e8e");
+  roundedRect(ctx, 0, 0, size, size, radius);
+  ctx.fillStyle = grad;
+  ctx.fill();
+
+  // "OM" mark, centered
+  // For 16px the "M" is illegible — use a single dot / envelope mark instead.
+  if (size >= 32) {
+    ctx.fillStyle = "#fff";
+    ctx.font = `800 ${Math.round(size * 0.42)}px -apple-system, Segoe UI, system-ui, sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    // Slight visual nudge so "OM" appears centered despite M's wider stem
+    ctx.fillText("OM", size / 2, size / 2 + size * 0.02);
+  } else {
+    // 16px: draw a simplified envelope glyph (far more recognizable at toolbar size)
+    ctx.fillStyle = "#fff";
+    const w = size * 0.62, h = size * 0.44;
+    const x = (size - w) / 2, y = (size - h) / 2;
+    ctx.fillRect(x, y, w, h);
+    // Envelope flap (darker)
+    ctx.fillStyle = "rgba(0, 0, 0, 0.15)";
+    ctx.beginPath();
+    ctx.moveTo(x, y);
+    ctx.lineTo(x + w / 2, y + h * 0.55);
+    ctx.lineTo(x + w, y);
+    ctx.closePath();
+    ctx.fill();
+  }
+}
+
+function roundedRect(ctx, x, y, w, h, r) {
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.lineTo(x + w - r, y);
+  ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+  ctx.lineTo(x + w, y + h - r);
+  ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+  ctx.lineTo(x + r, y + h);
+  ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+  ctx.lineTo(x, y + r);
+  ctx.quadraticCurveTo(x, y, x + r, y);
+  ctx.closePath();
+}
+
+function downloadCanvas(canvas, filename) {
+  canvas.toBlob(function (blob) {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }, "image/png");
+}
+
+function downloadAll() {
+  downloadCanvas(document.getElementById("c16"), "icon16.png");
+  setTimeout(function () {
+    downloadCanvas(document.getElementById("c48"), "icon48.png");
+  }, 200);
+  setTimeout(function () {
+    downloadCanvas(document.getElementById("c128"), "icon128.png");
+  }, 400);
+}
+
+// Draw all three on load
+drawIcon(document.getElementById("c16"), 16);
+drawIcon(document.getElementById("c48"), 48);
+drawIcon(document.getElementById("c128"), 128);
+</script>
+
+</body>
+</html>
