@@ -198,6 +198,29 @@
     log("CSV cleared");
   });
 
+  // ── CSV template download (example file with 3 sample rows) ──
+  var csvTemplateLink = document.getElementById("csv-template-link");
+  if (csvTemplateLink) {
+    csvTemplateLink.addEventListener("click", function (e) {
+      e.preventDefault();
+      // camelCase headers — match merge tags ({{firstName}} etc.)
+      var template =
+        "email,firstName,lastName,company,position\n" +
+        "ali@example.com,Ali,Yilmaz,Acme Corp,CEO\n" +
+        "mehmet@example.com,Mehmet,Demir,Beta Inc,CTO\n" +
+        "ayse@example.com,Ayse,Kaya,Gamma Ltd,Marketing Lead\n";
+      var blob = new Blob([template], { type: "text/csv;charset=utf-8" });
+      var url = URL.createObjectURL(blob);
+      var a = document.createElement("a");
+      a.href = url;
+      a.download = "outmass_recipients_template.csv";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    });
+  }
+
   // ── Form validation → enable/disable Send button ──
   function updateSendButton() {
     var hasCSV = csvData && csvData.rows.length > 0;

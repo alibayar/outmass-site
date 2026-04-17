@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "напр. Q2 Outreach Волна 1"
+  },
+  "csvTemplateDownload": {
+    "message": "Скачать пример CSV"
   }
 }

@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "e.g. Q2 Outreach Wave 1"
+  },
+  "csvTemplateDownload": {
+    "message": "Download example CSV"
   }
 }

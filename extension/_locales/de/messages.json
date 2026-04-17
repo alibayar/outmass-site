@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "z.B. Q2 Kontaktaufnahme Welle 1"
+  },
+  "csvTemplateDownload": {
+    "message": "Beispiel-CSV herunterladen"
   }
 }

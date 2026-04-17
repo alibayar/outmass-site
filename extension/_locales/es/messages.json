@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "ej. Alcance T2 Onda 1"
+  },
+  "csvTemplateDownload": {
+    "message": "Descargar CSV de ejemplo"
   }
 }

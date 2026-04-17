@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "orn. 2. Ceyrek Outreach 1. Dalga"
+  },
+  "csvTemplateDownload": {
+    "message": "Ornek CSV indir"
   }
 }

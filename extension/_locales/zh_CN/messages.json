@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "例如：Q2 推广 第1波"
+  },
+  "csvTemplateDownload": {
+    "message": "下载示例 CSV"
   }
 }

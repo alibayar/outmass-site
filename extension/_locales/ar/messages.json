@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "مثال: حملة الربع الثاني الموجة 1"
+  },
+  "csvTemplateDownload": {
+    "message": "تنزيل ملف CSV نموذجي"
   }
 }

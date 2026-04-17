@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "例: Q2 アウトリーチ 第1波"
+  },
+  "csvTemplateDownload": {
+    "message": "サンプル CSV をダウンロード"
   }
 }

@@ -183,6 +183,18 @@ body {
   font-size: 13px;
 }
 
+.csv-template-link {
+  display: inline-block;
+  margin-top: 6px;
+  font-size: 11px;
+  color: #0078d4;
+  text-decoration: none;
+}
+
+.csv-template-link:hover {
+  text-decoration: underline;
+}
+
 .csv-dropzone .hint {
   font-size: 11px;
   color: #a19f9d;

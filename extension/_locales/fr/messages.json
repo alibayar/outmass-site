@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "ex. Sensibilisation T2 Vague 1"
+  },
+  "csvTemplateDownload": {
+    "message": "Telecharger un CSV d'exemple"
   }
 }

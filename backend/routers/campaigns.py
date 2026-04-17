@@ -156,9 +156,10 @@ async def export_campaign_csv(
 
     output = io.StringIO()
     writer = csv.writer(output)
+    # camelCase headers — consistent with merge tags ({{firstName}}) and CSV upload template
     writer.writerow([
-        "email", "first_name", "last_name", "company", "position",
-        "status", "sent_at", "opened_at", "clicked_at", "unsubscribed",
+        "email", "firstName", "lastName", "company", "position",
+        "status", "sentAt", "openedAt", "clickedAt", "unsubscribed",
     ])
     for c in contacts:
         writer.writerow([

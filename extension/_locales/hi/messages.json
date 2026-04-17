@@ -607,5 +607,8 @@
   },
   "placeholderCampaignName": {
     "message": "उदा. Q2 आउटरीच वेव 1"
+  },
+  "csvTemplateDownload": {
+    "message": "उदाहरण CSV डाउनलोड करें"
   }
 }
