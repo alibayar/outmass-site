@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "تصدير الكل"
+  },
+  "warnHtmlInvalid": {
+    "message": "يبدو HTML غير متوازن (وسوم غير مغلقة: $TAGS$). تحقق قبل الإرسال.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "$N$ صور في المحتوى — الإفراط في الصور يبدو كالبريد المزعج.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "روابط مختصرة ($LIST$) — قد تتراجع قابلية التسليم.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

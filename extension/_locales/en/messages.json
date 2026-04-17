@@ -651,6 +651,18 @@
     "message": "$N$ links in body — may trigger spam filters.",
     "placeholders": { "n": { "content": "$1" } }
   },
+  "warnHtmlInvalid": {
+    "message": "HTML looks unbalanced (unclosed tags: $TAGS$). Check before sending.",
+    "placeholders": { "tags": { "content": "$1" } }
+  },
+  "warnTooManyImages": {
+    "message": "$N$ images in body — heavy image use looks spammy.",
+    "placeholders": { "n": { "content": "$1" } }
+  },
+  "warnShortenedLinks": {
+    "message": "Shortened links detected ($LIST$) — deliverability may drop.",
+    "placeholders": { "list": { "content": "$1" } }
+  },
   "warnContinueAnyway": {
     "message": "Continue sending anyway?"
   },

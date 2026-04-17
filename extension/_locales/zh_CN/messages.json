@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "导出全部"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML 不平衡(未闭合标签: $TAGS$)。发送前请检查。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "正文中有 $N$ 张图片 — 过多图片看起来像垃圾邮件。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "检测到短链接 ($LIST$) — 可能影响送达率。",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

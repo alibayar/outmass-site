@@ -338,11 +338,41 @@
     });
   }
 
-  // ── C.5: Content warnings (spam words, ALL CAPS, long subject, link count) ──
+  // ── C.5 / C-future: Content warnings ──
   var SPAM_WORDS = [
     "free!!!", "act now", "100% guaranteed", "click here", "buy now",
     "limited time", "urgent", "winner", "congratulations", "$$$", "cash bonus"
   ];
+
+  // Known URL shorteners — hurt deliverability because receivers can't
+  // inspect the destination and spam filters treat them as suspicious.
+  var LINK_SHORTENERS = [
+    "bit.ly", "tinyurl.com", "t.co", "goo.gl", "ow.ly", "buff.ly",
+    "is.gd", "cutt.ly", "rebrand.ly", "t.ly", "shorturl.at", "rb.gy",
+    "bl.ink", "tiny.cc", "lnkd.in"
+  ];
+
+  // Block-level HTML tags we expect to be balanced. Void elements (img, br, hr)
+  // excluded. Self-closing forms like <br/> handled by the regex.
+  var BALANCED_TAGS = [
+    "div", "p", "span", "a", "table", "tr", "td", "th", "tbody", "thead",
+    "ul", "ol", "li", "strong", "em", "b", "i", "u", "h1", "h2", "h3",
+    "h4", "h5", "h6", "blockquote"
+  ];
+
+  function findUnbalancedTags(html) {
+    var offenders = [];
+    for (var i = 0; i < BALANCED_TAGS.length; i++) {
+      var tag = BALANCED_TAGS[i];
+      // Count <tag ...> but skip <tag /> (self-closing)
+      var openRe = new RegExp("<" + tag + "(?:\\s[^>]*)?(?<!/)>", "gi");
+      var closeRe = new RegExp("</" + tag + "\\s*>", "gi");
+      var opens = (html.match(openRe) || []).length;
+      var closes = (html.match(closeRe) || []).length;
+      if (opens !== closes) offenders.push(tag);
+    }
+    return offenders;
+  }
 
   function getContentWarnings(subject, body) {
     var warnings = [];
@@ -355,8 +385,32 @@
     var combined = (subject + " " + body).toLowerCase();
     var hits = SPAM_WORDS.filter(function (w) { return combined.indexOf(w) >= 0; });
     if (hits.length > 0) warnings.push(t("warnSpamWords", [hits.slice(0, 3).join(", ")]));
+
     var linkCount = (body.match(/https?:\/\//gi) || []).length;
     if (linkCount >= 5) warnings.push(t("warnTooManyLinks", [String(linkCount)]));
+
+    // C-future: HTML validation — unbalanced block tags
+    if (/<[a-z][^>]*>/i.test(body)) {
+      var unbalanced = findUnbalancedTags(body);
+      if (unbalanced.length > 0) {
+        warnings.push(t("warnHtmlInvalid", [unbalanced.slice(0, 3).join(", ")]));
+      }
+    }
+
+    // C-future: Image count limit (5+ → spam signal)
+    var imgCount = (body.match(/<img\b/gi) || []).length;
+    if (imgCount >= 5) warnings.push(t("warnTooManyImages", [String(imgCount)]));
+
+    // C-future: Link-shortener detection
+    var combinedBodyLower = body.toLowerCase();
+    var shortenerHits = LINK_SHORTENERS.filter(function (d) {
+      // Match the domain as part of a URL, not arbitrary text
+      return new RegExp("https?://(?:www\\.)?" + d.replace(/\./g, "\\.") + "\\b").test(combinedBodyLower);
+    });
+    if (shortenerHits.length > 0) {
+      warnings.push(t("warnShortenedLinks", [shortenerHits.slice(0, 3).join(", ")]));
+    }
+
     return warnings;
   }
 

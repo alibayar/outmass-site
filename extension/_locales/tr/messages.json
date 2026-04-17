@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "Tumunu Indir"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML dengesiz gorunuyor (kapatilmamis: $TAGS$). Gondermeden once kontrol et.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "Icerikte $N$ resim — cok resim spam gibi gorunur.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "Kisaltilmis baglar var ($LIST$) — teslim edilebilirlik dusebilir.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

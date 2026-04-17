@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "Экспорт всех"
+  },
+  "warnHtmlInvalid": {
+    "message": "Несбалансированный HTML (незакрытые теги: $TAGS$). Проверьте перед отправкой.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "$N$ изображений в тексте — слишком много, выглядит как спам.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "Обнаружены сокращённые ссылки ($LIST$) — доставляемость может упасть.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

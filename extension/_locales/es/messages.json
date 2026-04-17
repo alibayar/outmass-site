@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "Exportar todo"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML desbalanceado (etiquetas abiertas: $TAGS$). Revisa antes de enviar.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "$N$ imagenes en el contenido — mucho uso de imagenes parece spam.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "Enlaces acortados detectados ($LIST$) — la entregabilidad puede bajar.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

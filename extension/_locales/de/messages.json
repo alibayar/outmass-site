@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "Alle exportieren"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML wirkt unausgewogen (ungeschlossene Tags: $TAGS$). Vor dem Senden pruefen.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "$N$ Bilder im Inhalt — viele Bilder wirken spammig.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "Kurzlinks erkannt ($LIST$) — Zustellbarkeit kann sinken.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

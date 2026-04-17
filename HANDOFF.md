@@ -133,10 +133,10 @@ Railway env var'ları swap (sandbox → live):
 > Kullanıcı uyarıları override edebilir (`warnContinueAnyway` confirm).
 
 **İleride:**
-- [ ] HTML validation (eksik tag)
-- [ ] Image count limit
-- [ ] Link shortener tespiti (bit.ly, tinyurl)
-- [ ] Sender reputation score
+- [x] **HTML validation** — block-level tag'ler için açık/kapalı sayım (`div, p, span, a, table, tr, td, ul, li, h1-6, ...`), dengesizse `warnHtmlInvalid` uyarısı (void tag'ler ve self-closing `<br/>` hariç tutulur)
+- [x] **Image count limit** — `<img`  sayısı 5+ ise `warnTooManyImages`
+- [x] **Link shortener tespiti** — 15 domain (bit.ly, tinyurl.com, t.co, goo.gl, ow.ly, buff.ly, is.gd, cutt.ly, rebrand.ly, t.ly, shorturl.at, rb.gy, bl.ink, tiny.cc, lnkd.in), varsa `warnShortenedLinks`
+- [ ] Sender reputation score (SpamAssassin benzeri — karmaşık, üçüncü-parti servis gerektirir)
 
 ### D. Diğer UX İyileştirmeleri
 

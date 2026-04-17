@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "すべてエクスポート"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML のバランスが崩れています(閉じていないタグ: $TAGS$)。送信前に確認してください。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "本文に $N$ 枚の画像 — 画像が多すぎるとスパムのように見えます。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "短縮 URL を検出 ($LIST$) — 到達率が下がる可能性があります。",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }

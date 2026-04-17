@@ -731,5 +731,29 @@
   },
   "btnExportList": {
     "message": "सभी निर्यात"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML असंतुलित दिखता है (बिना बंद टैग: $TAGS$). भेजने से पहले जांचें।",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "सामग्री में $N$ छवियाँ — अधिक छवियाँ स्पैम जैसा दिखती हैं।",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "शॉर्ट लिंक मिले ($LIST$) — डिलीवरीबिलिटी घट सकती है।",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   }
 }
