@@ -93,10 +93,22 @@ def fake_db():
     db = FakeSupabase()
     patches = [
         patch("database.get_db", return_value=db),
+        # Routers (all import get_db at module level)
         patch("routers.settings.get_db", return_value=db),
         patch("routers.tracking.get_db", return_value=db),
         patch("routers.auth.get_db", return_value=db, create=True),
         patch("routers.ai.get_db", return_value=db),
+        patch("routers.campaigns.get_db", return_value=db, create=True),
+        patch("routers.billing.get_db", return_value=db, create=True),
+        # Models (all import get_db at module level)
+        patch("models.campaign.get_db", return_value=db),
+        patch("models.contact.get_db", return_value=db),
+        patch("models.user.get_db", return_value=db),
+        patch("models.ab_test.get_db", return_value=db),
+        patch("models.followup.get_db", return_value=db),
+        patch("models.template.get_db", return_value=db),
+        patch("models.ms_token.get_db", return_value=db),
+        # Workers
         patch("workers.daily_report.get_db", return_value=db),
     ]
     for p in patches:

@@ -11,18 +11,43 @@ from database import get_db
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
 
 
-def bulk_insert(campaign_id: str, contacts: list[dict]) -> int:
-    """Insert multiple contacts for a campaign. Returns count inserted."""
-    rows = []
+def bulk_insert(
+    campaign_id: str,
+    contacts: list[dict],
+    suppressed: set[str] | None = None,
+) -> dict:
+    """Insert contacts for a campaign.
+
+    Normalizes email to lowercase, deduplicates within the input list,
+    skips invalid emails, and skips addresses present in `suppressed`.
+
+    Returns a dict with counts:
+        {"inserted": int, "skipped_invalid": int,
+         "skipped_duplicate": int, "skipped_suppressed": int}
+    """
+    suppressed = {s.lower() for s in (suppressed or set())}
+    seen: set[str] = set()
+    rows: list[dict] = []
+    skipped_invalid = 0
+    skipped_duplicate = 0
+    skipped_suppressed = 0
+
     for c in contacts:
-        email = c.get("email", "").strip()
-        # H-03: Skip contacts with empty or invalid email
-        if not email or not EMAIL_REGEX.match(email):
+        raw = (c.get("email") or "").strip().lower()
+        if not raw or not EMAIL_REGEX.match(raw):
+            skipped_invalid += 1
             continue
+        if raw in suppressed:
+            skipped_suppressed += 1
+            continue
+        if raw in seen:
+            skipped_duplicate += 1
+            continue
+        seen.add(raw)
         rows.append(
             {
                 "campaign_id": campaign_id,
-                "email": email,
+                "email": raw,
                 "first_name": c.get("firstName", c.get("first_name", "")),
                 "last_name": c.get("lastName", c.get("last_name", "")),
                 "company": c.get("company", ""),
@@ -46,10 +71,21 @@ def bulk_insert(campaign_id: str, contacts: list[dict]) -> int:
         )
 
     if not rows:
-        return 0
+        return {
+            "inserted": 0,
+            "skipped_invalid": skipped_invalid,
+            "skipped_duplicate": skipped_duplicate,
+            "skipped_suppressed": skipped_suppressed,
+        }
 
     result = get_db().table("contacts").insert(rows).execute()
-    return len(result.data)
+    inserted = len(result.data) if result.data else len(rows)
+    return {
+        "inserted": inserted,
+        "skipped_invalid": skipped_invalid,
+        "skipped_duplicate": skipped_duplicate,
+        "skipped_suppressed": skipped_suppressed,
+    }
 
 
 def get_pending_contacts(campaign_id: str) -> list[dict]:

@@ -25,13 +25,19 @@ from config import (
     GRAPH_API_BASE,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
+    FREE_UPLOAD_ROW_LIMIT,
+    STARTER_UPLOAD_ROW_LIMIT,
+    PRO_UPLOAD_ROW_LIMIT,
+    MAX_CSV_SIZE_BYTES,
 )
+from database import get_db
 from models import ab_test as ab_test_model
 from models import campaign as campaign_model
 from models import contact as contact_model
 from models import followup as followup_model
 from models import user as user_model
 from routers.auth import get_current_user
+from utils.merge_tags import find_malformed_tags, find_unknown_tags
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
@@ -72,6 +78,11 @@ async def create_campaign(
     body: CreateCampaignRequest,
     user: dict = Depends(get_current_user),
 ):
+    # B.1: Reject whitespace-only / empty campaign names
+    if not body.name or not body.name.strip():
+        raise HTTPException(status_code=400, detail="Campaign name is required")
+    body.name = body.name.strip()
+
     # Scheduled sending requires Standard+ plan
     if body.scheduled_for:
         plan = user.get("plan", "free")
@@ -194,36 +205,90 @@ async def upload_contacts(
     if not campaign or campaign["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    contacts = []
+    plan = user.get("plan", "free")
+    row_limit = {
+        "pro": PRO_UPLOAD_ROW_LIMIT,
+        "starter": STARTER_UPLOAD_ROW_LIMIT,
+    }.get(plan, FREE_UPLOAD_ROW_LIMIT)
 
-    # Parse CSV string
+    contacts: list[dict] = []
+
     if body.csv_string:
-        reader = csv.DictReader(io.StringIO(body.csv_string))
+        # A.2: File size check (UTF-8 byte length)
+        if len(body.csv_string.encode("utf-8")) > MAX_CSV_SIZE_BYTES:
+            raise HTTPException(
+                status_code=413,
+                detail=f"CSV file exceeds {MAX_CSV_SIZE_BYTES // (1024 * 1024)} MB limit",
+            )
+        # A.2: Strip UTF-8 BOM
+        text = body.csv_string.lstrip("\ufeff")
+        # A.2: Reject botched encoding (replacement characters)
+        if "\ufffd" in text:
+            raise HTTPException(
+                status_code=400,
+                detail="CSV encoding not recognized. Please save as UTF-8.",
+            )
+        reader = csv.DictReader(io.StringIO(text))
+        # A.2: Mandatory 'email' column (case-insensitive)
+        headers = [h.lower() for h in (reader.fieldnames or [])]
+        if "email" not in headers:
+            raise HTTPException(
+                status_code=400,
+                detail="Column 'email' is required in the CSV header",
+            )
         for row in reader:
-            contacts.append(dict(row))
+            normalized: dict = {}
+            for k, v in row.items():
+                if k and k.lower() == "email":
+                    normalized["email"] = v
+                else:
+                    normalized[k] = v
+            contacts.append(normalized)
 
-    # Or use JSON array directly
     elif body.contacts:
         contacts = body.contacts
+        if contacts and not any("email" in c for c in contacts):
+            raise HTTPException(
+                status_code=400, detail="'email' field required"
+            )
 
     if not contacts:
         raise HTTPException(status_code=400, detail="No contacts provided")
 
-    count = contact_model.bulk_insert(campaign_id, contacts)
+    # A.2: Plan-based row limit
+    if len(contacts) > row_limit:
+        raise HTTPException(
+            status_code=413,
+            detail=f"CSV has {len(contacts)} rows; plan limit is {row_limit}",
+        )
 
-    # Update campaign total
+    # A.1 / A.3: Cross-check against the user's suppression list
+    suppressed_rows = (
+        get_db()
+        .table("suppression_list")
+        .select("email")
+        .eq("user_id", user["id"])
+        .execute()
+    )
+    suppressed_set = {r["email"].lower() for r in (suppressed_rows.data or [])}
+
+    result = contact_model.bulk_insert(campaign_id, contacts, suppressed=suppressed_set)
+
     total = contact_model.get_campaign_contacts_count(campaign_id)
     campaign_model.update_campaign(campaign_id, {"total_contacts": total})
 
-    # Generate preview for first 3 contacts
     preview = []
     for c in contacts[:3]:
         merged_subject = _merge_template(campaign["subject"], c)
-        preview.append(
-            {"email": c.get("email", ""), "subject": merged_subject}
-        )
+        preview.append({"email": c.get("email", ""), "subject": merged_subject})
 
-    return {"count": count, "preview": preview}
+    return {
+        "count": result["inserted"],
+        "skipped_invalid": result["skipped_invalid"],
+        "skipped_duplicate": result["skipped_duplicate"],
+        "skipped_suppressed": result["skipped_suppressed"],
+        "preview": preview,
+    }
 
 
 @router.post("/{campaign_id}/send")
@@ -263,6 +328,35 @@ async def send_campaign(
     pending = contact_model.get_pending_contacts(campaign_id)
     if not pending:
         raise HTTPException(status_code=400, detail="No pending contacts")
+
+    # ── C.2: Merge-tag validation ──
+    for field_name, content in (
+        ("subject", campaign["subject"]),
+        ("body", campaign["body"]),
+    ):
+        malformed = find_malformed_tags(content or "")
+        if malformed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Malformed merge tag in {field_name}: {malformed[0]}",
+            )
+    # Collect contact keys actually present in the pending set (first row is enough)
+    first_contact = pending[0]
+    contact_keys: set[str] = set()
+    key_remap = {"first_name": "firstName", "last_name": "lastName"}
+    for k, v in first_contact.items():
+        if v not in (None, ""):
+            contact_keys.add(key_remap.get(k, k))
+    for k in (first_contact.get("custom_fields") or {}).keys():
+        contact_keys.add(k)
+    unknown_subj = find_unknown_tags(campaign["subject"] or "", contact_keys)
+    unknown_body = find_unknown_tags(campaign["body"] or "", contact_keys)
+    unknowns = sorted(set(unknown_subj + unknown_body))
+    if unknowns:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unknown merge tags (not in CSV): {', '.join(unknowns)}",
+        )
 
     if plan == "free":
         limit = FREE_PLAN_MONTHLY_LIMIT
@@ -389,6 +483,83 @@ async def send_campaign(
         "errors": errors[:10],  # Cap error list
         "ab_test": bool(ab_test),
     }
+
+
+# ── C.3: Test Send Endpoint ──
+
+
+class TestSendRequest(BaseModel):
+    sample: dict | None = None  # optional merge-tag values (first CSV row)
+
+
+@router.post("/{campaign_id}/test-send")
+async def test_send(
+    campaign_id: str,
+    body: TestSendRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Send one test email to the authenticated user's own address.
+
+    Uses the optional `sample` dict as merge context. Does not consume
+    the monthly quota and does not create a contact record.
+    """
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    for field_name, content in (
+        ("subject", campaign["subject"]),
+        ("body", campaign["body"]),
+    ):
+        malformed = find_malformed_tags(content or "")
+        if malformed:
+            raise HTTPException(
+                status_code=400,
+                detail=f"Malformed merge tag in {field_name}: {malformed[0]}",
+            )
+
+    from models.ms_token import get_fresh_access_token
+
+    access_token = get_fresh_access_token(user["id"])
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail="Could not refresh Microsoft token. Please log in again.",
+        )
+
+    sample = body.sample or {}
+    synthetic_contact = {
+        "id": f"test-{campaign_id}",
+        "email": user["email"],
+        "first_name": sample.get("firstName", "Test"),
+        "last_name": sample.get("lastName", "User"),
+        "company": sample.get("company", ""),
+        "position": sample.get("position", ""),
+        "custom_fields": {
+            k: v
+            for k, v in sample.items()
+            if k not in ("firstName", "lastName", "company", "position", "email")
+        },
+    }
+
+    async with httpx.AsyncClient() as client:
+        result = await _send_single_email(
+            client=client,
+            access_token=access_token,
+            campaign=campaign,
+            contact=synthetic_contact,
+            track_opens=False,
+            track_clicks=False,
+            unsubscribe_text=user.get("unsubscribe_text", "Abonelikten cik"),
+            sender_info=user,
+        )
+
+    if not result.get("success"):
+        raise HTTPException(
+            status_code=502, detail=result.get("error", "Test send failed")
+        )
+
+    return {"success": True, "sent_to": user["email"]}
 
 
 # ── Follow-up Endpoints ──
