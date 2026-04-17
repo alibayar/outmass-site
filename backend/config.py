@@ -70,10 +70,11 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
-# ── Resend (transactional email) ──
-RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
-RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "OutMass Feedback <support@getoutmass.com>")
-RESEND_TO_EMAIL = os.getenv("RESEND_TO_EMAIL", "support@getoutmass.com")
+# ── MailerSend (transactional email) ──
+MAILERSEND_API_KEY = os.getenv("MAILERSEND_API_KEY", "")
+MAILERSEND_FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL", "support@getoutmass.com")
+MAILERSEND_FROM_NAME = os.getenv("MAILERSEND_FROM_NAME", "OutMass Feedback")
+MAILERSEND_TO_EMAIL = os.getenv("MAILERSEND_TO_EMAIL", "support@getoutmass.com")
 
 # ── Plan Limits ──
 FREE_PLAN_MONTHLY_LIMIT = 50

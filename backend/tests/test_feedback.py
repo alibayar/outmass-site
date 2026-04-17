@@ -63,7 +63,7 @@ def test_feedback_skips_telegram_when_not_configured(client):
     """Without Telegram credentials, feedback should still succeed (no Telegram call)."""
     with patch("main.TELEGRAM_BOT_TOKEN", ""), \
          patch("main.TELEGRAM_CHAT_ID", ""), \
-         patch("main.RESEND_API_KEY", ""), \
+         patch("main.MAILERSEND_API_KEY", ""), \
          patch("main.httpx.post") as mock_post:
         resp = client.post(
             "/api/feedback",
@@ -92,40 +92,42 @@ def test_feedback_survives_telegram_error(client):
 # ── Resend (email) dispatch ──
 
 
-def test_feedback_sends_email_via_resend_when_configured(client):
-    """When Resend is configured, feedback should POST to Resend API."""
-    with patch("main.RESEND_API_KEY", "re_test_key"), \
-         patch("main.RESEND_FROM_EMAIL", "feedback@getoutmass.com"), \
-         patch("main.RESEND_TO_EMAIL", "support@getoutmass.com"), \
+def test_feedback_sends_email_via_mailersend_when_configured(client):
+    """When MailerSend is configured, feedback should POST to MailerSend API."""
+    with patch("main.MAILERSEND_API_KEY", "ms_test_key"), \
+         patch("main.MAILERSEND_FROM_EMAIL", "feedback@getoutmass.com"), \
+         patch("main.MAILERSEND_FROM_NAME", "OutMass"), \
+         patch("main.MAILERSEND_TO_EMAIL", "support@getoutmass.com"), \
          patch("main.TELEGRAM_BOT_TOKEN", ""), \
          patch("main.httpx.post") as mock_post:
-        mock_post.return_value = MagicMock(status_code=200, json=lambda: {"id": "abc"})
+        mock_post.return_value = MagicMock(status_code=202, json=lambda: {"id": "abc"})
         resp = client.post(
             "/api/feedback",
             json={"message": "Love it!", "email": "user@example.com"},
         )
 
     assert resp.status_code == 200
-    resend_calls = [
+    ms_calls = [
         c for c in mock_post.call_args_list
-        if c[0] and "api.resend.com" in c[0][0]
+        if c[0] and "api.mailersend.com" in c[0][0]
     ]
-    assert len(resend_calls) >= 1
-    call = resend_calls[0]
+    assert len(ms_calls) >= 1
+    call = ms_calls[0]
     json_payload = call.kwargs.get("json", {})
-    assert json_payload.get("from") == "feedback@getoutmass.com"
-    assert json_payload.get("to") == ["support@getoutmass.com"]
-    # Reply-To should be the user's email so we can reply directly
-    assert json_payload.get("reply_to") == "user@example.com"
+    # MailerSend requires from as an object {email, name}
+    assert json_payload.get("from", {}).get("email") == "feedback@getoutmass.com"
+    assert json_payload.get("to") == [{"email": "support@getoutmass.com"}]
+    # Reply-To object form
+    assert json_payload.get("reply_to", {}).get("email") == "user@example.com"
     # Body should contain the message and the user email
     html = json_payload.get("html", "") + json_payload.get("text", "")
     assert "Love it" in html
     assert "user@example.com" in html
 
 
-def test_feedback_skips_resend_when_no_api_key(client):
-    """Without Resend API key, no Resend call should happen."""
-    with patch("main.RESEND_API_KEY", ""), \
+def test_feedback_skips_mailersend_when_no_api_key(client):
+    """Without MailerSend API key, no MailerSend call should happen."""
+    with patch("main.MAILERSEND_API_KEY", ""), \
          patch("main.TELEGRAM_BOT_TOKEN", ""), \
          patch("main.httpx.post") as mock_post:
         resp = client.post(
@@ -134,11 +136,11 @@ def test_feedback_skips_resend_when_no_api_key(client):
         )
 
     assert resp.status_code == 200
-    resend_calls = [
+    ms_calls = [
         c for c in mock_post.call_args_list
-        if c[0] and "api.resend.com" in c[0][0]
+        if c[0] and "api.mailersend.com" in c[0][0]
     ]
-    assert len(resend_calls) == 0
+    assert len(ms_calls) == 0
 
 
 def test_feedback_works_with_anonymous_user(client):

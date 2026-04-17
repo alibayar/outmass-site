@@ -14,11 +14,12 @@ from pydantic import BaseModel
 
 from config import (
     CORS_ORIGINS,
+    MAILERSEND_API_KEY,
+    MAILERSEND_FROM_EMAIL,
+    MAILERSEND_FROM_NAME,
+    MAILERSEND_TO_EMAIL,
     POSTHOG_API_KEY,
     POSTHOG_HOST,
-    RESEND_API_KEY,
-    RESEND_FROM_EMAIL,
-    RESEND_TO_EMAIL,
     TELEGRAM_BOT_TOKEN,
     TELEGRAM_CHAT_ID,
 )
@@ -146,8 +147,8 @@ def _send_feedback_telegram(message: str, email: str) -> None:
 
 
 def _send_feedback_email(message: str, email: str, context: dict) -> None:
-    """Best-effort Resend email. Never raises. Sets Reply-To to user's email."""
-    if not RESEND_API_KEY:
+    """Best-effort MailerSend email. Never raises. Sets Reply-To to user's email."""
+    if not MAILERSEND_API_KEY:
         return
     subject = f"[Feedback] {(email or 'Anonymous user')[:60]}"
     safe_msg = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -161,25 +162,28 @@ def _send_feedback_email(message: str, email: str, context: dict) -> None:
         f"UA: {str(context.get('userAgent', 'n/a'))[:120]}</p>"
     )
     payload = {
-        "from": RESEND_FROM_EMAIL,
-        "to": [RESEND_TO_EMAIL],
+        "from": {
+            "email": MAILERSEND_FROM_EMAIL,
+            "name": MAILERSEND_FROM_NAME,
+        },
+        "to": [{"email": MAILERSEND_TO_EMAIL}],
         "subject": subject,
         "html": html,
     }
     if email:
-        payload["reply_to"] = email
+        payload["reply_to"] = {"email": email}
     try:
         httpx.post(
-            "https://api.resend.com/emails",
+            "https://api.mailersend.com/v1/email",
             headers={
-                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Authorization": f"Bearer {MAILERSEND_API_KEY}",
                 "Content-Type": "application/json",
             },
             json=payload,
             timeout=10.0,
         )
     except Exception as e:
-        logger.warning("Feedback Resend dispatch failed: %s", e)
+        logger.warning("Feedback MailerSend dispatch failed: %s", e)
 
 
 @app.post("/api/feedback")
