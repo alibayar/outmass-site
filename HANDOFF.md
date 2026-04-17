@@ -147,7 +147,7 @@ Railway env var'ları swap (sandbox → live):
 
 ### 🚨 Deploy öncesi çalıştırılacak adımlar
 
-- [ ] **Migration 005 çalıştır** — `backend/migrations/005_campaign_archived.sql` (archive kolonu + index)
+- [x] **Migration 005 çalıştır** — `backend/migrations/005_campaign_archived.sql` ✅ çalıştırıldı
 - [x] **Migration 006 çalıştır** — `backend/migrations/006_cross_campaign_dedup.sql` ✅ 2026-04-17 çalıştırıldı
 
 ---
