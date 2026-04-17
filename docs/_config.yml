@@ -1,0 +1,10 @@
+# GitHub Pages / Jekyll configuration
+#
+# The plans/ directory contains implementation docs that include merge-tag
+# examples like {{firstName}} and {{company}}. Jekyll/Liquid would try to
+# parse those as template variables and crash the build — so we exclude them.
+# They remain accessible on GitHub as source files.
+
+exclude:
+  - plans/
+  - store-listing/
