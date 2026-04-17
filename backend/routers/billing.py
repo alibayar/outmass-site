@@ -60,11 +60,15 @@ def _get_user_from_db(user_id: str) -> dict | None:
     return None
 
 
-# ─── 1. Create Checkout ─────────────────────────────────────────────────────
+# ─── 1. Create Checkout / Upgrade ──────────────────────────────────────────
 
 @router.post("/create-checkout")
 async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_current_user)):
-    """Create a Stripe Checkout Session for a Standard or Pro subscription."""
+    """
+    For Free users: create a new Stripe Checkout Session.
+    For users with an active subscription: modify the existing subscription
+    to the new plan with proration (charge only the difference).
+    """
     if not STRIPE_SECRET_KEY:
         raise HTTPException(status_code=503, detail="Stripe not configured")
 
@@ -82,6 +86,54 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
     if current_plan == "pro":
         raise HTTPException(status_code=400, detail="Already on Pro plan")
 
+    # ── Existing subscriber: modify the subscription with proration ──
+    existing_sub_id = user.get("stripe_subscription_id")
+    if existing_sub_id:
+        try:
+            sub = stripe.Subscription.retrieve(existing_sub_id)
+        except stripe.StripeError as e:
+            logger.error("Could not retrieve subscription %s: %s", existing_sub_id, e)
+            sub = None
+
+        # Only modify if the subscription is still active (not canceled/expired)
+        if sub and sub.get("status") in ("active", "trialing", "past_due"):
+            try:
+                # Get the current item to replace its price
+                items = sub.get("items", {}).get("data", [])
+                if not items:
+                    raise HTTPException(
+                        status_code=502, detail="Subscription has no items"
+                    )
+                item_id = items[0]["id"]
+
+                stripe.Subscription.modify(
+                    existing_sub_id,
+                    items=[{"id": item_id, "price": price_id}],
+                    proration_behavior="create_prorations",
+                    payment_behavior="pending_if_incomplete",
+                )
+            except stripe.StripeError as e:
+                logger.error("Stripe modify error: %s", e)
+                raise HTTPException(
+                    status_code=502, detail=f"Upgrade error: {str(e)}"
+                )
+
+            # Update plan in DB immediately (webhook will also fire and confirm)
+            from database import get_db
+            from datetime import datetime, timezone
+
+            get_db().table("users").update({
+                "plan": body.plan,
+                "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+            }).eq("id", user["id"]).execute()
+
+            return {
+                "modified": True,
+                "plan": body.plan,
+                "message": f"Upgraded to {body.plan}. Stripe will charge the prorated difference.",
+            }
+
+    # ── New subscriber: create a Checkout Session ──
     try:
         session = stripe.checkout.Session.create(
             line_items=[{"price": price_id, "quantity": 1}],

@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "अपग्रेड → Starter ($9/माह)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "अपग्रेड सफल! Stripe आनुपातिक अंतर स्वचालित रूप से चार्ज करेगा।"
   }
 }

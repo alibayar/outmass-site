@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "Yukselt → Starter ($9/ay)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "Yukseltme basarili! Stripe orantili farki otomatik olarak tahsil edecek."
   }
 }

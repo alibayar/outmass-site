@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "Mejorar → Starter ($9/mes)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "Actualizacion exitosa! Stripe cobrara la diferencia prorrateada automaticamente."
   }
 }

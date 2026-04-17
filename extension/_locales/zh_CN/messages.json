@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "升级到 Starter ($9/月)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "升级成功！Stripe 将自动收取按比例计算的差额。"
   }
 }

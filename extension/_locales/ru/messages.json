@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "Перейти → Starter ($9/мес)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "Обновление успешно! Stripe автоматически спишет пропорциональную разницу."
   }
 }

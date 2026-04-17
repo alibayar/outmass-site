@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "アップグレード → Starter ($9/月)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "アップグレード成功！Stripeは按分された差額を自動的に請求します。"
   }
 }

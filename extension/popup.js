@@ -198,8 +198,13 @@
   function startCheckout(plan) {
     chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: plan }, function (resp) {
       if (resp && resp.data && resp.data.checkout_url) {
+        // New subscription — open Stripe Checkout
         chrome.tabs.create({ url: resp.data.checkout_url });
         window.close();
+      } else if (resp && resp.data && resp.data.modified) {
+        // Existing subscription — modified in place with proration
+        alert(t("upgradeSuccessProrated"));
+        loadState(); // refresh plan badge
       } else {
         var errMsg = (resp && resp.error) || t("popupUnknownError");
         alert(t("popupCheckoutFailed") + errMsg);

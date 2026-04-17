@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "Upgrade → Starter ($9/Monat)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "Upgrade erfolgreich! Stripe wird die anteilige Differenz automatisch berechnen."
   }
 }

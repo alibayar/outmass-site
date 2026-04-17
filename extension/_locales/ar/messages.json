@@ -598,5 +598,8 @@
   },
   "popupUpgradeStarter": {
     "message": "الترقية → Starter ($9/شهر)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "تمت الترقية بنجاح! سيقوم Stripe بخصم الفرق التناسبي تلقائيًا."
   }
 }
