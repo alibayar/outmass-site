@@ -1,0 +1,36 @@
+Transformez Outlook Web en outil professionnel d'e-mailing de masse. OutMass apporte le mail merge, le suivi, les relances et la rédaction assistée par IA directement dans outlook.office.com et outlook.live.com — avec une prise en charge complète de Microsoft 365 et des comptes Outlook.com personnels.
+
+✨ CE QUE VOUS POUVEZ FAIRE
+
+📧 Mail merge depuis CSV — personnalisez avec {{firstName}}, {{company}} et toute colonne
+🎯 A/B testing des objets — trouvez l'objet qui convertit le mieux
+⏰ Envoi programmé — au moment idéal, à travers les fuseaux horaires
+🔁 Relances automatiques — recontactez ceux qui n'ont pas ouvert
+📚 Bibliothèque de modèles — sauvegardez et réutilisez vos meilleurs e-mails
+🤖 Rédacteur IA — propulsé par Claude (Pro, 50/mois)
+📊 Suivi des ouvertures et clics — pixel, clics, lien de désabonnement
+📈 Rapports de campagne — taux d'ouverture, taux de clic, export CSV complet
+🌍 10 langues d'interface — avec support RTL pour l'arabe
+
+💼 CONÇU POUR
+
+• Fondateurs et SDR qui font de l'outbound depuis Outlook
+• Agences qui gèrent les campagnes clients depuis leur propre boîte
+• Équipes qui ne peuvent ou ne veulent pas passer à des outils Gmail
+• Quiconque a tenté un publipostage dans Outlook et a abandonné
+
+💰 TARIFS
+
+• Gratuit — 50 e-mails/mois, pour toujours
+• Starter — $9/mois, 2 000 e-mails/mois
+• Pro — $19/mois, 10 000 e-mails/mois + Rédacteur IA + A/B tests + modèles
+
+🔒 VOS DONNÉES VOUS APPARTIENNENT
+
+OutMass envoie via votre propre API Microsoft Graph en OAuth 2.0. Nous ne stockons jamais le contenu de vos e-mails sur nos serveurs. Votre compte Outlook, vos données, votre délivrabilité.
+
+🛡️ GARANTIE SATISFAIT OU REMBOURSÉ 30 JOURS
+
+Pas satisfait de votre abonnement ? Remboursement intégral sous 30 jours — sans justification.
+
+🚀 Installez OutMass et lancez votre première campagne en 5 minutes.

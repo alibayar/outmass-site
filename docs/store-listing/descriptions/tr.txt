@@ -1,0 +1,36 @@
+Outlook Web'i profesyonel bir toplu e-posta aracına dönüştürün. OutMass; mail merge, takip, otomatik hatırlatma ve yapay zekâ destekli yazımı doğrudan outlook.office.com ve outlook.live.com içine getirir — Microsoft 365 ve kişisel Outlook.com hesaplarıyla tam uyumlu.
+
+✨ NELER YAPABİLİRSİNİZ
+
+📧 CSV'den mail merge — {{firstName}}, {{company}} ve her sütunla kişiselleştirin
+🎯 Konu satırı A/B testi — dönüşümü yüksek konuyu bulun
+⏰ Zamanlanmış gönderim — ideal saatte, farklı saat dilimlerinde gönderin
+🔁 Otomatik takip e-postaları — açmayanlara yeniden ulaşın
+📚 Şablon kütüphanesi — en iyi e-postalarınızı kaydedip tekrar kullanın
+🤖 AI E-posta Yazarı — Claude destekli taslak (Pro, ayda 50)
+📊 Açılma ve tıklama takibi — pixel, tıklama, abonelikten çıkma bağlantısı
+📈 Kampanya raporları — açılma oranı, tıklama oranı, tam CSV dışa aktarım
+🌍 10 arayüz dili — Arapça RTL desteği dâhil
+
+💼 KİMLER İÇİN
+
+• Outlook üzerinden outbound yapan kurucular ve SDR'lar
+• Müşteri kampanyalarını kendi kutusundan yöneten ajanslar
+• Gmail tabanlı araçlara geçemeyen veya geçmek istemeyen ekipler
+• Outlook'ta mail merge yapmayı deneyip vazgeçmiş herkes
+
+💰 FİYATLANDIRMA
+
+• Ücretsiz — ayda 50 e-posta, kalıcı
+• Starter — aylık $9, ayda 2.000 e-posta
+• Pro — aylık $19, ayda 10.000 e-posta + AI Yazar + A/B testi + şablonlar
+
+🔒 VERİLERİNİZ SİZDE KALIR
+
+OutMass gönderimleri sizin kendi Microsoft Graph API'nizden OAuth 2.0 ile yapar. E-postalarınızın içeriği sunucularımızda tutulmaz. Outlook hesabınız, sizin verileriniz, sizin deliverability'niz.
+
+🛡️ 30 GÜN PARA İADE GARANTİSİ
+
+Memnun kalmadınız mı? 30 gün içinde tam iade — soru sormadan.
+
+🚀 OutMass'ı kurun, ilk kampanyanızı 5 dakikada başlatın.

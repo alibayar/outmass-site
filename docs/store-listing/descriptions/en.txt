@@ -1,0 +1,36 @@
+Turn Outlook Web into a professional mass email tool. OutMass brings mail merge, tracking, follow-ups, and AI-powered writing directly inside outlook.office.com and outlook.live.com — with full Microsoft 365 and personal Outlook.com support.
+
+✨ WHAT YOU CAN DO
+
+📧 Mail merge from CSV — personalize with {{firstName}}, {{company}}, and any column
+🎯 Subject A/B testing — split-test subject lines to find what converts
+⏰ Scheduled sending — send at the perfect time, across time zones
+🔁 Automatic follow-ups — retarget recipients who didn't open
+📚 Template library — save and reuse your best-performing emails
+🤖 AI Email Writer — Claude-powered drafting (Pro, 50/month)
+📊 Open & click tracking — pixel tracking, click tracking, unsubscribe links
+📈 Campaign reports — open rates, click rates, full CSV export
+🌍 10 UI languages — including Arabic RTL support
+
+💼 BUILT FOR
+
+• Founders and SDRs running outbound from Outlook
+• Agencies managing client campaigns in their existing mailbox
+• Teams that can't or don't want to switch to Gmail-based tools
+• Anyone who has tried to mail-merge in Outlook and given up
+
+💰 PRICING
+
+• Free — 50 emails/month, forever
+• Starter — $9/month, 2,000 emails/month
+• Pro — $19/month, 10,000 emails/month + AI Writer + A/B testing + templates
+
+🔒 YOUR DATA STAYS YOURS
+
+OutMass sends through your own Microsoft Graph API using OAuth 2.0. We never store the content of your emails on our servers. Your Outlook account, your data, your deliverability.
+
+🛡️ 30-DAY MONEY-BACK GUARANTEE
+
+Not happy with your subscription? Get a full refund within 30 days — no questions asked.
+
+🚀 Install OutMass and run your first campaign in 5 minutes.

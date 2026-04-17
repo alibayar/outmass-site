@@ -1,0 +1,36 @@
+Machen Sie Outlook Web zum professionellen Massen-E-Mail-Tool. OutMass bringt Mail Merge, Tracking, Follow-ups und KI-gestütztes Schreiben direkt in outlook.office.com und outlook.live.com — mit voller Unterstützung für Microsoft 365 und persönliche Outlook.com-Konten.
+
+✨ WAS SIE DAMIT MACHEN KÖNNEN
+
+📧 Mail Merge aus CSV — personalisieren mit {{firstName}}, {{company}} und beliebigen Spalten
+🎯 A/B-Tests für Betreffzeilen — finden Sie, was konvertiert
+⏰ Geplanter Versand — zum optimalen Zeitpunkt, über Zeitzonen hinweg
+🔁 Automatische Follow-ups — Empfänger erneut ansprechen, die nicht geöffnet haben
+📚 Vorlagen-Bibliothek — speichern und wiederverwenden, was funktioniert
+🤖 KI-E-Mail-Writer — Claude-gestützt (Pro, 50/Monat)
+📊 Öffnungs- und Klick-Tracking — Pixel, Klicks, Abmelde-Link
+📈 Kampagnen-Berichte — Öffnungsrate, Klickrate, vollständiger CSV-Export
+🌍 10 UI-Sprachen — inklusive arabischer RTL-Unterstützung
+
+💼 GEBAUT FÜR
+
+• Gründer und SDRs, die Outbound aus Outlook heraus betreiben
+• Agenturen, die Kundenkampagnen im vorhandenen Postfach verwalten
+• Teams, die nicht zu Gmail-basierten Tools wechseln können oder wollen
+• Alle, die schon einmal versucht haben, in Outlook einen Serienbrief zu machen, und aufgegeben haben
+
+💰 PREISE
+
+• Kostenlos — 50 E-Mails/Monat, dauerhaft
+• Starter — $9/Monat, 2.000 E-Mails/Monat
+• Pro — $19/Monat, 10.000 E-Mails/Monat + KI-Writer + A/B-Tests + Vorlagen
+
+🔒 IHRE DATEN BLEIBEN IHRE DATEN
+
+OutMass sendet über Ihre eigene Microsoft Graph API per OAuth 2.0. Wir speichern den Inhalt Ihrer E-Mails nie auf unseren Servern. Ihr Outlook-Konto, Ihre Daten, Ihre Zustellbarkeit.
+
+🛡️ 30 TAGE GELD-ZURÜCK-GARANTIE
+
+Nicht zufrieden mit Ihrem Abo? Volle Rückerstattung innerhalb von 30 Tagen — ohne Rückfragen.
+
+🚀 Installieren Sie OutMass und starten Sie Ihre erste Kampagne in 5 Minuten.
