@@ -61,22 +61,28 @@
         <tr><th>Data Type</th><th>Purpose</th><th>Legal Basis</th></tr>
       </thead>
       <tbody>
-        <tr><td>Name and email address</td><td>Account creation, communication</td><td>Contract performance</td></tr>
+        <tr><td>Name and email address (your account)</td><td>Account creation, communication</td><td>Contract performance</td></tr>
         <tr><td>Microsoft OAuth tokens</td><td>Sending emails via Graph API</td><td>Contract performance</td></tr>
-        <tr><td>Campaign metadata (subject lines, send times, recipient counts)</td><td>Campaign management, analytics</td><td>Contract performance</td></tr>
+        <tr><td>Campaign content you author (subject lines and body text)</td><td>Rendering and sending the campaign, merge-tag personalization, performance reports</td><td>Contract performance</td></tr>
+        <tr><td>Recipient list you upload (email addresses, names, custom CSV columns)</td><td>Sending the campaign to the people you chose, merge-tag personalization, unsubscribe handling</td><td>Contract performance</td></tr>
+        <tr><td>Campaign metadata (send times, recipient counts, status)</td><td>Campaign management, analytics</td><td>Contract performance</td></tr>
         <tr><td>Email open and click events</td><td>Tracking and reporting</td><td>Legitimate interest</td></tr>
         <tr><td>Usage statistics (features used, session duration)</td><td>Product improvement</td><td>Legitimate interest</td></tr>
-        <tr><td>Payment information</td><td>Subscription billing (processed by Stripe)</td><td>Contract performance</td></tr>
+        <tr><td>Payment information</td><td>Subscription billing (processed by Stripe — card details never touch our servers)</td><td>Contract performance</td></tr>
       </tbody>
     </table>
 
     <h2>3. Data We Do NOT Collect</h2>
     <ul>
-      <li>We do <strong>not</strong> store the content or body of your emails.</li>
-      <li>We do <strong>not</strong> store your Microsoft password.</li>
-      <li>We do <strong>not</strong> read or store your inbox messages.</li>
-      <li>We do <strong>not</strong> sell your data to third parties.</li>
+      <li>We do <strong>not</strong> read your Outlook inbox or any messages you receive.</li>
+      <li>We do <strong>not</strong> copy or store emails that other people have sent you.</li>
+      <li>We do <strong>not</strong> store your Microsoft password — authentication is handled by Microsoft's own OAuth 2.0 flow.</li>
+      <li>We do <strong>not</strong> store your payment card details — Stripe handles them directly.</li>
+      <li>We do <strong>not</strong> sell your data, recipient lists, or campaign content to third parties.</li>
+      <li>We do <strong>not</strong> use your campaign content to train AI models.</li>
     </ul>
+
+    <p><em>Note on campaign content: when you author an email campaign in OutMass, we do store the subject line, body, and recipient list so we can actually send the campaign on your behalf, apply merge-tag personalization, and report open/click performance back to you. This is distinct from "reading your inbox" — we only handle outbound content that you explicitly create inside the extension.</em></p>
 
     <h2>4. Microsoft OAuth Data</h2>
     <p>When you sign in with Microsoft, we request the following permissions:</p>
