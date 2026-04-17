@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "Tekrar Edenleri Atla"
+  },
+  "settingsDedupHint": {
+    "message": "Belirli bir surede farkli kampanyalarda ayni kisiye mail atma."
+  },
+  "settingsDedupEnabled": {
+    "message": "Etkin (Pro ozellik)"
+  },
+  "settingsDedupDays": {
+    "message": "Geriye donuk sure (gun)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ alici atlandi — son bir kampanyada iletisim kuruldu.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

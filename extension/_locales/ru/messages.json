@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "Пропускать повторных получателей"
+  },
+  "settingsDedupHint": {
+    "message": "Не писать одному и тому же человеку в разных кампаниях в течение периода."
+  },
+  "settingsDedupEnabled": {
+    "message": "Включено (функция Pro)"
+  },
+  "settingsDedupDays": {
+    "message": "Период ретроспективы (дни)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ получатель(я) пропущен(ы) — уже был контакт в недавней кампании.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

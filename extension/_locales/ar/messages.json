@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "تخطي المستلمين المكررين"
+  },
+  "settingsDedupHint": {
+    "message": "لا ترسل بريداً إلى الشخص نفسه عبر حملات مختلفة خلال فترة محددة."
+  },
+  "settingsDedupEnabled": {
+    "message": "مُفعَّل (ميزة Pro)"
+  },
+  "settingsDedupDays": {
+    "message": "فترة المراجعة (أيام)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "تم تخطي $N$ مستلم(ين) — تم التواصل معهم في حملة حديثة.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "重複した受信者をスキップ"
+  },
+  "settingsDedupHint": {
+    "message": "指定した期間内に、異なるキャンペーンで同じ人にメールを送らない。"
+  },
+  "settingsDedupEnabled": {
+    "message": "有効 (Pro 機能)"
+  },
+  "settingsDedupDays": {
+    "message": "さかのぼる期間(日)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ 件の受信者をスキップ — 最近のキャンペーンで既に連絡済み。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

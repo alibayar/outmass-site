@@ -245,6 +245,20 @@
         </label>
       </div>
 
+      <!-- Cross-Campaign Dedup (Pro only — hidden at runtime for Free/Starter) -->
+      <div class="settings-section" id="settings-dedup-section" style="display:none;">
+        <h4 class="settings-title" data-i18n="settingsDedupTitle">Skip Repeat Recipients</h4>
+        <p class="hint" data-i18n="settingsDedupHint">Never email the same person twice across different campaigns within a window.</p>
+        <label class="settings-toggle">
+          <input type="checkbox" id="settings-dedup-enabled" checked>
+          <span data-i18n="settingsDedupEnabled">Enabled (Pro feature)</span>
+        </label>
+        <div class="form-group">
+          <label for="settings-dedup-days" data-i18n="settingsDedupDays">Lookback period (days)</label>
+          <input type="number" id="settings-dedup-days" value="60" min="7" max="730" step="1">
+        </div>
+      </div>
+
       <!-- Unsubscribe Link -->
       <div class="settings-section">
         <h4 class="settings-title" data-i18n="settingsUnsub">Unsubscribe Link</h4>

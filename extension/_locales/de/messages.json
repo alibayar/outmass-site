@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "Wiederholte Empfaenger ueberspringen"
+  },
+  "settingsDedupHint": {
+    "message": "In einem Zeitfenster nicht denselben Empfaenger in mehreren Kampagnen anschreiben."
+  },
+  "settingsDedupEnabled": {
+    "message": "Aktiv (Pro-Funktion)"
+  },
+  "settingsDedupDays": {
+    "message": "Rueckblickzeitraum (Tage)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ Empfaenger uebersprungen — kuerzlich in einer Kampagne kontaktiert.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

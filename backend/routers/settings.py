@@ -25,6 +25,9 @@ class UpdateSettingsRequest(BaseModel):
     sender_position: str | None = None
     sender_company: str | None = None
     sender_phone: str | None = None
+    # Cross-campaign dedup (Pro only; still stored for Free so plan upgrades keep the choice)
+    cross_campaign_dedup_enabled: bool | None = None
+    cross_campaign_dedup_days: int | None = None
 
 
 class SuppressionRequest(BaseModel):
@@ -47,6 +50,8 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "sender_position": user.get("sender_position", ""),
         "sender_company": user.get("sender_company", ""),
         "sender_phone": user.get("sender_phone", ""),
+        "cross_campaign_dedup_enabled": user.get("cross_campaign_dedup_enabled", True),
+        "cross_campaign_dedup_days": user.get("cross_campaign_dedup_days", 60),
     }
 
 
@@ -73,6 +78,11 @@ async def update_settings(
         updates["sender_company"] = body.sender_company.strip()[:100]
     if body.sender_phone is not None:
         updates["sender_phone"] = body.sender_phone.strip()[:50]
+    if body.cross_campaign_dedup_enabled is not None:
+        updates["cross_campaign_dedup_enabled"] = bool(body.cross_campaign_dedup_enabled)
+    if body.cross_campaign_dedup_days is not None:
+        # Clamp to a sensible range: 7..730 days
+        updates["cross_campaign_dedup_days"] = max(7, min(730, int(body.cross_campaign_dedup_days)))
 
     if updates:
         get_db().table("users").update(updates).eq("id", user["id"]).execute()

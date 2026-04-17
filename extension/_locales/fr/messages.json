@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "Ignorer les destinataires recurrents"
+  },
+  "settingsDedupHint": {
+    "message": "Ne pas ecrire au meme destinataire sur plusieurs campagnes dans une fenetre."
+  },
+  "settingsDedupEnabled": {
+    "message": "Active (fonction Pro)"
+  },
+  "settingsDedupDays": {
+    "message": "Periode de retroaction (jours)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ destinataire(s) ignore(s) — deja contacte(s) dans une campagne recente.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

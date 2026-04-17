@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "跳过重复收件人"
+  },
+  "settingsDedupHint": {
+    "message": "在指定时间窗口内,避免在不同活动中重复发给同一人。"
+  },
+  "settingsDedupEnabled": {
+    "message": "已启用 (Pro 功能)"
+  },
+  "settingsDedupDays": {
+    "message": "回溯期(天)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "已跳过 $N$ 位收件人 — 近期活动中已联系过。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -12,6 +12,7 @@ import csv
 import io
 import re
 import urllib.parse
+from datetime import datetime, timedelta, timezone
 
 import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException
@@ -302,6 +303,29 @@ async def upload_contacts(
     )
     suppressed_set = {r["email"].lower() for r in (suppressed_rows.data or [])}
 
+    # A.5 (Pro): Cross-campaign dedup — skip addresses the user has emailed
+    # (sent or still pending) in previous campaigns within the lookback window.
+    skipped_previous = 0
+    if plan == "pro" and user.get("cross_campaign_dedup_enabled", True):
+        lookback_days = int(user.get("cross_campaign_dedup_days") or 60)
+        cutoff_iso = (
+            datetime.now(timezone.utc) - timedelta(days=lookback_days)
+        ).isoformat()
+        previous_set = _fetch_previous_emails(
+            user_id=user["id"],
+            exclude_campaign_id=campaign_id,
+            sent_cutoff_iso=cutoff_iso,
+        )
+        if previous_set:
+            filtered: list[dict] = []
+            for c in contacts:
+                em = (c.get("email") or "").strip().lower()
+                if em and em in previous_set:
+                    skipped_previous += 1
+                else:
+                    filtered.append(c)
+            contacts = filtered
+
     result = contact_model.bulk_insert(campaign_id, contacts, suppressed=suppressed_set)
 
     total = contact_model.get_campaign_contacts_count(campaign_id)
@@ -317,6 +341,7 @@ async def upload_contacts(
         "skipped_invalid": result["skipped_invalid"],
         "skipped_duplicate": result["skipped_duplicate"],
         "skipped_suppressed": result["skipped_suppressed"],
+        "skipped_previous": skipped_previous,
         "warn_role": result.get("warn_role", 0),
         "warn_disposable": result.get("warn_disposable", 0),
         "preview": preview,
@@ -851,6 +876,57 @@ async def _send_single_email(
         error_detail = f"HTTP {resp.status_code}"
 
     return {"success": False, "error": error_detail}
+
+
+def _fetch_previous_emails(
+    user_id: str, exclude_campaign_id: str, sent_cutoff_iso: str
+) -> set[str]:
+    """Return lowercase emails the user has already contacted (sent or pending).
+
+    - Limited to campaigns owned by user_id.
+    - The current campaign (exclude_campaign_id) is excluded.
+    - sent contacts are filtered by sent_at >= cutoff; pending contacts
+      are always included regardless of age (they're an active outbox).
+    """
+    db = get_db()
+    camps = (
+        db.table("campaigns")
+        .select("id")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    camp_ids = [
+        c["id"]
+        for c in (camps.data or [])
+        if c.get("id") != exclude_campaign_id
+    ]
+    if not camp_ids:
+        return set()
+
+    emails: set[str] = set()
+    for cid in camp_ids:
+        sent = (
+            db.table("contacts")
+            .select("email")
+            .eq("campaign_id", cid)
+            .eq("status", "sent")
+            .gte("sent_at", sent_cutoff_iso)
+            .execute()
+        )
+        pending = (
+            db.table("contacts")
+            .select("email")
+            .eq("campaign_id", cid)
+            .eq("status", "pending")
+            .execute()
+        )
+        for r in (sent.data or []):
+            if r.get("email"):
+                emails.add(r["email"].lower())
+        for r in (pending.data or []):
+            if r.get("email"):
+                emails.add(r["email"].lower())
+    return emails
 
 
 def _merge_template(template_str: str, context: dict) -> str:

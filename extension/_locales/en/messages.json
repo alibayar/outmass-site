@@ -723,5 +723,21 @@
   },
   "btnExportList": {
     "message": "Export All"
+  },
+  "settingsDedupTitle": {
+    "message": "Skip Repeat Recipients"
+  },
+  "settingsDedupHint": {
+    "message": "Don't email the same person across different campaigns within a window."
+  },
+  "settingsDedupEnabled": {
+    "message": "Enabled (Pro feature)"
+  },
+  "settingsDedupDays": {
+    "message": "Lookback period (days)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ recipient(s) skipped — already contacted in a recent campaign.",
+    "placeholders": { "n": { "content": "$1" } }
   }
 }

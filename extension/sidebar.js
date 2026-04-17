@@ -611,8 +611,16 @@
               return;
             }
 
-            var count = uploadResp.data ? uploadResp.data.count : uploadResp.count;
-            log("Contacts uploaded:", count);
+            var uploadData = uploadResp.data || uploadResp;
+            var count = uploadData.count;
+            log("Contacts uploaded:", count, "skipped_previous:",
+                uploadData.skipped_previous || 0);
+
+            // Show a one-time info alert if cross-campaign dedup removed anything.
+            var skippedPrev = uploadData.skipped_previous || 0;
+            if (skippedPrev > 0) {
+              alert(t("uploadSkippedPrevious", [String(skippedPrev)]));
+            }
 
             // If A/B test enabled, create it before sending
             var abEnabled = abTestCheckbox && abTestCheckbox.checked;
@@ -1427,6 +1435,20 @@
       if (senderCompany) senderCompany.value = data.sender_company || "";
       if (senderPhone) senderPhone.value = data.sender_phone || "";
 
+      // Cross-campaign dedup — Pro-only section
+      var dedupSection = document.getElementById("settings-dedup-section");
+      var dedupEnabled = document.getElementById("settings-dedup-enabled");
+      var dedupDays = document.getElementById("settings-dedup-days");
+      if (dedupSection) {
+        if ((data.plan || "free") === "pro") {
+          dedupSection.style.display = "block";
+          if (dedupEnabled) dedupEnabled.checked = data.cross_campaign_dedup_enabled !== false;
+          if (dedupDays) dedupDays.value = data.cross_campaign_dedup_days || 60;
+        } else {
+          dedupSection.style.display = "none";
+        }
+      }
+
       log("Settings loaded");
     });
 
@@ -1568,6 +1590,15 @@
         sender_company: (document.getElementById("settings-sender-company").value || "").trim(),
         sender_phone: (document.getElementById("settings-sender-phone").value || "").trim(),
       };
+
+      // Only send dedup fields if the section is visible (Pro users).
+      var dedupSectionVis = document.getElementById("settings-dedup-section");
+      if (dedupSectionVis && dedupSectionVis.style.display !== "none") {
+        var dedupEnabledEl = document.getElementById("settings-dedup-enabled");
+        var dedupDaysEl = document.getElementById("settings-dedup-days");
+        if (dedupEnabledEl) payload.cross_campaign_dedup_enabled = !!dedupEnabledEl.checked;
+        if (dedupDaysEl) payload.cross_campaign_dedup_days = parseInt(dedupDaysEl.value, 10) || 60;
+      }
 
       chrome.runtime.sendMessage(
         { type: "UPDATE_SETTINGS", payload: payload },

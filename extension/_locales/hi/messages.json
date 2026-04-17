@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "दोहराए गए प्राप्तकर्ता छोड़ें"
+  },
+  "settingsDedupHint": {
+    "message": "एक निश्चित अवधि में विभिन्न अभियानों में एक ही व्यक्ति को ईमेल न भेजें।"
+  },
+  "settingsDedupEnabled": {
+    "message": "सक्षम (Pro सुविधा)"
+  },
+  "settingsDedupDays": {
+    "message": "पीछे देखने की अवधि (दिन)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ प्राप्तकर्ता छोड़े गए — हाल के अभियान में पहले से संपर्क।",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

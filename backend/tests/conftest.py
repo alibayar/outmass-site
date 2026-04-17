@@ -132,6 +132,8 @@ FAKE_USER = {
     "track_clicks": True,
     "unsubscribe_text": "Abonelikten cik",
     "timezone": "Europe/Istanbul",
+    "cross_campaign_dedup_enabled": True,
+    "cross_campaign_dedup_days": 60,
 }
 
 FAKE_PRO_USER = {**FAKE_USER, "plan": "pro"}

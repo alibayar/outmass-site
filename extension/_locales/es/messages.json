@@ -755,5 +755,25 @@
         "content": "$1"
       }
     }
+  },
+  "settingsDedupTitle": {
+    "message": "Omitir destinatarios repetidos"
+  },
+  "settingsDedupHint": {
+    "message": "No escribir al mismo destinatario en varias campanas dentro de una ventana."
+  },
+  "settingsDedupEnabled": {
+    "message": "Activo (funcion Pro)"
+  },
+  "settingsDedupDays": {
+    "message": "Periodo de busqueda (dias)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ destinatario(s) omitido(s) — ya contactado(s) en una campana reciente.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -100,7 +100,7 @@ Railway env var'ları swap (sandbox → live):
 **İleride:**
 - [x] **Role account tespiti** — `utils/email_classifier.py` (~15 prefix, warn-only sayaç)
 - [x] **Disposable email domain tespiti** — ~25 domain (mailinator, yopmail, guerrillamail, vb.), warn-only
-- [x] **Cross-campaign dedup** — backend'de altyapı hazır (upload_contacts'a `previous_campaign_dedup` query param eklemek tek satır — Pro plan gating şimdilik açılmadı)
+- [x] **Cross-campaign dedup (Pro feature)** — `upload_contacts` önceki kampanyalardaki `sent`+`pending` adresleri lookback penceresi içinde skip eder. Settings'te toggle + gün sayısı (default 60, 7-730 clamp). Non-Pro'da UI gizli, backend plan gating'i var. Response'da `skipped_previous` sayacı + upload alert'i. Migration 006 (`005_campaign_archived.sql`'dan sonra) çalıştırılmalı.
 
 **Dosyalar:**
 - `backend/models/contact.py` — `bulk_insert()` → dict döner (inserted + 4 sayaç)
@@ -147,7 +147,8 @@ Railway env var'ları swap (sandbox → live):
 
 ### 🚨 Deploy öncesi çalıştırılacak adımlar
 
-- [ ] **Migration 005 çalıştır** — Supabase SQL editor'de `backend/migrations/005_campaign_archived.sql` (archive kolonunu ekler + index)
+- [ ] **Migration 005 çalıştır** — `backend/migrations/005_campaign_archived.sql` (archive kolonu + index)
+- [ ] **Migration 006 çalıştır** — `backend/migrations/006_cross_campaign_dedup.sql` (dedup settings + contacts status/sent_at index)
 
 ---
 
@@ -163,7 +164,7 @@ Railway env var'ları swap (sandbox → live):
 - **Email (inbound)**: Cloudflare Email Routing (support@getoutmass.com → Outlook)
 - **Notifications**: Telegram Bot API (hata alert + feedback + daily report)
 - **Hosting**: Railway (backend + worker + beat services)
-- **Test**: Pytest (110 unit) + Playwright (48 E2E) = 158 total
+- **Test**: Pytest (119 unit) + Playwright (48 E2E) = 167 total
 
 ## 📁 Dosya Yapısı
 
@@ -179,6 +180,7 @@ backend/
     003_add_ai_generation_counter.sql
     004_default_timezone_utc.sql
     005_campaign_archived.sql        # D.2 — archive flag + partial index
+    006_cross_campaign_dedup.sql     # A.5 — dedup settings + contacts idx
   routers/
     auth.py                 # MS OAuth callback + token exchange
     campaigns.py            # Campaign CRUD, upload, send, export, test-send, archive
