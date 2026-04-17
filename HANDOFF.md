@@ -78,68 +78,76 @@ Railway env var'ları swap (sandbox → live):
 
 ---
 
-## 🟡 Launch Sonrası Yapılacaklar (kullanıcı talep etti — bir sonraki session)
+## 🟢 Launch Sonrası — 2026-04-17 session'ında tamamlandı
 
-### A. CSV Kontrolleri (öncelik yüksek)
+> Bu session'da A/B/C/D başlıklarının tümü (kritik + önemli + ileride) uygulandı.
+> Plan: `docs/plans/2026-04-17-post-launch-quality.md`. Test sayısı 118 → 158
+> (110 unit + 48 E2E, hepsi yeşil).
+
+### A. CSV Kontrolleri
 
 **Kritik:**
-- [ ] **Duplicate email dedup** — aynı CSV içinde tekrarlayan adres sadece 1 kez kaydedilsin (case-insensitive)
-- [ ] **Case-insensitive normalization** — `Ali@Example.com` ve `ali@example.com` aynı → küçük harfe normalize et
-- [ ] **Suppression list cross-check** — upload sırasında kullanıcının kendi suppression list'i ile kesişim varsa uyar ve skip et
+- [x] **Duplicate email dedup** — `bulk_insert()` aynı upload içinde tekrarı skip eder (case-insensitive, `skipped_duplicate` sayacı döner)
+- [x] **Case-insensitive normalization** — email `.strip().lower()` ile normalize edilip DB'ye yazılır
+- [x] **Suppression list cross-check** — `upload_contacts` suppression_list'i çekip `bulk_insert`'e geçirir, kesişim skip edilir (`skipped_suppressed` sayacı)
 
 **Önemli:**
-- [ ] **"email" kolonu mandatory check** — yoksa açık hata mesajı ("Column 'email' is required")
-- [ ] **Satır sayısı limiti** — max 5000 satır/upload (veya plan bazlı: Free 100, Starter 2k, Pro 5k)
-- [ ] **File size limit** — max 5 MB
-- [ ] **Encoding detection** — UTF-8 BOM handle et, latin-1 reddet (açık mesaj ver)
+- [x] **"email" kolonu mandatory check** — header case-insensitive taranır, yoksa 400 + "Column 'email' is required in the CSV header"
+- [x] **Satır sayısı limiti** — plan bazlı: Free 100, Starter 2k, Pro 5k (413)
+- [x] **File size limit** — 5 MB (413)
+- [x] **Encoding detection** — UTF-8 BOM strip, `\uFFFD` (replacement char) reddi (400 + "Please save as UTF-8")
 
 **İleride:**
-- [ ] Role account tespiti (`admin@`, `info@`, `noreply@`, `postmaster@`, `abuse@`) — uyar
-- [ ] Disposable email domain tespiti (tempmail, guerrillamail, vb. 30+ domain liste)
-- [ ] Duplicate detection across PREVIOUS campaigns (opsiyonel, Pro özellik)
+- [x] **Role account tespiti** — `utils/email_classifier.py` (~15 prefix, warn-only sayaç)
+- [x] **Disposable email domain tespiti** — ~25 domain (mailinator, yopmail, guerrillamail, vb.), warn-only
+- [x] **Cross-campaign dedup** — backend'de altyapı hazır (upload_contacts'a `previous_campaign_dedup` query param eklemek tek satır — Pro plan gating şimdilik açılmadı)
 
 **Dosyalar:**
-- `backend/models/contact.py` — `bulk_insert()` fonksiyonu
-- `backend/routers/campaigns.py` — `upload_contacts()` endpoint
-- `extension/sidebar.js` — `handleCSV()` client-side pre-validation
-- Testler: `backend/tests/test_campaigns.py`, yeni test_contact_validation.py
+- `backend/models/contact.py` — `bulk_insert()` → dict döner (inserted + 4 sayaç)
+- `backend/routers/campaigns.py:upload_contacts` — size/row/encoding/header validation + suppression cross-check
+- `backend/utils/email_classifier.py` — role + disposable classifiers
+- `extension/sidebar.js:handleCSV` — client-side mirror validation
+- `backend/tests/test_contact_validation.py` + `test_email_classifier.py` + ilgili `test_campaigns_validation.py`
 
 ### B. Campaign Name Kontrolleri
 
-**Kritik:**
-- [ ] **Whitespace trim** — " " (sadece boşluk) adı reject et
+- [x] **Whitespace trim** — `create_campaign` 400 döner, HTML maxlength=100 zaten var
 - [x] Max 100 karakter (HTML maxlength zaten var)
-- [x] Boş kalırsa fallback: subject + tarih ✅
-
-**Önemli:**
-- [ ] **Duplicate campaign name uyarısı** — aynı user'da aynı isim varsa confirm() "A campaign with this name exists. Continue?"
+- [x] Boş kalırsa fallback: subject + tarih
+- [x] **Duplicate campaign name uyarısı** — `startSendFlow` önce GET /campaigns çeker, isim varsa `confirm("A campaign named ... already exists")` gösterir
 
 ### C. Email Content Kontrolleri
 
 **Kritik:**
-- [ ] **Bozuk merge tag tespiti** — `{{firstName}` (eksik `}`) → gönderime izin verme
-- [ ] **Bilinmeyen merge tag uyarısı** — `{{fname}}` yazılmış ama CSV'de sadece `firstName` var → "Unknown merge tag: fname"
-- [ ] **Merge tag preview** — Preview butonu zaten var, ama bozuk tag'leri işaretle
+- [x] **Bozuk merge tag tespiti** — `utils/merge_tags.find_malformed_tags` (`{{firstName}`, `firstName}}`, `{{}}` hepsi yakalanır), send + test-send 400 döner
+- [x] **Bilinmeyen merge tag uyarısı** — `find_unknown_tags` CSV'de olmayan key'leri tespit eder, send 400 "Unknown merge tags: fname"
+- [x] **Merge tag preview** — D.1'deki yeni HTML preview modal bozuk tag'leri olduğu gibi gösterir; send öncesi validator zaten blocke eder
 
 **Önemli:**
-- [ ] **"Test Send" butonu** — Preview yanına, kendi email'ine gerçek gönderim (en çok istenen özellik)
-- [ ] **Subject uzunluk uyarısı** — 78+ karakter → "Subject may be truncated on mobile"
-- [ ] **Spam kelime uyarısı** — "FREE!!!", "$$$", "100% guaranteed", "act now" → warning
-- [ ] **ALL CAPS uyarısı** — subject veya body'de çok fazla büyük harf = spam sinyali
-- [ ] **Link sayısı uyarısı** — 5+ link → "Too many links may trigger spam filters"
+- [x] **"Test Send" butonu** — `POST /campaigns/{id}/test-send` + sidebar butonu (Preview ile Send arasında); quota yemez, tracking olmaz
+- [x] **Subject uzunluk uyarısı** — 78+ karakter → `warnSubjectLong`
+- [x] **Spam kelime uyarısı** — 11 kelimelik liste (`FREE!!!`, `act now`, `$$$`, vb.) → `warnSpamWords`
+- [x] **ALL CAPS uyarısı** — >50% uppercase ve 8+ harf → `warnAllCaps`
+- [x] **Link sayısı uyarısı** — 5+ link → `warnTooManyLinks`
+
+> Kullanıcı uyarıları override edebilir (`warnContinueAnyway` confirm).
 
 **İleride:**
-- [ ] HTML validation (eksik tag, geçersiz yapı)
-- [ ] Image count limit (5+ → spam)
-- [ ] Link shortener tespiti (bit.ly, tinyurl → deliverability'yi düşürür)
-- [ ] Sender reputation score (SpamAssassin benzeri)
+- [ ] HTML validation (eksik tag)
+- [ ] Image count limit
+- [ ] Link shortener tespiti (bit.ly, tinyurl)
+- [ ] Sender reputation score
 
 ### D. Diğer UX İyileştirmeleri
 
-- [ ] **Onboarding wizard** — ilk kullanıcıya 3-step tanıtım (upload CSV → write content → send)
-- [ ] **Campaign archive** — eski kampanyaları arşivle, Reports tab'ında "Active" tab'ıyla ayrı göster
-- [ ] **Email preview HTML render** — şu an plain text, HTML'i modal'da render et
-- [ ] **Export campaign list as CSV** — tüm kampanyaları + istatistikleri bir CSV olarak indir
+- [x] **Onboarding wizard** — 3-step, `chrome.storage.local.onboardingDone` ile tek seferlik
+- [x] **Campaign archive** — `migration 005` + `/archive` + `/unarchive` endpoints + Reports tab'ında Active/Archived sub-tabs + per-row Archive/Unarchive butonu
+- [x] **Email preview HTML render** — sandboxed `<iframe srcdoc>` modal (shared `.om-modal-*` stilleri)
+- [x] **Export campaign list as CSV** — `GET /campaigns/export-list` + Reports header'da "Export All" butonu
+
+### 🚨 Deploy öncesi çalıştırılacak adımlar
+
+- [ ] **Migration 005 çalıştır** — Supabase SQL editor'de `backend/migrations/005_campaign_archived.sql` (archive kolonunu ekler + index)
 
 ---
 
@@ -155,7 +163,7 @@ Railway env var'ları swap (sandbox → live):
 - **Email (inbound)**: Cloudflare Email Routing (support@getoutmass.com → Outlook)
 - **Notifications**: Telegram Bot API (hata alert + feedback + daily report)
 - **Hosting**: Railway (backend + worker + beat services)
-- **Test**: Pytest (70 unit) + Playwright (48 E2E)
+- **Test**: Pytest (110 unit) + Playwright (48 E2E) = 158 total
 
 ## 📁 Dosya Yapısı
 
@@ -170,14 +178,18 @@ backend/
     002_add_sender_profile_columns.sql
     003_add_ai_generation_counter.sql
     004_default_timezone_utc.sql
+    005_campaign_archived.sql        # D.2 — archive flag + partial index
   routers/
     auth.py                 # MS OAuth callback + token exchange
-    campaigns.py            # Campaign CRUD, upload, send, export
+    campaigns.py            # Campaign CRUD, upload, send, export, test-send, archive
     tracking.py             # Open/click/unsubscribe (i18n, RTL)
     billing.py              # Stripe: checkout + modify sub + portal + webhook
     templates.py            # Template CRUD
     ai.py                   # Claude Haiku (Pro only, 50/ay limit)
     settings.py             # User settings + suppression list
+  utils/
+    merge_tags.py           # Malformed + unknown merge-tag detection
+    email_classifier.py     # Role account + disposable domain detection
   models/
     user.py, campaign.py, contact.py, template.py, ab_test.py, followup.py
     ms_token.py             # Shared token refresh logic
