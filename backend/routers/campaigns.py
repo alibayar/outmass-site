@@ -810,6 +810,8 @@ async def _send_single_email(
     subject_text = subject_override or campaign["subject"]
     merged_subject = _merge_template(subject_text, merge_ctx)
     merged_body = _merge_template(campaign["body"], merge_ctx)
+    # Plain-text input needs newline→<br> conversion since Graph sends HTML.
+    merged_body = _text_to_html(merged_body)
 
     # Add tracking pixel (if enabled)
     tracking_pixel = ""
@@ -927,6 +929,33 @@ def _fetch_previous_emails(
             if r.get("email"):
                 emails.add(r["email"].lower())
     return emails
+
+
+_HTML_TAG_RE = re.compile(r"<[a-z!/][^>]*>", re.IGNORECASE)
+
+
+def _text_to_html(body: str) -> str:
+    """Convert plain-text body to simple HTML when no markup is present.
+
+    Graph API sends with `contentType: HTML`, so newlines in plain-text
+    input disappear unless we convert them. If the user already pasted
+    HTML tags (any `<tag>` form), pass through unchanged so their
+    formatting survives.
+    """
+    if not body:
+        return body
+    if _HTML_TAG_RE.search(body):
+        return body
+    escaped = (
+        body.replace("&", "&amp;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    )
+    # Double newline → paragraph break; single → line break.
+    # Normalize CRLF first so Windows-authored templates behave the same.
+    escaped = escaped.replace("\r\n", "\n").replace("\r", "\n")
+    paragraphs = [p.replace("\n", "<br>") for p in escaped.split("\n\n")]
+    return "<p>" + "</p><p>".join(paragraphs) + "</p>"
 
 
 def _merge_template(template_str: str, context: dict) -> str:
