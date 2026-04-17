@@ -131,31 +131,72 @@ def test_unsubscribe_flow(authed_client, client, cleanup):
     """Full unsubscribe: GET page → POST confirm → verify suppression."""
     cid, contact_id = _create_campaign_with_contact(authed_client, cleanup)
 
-    # Step 1: GET unsubscribe page
+    # Step 1: GET unsubscribe page (default English)
     resp = client.get(f"/unsubscribe/{contact_id}")
     assert resp.status_code == 200
-    assert "Abonelikten Cik" in resp.text
+    assert "Unsubscribe" in resp.text
 
     # Step 2: POST to confirm
     resp = client.post(f"/unsubscribe/{contact_id}")
     assert resp.status_code == 200
-    assert "Basariyla Cikildi" in resp.text
+    assert "Successfully Unsubscribed" in resp.text
 
     # Step 3: Verify contact is unsubscribed
     contact = get_db().table("contacts").select("*").eq("id", contact_id).execute()
     assert contact.data[0]["unsubscribed"] is True
 
-    # Step 4: Verify added to suppression list
+    # Step 4: Verify added to suppression list with correct reason
     campaign = get_db().table("campaigns").select("user_id").eq("id", cid).execute()
     user_id = campaign.data[0]["user_id"]
     suppression = (
         get_db()
         .table("suppression_list")
-        .select("id, email")
+        .select("id, email, reason")
         .eq("user_id", user_id)
         .eq("email", "track-test@example.com")
         .execute()
     )
     assert len(suppression.data) >= 1
+    assert suppression.data[0]["reason"] == "user_unsubscribed"
+    for s in suppression.data:
+        cleanup.suppression_ids.append(s["id"])
+
+
+def test_unsubscribe_accept_language_turkish(authed_client, client, cleanup):
+    """Accept-Language: tr should render the unsubscribe page in Turkish."""
+    cid, contact_id = _create_campaign_with_contact(authed_client, cleanup)
+
+    resp = client.get(
+        f"/unsubscribe/{contact_id}",
+        headers={"Accept-Language": "tr-TR,tr;q=0.9"},
+    )
+    assert resp.status_code == 200
+    assert "Abonelikten Cik" in resp.text
+
+
+def test_unsubscribe_idempotent_via_db(authed_client, client, cleanup):
+    """Unsubscribing twice should not create duplicate suppression entries."""
+    cid, contact_id = _create_campaign_with_contact(authed_client, cleanup)
+
+    # First unsubscribe
+    resp1 = client.post(f"/unsubscribe/{contact_id}")
+    assert resp1.status_code == 200
+
+    # Second unsubscribe (idempotent)
+    resp2 = client.post(f"/unsubscribe/{contact_id}")
+    assert resp2.status_code == 200
+
+    # Should only be ONE suppression entry for this email
+    campaign = get_db().table("campaigns").select("user_id").eq("id", cid).execute()
+    user_id = campaign.data[0]["user_id"]
+    suppression = (
+        get_db()
+        .table("suppression_list")
+        .select("id")
+        .eq("user_id", user_id)
+        .eq("email", "track-test@example.com")
+        .execute()
+    )
+    assert len(suppression.data) == 1, f"Expected 1 entry, got {len(suppression.data)}"
     for s in suppression.data:
         cleanup.suppression_ids.append(s["id"])
