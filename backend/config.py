@@ -66,9 +66,14 @@ POSTHOG_HOST = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
 # ── AI ──
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
-# ── Telegram daily report ──
+# ── Telegram daily report + feedback alerts ──
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
+# ── Resend (transactional email) ──
+RESEND_API_KEY = os.getenv("RESEND_API_KEY", "")
+RESEND_FROM_EMAIL = os.getenv("RESEND_FROM_EMAIL", "OutMass Feedback <support@getoutmass.com>")
+RESEND_TO_EMAIL = os.getenv("RESEND_TO_EMAIL", "support@getoutmass.com")
 
 # ── Plan Limits ──
 FREE_PLAN_MONTHLY_LIMIT = 50

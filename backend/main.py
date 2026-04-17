@@ -5,13 +5,23 @@ OutMass — FastAPI Application
 import logging
 import traceback
 
+import httpx
 import posthog
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
-from config import CORS_ORIGINS, POSTHOG_API_KEY, POSTHOG_HOST
+from config import (
+    CORS_ORIGINS,
+    POSTHOG_API_KEY,
+    POSTHOG_HOST,
+    RESEND_API_KEY,
+    RESEND_FROM_EMAIL,
+    RESEND_TO_EMAIL,
+    TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHAT_ID,
+)
 from routers import ai, auth, billing, campaigns, settings, templates, tracking
 
 logger = logging.getLogger(__name__)
@@ -112,11 +122,74 @@ class UserFeedback(BaseModel):
     context: dict = {}
 
 
+def _send_feedback_telegram(message: str, email: str) -> None:
+    """Best-effort Telegram alert. Never raises."""
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+    text = (
+        "💬 OutMass Feedback\n\n"
+        f"From: {email or 'anonymous'}\n\n"
+        f"{message[:1500]}"
+    )
+    try:
+        httpx.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            data={
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": text,
+                "disable_web_page_preview": "true",
+            },
+            timeout=5.0,
+        )
+    except Exception as e:
+        logger.warning("Feedback Telegram dispatch failed: %s", e)
+
+
+def _send_feedback_email(message: str, email: str, context: dict) -> None:
+    """Best-effort Resend email. Never raises. Sets Reply-To to user's email."""
+    if not RESEND_API_KEY:
+        return
+    subject = f"[Feedback] {(email or 'Anonymous user')[:60]}"
+    safe_msg = message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    safe_email = (email or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    html = (
+        "<h2 style='font-family:sans-serif;'>OutMass Feedback</h2>"
+        f"<p><b>From:</b> {safe_email or 'anonymous'}</p>"
+        f"<p style='white-space:pre-wrap;background:#f5f5f5;padding:12px;border-radius:6px;'>"
+        f"{safe_msg[:2000]}</p>"
+        f"<p style='color:#888;font-size:12px;'>Source: extension &middot; "
+        f"UA: {str(context.get('userAgent', 'n/a'))[:120]}</p>"
+    )
+    payload = {
+        "from": RESEND_FROM_EMAIL,
+        "to": [RESEND_TO_EMAIL],
+        "subject": subject,
+        "html": html,
+    }
+    if email:
+        payload["reply_to"] = email
+    try:
+        httpx.post(
+            "https://api.resend.com/emails",
+            headers={
+                "Authorization": f"Bearer {RESEND_API_KEY}",
+                "Content-Type": "application/json",
+            },
+            json=payload,
+            timeout=10.0,
+        )
+    except Exception as e:
+        logger.warning("Feedback Resend dispatch failed: %s", e)
+
+
 @app.post("/api/feedback")
 async def submit_feedback(body: UserFeedback):
-    """Receive user feedback/bug reports from the extension."""
+    """Receive user feedback/bug reports from the extension.
+    Dispatches to PostHog (archive), Telegram (instant alert), and Resend (email)."""
     if not body.message.strip():
         return {"status": "empty"}
+
+    # 1. PostHog archive
     if POSTHOG_API_KEY:
         posthog.capture(
             distinct_id=body.email or "anonymous-user",
@@ -128,6 +201,13 @@ async def submit_feedback(body: UserFeedback):
                 **body.context,
             },
         )
+
+    # 2. Telegram (instant)
+    _send_feedback_telegram(body.message, body.email)
+
+    # 3. Email via Resend (with Reply-To = user's email so we can reply directly)
+    _send_feedback_email(body.message, body.email, body.context or {})
+
     logger.info("User feedback from %s: %s", body.email or "anonymous", body.message[:200])
     return {"status": "received"}
 
