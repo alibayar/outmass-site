@@ -69,18 +69,23 @@
     userPlan.className = "plan-badge " + planKey;
 
     // Show/hide upgrade and manage buttons
-    var btnUpgrade = document.getElementById("btn-upgrade-popup");
+    var btnUpgradeStarter = document.getElementById("btn-upgrade-starter");
+    var btnUpgradePro = document.getElementById("btn-upgrade-pro");
     var btnManage = document.getElementById("btn-manage-sub");
     if (planKey === "free") {
-      btnUpgrade.style.display = "block";
-      btnUpgrade.textContent = t("popupUpgradeStandard");
+      // Free user can pick either Starter or Pro directly
+      btnUpgradeStarter.style.display = "block";
+      btnUpgradePro.style.display = "block";
       btnManage.style.display = "none";
     } else if (planKey === "starter") {
-      btnUpgrade.style.display = "block";
-      btnUpgrade.textContent = t("popupUpgradePro");
+      // Starter user can upgrade to Pro
+      btnUpgradeStarter.style.display = "none";
+      btnUpgradePro.style.display = "block";
       btnManage.style.display = "block";
     } else {
-      btnUpgrade.style.display = "none";
+      // Pro user — only manage subscription
+      btnUpgradeStarter.style.display = "none";
+      btnUpgradePro.style.display = "none";
       btnManage.style.display = "block";
     }
 
@@ -186,23 +191,27 @@
   });
 
   // ── Billing ──
-  var btnUpgradePopup = document.getElementById("btn-upgrade-popup");
+  var btnUpgradeStarterEl = document.getElementById("btn-upgrade-starter");
+  var btnUpgradeProEl = document.getElementById("btn-upgrade-pro");
   var btnManageSub = document.getElementById("btn-manage-sub");
 
-  if (btnUpgradePopup) {
-    btnUpgradePopup.addEventListener("click", function () {
-      var currentPlan = userPlan.textContent.toLowerCase();
-      var targetPlan = currentPlan === "starter" ? "pro" : "starter";
-      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: targetPlan }, function (resp) {
-        if (resp && resp.data && resp.data.checkout_url) {
-          chrome.tabs.create({ url: resp.data.checkout_url });
-          window.close();
-        } else {
-          var errMsg = (resp && resp.error) || t("popupUnknownError");
-          alert(t("popupCheckoutFailed") + errMsg);
-        }
-      });
+  function startCheckout(plan) {
+    chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: plan }, function (resp) {
+      if (resp && resp.data && resp.data.checkout_url) {
+        chrome.tabs.create({ url: resp.data.checkout_url });
+        window.close();
+      } else {
+        var errMsg = (resp && resp.error) || t("popupUnknownError");
+        alert(t("popupCheckoutFailed") + errMsg);
+      }
     });
+  }
+
+  if (btnUpgradeStarterEl) {
+    btnUpgradeStarterEl.addEventListener("click", function () { startCheckout("starter"); });
+  }
+  if (btnUpgradeProEl) {
+    btnUpgradeProEl.addEventListener("click", function () { startCheckout("pro"); });
   }
 
   if (btnManageSub) {

@@ -338,9 +338,6 @@
   "popupUnknownError": {
     "message": "حدث خطأ غير معروف."
   },
-  "popupUpgradeStandard": {
-    "message": "الترقية → Starter ($9/شهر)"
-  },
   "popupUpgradePro": {
     "message": "الترقية → Pro ($19/شهر)"
   },
@@ -598,5 +595,8 @@
   },
   "langAuto": {
     "message": "تلقائي (لغة المتصفح)"
+  },
+  "popupUpgradeStarter": {
+    "message": "الترقية → Starter ($9/شهر)"
   }
 }

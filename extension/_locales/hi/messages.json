@@ -338,9 +338,6 @@
   "popupUnknownError": {
     "message": "एक अज्ञात त्रुटि हुई।"
   },
-  "popupUpgradeStandard": {
-    "message": "अपग्रेड → Starter ($9/माह)"
-  },
   "popupUpgradePro": {
     "message": "अपग्रेड → Pro ($19/माह)"
   },
@@ -598,5 +595,8 @@
   },
   "langAuto": {
     "message": "स्वचालित (ब्राउज़र भाषा)"
+  },
+  "popupUpgradeStarter": {
+    "message": "अपग्रेड → Starter ($9/माह)"
   }
 }

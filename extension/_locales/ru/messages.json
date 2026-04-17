@@ -338,9 +338,6 @@
   "popupUnknownError": {
     "message": "Произошла неизвестная ошибка."
   },
-  "popupUpgradeStandard": {
-    "message": "Перейти → Starter ($9/мес)"
-  },
   "popupUpgradePro": {
     "message": "Перейти → Pro ($19/мес)"
   },
@@ -598,5 +595,8 @@
   },
   "langAuto": {
     "message": "Авто (Язык браузера)"
+  },
+  "popupUpgradeStarter": {
+    "message": "Перейти → Starter ($9/мес)"
   }
 }

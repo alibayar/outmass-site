@@ -338,9 +338,6 @@
   "popupUnknownError": {
     "message": "不明なエラーが発生しました。"
   },
-  "popupUpgradeStandard": {
-    "message": "アップグレード → Starter ($9/月)"
-  },
   "popupUpgradePro": {
     "message": "アップグレード → Pro ($19/月)"
   },
@@ -598,5 +595,8 @@
   },
   "langAuto": {
     "message": "自動（ブラウザー言語）"
+  },
+  "popupUpgradeStarter": {
+    "message": "アップグレード → Starter ($9/月)"
   }
 }

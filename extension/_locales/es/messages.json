@@ -338,9 +338,6 @@
   "popupUnknownError": {
     "message": "Ha ocurrido un error desconocido."
   },
-  "popupUpgradeStandard": {
-    "message": "Mejorar → Starter ($9/mes)"
-  },
   "popupUpgradePro": {
     "message": "Mejorar → Pro ($19/mes)"
   },
@@ -598,5 +595,8 @@
   },
   "langAuto": {
     "message": "Automatico (Idioma del navegador)"
+  },
+  "popupUpgradeStarter": {
+    "message": "Mejorar → Starter ($9/mes)"
   }
 }

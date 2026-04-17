@@ -338,9 +338,6 @@
   "popupUnknownError": {
     "message": "Bilinmeyen bir hata oluştu."
   },
-  "popupUpgradeStandard": {
-    "message": "Yukselt → Starter ($9/ay)"
-  },
   "popupUpgradePro": {
     "message": "Yukselt → Pro ($19/ay)"
   },
@@ -598,5 +595,8 @@
   },
   "langAuto": {
     "message": "Otomatik (Tarayici dili)"
+  },
+  "popupUpgradeStarter": {
+    "message": "Yukselt → Starter ($9/ay)"
   }
 }
