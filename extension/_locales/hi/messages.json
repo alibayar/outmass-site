@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "उदाहरण CSV डाउनलोड करें"
+  },
+  "csvTemplateRow1": {
+    "message": "raj@example.com,Raj,Sharma,Tata Consulting,CEO"
+  },
+  "csvTemplateRow2": {
+    "message": "priya@example.com,Priya,Patel,TechFlow Pvt Ltd,Marketing Director"
+  },
+  "csvTemplateRow3": {
+    "message": "amit@example.com,Amit,Kumar,Pioneer Labs,VP Sales"
   }
 }

@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "تنزيل ملف CSV نموذجي"
+  },
+  "csvTemplateRow1": {
+    "message": "ahmed@example.com,احمد,علي,شركة النور,المدير التنفيذي"
+  },
+  "csvTemplateRow2": {
+    "message": "fatima@example.com,فاطمة,حسن,شركة تك فلو,مديرة التسويق"
+  },
+  "csvTemplateRow3": {
+    "message": "omar@example.com,عمر,ابراهيم,مختبرات الرواد,مدير المبيعات"
   }
 }

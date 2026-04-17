@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "Download example CSV"
+  },
+  "csvTemplateRow1": {
+    "message": "john@example.com,John,Smith,Acme Corp,CEO"
+  },
+  "csvTemplateRow2": {
+    "message": "jane@example.com,Jane,Doe,TechFlow Inc,Marketing Director"
+  },
+  "csvTemplateRow3": {
+    "message": "mike@example.com,Michael,Johnson,Pioneer Labs,VP of Sales"
   }
 }

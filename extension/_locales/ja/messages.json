@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "サンプル CSV をダウンロード"
+  },
+  "csvTemplateRow1": {
+    "message": "tanaka@example.com,田中,太郎,株式会社ABC,代表取締役"
+  },
+  "csvTemplateRow2": {
+    "message": "sato@example.com,佐藤,花子,テックフロー株式会社,マーケティング部長"
+  },
+  "csvTemplateRow3": {
+    "message": "suzuki@example.com,鈴木,一郎,パイオニアラボ,営業本部長"
   }
 }

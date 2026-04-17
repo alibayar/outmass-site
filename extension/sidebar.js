@@ -198,18 +198,29 @@
     log("CSV cleared");
   });
 
-  // ── CSV template download (example file with 3 sample rows) ──
+  // ── CSV template download (example file with 3 locale-specific sample rows) ──
   var csvTemplateLink = document.getElementById("csv-template-link");
   if (csvTemplateLink) {
     csvTemplateLink.addEventListener("click", function (e) {
       e.preventDefault();
-      // camelCase headers — match merge tags ({{firstName}} etc.)
-      var template =
-        "email,firstName,lastName,company,position\n" +
-        "ali@example.com,Ali,Yilmaz,Acme Corp,CEO\n" +
-        "mehmet@example.com,Mehmet,Demir,Beta Inc,CTO\n" +
-        "ayse@example.com,Ayse,Kaya,Gamma Ltd,Marketing Lead\n";
-      var blob = new Blob([template], { type: "text/csv;charset=utf-8" });
+      // Headers stay English — they map to merge tags ({{firstName}} etc.)
+      // Sample rows are localized via i18n keys (names/companies in user's language)
+      var rows = [
+        t("csvTemplateRow1"),
+        t("csvTemplateRow2"),
+        t("csvTemplateRow3"),
+      ].filter(function (r) { return r && r !== "csvTemplateRow1" && r !== "csvTemplateRow2" && r !== "csvTemplateRow3"; });
+      // Fallback in case i18n lookup fails
+      if (rows.length === 0) {
+        rows = [
+          "john@example.com,John,Smith,Acme Corp,CEO",
+          "jane@example.com,Jane,Doe,TechFlow Inc,Marketing Director",
+          "mike@example.com,Michael,Johnson,Pioneer Labs,VP of Sales",
+        ];
+      }
+      var template = "email,firstName,lastName,company,position\n" + rows.join("\n") + "\n";
+      // UTF-8 BOM helps Excel display non-Latin chars correctly
+      var blob = new Blob(["\uFEFF" + template], { type: "text/csv;charset=utf-8" });
       var url = URL.createObjectURL(blob);
       var a = document.createElement("a");
       a.href = url;

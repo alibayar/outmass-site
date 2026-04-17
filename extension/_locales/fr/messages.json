@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "Telecharger un CSV d'exemple"
+  },
+  "csvTemplateRow1": {
+    "message": "jean@example.com,Jean,Dupont,Dupont SA,Directeur General"
+  },
+  "csvTemplateRow2": {
+    "message": "marie@example.com,Marie,Martin,TechFlow SARL,Directrice Marketing"
+  },
+  "csvTemplateRow3": {
+    "message": "pierre@example.com,Pierre,Bernard,Pionnier Labs,VP des Ventes"
   }
 }

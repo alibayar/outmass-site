@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "Ornek CSV indir"
+  },
+  "csvTemplateRow1": {
+    "message": "ali@example.com,Ali,Yilmaz,Acme Corp,CEO"
+  },
+  "csvTemplateRow2": {
+    "message": "mehmet@example.com,Mehmet,Demir,TechFlow A.S.,Pazarlama Muduru"
+  },
+  "csvTemplateRow3": {
+    "message": "ayse@example.com,Ayse,Kaya,Pioneer Yazilim,Satis Muduru"
   }
 }

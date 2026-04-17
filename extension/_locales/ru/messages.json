@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "Скачать пример CSV"
+  },
+  "csvTemplateRow1": {
+    "message": "ivan@example.com,Иван,Иванов,ООО Стандарт,Генеральный директор"
+  },
+  "csvTemplateRow2": {
+    "message": "maria@example.com,Мария,Петрова,ТехФлоу,Директор по маркетингу"
+  },
+  "csvTemplateRow3": {
+    "message": "alex@example.com,Александр,Смирнов,Пионер Лабс,Руководитель продаж"
   }
 }

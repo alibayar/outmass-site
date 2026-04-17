@@ -610,5 +610,14 @@
   },
   "csvTemplateDownload": {
     "message": "下载示例 CSV"
+  },
+  "csvTemplateRow1": {
+    "message": "zhang@example.com,张伟,,科技创新公司,首席执行官"
+  },
+  "csvTemplateRow2": {
+    "message": "li@example.com,李娜,,腾讯科技,市场总监"
+  },
+  "csvTemplateRow3": {
+    "message": "wang@example.com,王芳,,先锋实验室,销售副总裁"
   }
 }
