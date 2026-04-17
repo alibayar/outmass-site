@@ -97,6 +97,7 @@ def fake_db():
         patch("routers.tracking.get_db", return_value=db),
         patch("routers.auth.get_db", return_value=db, create=True),
         patch("routers.ai.get_db", return_value=db),
+        patch("workers.daily_report.get_db", return_value=db),
     ]
     for p in patches:
         p.start()

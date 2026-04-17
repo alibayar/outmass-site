@@ -66,6 +66,10 @@ POSTHOG_HOST = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
 # ── AI ──
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 
+# ── Telegram daily report ──
+TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
+TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
+
 # ── Plan Limits ──
 FREE_PLAN_MONTHLY_LIMIT = 50
 STARTER_PLAN_MONTHLY_LIMIT = 2000

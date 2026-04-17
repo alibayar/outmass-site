@@ -6,6 +6,7 @@ import ssl
 
 import posthog
 from celery import Celery
+from celery.schedules import crontab
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -37,6 +38,7 @@ celery = Celery(
         "workers.email_worker",
         "workers.followup_worker",
         "workers.scheduled_worker",
+        "workers.daily_report",
     ],
 )
 
@@ -72,5 +74,11 @@ celery.conf.beat_schedule = {
     "evaluate-ab-tests": {
         "task": "workers.scheduled_worker.evaluate_ab_tests",
         "schedule": 600.0,  # every 10 minutes
+    },
+    "daily-report": {
+        "task": "workers.daily_report.send_daily_report",
+        # 14:00 UTC daily — before US market open (09:30 EST), after EU lunch,
+        # morning in Americas, afternoon in Europe, evening in Asia.
+        "schedule": crontab(hour=14, minute=0),
     },
 }
