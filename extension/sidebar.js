@@ -308,7 +308,18 @@
   });
 
   function startSendFlow(subject, body) {
-    var campaignName = subject.substring(0, 50) || t("tabCampaign");
+    // Use explicit campaign name if user provided one,
+    // otherwise fall back to subject + date suffix for uniqueness
+    var nameInput = document.getElementById("campaign-name");
+    var campaignName = nameInput && nameInput.value.trim();
+    if (!campaignName) {
+      var d = new Date();
+      var dateSuffix = d.toLocaleDateString(undefined, {
+        month: "short", day: "numeric", year: "numeric"
+      });
+      var subj = subject.substring(0, 50) || t("tabCampaign");
+      campaignName = subj + " — " + dateSuffix;
+    }
 
     // Check schedule
     var scheduledFor = null;

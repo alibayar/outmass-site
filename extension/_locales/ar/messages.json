@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "تمت الترقية بنجاح! سيقوم Stripe بخصم الفرق التناسبي تلقائيًا."
+  },
+  "labelCampaignName": {
+    "message": "اسم الحملة (اختياري)"
+  },
+  "placeholderCampaignName": {
+    "message": "مثال: حملة الربع الثاني الموجة 1"
   }
 }

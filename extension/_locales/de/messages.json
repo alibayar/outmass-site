@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "Upgrade erfolgreich! Stripe wird die anteilige Differenz automatisch berechnen."
+  },
+  "labelCampaignName": {
+    "message": "Kampagnenname (optional)"
+  },
+  "placeholderCampaignName": {
+    "message": "z.B. Q2 Kontaktaufnahme Welle 1"
   }
 }

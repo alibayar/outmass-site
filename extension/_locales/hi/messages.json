@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "अपग्रेड सफल! Stripe आनुपातिक अंतर स्वचालित रूप से चार्ज करेगा।"
+  },
+  "labelCampaignName": {
+    "message": "अभियान का नाम (वैकल्पिक)"
+  },
+  "placeholderCampaignName": {
+    "message": "उदा. Q2 आउटरीच वेव 1"
   }
 }

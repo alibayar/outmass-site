@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "Mise a niveau reussie ! Stripe facturera automatiquement la difference au prorata."
+  },
+  "labelCampaignName": {
+    "message": "Nom de la campagne (facultatif)"
+  },
+  "placeholderCampaignName": {
+    "message": "ex. Sensibilisation T2 Vague 1"
   }
 }

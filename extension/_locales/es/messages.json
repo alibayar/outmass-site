@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "Actualizacion exitosa! Stripe cobrara la diferencia prorrateada automaticamente."
+  },
+  "labelCampaignName": {
+    "message": "Nombre de la campana (opcional)"
+  },
+  "placeholderCampaignName": {
+    "message": "ej. Alcance T2 Onda 1"
   }
 }

@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "Обновление успешно! Stripe автоматически спишет пропорциональную разницу."
+  },
+  "labelCampaignName": {
+    "message": "Название кампании (опционально)"
+  },
+  "placeholderCampaignName": {
+    "message": "напр. Q2 Outreach Волна 1"
   }
 }

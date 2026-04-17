@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "升级成功！Stripe 将自动收取按比例计算的差额。"
+  },
+  "labelCampaignName": {
+    "message": "活动名称（可选）"
+  },
+  "placeholderCampaignName": {
+    "message": "例如：Q2 推广 第1波"
   }
 }

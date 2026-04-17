@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "Successfully upgraded! Stripe will charge the prorated difference automatically."
+  },
+  "labelCampaignName": {
+    "message": "Campaign Name (optional)"
+  },
+  "placeholderCampaignName": {
+    "message": "e.g. Q2 Outreach Wave 1"
   }
 }

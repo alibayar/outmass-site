@@ -601,5 +601,11 @@
   },
   "upgradeSuccessProrated": {
     "message": "Yukseltme basarili! Stripe orantili farki otomatik olarak tahsil edecek."
+  },
+  "labelCampaignName": {
+    "message": "Kampanya Adi (opsiyonel)"
+  },
+  "placeholderCampaignName": {
+    "message": "orn. 2. Ceyrek Outreach 1. Dalga"
   }
 }
