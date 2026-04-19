@@ -1,3 +1,14 @@
+# Railway service start commands — MUST match the "Custom Start Command"
+# field in each service's Settings → Deploy panel.
+#
+# railway.json intentionally OMITS startCommand so that each service is
+# forced to pick one of the three commands below. Otherwise every new
+# service silently inherits the web command (ask me how I know).
+#
+#   web service    → uvicorn main:app --host 0.0.0.0 --port $PORT
+#   worker service → celery -A workers.celery_app worker --loglevel=info --concurrency=2
+#   beat service   → celery -A workers.celery_app beat --loglevel=info
+
 web: uvicorn main:app --host 0.0.0.0 --port $PORT
-worker: celery -A workers.celery_app worker --loglevel=info
+worker: celery -A workers.celery_app worker --loglevel=info --concurrency=2
 beat: celery -A workers.celery_app beat --loglevel=info
