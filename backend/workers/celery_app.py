@@ -3,6 +3,16 @@ OutMass — Celery Application Configuration
 """
 import os
 import ssl
+import sys
+from pathlib import Path
+
+# Ensure the backend/ directory is importable regardless of where Celery is
+# invoked from. When Railway runs `celery -A workers.celery_app worker`
+# from /app, the CWD is /app but Python does NOT automatically add it to
+# sys.path when celery forks pool workers — which broke the deferred
+# `from models import ...` imports inside task functions. Explicit path
+# insert guarantees `models`, `routers`, etc. are always importable.
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
 import posthog
 from celery import Celery
