@@ -130,7 +130,7 @@ FAKE_USER = {
     "month_reset_date": "2026-04-01",
     "track_opens": True,
     "track_clicks": True,
-    "unsubscribe_text": "Abonelikten cik",
+    "unsubscribe_text": "Unsubscribe",
     "timezone": "Europe/Istanbul",
     "cross_campaign_dedup_enabled": True,
     "cross_campaign_dedup_days": 60,

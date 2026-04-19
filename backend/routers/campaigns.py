@@ -501,7 +501,7 @@ async def send_campaign(
                     subject_override=subject_override,
                     track_opens=user.get("track_opens", True),
                     track_clicks=user.get("track_clicks", True),
-                    unsubscribe_text=user.get("unsubscribe_text", "Abonelikten cik"),
+                    unsubscribe_text=user.get("unsubscribe_text", "Unsubscribe"),
                     sender_info=user,
                 )
                 if result["success"]:
@@ -612,7 +612,7 @@ async def _run_test_send(
             contact=synthetic_contact,
             track_opens=False,
             track_clicks=False,
-            unsubscribe_text=user.get("unsubscribe_text", "Abonelikten cik"),
+            unsubscribe_text=user.get("unsubscribe_text", "Unsubscribe"),
             sender_info=user,
         )
 
@@ -832,7 +832,7 @@ async def _send_single_email(
     subject_override: str | None = None,
     track_opens: bool = True,
     track_clicks: bool = True,
-    unsubscribe_text: str = "Abonelikten cik",
+    unsubscribe_text: str = "Unsubscribe",
     sender_info: dict | None = None,
 ) -> dict:
     """Send a single email via Microsoft Graph API."""
