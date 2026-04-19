@@ -70,6 +70,33 @@ body {
   border-bottom: 1px solid #f3d6d8;
 }
 
+/* Re-auth banner — orange to differentiate from offline red. */
+.reauth-banner {
+  background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+  color: #fff;
+  font-size: 13px;
+  padding: 10px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+.reauth-banner-text { flex: 1; line-height: 1.35; }
+.reauth-banner-btn {
+  background: #fff;
+  color: #b45309;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.reauth-banner-btn:hover { background: #fef3c7; }
+
 .btn-close {
   background: none;
   border: none;

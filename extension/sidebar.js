@@ -62,6 +62,48 @@
 
   var csvData = null;
 
+  // ── Re-auth banner ──
+  // Backend flags users whose Microsoft refresh_token stopped working.
+  // We call GET_SETTINGS periodically anyway; pipe the requires_reauth
+  // field into a banner + sign-in button so scheduled sends don't die
+  // silently.
+  function updateReauthBanner(requires) {
+    var banner = document.getElementById("reauth-banner");
+    if (!banner) return;
+    banner.style.display = requires ? "flex" : "none";
+  }
+
+  var reauthBtn = document.getElementById("reauth-banner-btn");
+  if (reauthBtn) {
+    reauthBtn.addEventListener("click", function () {
+      reauthBtn.disabled = true;
+      reauthBtn.textContent = "…";
+      // Fresh OAuth flow. On success, backend clears the flag; on next
+      // GET_SETTINGS, banner hides.
+      chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+        reauthBtn.disabled = false;
+        reauthBtn.textContent = t("reauthBannerCta");
+        if (resp && resp.error) {
+          alert(t("reauthFailed", [resp.error]));
+          return;
+        }
+        // Refresh settings so banner hides (backend cleared the flag)
+        chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (r) {
+          var data = r && (r.data || r);
+          updateReauthBanner(!!(data && data.requires_reauth));
+        });
+      });
+    });
+  }
+
+  function pollReauthState() {
+    chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
+      if (!resp || resp.error) return;
+      var data = resp.data || resp;
+      updateReauthBanner(!!data.requires_reauth);
+    });
+  }
+
   // ── Tabs ──
   tabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
@@ -1961,6 +2003,10 @@
     updateSendButton();
     loadTemplates();
     showOnboardingIfFirstRun();
+    pollReauthState();
+    // Re-check reauth state every 5 minutes — catches the case where a
+    // background scheduled send flagged the user but the sidebar stayed open.
+    setInterval(pollReauthState, 5 * 60 * 1000);
   }
 
   // Load i18n override first (if user picked a specific language), then apply

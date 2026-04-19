@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "Plus de destinataires — toutes les lignes ont été filtrées par votre liste de blocage, le dédoublonnage ou des e-mails invalides."
+  },
+  "reauthBannerText": {
+    "message": "Reconnectez Outlook — votre autorisation a expiré. Reconnectez-vous pour que les envois programmés continuent."
+  },
+  "reauthBannerCta": {
+    "message": "Se connecter"
+  },
+  "reauthFailed": {
+    "message": "Connexion échouée : $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

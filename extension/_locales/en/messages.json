@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "No recipients left to send to — all rows were filtered by your suppression list, dedup settings, or invalid emails."
+  },
+  "reauthBannerText": {
+    "message": "Reconnect to Outlook — your authorization has expired. Sign in again so scheduled sends keep working."
+  },
+  "reauthBannerCta": {
+    "message": "Sign in"
+  },
+  "reauthFailed": {
+    "message": "Sign-in failed: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

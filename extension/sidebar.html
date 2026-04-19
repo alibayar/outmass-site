@@ -20,6 +20,16 @@
     Cannot connect to server. Check your internet connection.
   </div>
 
+  <!-- Re-auth banner — shown when backend flags the user's MS refresh token as dead -->
+  <div class="reauth-banner" id="reauth-banner" style="display:none;">
+    <span class="reauth-banner-text" data-i18n="reauthBannerText">
+      Reconnect to Outlook — your authorization has expired.
+    </span>
+    <button class="reauth-banner-btn" id="reauth-banner-btn" data-i18n="reauthBannerCta">
+      Sign in
+    </button>
+  </div>
+
   <!-- Tabs -->
   <div class="tab-bar">
     <button class="tab active" data-tab="campaign" data-i18n="tabCampaign">Campaign</button>

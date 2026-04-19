@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "Keine Empfänger mehr — alle Zeilen wurden durch Sperrliste, Dedup oder ungültige E-Mails gefiltert."
+  },
+  "reauthBannerText": {
+    "message": "Outlook erneut verbinden — Ihre Autorisierung ist abgelaufen. Bitte erneut anmelden, damit geplante Sendungen weiterlaufen."
+  },
+  "reauthBannerCta": {
+    "message": "Anmelden"
+  },
+  "reauthFailed": {
+    "message": "Anmeldung fehlgeschlagen: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

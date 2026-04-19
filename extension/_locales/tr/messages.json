@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "Gönderilecek kimse kalmadı — tüm satırlar engellilere, tekrar filtresine veya geçersiz email'lere takıldı."
+  },
+  "reauthBannerText": {
+    "message": "Outlook bağlantını yenile — yetkilendirmen sona erdi. Zamanlanmış gönderimlerin çalışmaya devam etmesi için tekrar giriş yap."
+  },
+  "reauthBannerCta": {
+    "message": "Giriş yap"
+  },
+  "reauthFailed": {
+    "message": "Giriş başarısız: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

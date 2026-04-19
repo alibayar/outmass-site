@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "لم يتبقَّ مستلمون — تم تصفية جميع الصفوف عبر قائمة الحظر أو إزالة التكرار أو البريد غير الصالح."
+  },
+  "reauthBannerText": {
+    "message": "أعد الاتصال بـ Outlook — انتهت صلاحية تفويضك. سجّل الدخول مجدداً حتى تستمر الرسائل المجدولة بالعمل."
+  },
+  "reauthBannerCta": {
+    "message": "تسجيل الدخول"
+  },
+  "reauthFailed": {
+    "message": "فشل تسجيل الدخول: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -190,12 +190,28 @@ async def auth_callback(
         )
         if existing.data:
             db.table("user_tokens").update(
-                {"refresh_token": refresh_token}
+                {
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                }
             ).eq("user_id", user["id"]).execute()
         else:
             db.table("user_tokens").insert(
-                {"user_id": user["id"], "refresh_token": refresh_token}
+                {
+                    "user_id": user["id"],
+                    "access_token": access_token,
+                    "refresh_token": refresh_token,
+                }
             ).execute()
+
+        # Fresh OAuth succeeded → clear any prior requires_reauth flag so the
+        # sidebar banner disappears immediately. Idempotent if the flag was
+        # already false.
+        db.table("users").update({
+            "requires_reauth": False,
+            "reauth_reason": None,
+            "reauth_flagged_at": None,
+        }).eq("id", user["id"]).execute()
 
     # Monthly reset check
     _check_monthly_reset(user)
@@ -283,6 +299,13 @@ async def microsoft_auth(body: MicrosoftAuthRequest):
             db.table("user_tokens").insert(
                 {"user_id": user["id"], "refresh_token": body.refresh_token}
             ).execute()
+
+        # Clear any prior requires_reauth flag — the user just re-authed.
+        db.table("users").update({
+            "requires_reauth": False,
+            "reauth_reason": None,
+            "reauth_flagged_at": None,
+        }).eq("id", user["id"]).execute()
 
     # Check monthly reset
     _check_monthly_reset(user)

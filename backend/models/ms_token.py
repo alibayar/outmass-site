@@ -4,6 +4,7 @@ Refreshes access tokens using stored refresh_token + client_secret (Web flow).
 """
 
 import logging
+from datetime import datetime, timezone
 
 import httpx
 
@@ -16,6 +17,25 @@ from config import (
 from database import get_db
 
 logger = logging.getLogger(__name__)
+
+
+def _mark_requires_reauth(user_id: str, reason: str) -> None:
+    """Flag the user as needing to re-authorize with Microsoft.
+
+    Called when the refresh_token exchange fails irrecoverably (typically
+    401 invalid_grant). The sidebar reads this flag from /settings and
+    shows a 'Reconnect to Outlook' banner so the user knows to sign in
+    again — instead of silently watching scheduled campaigns no-op.
+    """
+    try:
+        get_db().table("users").update({
+            "requires_reauth": True,
+            "reauth_reason": reason,
+            "reauth_flagged_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", user_id).execute()
+        logger.warning("Flagged user %s as requires_reauth (%s)", user_id, reason)
+    except Exception:  # noqa: BLE001 — never let token-refresh logging kill the caller
+        logger.exception("Failed to mark user %s as requires_reauth", user_id)
 
 
 def get_fresh_access_token(user_id: str) -> str | None:
@@ -82,6 +102,17 @@ def get_fresh_access_token(user_id: str) -> str | None:
                 {"access_token": new_access, "refresh_token": new_refresh}
             ).eq("user_id", user_id).execute()
             return new_access
+        # 4xx from Microsoft (especially 400/401 invalid_grant) means the
+        # refresh_token is dead. Flag the user so the sidebar can prompt
+        # re-auth instead of silently no-op'ing forever.
+        if 400 <= resp.status_code < 500:
+            body_snippet = resp.text[:200]
+            reason = "refresh_failed"
+            if "invalid_grant" in body_snippet:
+                reason = "invalid_grant"
+            elif "invalid_client" in body_snippet:
+                reason = "invalid_client"
+            _mark_requires_reauth(user_id, reason)
         logger.warning(
             "Refresh token exchange failed for user %s: %s %s",
             user_id,

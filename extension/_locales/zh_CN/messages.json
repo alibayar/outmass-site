@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "没有可发送的收件人 — 所有行都被屏蔽列表、去重或无效邮箱过滤。"
+  },
+  "reauthBannerText": {
+    "message": "重新连接 Outlook — 您的授权已过期。请再次登录以便定时发送继续工作。"
+  },
+  "reauthBannerCta": {
+    "message": "登录"
+  },
+  "reauthFailed": {
+    "message": "登录失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "送信先が残っていません — すべての行がブロックリスト、重複除去、または無効なメールにより除外されました。"
+  },
+  "reauthBannerText": {
+    "message": "Outlook に再接続 — 認証が切れました。予約送信を続けるには再度サインインしてください。"
+  },
+  "reauthBannerCta": {
+    "message": "サインイン"
+  },
+  "reauthFailed": {
+    "message": "サインイン失敗: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

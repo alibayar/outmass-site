@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "No quedan destinatarios — todas las filas fueron filtradas por lista de bloqueo, dedup o emails inválidos."
+  },
+  "reauthBannerText": {
+    "message": "Reconecta con Outlook — tu autorización expiró. Vuelve a iniciar sesión para que los envíos programados sigan funcionando."
+  },
+  "reauthBannerCta": {
+    "message": "Iniciar sesión"
+  },
+  "reauthFailed": {
+    "message": "Error al iniciar sesión: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

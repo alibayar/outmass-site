@@ -141,6 +141,8 @@ FAKE_USER = {
     "timezone": "Europe/Istanbul",
     "cross_campaign_dedup_enabled": True,
     "cross_campaign_dedup_days": 60,
+    "requires_reauth": False,
+    "reauth_reason": None,
 }
 
 FAKE_PRO_USER = {**FAKE_USER, "plan": "pro"}

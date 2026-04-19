@@ -802,5 +802,19 @@
   },
   "alertNoContactsAfterUpload": {
     "message": "Получателей не осталось — все строки отфильтрованы списком блокировки, дедупом или неверными email."
+  },
+  "reauthBannerText": {
+    "message": "Переподключите Outlook — ваша авторизация истекла. Войдите снова, чтобы отложенные отправки продолжили работать."
+  },
+  "reauthBannerCta": {
+    "message": "Войти"
+  },
+  "reauthFailed": {
+    "message": "Ошибка входа: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

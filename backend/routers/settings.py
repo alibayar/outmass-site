@@ -52,6 +52,8 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "sender_phone": user.get("sender_phone", ""),
         "cross_campaign_dedup_enabled": user.get("cross_campaign_dedup_enabled", True),
         "cross_campaign_dedup_days": user.get("cross_campaign_dedup_days", 60),
+        "requires_reauth": bool(user.get("requires_reauth", False)),
+        "reauth_reason": user.get("reauth_reason"),
     }
 
 
