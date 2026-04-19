@@ -238,7 +238,8 @@ e2e/
 ```
 # Supabase
 SUPABASE_URL=https://qhfefazyfhyqnjcmfmdd.supabase.co
-SUPABASE_KEY=<anon key>
+SUPABASE_SERVICE_ROLE_KEY=<service_role key>  # backend-only, bypasses RLS
+# (SUPABASE_KEY with anon key still works as fallback, but RLS blocks it after migration 008)
 
 # Auth
 JWT_SECRET=<32-byte hex>

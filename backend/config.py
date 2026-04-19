@@ -9,11 +9,27 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ── Supabase ──
+#
+# Prefer SUPABASE_SERVICE_ROLE_KEY — the server-side key that bypasses
+# Row Level Security. After migration 008 enabled RLS on every app
+# table, the anon key can no longer read/write our data, which is the
+# whole point: defense against accidental anon-key leaks.
+#
+# SUPABASE_KEY is still read as a fallback so existing deployments keep
+# booting during the service_role rollout. New deploys should set
+# SUPABASE_SERVICE_ROLE_KEY and leave SUPABASE_KEY unset.
 SUPABASE_URL = os.getenv("SUPABASE_URL", "")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY", "")
+SUPABASE_KEY = (
+    os.getenv("SUPABASE_SERVICE_ROLE_KEY")
+    or os.getenv("SUPABASE_KEY")
+    or ""
+)
 
 if not SUPABASE_URL or not SUPABASE_KEY:
-    raise RuntimeError("SUPABASE_URL and SUPABASE_KEY must be set in .env")
+    raise RuntimeError(
+        "SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY (or SUPABASE_KEY) "
+        "must be set in .env"
+    )
 
 # ── Auth ──
 JWT_SECRET = os.getenv("JWT_SECRET", "")
