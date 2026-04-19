@@ -42,7 +42,7 @@ BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:8000")
 FRONTEND_URL = os.getenv("FRONTEND_URL", "")
 
 # ── CORS ──
-_default_cors = "chrome-extension://acdafphnihddolfhabbndfofheokckhl,http://localhost:3000,http://localhost:5173"
+_default_cors = "chrome-extension://adcfddainnkjomddlappnnbeomhlcbmm,http://localhost:3000,http://localhost:5173"
 CORS_ORIGINS = [o.strip() for o in os.getenv("CORS_ORIGINS", _default_cors).split(",") if o.strip()]
 if BACKEND_URL and BACKEND_URL not in CORS_ORIGINS:
     CORS_ORIGINS.append(BACKEND_URL)
@@ -51,7 +51,7 @@ if BACKEND_URL and BACKEND_URL not in CORS_ORIGINS:
 AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID", "3b6a9f9b-cbb6-4dcb-a3b6-d993de74a1b5")
 AZURE_CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET", "")
 AZURE_REDIRECT_URI = os.getenv("AZURE_REDIRECT_URI", f"{BACKEND_URL}/auth/callback")
-AZURE_EXTENSION_ID = os.getenv("AZURE_EXTENSION_ID", "acdafphnihddolfhabbndfofheokckhl")
+AZURE_EXTENSION_ID = os.getenv("AZURE_EXTENSION_ID", "adcfddainnkjomddlappnnbeomhlcbmm")
 MS_AUTH_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
 MS_TOKEN_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 MS_GRAPH_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access"
