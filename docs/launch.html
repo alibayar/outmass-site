@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Get early access — OutMass launch</title>
+  <meta name="description" content="Cold email for Outlook is finally a serious tool. Get the Product Hunt launch announcement and 50% off your first month.">
+
+  <!-- Open Graph / social preview -->
+  <meta property="og:title" content="OutMass is launching on Product Hunt">
+  <meta property="og:description" content="Mail merge, A/B testing, AI writer — inside Outlook. Be first to know + 50% off first month of Pro.">
+  <meta property="og:image" content="https://getoutmass.com/og-launch.png">
+  <meta property="og:url" content="https://getoutmass.com/launch.html">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      color: #1a1a2e;
+      line-height: 1.6;
+      background: #fafafa;
+    }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+
+    .hero {
+      position: relative;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      background: linear-gradient(135deg, #0078d4 0%, #4b2e8e 100%);
+      color: #fff;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: "";
+      position: absolute; inset: 0;
+      background:
+        radial-gradient(circle at 80% 15%, rgba(255,255,255,0.14) 0%, transparent 40%),
+        radial-gradient(circle at 15% 90%, rgba(255,255,255,0.10) 0%, transparent 40%);
+      pointer-events: none;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      width: 100%;
+      max-width: 560px;
+      background: #fff;
+      color: #1a1a2e;
+      border-radius: 20px;
+      padding: 44px 44px 40px;
+      box-shadow: 0 16px 48px rgba(0,0,0,0.28);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 28px;
+    }
+    .logo {
+      width: 36px; height: 36px;
+      border-radius: 9px;
+      background: linear-gradient(135deg, #0078d4 0%, #4b2e8e 100%);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      font-size: 14px;
+      letter-spacing: -0.3px;
+    }
+    .brand-name { font-size: 18px; font-weight: 700; }
+
+    h1 {
+      font-size: 32px;
+      font-weight: 800;
+      letter-spacing: -0.7px;
+      line-height: 1.2;
+      margin-bottom: 12px;
+    }
+    h1 em {
+      font-style: normal;
+      background: linear-gradient(90deg, #ea7b2e, #d94f8a);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .sub {
+      font-size: 16px;
+      color: #555;
+      margin-bottom: 28px;
+    }
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .row {
+      display: flex;
+      gap: 8px;
+    }
+    input[type="email"] {
+      flex: 1;
+      padding: 14px 16px;
+      font-size: 15px;
+      border: 1px solid #d4d4d8;
+      border-radius: 10px;
+      background: #fff;
+      font-family: inherit;
+    }
+    input[type="email"]:focus {
+      outline: none;
+      border-color: #0078d4;
+      box-shadow: 0 0 0 3px rgba(0,120,212,0.15);
+    }
+    button {
+      padding: 14px 22px;
+      font-size: 15px;
+      font-weight: 700;
+      border: none;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #0078d4, #4b2e8e);
+      color: #fff;
+      cursor: pointer;
+      font-family: inherit;
+      transition: transform 0.08s, box-shadow 0.15s;
+    }
+    button:hover { box-shadow: 0 6px 18px rgba(75,46,142,0.3); }
+    button:active { transform: translateY(1px); }
+    button:disabled { opacity: 0.6; cursor: wait; }
+
+    .hint {
+      font-size: 13px;
+      color: #8a8a92;
+      margin-top: 4px;
+    }
+
+    .perks {
+      margin-top: 30px;
+      padding-top: 26px;
+      border-top: 1px solid #edebe9;
+    }
+    .perks h3 {
+      font-size: 13px;
+      font-weight: 700;
+      color: #8a8a92;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
+      margin-bottom: 14px;
+    }
+    .perks ul { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+    .perks li { display: flex; align-items: center; gap: 10px; font-size: 14px; color: #444; }
+    .perks .dot {
+      width: 8px; height: 8px;
+      border-radius: 50%;
+      background: #50e3c2;
+      flex-shrink: 0;
+    }
+
+    .status {
+      margin-top: 14px;
+      padding: 14px 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      display: none;
+    }
+    .status.success {
+      display: block;
+      background: #f0f9f1;
+      border: 1px solid #b4e0b8;
+      color: #166f1b;
+    }
+    .status.error {
+      display: block;
+      background: #fdf3f3;
+      border: 1px solid #f0bdbd;
+      color: #a7252b;
+    }
+    .status.already {
+      display: block;
+      background: #f3f5fb;
+      border: 1px solid #c8cde4;
+      color: #44546c;
+    }
+
+    .footer-link {
+      margin-top: 20px;
+      font-size: 13px;
+      color: #8a8a92;
+      text-align: center;
+    }
+    .footer-link a { color: #555; }
+
+    @media (max-width: 520px) {
+      .card { padding: 32px 24px; }
+      h1 { font-size: 26px; }
+      .row { flex-direction: column; }
+      button { padding: 14px; }
+    }
+  </style>
+</head>
+<body>
+
+<section class="hero">
+  <div class="card">
+    <div class="brand">
+      <div class="logo">OM</div>
+      <div class="brand-name">OutMass</div>
+    </div>
+
+    <h1>Be first when we <em>launch on Product Hunt</em></h1>
+    <p class="sub">
+      OutMass turns Outlook Web into a real cold-outreach tool —
+      mail merge, AI writer, tracking, follow-ups. Going live on
+      Product Hunt soon. Drop your email and you'll be first to know.
+    </p>
+
+    <form id="notify-form">
+      <div class="row">
+        <input type="email" id="email" placeholder="you@company.com" required autocomplete="email">
+        <button type="submit" id="submit-btn">Notify me</button>
+      </div>
+      <div class="hint">No spam. One email on launch day. Unsubscribe any time.</div>
+    </form>
+
+    <div class="status" id="status"></div>
+
+    <div class="perks">
+      <h3>What you get</h3>
+      <ul>
+        <li><span class="dot"></span>The Product Hunt link the moment we go live</li>
+        <li><span class="dot"></span>50% off your first month of Pro — launch week only</li>
+        <li><span class="dot"></span>First access to shared mailbox + team plans (Q3 2026)</li>
+      </ul>
+    </div>
+
+    <div class="footer-link">
+      Already know you want it? <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install from Chrome Web Store →</a>
+    </div>
+  </div>
+</section>
+
+<script>
+(function () {
+  var BACKEND = "https://outmass-production.up.railway.app";
+  var form = document.getElementById("notify-form");
+  var email = document.getElementById("email");
+  var btn = document.getElementById("submit-btn");
+  var status = document.getElementById("status");
+
+  function setStatus(kind, msg) {
+    status.className = "status " + kind;
+    status.textContent = msg;
+  }
+
+  function resetStatus() { status.className = "status"; status.textContent = ""; }
+
+  form.addEventListener("submit", function (e) {
+    e.preventDefault();
+    resetStatus();
+    var value = (email.value || "").trim();
+    if (!value) return;
+
+    btn.disabled = true;
+    var originalLabel = btn.textContent;
+    btn.textContent = "Sending…";
+
+    var locale = (navigator.language || "en").slice(0, 2).toLowerCase();
+
+    fetch(BACKEND + "/launch/notify", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email: value,
+        locale: locale,
+        source: "landing",
+      }),
+    })
+      .then(function (resp) {
+        return resp.json().then(function (data) {
+          return { ok: resp.ok, data: data };
+        });
+      })
+      .then(function (result) {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+        if (!result.ok) {
+          setStatus("error", result.data && result.data.detail
+            ? result.data.detail
+            : "Something went wrong — please try again.");
+          return;
+        }
+        if (result.data.status === "already_subscribed") {
+          setStatus("already", "You're already on the list — we've got you covered.");
+        } else {
+          setStatus("success", "Done! We'll email you the moment we go live.");
+          form.reset();
+        }
+      })
+      .catch(function () {
+        btn.disabled = false;
+        btn.textContent = originalLabel;
+        setStatus("error", "Network error — please try again in a minute.");
+      });
+  });
+})();
+</script>
+
+</body>
+</html>

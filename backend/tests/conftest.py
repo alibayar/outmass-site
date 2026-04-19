@@ -57,6 +57,12 @@ class FakeQueryBuilder:
     def is_(self, *a):
         return self
 
+    def ilike(self, *a):
+        return self
+
+    def in_(self, *a):
+        return self
+
     def order(self, *a, **kw):
         return self
 
@@ -100,6 +106,7 @@ def fake_db():
         patch("routers.ai.get_db", return_value=db),
         patch("routers.campaigns.get_db", return_value=db, create=True),
         patch("routers.billing.get_db", return_value=db, create=True),
+        patch("routers.launch.get_db", return_value=db),
         # Models (all import get_db at module level)
         patch("models.campaign.get_db", return_value=db),
         patch("models.contact.get_db", return_value=db),
