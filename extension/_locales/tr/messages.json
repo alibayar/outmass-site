@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+90 555 000 0000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Biçimi doğrulamak için bir tarih ve saat seçin."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Gönderim: "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "Zamanlanmış gönderim Starter ve Pro planlarda mevcut. Şimdi yükseltmek ister misin?"
+  },
+  "errFeatureLocked": {
+    "message": "Bu özellik sadece ücretli planlarda mevcut. Yükseltmek ister misin?"
   }
 }

@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+49 30 0000000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Wählen Sie Datum und Uhrzeit, um sie im lokalen Format zu sehen."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Sendet am "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "Geplanter Versand ist eine Starter/Pro-Funktion. Jetzt upgraden?"
+  },
+  "errFeatureLocked": {
+    "message": "Diese Funktion ist nur in bezahlten Plänen verfügbar. Upgraden?"
   }
 }

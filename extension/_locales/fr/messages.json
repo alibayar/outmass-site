@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+33 1 00 00 00 00"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Choisissez une date et une heure pour la voir au format local."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Envoi le "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "L'envoi programmé est une fonction Starter/Pro. Passer à un plan supérieur maintenant ?"
+  },
+  "errFeatureLocked": {
+    "message": "Cette fonction n'est disponible que sur les plans payants. Upgrader ?"
   }
 }

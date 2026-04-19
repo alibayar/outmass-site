@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+91 00000 00000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "अपने स्थानीय प्रारूप में देखने के लिए तारीख और समय चुनें।"
+  },
+  "scheduleParsedPrefix": {
+    "message": "भेजा जाएगा: "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "शेड्यूल्ड सेंडिंग Starter/Pro सुविधा है। अभी अपग्रेड करें?"
+  },
+  "errFeatureLocked": {
+    "message": "यह सुविधा केवल सशुल्क प्लान में उपलब्ध है। अपग्रेड करें?"
   }
 }

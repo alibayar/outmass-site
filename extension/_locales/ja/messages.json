@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+81 00-0000-0000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "日付と時刻を選択すると、現地の形式で表示されます。"
+  },
+  "scheduleParsedPrefix": {
+    "message": "送信日時: "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "予約送信は Starter/Pro 機能です。今アップグレードしますか?"
+  },
+  "errFeatureLocked": {
+    "message": "この機能は有料プランでのみ利用可能です。アップグレードしますか?"
   }
 }

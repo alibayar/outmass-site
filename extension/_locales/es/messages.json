@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+34 600 000 000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Elige una fecha y hora para verla en tu formato local."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Se enviará el "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "El envío programado es una función Starter/Pro. ¿Actualizar ahora?"
+  },
+  "errFeatureLocked": {
+    "message": "Esta función solo está disponible en planes de pago. ¿Actualizar?"
   }
 }

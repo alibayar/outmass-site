@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+7 (495) 000-00-00"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Выберите дату и время — увидите их в локальном формате."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Отправка "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "Отложенная отправка доступна в тарифах Starter и Pro. Перейти на платный тариф?"
+  },
+  "errFeatureLocked": {
+    "message": "Эта функция доступна только на платных тарифах. Перейти?"
   }
 }

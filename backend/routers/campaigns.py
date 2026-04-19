@@ -84,7 +84,7 @@ async def create_campaign(
         raise HTTPException(status_code=400, detail="Campaign name is required")
     body.name = body.name.strip()
 
-    # Scheduled sending requires Standard+ plan
+    # Scheduled sending requires Starter+ plan
     if body.scheduled_for:
         plan = user.get("plan", "free")
         if plan == "free":
@@ -92,7 +92,8 @@ async def create_campaign(
                 status_code=402,
                 detail={
                     "error": "feature_locked",
-                    "message": "Zamanli gonderim Standard ve Pro planlarda kullanilabilir",
+                    "feature": "scheduled_sending",
+                    "message": "Scheduled sending is a Starter/Pro feature. Upgrade to unlock it.",
                     "required_plan": "starter",
                 },
             )

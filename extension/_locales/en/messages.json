@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+1 (555) 000-0000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Pick a date and time to see it in your local format."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Will send on "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "Scheduled sending is a Starter/Pro feature. Would you like to upgrade now?"
+  },
+  "errFeatureLocked": {
+    "message": "This feature is only available on paid plans. Would you like to upgrade?"
   }
 }

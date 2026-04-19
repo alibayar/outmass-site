@@ -609,6 +609,24 @@
       },
       function (createResp) {
         if (!createResp || createResp.error) {
+          // Detect Pro-gated feature (e.g. scheduled sending on Free plan)
+          // and show a friendlier upgrade prompt instead of raw error code.
+          var detail = createResp && createResp.detail;
+          var err = detail && typeof detail === "object"
+            ? detail.error
+            : (createResp && createResp.error);
+          if (err === "feature_locked") {
+            btnSend.textContent = t("btnSend");
+            btnSend.disabled = false;
+            var feature = detail && detail.feature;
+            var msgKey = feature === "scheduled_sending"
+              ? "errScheduledFeatureLocked"
+              : "errFeatureLocked";
+            if (confirm(t(msgKey))) {
+              showUpgradeModal();
+            }
+            return;
+          }
           showSendError(createResp ? createResp.error : t("alertCampaignCreateFailed"));
           return;
         }
@@ -1054,10 +1072,51 @@
         tomorrow.setHours(9, 0, 0, 0);
         var dtInput = document.getElementById("schedule-datetime");
         dtInput.value = tomorrow.toISOString().slice(0, 16);
+        updateScheduleParsed();
       } else {
         scheduleFields.classList.remove("visible");
       }
     });
+  }
+
+  // Show the selected datetime in the user's locale format so the
+  // browser's native MM/DD vs DD/MM picker ambiguity is resolved.
+  function updateScheduleParsed() {
+    var dtInput = document.getElementById("schedule-datetime");
+    var hint = document.getElementById("schedule-parsed");
+    if (!dtInput || !hint) return;
+    if (!dtInput.value) {
+      hint.textContent = t("scheduleParsedEmpty");
+      return;
+    }
+    try {
+      var d = new Date(dtInput.value);
+      if (isNaN(d.getTime())) {
+        hint.textContent = t("scheduleParsedEmpty");
+        return;
+      }
+      // Use the extension's active UI locale for formatting, not the
+      // browser's (so Turkish users with an English OS still see Turkish).
+      var localeOverride = (typeof _i18nOverride === "string" && _i18nOverride) ||
+                           (navigator.language || "en");
+      var formatted = d.toLocaleString(localeOverride, {
+        weekday: "short",
+        year: "numeric",
+        month: "long",
+        day: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+      });
+      hint.textContent = t("scheduleParsedPrefix") + formatted;
+    } catch (e) {
+      hint.textContent = t("scheduleParsedEmpty");
+    }
+  }
+
+  var _dtInputForHint = document.getElementById("schedule-datetime");
+  if (_dtInputForHint) {
+    _dtInputForHint.addEventListener("input", updateScheduleParsed);
+    _dtInputForHint.addEventListener("change", updateScheduleParsed);
   }
 
   // ── Follow-up ──

@@ -198,10 +198,16 @@ async function backendFetch(endpoint, options) {
 
     if (!resp.ok) {
       const errData = await resp.json().catch(() => ({}));
+      // FastAPI puts our structured errors under errData.detail. For 402 we
+      // want to preserve the actual `error` code (e.g. "feature_locked" vs
+      // "limit_exceeded") so the frontend can show the right upgrade prompt
+      // — not hardcode to "limit_exceeded".
+      const detail = errData && errData.detail ? errData.detail : errData;
       if (resp.status === 402) {
-        return { error: "limit_exceeded", status: 402, detail: errData.detail || errData };
+        const code = (detail && typeof detail === "object" && detail.error) || "limit_exceeded";
+        return { error: code, status: 402, detail: detail };
       }
-      return { error: errData.detail || `HTTP ${resp.status}` };
+      return { error: (detail && typeof detail === "string" ? detail : null) || `HTTP ${resp.status}` };
     }
 
     _lastBackendOk = Date.now();

@@ -787,5 +787,17 @@
   },
   "placeholderSenderPhone": {
     "message": "+86 000 0000 0000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "选择日期和时间,以您的本地格式查看。"
+  },
+  "scheduleParsedPrefix": {
+    "message": "将在 "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "定时发送是 Starter/Pro 功能。立即升级?"
+  },
+  "errFeatureLocked": {
+    "message": "此功能仅在付费计划中可用。是否升级?"
   }
 }
