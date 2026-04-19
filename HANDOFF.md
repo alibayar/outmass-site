@@ -1,8 +1,73 @@
-# OutMass — Handoff Document (2026-04-17)
+# OutMass — Handoff Document (2026-04-20)
 
 ## Proje Nedir?
 GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
-**Durum:** Launch'a hazır, sadece Chrome Web Store submission + quality checks kaldı.
+**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da v0.1.0 yayında, v0.1.1 inceleme sürecinde, v0.1.2 local'de hazır paketli.
+
+## 🎯 Bu Handoff Neye Yarıyor
+Context dolduğundan yeni session'a geçiyoruz. Bu doküman son sessiondaki tüm ilerlemeyi, yarım kalan işleri ve kritik state'i içeriyor. Yeni session bunu okuyarak devam edebilmeli.
+
+---
+
+## ⏳ Yarım Kalan İşler (Öncelik Sırasına Göre)
+
+### 1. v0.1.2 Chrome Web Store submission (user action bekliyor)
+- **Tetikleyici:** v0.1.1 review onayı geldiğinde email bildirimi gelir
+- **Action:** Dashboard → Paket → `outmass-v0.1.2.zip` upload → "İnceleme için gönder"
+- **Zip konumu:** `D:\dev\git\outmass\outmass-v0.1.2.zip` (129 KB, manifest v0.1.2 ✓)
+- **Critical content:** requires_reauth banner (silent OAuth failure fix). Backend zaten canlı (`cf26102`), sadece frontend user'lara ulaşmıyor.
+- **Release notes draft:**
+  ```
+  v0.1.2 — bug fixes + UX improvements
+  • Reconnect-to-Outlook banner when MS authorization expires
+  • Test Send no longer creates placeholder campaigns in Reports
+  • Scheduled sending error shows proper upgrade prompt
+  • Fixed i18n named-placeholder substitution in non-English locales
+  • Cleaned up developer personal data from Settings placeholders
+  • Localized datetime formatting in scheduled-send confirmation
+  ```
+
+### 2. Post-launch iyileştirmeler (backlog, launch-blocker DEĞİL)
+- [ ] `ON DELETE CASCADE` FK zinciri events → contacts → campaigns → user (temizlik SQL'i sadeleşir)
+- [ ] Scheduled send token failure → campaign'i `failed_auth` status'a çek (şu an silent `sent=0` kalıyor)
+- [ ] MailerSend notification when user gets flagged `requires_reauth` (email notification, sadece in-sidebar banner değil)
+- [ ] Proactive token health check job (beat'te günde bir, expire yaklaşan token'ları önceden refresh et)
+- [ ] Non-root Celery worker (Dockerfile + `useradd` + `--uid 1000`) — güvenlik sıkılaştırma, paid user 500+ olunca yap
+- [ ] Gmail desteği (Phase 2, $5-10k MRR sonrası — CASA audit gerektirir)
+- [ ] Sender reputation score (SpamAssassin-benzeri)
+
+### 3. Launch marketing (v0.1.2 onay sonrası)
+- Launch kit zaten hazır: `docs/launch/producthunt.md`
+- Launch günü öncesi: demo video (30-60 sn Loom), "notify me" email list'i büyüt (`getoutmass.com/launch`)
+- PH launch önerisi: Thursday, 00:01 PST (Istanbul 10:01)
+- LAUNCH50 Stripe promo hazır
+
+---
+
+## 🚦 Canlı Launch Durumu (2026-04-20)
+
+### Mağazada
+- **Chrome Web Store v0.1.0** yayında (`adcfddainnkjomddlappnnbeomhlcbmm`)
+- **v0.1.1** review'da (~1-2 gün onay bekleniyor). İçeriği: 10 dilde store listing, stateless Test Send, diğer UX polish.
+- **v0.1.2** `outmass-v0.1.2.zip` olarak local'de hazır. v0.1.1 onaylanır onaylanmaz upload edilecek. Critical fix: **requires_reauth banner** (silent OAuth failure prevention).
+
+### Backend (Railway — 3 servis)
+- **outmass-production** (web): FastAPI, uvicorn, healthcheck `/`
+- **outmass-worker** (Celery): `celery -A workers.celery_app worker --loglevel=info --concurrency=2`
+- **outmass-beat** (Celery): `celery -A workers.celery_app beat --loglevel=info`
+- Son "start command" debug edildi — `railway.json`'da global `startCommand` ve `healthcheckPath` YOK, her servis kendi Custom Start Command'ını UI'da tanımlıyor. Aksi halde 3 servis de uvicorn çalışır (düzeltildi, commit `f68dbcc` + `ec7dbe8`).
+
+### Database (Supabase)
+- RLS tüm 10 tabloda AÇIK (migration 008)
+- Backend `SUPABASE_SERVICE_ROLE_KEY` kullanıyor (3 servis de — user bugün manuel ekledi)
+- Migrations 001-009 tamamen uygulandı
+
+### Ödeme (Stripe)
+- Live mode aktif, UK Ltd hesabıyla
+- 2 Product: Starter $9/ay, Pro $19/ay (recurring USD)
+- Webhook endpoint + Customer Portal (bpc_1TNvl3QsbO4Gj1Xr3VaOSWcU) config'li
+- `LAUNCH50` promo kodu (50% off first month, 100 redemption limit, May 31 expiry)
+- Gerçek kart test edildi → $19 ödendi → refund yapıldı + subscription canceled
 
 ---
 
@@ -75,6 +140,87 @@ Railway env var'ları swap (sandbox → live):
 - [ ] `STRIPE_PORTAL_CONFIG_ID` → live `bpc_...`
 - [ ] `CORS_ORIGINS` → yeni Chrome Web Store extension ID ekle
 - [ ] `AZURE_EXTENSION_ID` → yeni extension ID
+
+---
+
+## 📜 2026-04-20 Session'ında Yapılanlar (Özet)
+
+### Security + Reliability
+- **RLS açıldı** 10 tablo için (migration 008) + backend `SUPABASE_SERVICE_ROLE_KEY`'e geçti (`d962bdf`)
+- **Celery start commands** düzeltildi — railway.json global startCommand silindi, her servis Custom Start Command'ını UI'dan alır (`ec7dbe8`, `f68dbcc`)
+- **sys.path fix** celery_app.py — ForkPoolWorker'lar `models` import edebilsin (`3201d5e`)
+- **Scheduled send pipeline** end-to-end validated — beat/worker/Graph API/Supabase tüm zincir çalıştığı canlıda kanıtlandı
+- **requires_reauth feature** (migration 009 + backend + frontend + tests) — Microsoft token expire'da silent failure yerine sidebar banner gösterir. Backend live, frontend v0.1.2'de.
+
+### UX
+- Test Send stateless yapıldı — artık `__test_send__` campaign row yaratmıyor (`004e2bd`)
+- i18n named placeholder substitution fix (`$N$`, `$EMAIL$` gibi) — `5e4d55c`
+- Scheduled sending 402 → proper "feature_locked" upgrade prompt (`c699411`)
+- 0-recipient scheduled campaign guard — dedup tüm rows filtrelerse abort (`5e4d55c`)
+- Scheduled-success alert tarihi override locale ile formatlanıyor
+- Sender Information placeholders generic (`Ayşe Yılmaz` gibi) — `ae8874d`
+
+### Launch Assets
+- Notify-me landing page: `getoutmass.com/launch.html` + backend endpoint (`9fc8b31`)
+- Product Hunt launch kit: `docs/launch/producthunt.md` (`cdcd1a8`)
+- Legal entity migration: Metis Bilisim (TR) → Metis Information Technologies Ltd (UK, 71-75 Shelton Street) — privacy + terms + all footers (`542691e`)
+- Landing pricing fixed: actual $0/$9/$19 tiers, not fictional team plan (`bb086ba`)
+- Jekyll build fix: `docs/plans/` exclude ile Liquid parse error kurtarıldı (`71bed58`)
+- Chrome Web Store store listing assets shipped (promo tiles 440×280 + 920×680, branded icons 16/48/128, 5 screenshot)
+- 10-language store listing descriptions (TR/DE/FR/ES/RU/AR/HI/ZH_CN/JA) eklendi v0.1.1 submission'ında
+
+### Infra debugging lessons learned
+1. **Upstash free Redis** 14 gün inactivity → siliniyor. Yeniden oluşturuldu (`loving-weasel-102416.upstash.io`).
+2. **Chrome Web Store pending review sırasında yeni package upload** → engelli. v0.1.1 onayı beklenmesi lazım.
+3. **Microsoft refresh token** yaklaşık 14-90 gün geçerli (tenant policy). Token expire'da sessizce çalışmıyor → yeni requires_reauth UX.
+
+### Test coverage
+- **144 unit test** + **48 E2E test** yeşil (baseline 118, bu session +26)
+- Yeni test dosyaları: `test_reauth_flagging.py`, `test_launch.py`, `test_cross_campaign_dedup.py`, `test_campaigns_validation.py`, `test_merge_tags.py`, `test_contact_validation.py`, `test_email_classifier.py`, `test_text_to_html.py`
+
+### Stripe live mode setup
+- 2 product (Starter $9, Pro $19) recurring USD
+- Webhook endpoint live
+- Customer Portal: `bpc_1TNvl3QsbO4Gj1Xr3VaOSWcU`
+- `LAUNCH50` promo code (50% off, 100 limit, May 31 expiry)
+
+---
+
+## 🔑 Kritik State ve Erişim Bilgisi
+
+### Owner Account (`outmassapp@outlook.com`)
+- Plan: **Pro** (manuel Supabase update, Stripe'ta subscription yok — dogfooding)
+- Manuel Pro için: `UPDATE users SET plan='pro' WHERE email='outmassapp@outlook.com'`
+- user_id: `7ebce016-e2af-4f88-9e00-90bdfdb18cba`
+
+### Extension IDs
+- **Yayınlanan** (Chrome Web Store): `adcfddainnkjomddlappnnbeomhlcbmm`
+- **Eski dev unpacked** (hâlâ Azure redirect list'inde, local test için): `acdafphnihddolfhabbndfofheokckhl`
+
+### Azure AD app
+- Client ID: `3b6a9f9b-cbb6-4dcb-a3b6-d993de74a1b5`
+- Redirect URIs (Web): `https://outmass-production.up.railway.app/auth/callback`
+- Redirect URIs (SPA): both chromiumapp.org URLs (yeni + eski)
+
+### Analytics queries — owner'ı exclude et
+```sql
+-- Revenue / active users queries'te kendi hesabını çıkar
+WHERE stripe_subscription_id IS NOT NULL
+  AND email != 'outmassapp@outlook.com'
+```
+
+### Supabase temizlik (FK-safe sıra)
+```sql
+-- events → contacts → ab_tests → follow_ups → campaigns
+DELETE FROM events WHERE contact_id IN (
+  SELECT c.id FROM contacts c JOIN campaigns ca ON c.campaign_id=ca.id
+  WHERE ca.user_id='7ebce016-e2af-4f88-9e00-90bdfdb18cba');
+DELETE FROM contacts WHERE campaign_id IN (
+  SELECT id FROM campaigns WHERE user_id='7ebce016-e2af-4f88-9e00-90bdfdb18cba');
+DELETE FROM ab_tests WHERE user_id='7ebce016-e2af-4f88-9e00-90bdfdb18cba';
+DELETE FROM follow_ups WHERE user_id='7ebce016-e2af-4f88-9e00-90bdfdb18cba';
+DELETE FROM campaigns WHERE user_id='7ebce016-e2af-4f88-9e00-90bdfdb18cba';
+```
 
 ---
 
