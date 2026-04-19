@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "María García"
+  },
+  "placeholderSenderPosition": {
+    "message": "Fundador"
+  },
+  "placeholderSenderCompany": {
+    "message": "Acme S.L."
+  },
+  "placeholderSenderPhone": {
+    "message": "+34 600 000 000"
   }
 }

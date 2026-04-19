@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "张伟"
+  },
+  "placeholderSenderPosition": {
+    "message": "创始人"
+  },
+  "placeholderSenderCompany": {
+    "message": "示例公司"
+  },
+  "placeholderSenderPhone": {
+    "message": "+86 000 0000 0000"
   }
 }

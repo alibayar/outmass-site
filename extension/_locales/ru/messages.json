@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "Иван Иванов"
+  },
+  "placeholderSenderPosition": {
+    "message": "Основатель"
+  },
+  "placeholderSenderCompany": {
+    "message": "ООО \"Акме\""
+  },
+  "placeholderSenderPhone": {
+    "message": "+7 (495) 000-00-00"
   }
 }

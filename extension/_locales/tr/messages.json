@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "Ayşe Yılmaz"
+  },
+  "placeholderSenderPosition": {
+    "message": "Kurucu"
+  },
+  "placeholderSenderCompany": {
+    "message": "Örnek A.Ş."
+  },
+  "placeholderSenderPhone": {
+    "message": "+90 555 000 0000"
   }
 }

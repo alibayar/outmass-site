@@ -628,11 +628,19 @@
   },
   "testSendSuccess": {
     "message": "Test email sent to $EMAIL$. Check your inbox.",
-    "placeholders": { "email": { "content": "$1" } }
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
   },
   "testSendFailed": {
     "message": "Test send failed: $ERROR$",
-    "placeholders": { "error": { "content": "$1" } }
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   },
   "testSendNeedsContent": {
     "message": "Enter subject and body before sending a test."
@@ -645,23 +653,43 @@
   },
   "warnSpamWords": {
     "message": "Possible spam words detected: $LIST$",
-    "placeholders": { "list": { "content": "$1" } }
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   },
   "warnTooManyLinks": {
     "message": "$N$ links in body — may trigger spam filters.",
-    "placeholders": { "n": { "content": "$1" } }
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   },
   "warnHtmlInvalid": {
     "message": "HTML looks unbalanced (unclosed tags: $TAGS$). Check before sending.",
-    "placeholders": { "tags": { "content": "$1" } }
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
   },
   "warnTooManyImages": {
     "message": "$N$ images in body — heavy image use looks spammy.",
-    "placeholders": { "n": { "content": "$1" } }
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
   },
   "warnShortenedLinks": {
     "message": "Shortened links detected ($LIST$) — deliverability may drop.",
-    "placeholders": { "list": { "content": "$1" } }
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
   },
   "warnContinueAnyway": {
     "message": "Continue sending anyway?"
@@ -680,7 +708,11 @@
   },
   "campaignNameDuplicate": {
     "message": "A campaign named \"$NAME$\" already exists. Continue?",
-    "placeholders": { "name": { "content": "$1" } }
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
   },
   "previewSubjectLabel": {
     "message": "Preview"
@@ -738,6 +770,22 @@
   },
   "uploadSkippedPrevious": {
     "message": "$N$ recipient(s) skipped — already contacted in a recent campaign.",
-    "placeholders": { "n": { "content": "$1" } }
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "placeholderSenderName": {
+    "message": "Jane Doe"
+  },
+  "placeholderSenderPosition": {
+    "message": "Founder"
+  },
+  "placeholderSenderCompany": {
+    "message": "Acme Inc."
+  },
+  "placeholderSenderPhone": {
+    "message": "+1 (555) 000-0000"
   }
 }

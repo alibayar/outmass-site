@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "Anna Müller"
+  },
+  "placeholderSenderPosition": {
+    "message": "Gründer"
+  },
+  "placeholderSenderCompany": {
+    "message": "Acme GmbH"
+  },
+  "placeholderSenderPhone": {
+    "message": "+49 30 0000000"
   }
 }

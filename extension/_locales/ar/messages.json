@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "سارة أحمد"
+  },
+  "placeholderSenderPosition": {
+    "message": "مؤسس"
+  },
+  "placeholderSenderCompany": {
+    "message": "شركة أكمي"
+  },
+  "placeholderSenderPhone": {
+    "message": "+971 50 000 0000"
   }
 }

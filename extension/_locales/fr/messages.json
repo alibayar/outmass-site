@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "Camille Martin"
+  },
+  "placeholderSenderPosition": {
+    "message": "Fondateur"
+  },
+  "placeholderSenderCompany": {
+    "message": "Acme SAS"
+  },
+  "placeholderSenderPhone": {
+    "message": "+33 1 00 00 00 00"
   }
 }

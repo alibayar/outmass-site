@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "山田太郎"
+  },
+  "placeholderSenderPosition": {
+    "message": "創業者"
+  },
+  "placeholderSenderCompany": {
+    "message": "株式会社サンプル"
+  },
+  "placeholderSenderPhone": {
+    "message": "+81 00-0000-0000"
   }
 }

@@ -775,5 +775,17 @@
         "content": "$1"
       }
     }
+  },
+  "placeholderSenderName": {
+    "message": "राज शर्मा"
+  },
+  "placeholderSenderPosition": {
+    "message": "संस्थापक"
+  },
+  "placeholderSenderCompany": {
+    "message": "एक्मे प्रा. लि."
+  },
+  "placeholderSenderPhone": {
+    "message": "+91 00000 00000"
   }
 }
