@@ -542,33 +542,36 @@ async def send_campaign(
     }
 
 
-# ── C.3: Test Send Endpoint ──
+# ── C.3: Test Send ──
+#
+# Two variants, same behavior:
+#   POST /campaigns/test-send           — stateless, subject+body in body (preferred)
+#   POST /campaigns/{campaign_id}/test-send — legacy, reads subject+body from a
+#       persisted campaign row (kept for backwards compat with older extensions)
+#
+# Neither variant consumes monthly quota nor writes any contact/campaign row.
 
 
 class TestSendRequest(BaseModel):
     sample: dict | None = None  # optional merge-tag values (first CSV row)
+    # Stateless path uses these; legacy path ignores them.
+    subject: str | None = None
+    body: str | None = None
 
 
-@router.post("/{campaign_id}/test-send")
-async def test_send(
-    campaign_id: str,
-    body: TestSendRequest,
-    user: dict = Depends(get_current_user),
-):
-    """Send one test email to the authenticated user's own address.
+async def _run_test_send(
+    subject: str, email_body: str, sample: dict | None, user: dict
+) -> dict:
+    """Shared implementation: validate + send one preview email to the user."""
+    subject = subject or ""
+    email_body = email_body or ""
+    if not subject.strip() or not email_body.strip():
+        raise HTTPException(
+            status_code=400, detail="Subject and body are required"
+        )
 
-    Uses the optional `sample` dict as merge context. Does not consume
-    the monthly quota and does not create a contact record.
-    """
-    campaign = campaign_model.get_campaign(campaign_id)
-    if not campaign or campaign["user_id"] != user["id"]:
-        raise HTTPException(status_code=404, detail="Campaign not found")
-
-    for field_name, content in (
-        ("subject", campaign["subject"]),
-        ("body", campaign["body"]),
-    ):
-        malformed = find_malformed_tags(content or "")
+    for field_name, content in (("subject", subject), ("body", email_body)):
+        malformed = find_malformed_tags(content)
         if malformed:
             raise HTTPException(
                 status_code=400,
@@ -584,9 +587,10 @@ async def test_send(
             detail="Could not refresh Microsoft token. Please log in again.",
         )
 
-    sample = body.sample or {}
+    sample = sample or {}
+    synthetic_campaign = {"subject": subject, "body": email_body}
     synthetic_contact = {
-        "id": f"test-{campaign_id}",
+        "id": "test-stateless",
         "email": user["email"],
         "first_name": sample.get("firstName", "Test"),
         "last_name": sample.get("lastName", "User"),
@@ -595,7 +599,8 @@ async def test_send(
         "custom_fields": {
             k: v
             for k, v in sample.items()
-            if k not in ("firstName", "lastName", "company", "position", "email")
+            if k
+            not in ("firstName", "lastName", "company", "position", "email")
         },
     }
 
@@ -603,7 +608,7 @@ async def test_send(
         result = await _send_single_email(
             client=client,
             access_token=access_token,
-            campaign=campaign,
+            campaign=synthetic_campaign,
             contact=synthetic_contact,
             track_opens=False,
             track_clicks=False,
@@ -617,6 +622,48 @@ async def test_send(
         )
 
     return {"success": True, "sent_to": user["email"]}
+
+
+@router.post("/test-send")
+async def test_send_stateless(
+    body: TestSendRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Preferred: send one test email using subject+body from request.
+
+    Does NOT create a campaign row, so test sends never pollute the
+    Reports tab. This is what the extension uses.
+    """
+    return await _run_test_send(
+        subject=body.subject or "",
+        email_body=body.body or "",
+        sample=body.sample,
+        user=user,
+    )
+
+
+@router.post("/{campaign_id}/test-send")
+async def test_send(
+    campaign_id: str,
+    body: TestSendRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Legacy: read subject+body from an existing campaign row.
+
+    Kept so older extension versions still work while Chrome auto-updates
+    users to the new stateless flow. Can be removed after v0.2.x.
+    """
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+    # Treat as before, share impl.
+    result_payload = await _run_test_send(
+        subject=campaign["subject"] or "",
+        email_body=campaign["body"] or "",
+        sample=body.sample,
+        user=user,
+    )
+    return result_payload
 
 
 # ── D.2: Archive Endpoints ──

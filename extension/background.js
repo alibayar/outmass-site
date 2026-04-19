@@ -368,7 +368,18 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       return true;
 
     case "TEST_SEND":
+      // Legacy path (kept for older sidebar builds that still pre-create a campaign).
       backendFetch("/campaigns/" + message.campaignId + "/test-send", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "TEST_SEND_STATELESS":
+      // Preferred: backend validates subject+body directly, no DB write.
+      backendFetch("/campaigns/test-send", {
         method: "POST",
         body: message.payload,
       }).then(function (result) {

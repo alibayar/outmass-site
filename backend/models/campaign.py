@@ -70,7 +70,11 @@ def list_campaigns(user_id: str, archived: bool = False) -> list[dict]:
         .limit(100)
         .execute()
     )
-    return result.data
+    rows = result.data or []
+    # Hide legacy test-send campaigns (pre-stateless refactor) from all lists.
+    # These should no longer be created; this filter is for historical rows
+    # still present in the DB.
+    return [r for r in rows if r.get("name") != "__test_send__"]
 
 
 def update_campaign(campaign_id: str, updates: dict):

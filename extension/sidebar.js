@@ -312,29 +312,21 @@
       btnTestSend.textContent = "…";
 
       var sample = (csvData && csvData.rows && csvData.rows[0]) || {};
-      // Step 1: create an ephemeral campaign
+      // Stateless test-send — no campaign row is created on the backend.
       chrome.runtime.sendMessage(
-        { type: "CREATE_CAMPAIGN",
-          payload: { name: "__test_send__", subject: subject, body: body } },
-        function (createResp) {
-          if (!createResp || createResp.error) {
-            alert(t("testSendFailed", [createResp ? createResp.error : "create failed"]));
-            btnTestSend.disabled = false; btnTestSend.textContent = original; return;
+        {
+          type: "TEST_SEND_STATELESS",
+          payload: { subject: subject, body: body, sample: sample },
+        },
+        function (resp) {
+          btnTestSend.disabled = false;
+          btnTestSend.textContent = original;
+          if (!resp || resp.error) {
+            alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
+            return;
           }
-          var cid = createResp.data ? createResp.data.campaign_id : createResp.campaign_id;
-          // Step 2: test-send to the user's own inbox
-          chrome.runtime.sendMessage(
-            { type: "TEST_SEND", campaignId: cid, payload: { sample: sample } },
-            function (resp) {
-              btnTestSend.disabled = false; btnTestSend.textContent = original;
-              if (!resp || resp.error) {
-                alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
-                return;
-              }
-              var data = resp.data || resp;
-              alert(t("testSendSuccess", [data.sent_to || ""]));
-            }
-          );
+          var data = resp.data || resp;
+          alert(t("testSendSuccess", [data.sent_to || ""]));
         }
       );
     });

@@ -107,6 +107,73 @@ def test_test_send_delivers_to_sender(client, fake_db, auth_bypass):
     assert body["sent_to"] == FAKE_USER["email"]
 
 
+def test_stateless_test_send_delivers_without_creating_campaign(
+    client, fake_db, auth_bypass
+):
+    """POST /campaigns/test-send sends a preview using subject+body from
+    the request body and does NOT persist anything."""
+    # No campaigns table seeded on purpose — should not be touched.
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[]))
+    with patch("models.ms_token.get_fresh_access_token", return_value="fake-token"), \
+         patch("routers.campaigns._send_single_email",
+               new=AsyncMock(return_value={"success": True})):
+        resp = client.post(
+            "/campaigns/test-send",
+            headers={"Authorization": "Bearer t"},
+            json={
+                "subject": "Hi {{firstName}}",
+                "body": "Welcome {{firstName}}",
+                "sample": {"firstName": "Alice"},
+            },
+        )
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["success"] is True
+    assert body["sent_to"] == FAKE_USER["email"]
+
+
+def test_stateless_test_send_rejects_malformed_tag(client, fake_db, auth_bypass):
+    resp = client.post(
+        "/campaigns/test-send",
+        headers={"Authorization": "Bearer t"},
+        json={"subject": "Hi {{firstName}", "body": "Body ok"},
+    )
+    assert resp.status_code == 400
+    assert "merge tag" in resp.json()["detail"].lower()
+
+
+def test_stateless_test_send_rejects_empty_subject_or_body(
+    client, fake_db, auth_bypass
+):
+    resp = client.post(
+        "/campaigns/test-send",
+        headers={"Authorization": "Bearer t"},
+        json={"subject": "  ", "body": "Body"},
+    )
+    assert resp.status_code == 400
+
+
+def test_list_campaigns_hides_legacy_test_send_rows(fake_db):
+    """Historical '__test_send__' campaigns must never surface in the Reports
+    tab, even if they still exist in the database from before the stateless
+    refactor."""
+    from models import campaign as campaign_model
+
+    fake_db.set_table(
+        "campaigns",
+        FakeQueryBuilder(data=[
+            {"id": "real-1", "user_id": FAKE_USER["id"], "name": "Q2 Wave 1",
+             "archived": False, "status": "sent"},
+            {"id": "test-legacy", "user_id": FAKE_USER["id"],
+             "name": "__test_send__", "archived": False, "status": "sent"},
+        ]),
+    )
+    rows = campaign_model.list_campaigns(FAKE_USER["id"], archived=False)
+    names = [r["name"] for r in rows]
+    assert "Q2 Wave 1" in names
+    assert "__test_send__" not in names
+
+
 def test_test_send_rejects_malformed_tag(client, fake_db, auth_bypass):
     campaign = {
         "id": "c5", "user_id": FAKE_USER["id"], "status": "draft",
