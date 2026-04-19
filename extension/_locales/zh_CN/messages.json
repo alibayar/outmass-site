@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "此功能仅在付费计划中可用。是否升级?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "没有可发送的收件人 — 所有行都被屏蔽列表、去重或无效邮箱过滤。"
   }
 }

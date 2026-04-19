@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "Bu özellik sadece ücretli planlarda mevcut. Yükseltmek ister misin?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "Gönderilecek kimse kalmadı — tüm satırlar engellilere, tekrar filtresine veya geçersiz email'lere takıldı."
   }
 }

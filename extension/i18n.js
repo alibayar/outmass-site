@@ -63,15 +63,35 @@ function whenI18nReady(cb) {
 }
 
 /**
- * Substitute $1, $2, $3 placeholders in a message template.
- * Mirrors Chrome i18n's substitution behavior.
+ * Substitute placeholders in a message template.
+ *
+ * Two substitution passes to match Chrome's native behavior:
+ *   1. Named placeholders like $EMAIL$, $N$ — resolved via the entry's
+ *      `placeholders` map (e.g. { email: { content: "$1" } }). Names are
+ *      case-insensitive in the message text but lowercase in the map,
+ *      per the Chrome extension i18n spec.
+ *   2. Positional placeholders $1, $2, $3 — filled from `subs`.
  */
-function _applySubs(msg, subs) {
-  if (!subs) return msg;
-  for (var i = 0; i < subs.length; i++) {
-    msg = msg.split("$" + (i + 1)).join(subs[i]);
+function _applySubs(message, placeholders, subs) {
+  // Pass 1: named placeholders → positional (or literal) content
+  if (placeholders) {
+    for (var name in placeholders) {
+      if (!Object.prototype.hasOwnProperty.call(placeholders, name)) continue;
+      var content = placeholders[name] && placeholders[name].content;
+      if (typeof content !== "string") continue;
+      // Chrome treats $NAME$ case-insensitively. Escape the name for regex.
+      var escaped = name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      var re = new RegExp("\\$" + escaped + "\\$", "gi");
+      message = message.replace(re, content);
+    }
   }
-  return msg;
+  // Pass 2: positional $1..$9
+  if (subs && subs.length) {
+    for (var i = 0; i < subs.length; i++) {
+      message = message.split("$" + (i + 1)).join(subs[i]);
+    }
+  }
+  return message;
 }
 
 /**
@@ -81,9 +101,11 @@ function _applySubs(msg, subs) {
 function t(key, subs) {
   // 1. Override (if user picked a specific language)
   if (_i18nOverride && _i18nOverride[key] && _i18nOverride[key].message) {
-    return _applySubs(_i18nOverride[key].message, subs);
+    var entry = _i18nOverride[key];
+    return _applySubs(entry.message, entry.placeholders, subs);
   }
-  // 2. Chrome's i18n (auto-detects browser UI language)
+  // 2. Chrome's i18n (auto-detects browser UI language, handles named
+  //    placeholders itself via placeholders map in messages.json)
   if (typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getMessage) {
     var msg = chrome.i18n.getMessage(key, subs);
     if (msg) return msg;

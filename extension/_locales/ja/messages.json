@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "この機能は有料プランでのみ利用可能です。アップグレードしますか?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "送信先が残っていません — すべての行がブロックリスト、重複除去、または無効なメールにより除外されました。"
   }
 }

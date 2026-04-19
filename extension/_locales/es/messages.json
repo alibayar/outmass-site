@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "Esta función solo está disponible en planes de pago. ¿Actualizar?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "No quedan destinatarios — todas las filas fueron filtradas por lista de bloqueo, dedup o emails inválidos."
   }
 }

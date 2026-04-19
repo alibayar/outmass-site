@@ -661,6 +661,13 @@
               alert(t("uploadSkippedPrevious", [String(skippedPrev)]));
             }
 
+            // Guard: if every row was filtered (dedup, invalid, suppressed),
+            // don't proceed to a 0-recipient scheduled/immediate send.
+            if (count === 0) {
+              showSendError(t("alertNoContactsAfterUpload"));
+              return;
+            }
+
             // If A/B test enabled, create it before sending
             var abEnabled = abTestCheckbox && abTestCheckbox.checked;
             var abSubjectB = document.getElementById("ab-subject-b");
@@ -708,7 +715,25 @@
       btnSend.textContent = t("btnSend");
       btnSend.disabled = false;
       var schedDate = new Date(scheduledFor);
-      alert(t("alertScheduledSuccess", [String(count), schedDate.toLocaleString()]));
+      // Format using extension's active UI locale so Turkish users don't
+      // see "4/19/2026, 11:35 PM" in an otherwise-Turkish alert.
+      var localeTag = (typeof _i18nOverrideLocale === "string" && _i18nOverrideLocale)
+        ? _i18nOverrideLocale.replace("_", "-")
+        : (navigator.language || "en");
+      var formatted;
+      try {
+        formatted = schedDate.toLocaleString(localeTag, {
+          weekday: "short",
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      } catch (e) {
+        formatted = schedDate.toLocaleString();
+      }
+      alert(t("alertScheduledSuccess", [String(count), formatted]));
       log("Campaign scheduled:", campaignId, "for", scheduledFor);
       maybeCreateFollowup(campaignId);
       return;

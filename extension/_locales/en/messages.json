@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "This feature is only available on paid plans. Would you like to upgrade?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "No recipients left to send to — all rows were filtered by your suppression list, dedup settings, or invalid emails."
   }
 }

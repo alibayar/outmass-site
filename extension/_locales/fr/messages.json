@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "Cette fonction n'est disponible que sur les plans payants. Upgrader ?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "Plus de destinataires — toutes les lignes ont été filtrées par votre liste de blocage, le dédoublonnage ou des e-mails invalides."
   }
 }

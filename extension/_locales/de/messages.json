@@ -799,5 +799,8 @@
   },
   "errFeatureLocked": {
     "message": "Diese Funktion ist nur in bezahlten Plänen verfügbar. Upgraden?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "Keine Empfänger mehr — alle Zeilen wurden durch Sperrliste, Dedup oder ungültige E-Mails gefiltert."
   }
 }
