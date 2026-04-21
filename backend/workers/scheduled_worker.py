@@ -3,6 +3,7 @@ OutMass — Scheduled Campaign Worker + A/B Test Winner Sender
 Celery beat tasks:
 - processes due scheduled campaigns every 5 minutes
 - evaluates A/B test winners and sends remaining contacts every 10 minutes
+- proactively checks user token health once per day
 """
 
 import re
@@ -20,8 +21,8 @@ from config import (
     SEND_DELAY_SECONDS,
     STARTER_PLAN_MONTHLY_LIMIT,
 )
+from models.ms_token import get_fresh_access_token
 from workers.celery_app import celery
-from workers.followup_worker import _get_fresh_access_token
 
 
 @celery.task
@@ -47,10 +48,19 @@ def process_scheduled_campaigns():
             campaign_model.update_campaign(campaign["id"], {"status": "failed"})
             continue
 
-        # Get fresh access token
-        access_token = _get_fresh_access_token(db, user["id"])
+        # Get fresh access token (auto-flags user as requires_reauth on permanent failure)
+        access_token = get_fresh_access_token(user["id"])
         if not access_token:
-            # Can't send without token — keep scheduled for retry
+            # If the user was flagged requires_reauth by the refresh attempt,
+            # the failure is permanent until they re-authorize. Mark the
+            # campaign failed_auth so the sidebar surfaces a clear error
+            # instead of the scheduled campaign silently looping forever.
+            refreshed_user = user_model.get_by_id(user["id"])
+            if refreshed_user and refreshed_user.get("requires_reauth"):
+                campaign_model.update_campaign(
+                    campaign["id"], {"status": "failed_auth"}
+                )
+            # Transient failures keep the campaign scheduled for retry.
             continue
 
         # Freemium check
@@ -280,8 +290,14 @@ def evaluate_ab_tests():
             ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
             continue
 
-        access_token = _get_fresh_access_token(db, user["id"])
+        access_token = get_fresh_access_token(user["id"])
         if not access_token:
+            refreshed_user = user_model.get_by_id(user["id"])
+            if refreshed_user and refreshed_user.get("requires_reauth"):
+                ab_test_model.update_ab_test(ab_test["id"], {"status": "failed_auth"})
+                campaign_model.update_campaign(
+                    ab_test["campaign_id"], {"status": "failed_auth"}
+                )
             continue
 
         # Get remaining pending contacts (those without ab_variant)
@@ -333,3 +349,79 @@ def evaluate_ab_tests():
         total_sent += sent_count
 
     return {"evaluated": len(result.data), "sent": total_sent}
+
+
+# ── Proactive token health check ──
+#
+# Microsoft refresh_tokens typically live 14-90 days depending on tenant
+# policy. If the user doesn't trigger a scheduled send or follow-up in
+# that window, we won't notice the token died until the next send attempt
+# — by which time the user has already missed a send window.
+#
+# This task runs daily, attempts a silent refresh for every user who
+# still has a stored refresh_token and isn't already flagged. If the
+# refresh fails with a permanent error, `get_fresh_access_token` flags
+# the user + fires the reconnect email via `_mark_requires_reauth`.
+
+
+@celery.task
+def check_user_tokens():
+    """Proactively verify every connected user's MS refresh token."""
+    from database import get_db
+
+    db = get_db()
+
+    # Only users who have a token row AND aren't already flagged. Users
+    # flagged already will re-send a new refresh_token on their next OAuth
+    # callback, which clears the flag — no point hammering a known-dead
+    # token for them daily.
+    tokens = (
+        db.table("user_tokens")
+        .select("user_id")
+        .execute()
+    )
+    user_ids = [t["user_id"] for t in (tokens.data or []) if t.get("user_id")]
+    if not user_ids:
+        return {"checked": 0, "flagged": 0}
+
+    flagged_before = set()
+    healthy = 0
+    newly_flagged = 0
+
+    # Get current requires_reauth state in one query so we can tell which
+    # users transitioned during this run (for metrics — the email is
+    # handled inside _mark_requires_reauth).
+    users_rows = (
+        db.table("users")
+        .select("id, requires_reauth")
+        .in_("id", user_ids)
+        .execute()
+    )
+    for row in users_rows.data or []:
+        if row.get("requires_reauth"):
+            flagged_before.add(row["id"])
+
+    targets = [uid for uid in user_ids if uid not in flagged_before]
+
+    for user_id in targets:
+        token = get_fresh_access_token(user_id)
+        if token:
+            healthy += 1
+            continue
+        # get_fresh_access_token flags via _mark_requires_reauth on
+        # permanent failure. Count the transition for reporting.
+        check = (
+            db.table("users")
+            .select("requires_reauth")
+            .eq("id", user_id)
+            .execute()
+        )
+        if check.data and check.data[0].get("requires_reauth"):
+            newly_flagged += 1
+
+    return {
+        "checked": len(targets),
+        "healthy": healthy,
+        "newly_flagged": newly_flagged,
+        "already_flagged": len(flagged_before),
+    }

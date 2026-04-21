@@ -11,14 +11,12 @@ import urllib.parse
 import httpx
 
 from config import (
-    AZURE_CLIENT_ID,
     BACKEND_URL,
     GRAPH_API_BASE,
-    MS_GRAPH_SCOPES,
-    MS_TOKEN_ENDPOINT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
+from models.ms_token import get_fresh_access_token
 from workers.celery_app import celery
 
 
@@ -61,10 +59,14 @@ def process_followups():
             followup_model.update_followup_status(followup["id"], "sent")
             continue
 
-        # Get fresh access token using stored refresh token
-        access_token = _get_fresh_access_token(db, user["id"])
+        # Get fresh access token (auto-flags user as requires_reauth on permanent failure)
+        access_token = get_fresh_access_token(user["id"])
         if not access_token:
-            # Can't send without token — skip but keep scheduled for retry
+            # Permanent failure → cancel the follow-up so it doesn't retry
+            # forever. Transient failures leave it pending.
+            refreshed_user = user_model.get_by_id(user["id"])
+            if refreshed_user and refreshed_user.get("requires_reauth"):
+                followup_model.update_followup_status(followup["id"], "failed_auth")
             continue
 
         # Filter out suppressed emails
@@ -125,67 +127,6 @@ def _get_filtered_contacts(db, campaign_id: str, condition: str) -> list[dict]:
 
     result = query.execute()
     return result.data
-
-
-def _get_fresh_access_token(db, user_id: str) -> str | None:
-    """
-    Get a valid MS access token.
-    Strategy:
-    1. Try stored access_token first (saved during campaign send, valid ~1 hour)
-    2. Try refresh_token to get a new access_token
-    """
-    result = (
-        db.table("user_tokens")
-        .select("access_token, refresh_token")
-        .eq("user_id", user_id)
-        .execute()
-    )
-    if not result.data or len(result.data) == 0:
-        return None
-
-    row = result.data[0]
-
-    # Strategy 1: Try stored access token (may still be valid)
-    access_token = row.get("access_token")
-    if access_token:
-        # Verify it's still valid with a quick Graph API call
-        try:
-            check = httpx.get(
-                "https://graph.microsoft.com/v1.0/me",
-                headers={"Authorization": f"Bearer {access_token}"},
-            )
-            if check.status_code == 200:
-                return access_token
-        except Exception:
-            pass
-
-    # Strategy 2: Try refresh token
-    refresh_token = row.get("refresh_token")
-    if refresh_token:
-        try:
-            resp = httpx.post(
-                MS_TOKEN_ENDPOINT,
-                data={
-                    "client_id": AZURE_CLIENT_ID,
-                    "grant_type": "refresh_token",
-                    "refresh_token": refresh_token,
-                    "scope": MS_GRAPH_SCOPES,
-                },
-                headers={"Content-Type": "application/x-www-form-urlencoded"},
-            )
-
-            if resp.status_code == 200:
-                tokens = resp.json()
-                new_access = tokens.get("access_token")
-                new_refresh = tokens.get("refresh_token", refresh_token)
-                db.table("user_tokens").update(
-                    {"access_token": new_access, "refresh_token": new_refresh}
-                ).eq("user_id", user_id).execute()
-                return new_access
-        except Exception:
-            pass
-
-    return None
 
 
 def _send_followup_email(

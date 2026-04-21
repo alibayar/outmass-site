@@ -91,4 +91,11 @@ celery.conf.beat_schedule = {
         # morning in Americas, afternoon in Europe, evening in Asia.
         "schedule": crontab(hour=14, minute=0),
     },
+    "check-user-tokens": {
+        "task": "workers.scheduled_worker.check_user_tokens",
+        # 03:00 UTC daily — low traffic window, before EU/Americas workday
+        # so users who need to reconnect see the banner before they try
+        # to send their morning campaign.
+        "schedule": crontab(hour=3, minute=0),
+    },
 }
