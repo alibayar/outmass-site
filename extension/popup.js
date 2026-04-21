@@ -226,7 +226,12 @@
           chrome.tabs.create({ url: resp.data.portal_url });
           window.close();
         } else {
-          alert(t("popupPortalFailed"));
+          // Include the backend error string so the user can tell the
+          // difference between "no Stripe customer" (need to subscribe
+          // first) and "Stripe not configured" (misconfig). Falls back
+          // to the generic localized message if backend said nothing.
+          var detail = (resp && resp.error) ? "\n\n" + resp.error : "";
+          alert(t("popupPortalFailed") + detail);
         }
       });
     });

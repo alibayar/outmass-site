@@ -1840,7 +1840,14 @@
       chrome.runtime.sendMessage({ type: "OPEN_PORTAL" }, function (resp) {
         if (resp && resp.data && resp.data.portal_url) {
           window.open(resp.data.portal_url, "_blank");
+          return;
         }
+        // Silent failure used to leave the user staring at a do-nothing
+        // button. Surface the backend error so at least they know *why*
+        // nothing happened — same UX as the popup's Manage button.
+        if (handleSessionExpired(resp)) return;
+        var detail = (resp && resp.error) ? "\n\n" + resp.error : "";
+        alert(t("popupPortalFailed") + detail);
       });
     });
   }
