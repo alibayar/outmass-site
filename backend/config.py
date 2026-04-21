@@ -68,6 +68,31 @@ AZURE_CLIENT_ID = os.getenv("AZURE_CLIENT_ID", "3b6a9f9b-cbb6-4dcb-a3b6-d993de74
 AZURE_CLIENT_SECRET = os.getenv("AZURE_CLIENT_SECRET", "")
 AZURE_REDIRECT_URI = os.getenv("AZURE_REDIRECT_URI", f"{BACKEND_URL}/auth/callback")
 AZURE_EXTENSION_ID = os.getenv("AZURE_EXTENSION_ID", "adcfddainnkjomddlappnnbeomhlcbmm")
+
+# Multi-extension allowlist for the OAuth `state` round-trip.
+#
+# The callback redirects to `https://{ext_id}.chromiumapp.org/auth#jwt=...`.
+# For `launchWebAuthFlow` to close correctly, that ext_id must match the
+# calling extension's chrome.runtime.id. A single Railway env var
+# (AZURE_EXTENSION_ID) can only hold one value — which breaks local dev
+# (unpacked extension has a different ID than the store build).
+#
+# Fix: the extension passes its own ID via `?ext=...` on /auth/login.
+# We echo it through Microsoft via the OAuth `state` parameter, then
+# redirect to that ID on callback — but only if it's in this allowlist,
+# otherwise a malicious page could point our OAuth flow (and the resulting
+# JWT fragment) at an attacker-controlled chromiumapp.org subdomain.
+#
+# Defaults cover the store build + the handoff-documented dev unpacked ID.
+# Add more by setting `ALLOWED_EXTENSION_IDS=id1,id2,id3` on Railway.
+_default_ext_ids = "adcfddainnkjomddlappnnbeomhlcbmm,acdafphnihddolfhabbndfofheokckhl"
+ALLOWED_EXTENSION_IDS = [
+    e.strip()
+    for e in os.getenv("ALLOWED_EXTENSION_IDS", _default_ext_ids).split(",")
+    if e.strip()
+]
+if AZURE_EXTENSION_ID and AZURE_EXTENSION_ID not in ALLOWED_EXTENSION_IDS:
+    ALLOWED_EXTENSION_IDS.append(AZURE_EXTENSION_ID)
 MS_AUTH_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
 MS_TOKEN_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 MS_GRAPH_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access"

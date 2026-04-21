@@ -5,7 +5,10 @@ POST /auth/microsoft   → legacy SPA flow (kept for backward compat)
 GET  /auth/me          → current user info
 """
 
+import base64
+import json
 import logging
+import secrets
 import urllib.parse
 from datetime import datetime, timedelta, timezone
 
@@ -16,6 +19,7 @@ from jose import jwt
 from pydantic import BaseModel
 
 from config import (
+    ALLOWED_EXTENSION_IDS,
     AZURE_CLIENT_ID,
     AZURE_CLIENT_SECRET,
     AZURE_EXTENSION_ID,
@@ -85,9 +89,50 @@ async def get_current_user(authorization: str = Header(...)) -> dict:
 # ── Endpoints ──
 
 
+def _encode_state(ext_id: str) -> str:
+    """Pack extension_id + CSRF nonce into an opaque OAuth `state` param.
+
+    URL-safe base64 of JSON — Microsoft echoes `state` verbatim on the
+    callback, so we can recover which extension initiated the flow and
+    redirect the JWT back to the right chromiumapp.org subdomain.
+    """
+    payload = json.dumps({
+        "ext": ext_id,
+        "n": secrets.token_urlsafe(12),  # CSRF nonce — presence alone is enough
+    }, separators=(",", ":"))
+    return base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
+
+
+def _decode_state_ext(state: str | None) -> str | None:
+    """Extract extension_id from a state param. Returns None if invalid
+    OR not in the allowlist (prevents OAuth open-redirect to attacker)."""
+    if not state:
+        return None
+    try:
+        padded = state + "=" * (-len(state) % 4)
+        data = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")))
+        ext = data.get("ext")
+    except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
+        return None
+    if ext and ext in ALLOWED_EXTENSION_IDS:
+        return ext
+    return None
+
+
 @router.get("/login")
-async def login_redirect():
-    """Redirect user to Microsoft login. Used by extension launchWebAuthFlow."""
+async def login_redirect(ext: str | None = Query(None)):
+    """Redirect user to Microsoft login. Used by extension launchWebAuthFlow.
+
+    `ext` is the calling extension's chrome.runtime.id. It's echoed to
+    Microsoft via the OAuth `state` parameter, validated against
+    ALLOWED_EXTENSION_IDS on the callback, and used to route the final
+    chromiumapp.org redirect back to the originating extension. An
+    unrecognized or missing `ext` falls back to AZURE_EXTENSION_ID so
+    legacy (pre-multi-ext) clients still work.
+    """
+    chosen_ext = ext if ext in ALLOWED_EXTENSION_IDS else AZURE_EXTENSION_ID
+    state = _encode_state(chosen_ext)
+
     params = {
         "client_id": AZURE_CLIENT_ID,
         "response_type": "code",
@@ -95,6 +140,7 @@ async def login_redirect():
         "response_mode": "query",
         "scope": MS_GRAPH_SCOPES,
         "prompt": "select_account",
+        "state": state,
     }
     auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(params)}"
     return RedirectResponse(url=auth_url)
@@ -103,6 +149,7 @@ async def login_redirect():
 @router.get("/callback")
 async def auth_callback(
     code: str = Query(None),
+    state: str = Query(None),
     error: str = Query(None),
     error_description: str = Query(None),
 ):
@@ -220,8 +267,13 @@ async def auth_callback(
     outmass_jwt = create_jwt(user["id"], user["email"])
 
     # Build redirect URL to extension with JWT in URL fragment (hash)
-    # Fragment is not sent to server, only visible to extension
-    ext_redirect = f"https://{AZURE_EXTENSION_ID}.chromiumapp.org/auth"
+    # Fragment is not sent to server, only visible to extension.
+    # Pick the chromiumapp.org subdomain from the state param if it
+    # validated against the allowlist; fall back to the legacy single-ID
+    # env var for old clients that don't pass ?ext=.
+    ext_from_state = _decode_state_ext(state)
+    target_ext_id = ext_from_state or AZURE_EXTENSION_ID
+    ext_redirect = f"https://{target_ext_id}.chromiumapp.org/auth"
     params = {
         "jwt": outmass_jwt,
         "email": user["email"],
