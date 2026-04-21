@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "Reconnect to Outlook — your authorization has expired. Sign in again so scheduled sends keep working."
   },
+  "sessionExpiredBannerText": {
+    "message": "Your session has expired. Sign in again to keep using OutMass."
+  },
   "reauthBannerCta": {
     "message": "Sign in"
   },

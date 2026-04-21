@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "Outlook に再接続 — 認証が切れました。予約送信を続けるには再度サインインしてください。"
   },
+  "sessionExpiredBannerText": {
+    "message": "セッションの有効期限が切れました。OutMass を引き続き使用するには再度サインインしてください。"
+  },
   "reauthBannerCta": {
     "message": "サインイン"
   },

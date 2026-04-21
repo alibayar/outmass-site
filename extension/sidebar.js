@@ -67,10 +67,25 @@
   // We call GET_SETTINGS periodically anyway; pipe the requires_reauth
   // field into a banner + sign-in button so scheduled sends don't die
   // silently.
-  function updateReauthBanner(requires) {
+  // Banner shows for two distinct situations, both fixed by signing in:
+  //  - requires_reauth: MS refresh_token died (backend flag)
+  //  - sessionExpired: our own JWT expired (backendFetch 401)
+  // The CTA is identical (MS_LOGIN) but the explanatory text differs so
+  // the user isn't confused about what broke.
+  function updateReauthBanner(requiresMsReauth, sessionExpired) {
     var banner = document.getElementById("reauth-banner");
     if (!banner) return;
-    banner.style.display = requires ? "flex" : "none";
+    var show = !!(requiresMsReauth || sessionExpired);
+    banner.style.display = show ? "flex" : "none";
+    if (!show) return;
+    var textEl = banner.querySelector(".reauth-banner-text");
+    if (textEl) {
+      // Session-expired takes precedence if both true — it's the more
+      // immediate, always-recoverable case.
+      textEl.textContent = sessionExpired
+        ? t("sessionExpiredBannerText")
+        : t("reauthBannerText");
+    }
   }
 
   var reauthBtn = document.getElementById("reauth-banner-btn");
@@ -87,20 +102,46 @@
           alert(t("reauthFailed", [resp.error]));
           return;
         }
-        // Refresh settings so banner hides (backend cleared the flag)
+        // Refresh settings so banner hides (backend cleared the flag,
+        // and MS_LOGIN success cleared our local sessionExpired flag).
         chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (r) {
           var data = r && (r.data || r);
-          updateReauthBanner(!!(data && data.requires_reauth));
+          chrome.storage.local.get(["sessionExpired"], function (s) {
+            updateReauthBanner(
+              !!(data && data.requires_reauth),
+              !!(s && s.sessionExpired)
+            );
+          });
         });
       });
     });
   }
 
+  // Short-circuit backend error handlers when the JWT has expired.
+  // If `resp.error === "session_expired"`, the reconnect banner is the
+  // user's signal to act — we don't want to also pop a modal with the
+  // raw error string. Callers wrap: `if (!handleSessionExpired(resp)) alert(...)`.
+  function handleSessionExpired(resp) {
+    if (resp && resp.error === "session_expired") {
+      pollReauthState();
+      return true;
+    }
+    return false;
+  }
+
   function pollReauthState() {
     chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
-      if (!resp || resp.error) return;
-      var data = resp.data || resp;
-      updateReauthBanner(!!data.requires_reauth);
+      // Always read the session-expired flag — even a failed /settings
+      // call (e.g. when JWT has just expired) should surface the banner.
+      chrome.storage.local.get(["sessionExpired"], function (s) {
+        var sessionExpired = !!(s && s.sessionExpired);
+        var requiresReauth = false;
+        if (resp && !resp.error) {
+          var data = resp.data || resp;
+          requiresReauth = !!(data && data.requires_reauth);
+        }
+        updateReauthBanner(requiresReauth, sessionExpired);
+      });
     });
   }
 
@@ -364,7 +405,9 @@
           btnTestSend.disabled = false;
           btnTestSend.textContent = original;
           if (!resp || resp.error) {
-            alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
+            if (!handleSessionExpired(resp)) {
+              alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
+            }
             return;
           }
           var data = resp.data || resp;
@@ -607,7 +650,7 @@
     var campaignName = nameInput && nameInput.value.trim();
     if (!campaignName) {
       var d = new Date();
-      var dateSuffix = d.toLocaleDateString(undefined, {
+      var dateSuffix = d.toLocaleDateString(getActiveLocale(), {
         month: "short", day: "numeric", year: "numeric"
       });
       var subj = subject.substring(0, 50) || t("tabCampaign");
@@ -759,9 +802,7 @@
       var schedDate = new Date(scheduledFor);
       // Format using extension's active UI locale so Turkish users don't
       // see "4/19/2026, 11:35 PM" in an otherwise-Turkish alert.
-      var localeTag = (typeof _i18nOverrideLocale === "string" && _i18nOverrideLocale)
-        ? _i18nOverrideLocale.replace("_", "-")
-        : (navigator.language || "en");
+      var localeTag = getActiveLocale();
       var formatted;
       try {
         formatted = schedDate.toLocaleString(localeTag, {
@@ -943,7 +984,9 @@
             if (resp && resp.status === 402) {
               alert(t("alertAiProOnly"));
             } else {
-              alert(t("alertAiFailed") + (resp ? resp.error : t("popupUnknownError")));
+              if (!handleSessionExpired(resp)) {
+                alert(t("alertAiFailed") + (resp ? resp.error : t("popupUnknownError")));
+              }
             }
             return;
           }
@@ -1058,7 +1101,9 @@
             loadTemplates();
           } else {
             btnDeleteTemplate.disabled = false;
-            alert(t("alertTemplateDeleteFailed") + ((resp && resp.error) || t("popupUnknownError")));
+            if (!handleSessionExpired(resp)) {
+              alert(t("alertTemplateDeleteFailed") + ((resp && resp.error) || t("popupUnknownError")));
+            }
           }
         }
       );
@@ -1164,8 +1209,10 @@
       }
       // Use the extension's active UI locale for formatting, not the
       // browser's (so Turkish users with an English OS still see Turkish).
-      var localeOverride = (typeof _i18nOverride === "string" && _i18nOverride) ||
-                           (navigator.language || "en");
+      // NOTE: previous code passed `_i18nOverride` (the translations
+      // dict, not a locale string) which made toLocaleString silently
+      // fall back to the OS locale. Use getActiveLocale() instead.
+      var localeOverride = getActiveLocale();
       var formatted = d.toLocaleString(localeOverride, {
         weekday: "short",
         year: "numeric",
@@ -1270,7 +1317,7 @@
           var sent = c.sent_count || 0;
           var openRate = sent > 0 ? Math.round((c.open_count / sent) * 100) : 0;
           var clickRate = sent > 0 ? Math.round((c.click_count / sent) * 100) : 0;
-          var date = c.created_at ? new Date(c.created_at).toLocaleDateString("tr-TR") : "";
+          var date = c.created_at ? new Date(c.created_at).toLocaleDateString(getActiveLocale()) : "";
 
           var row = document.createElement("div");
           row.className = "campaign-row";
@@ -1325,7 +1372,9 @@
     btnExportList.addEventListener("click", function () {
       chrome.runtime.sendMessage({ type: "EXPORT_CAMPAIGN_LIST" }, function (resp) {
         if (!resp || resp.error) {
-          alert(resp && resp.error ? resp.error : t("popupUnknownError"));
+          if (!handleSessionExpired(resp)) {
+            alert(resp && resp.error ? resp.error : t("popupUnknownError"));
+          }
           return;
         }
         var data = resp.data || resp;
@@ -1398,7 +1447,9 @@
             if (resp && resp.status === 402) {
               alert(t("alertCsvExportStandardOnly"));
             } else {
-              alert(t("alertCsvExportFailed") + (resp ? resp.error : t("popupUnknownError")));
+              if (!handleSessionExpired(resp)) {
+                alert(t("alertCsvExportFailed") + (resp ? resp.error : t("popupUnknownError")));
+              }
             }
             return;
           }
@@ -1759,7 +1810,9 @@
               btnSaveSettings.textContent = t("btnSaveSettings");
             }, 2000);
           } else {
-            alert(t("settingsSaveFailed") + (resp ? resp.error : t("popupUnknownError")));
+            if (!handleSessionExpired(resp)) {
+              alert(t("settingsSaveFailed") + (resp ? resp.error : t("popupUnknownError")));
+            }
           }
         }
       );
@@ -1807,7 +1860,9 @@
             input.value = "";
             loadSuppressionList();
           } else {
-            alert(t("alertSendFailed") + ": " + (resp ? resp.error : t("popupUnknownError")));
+            if (!handleSessionExpired(resp)) {
+              alert(t("alertSendFailed") + ": " + (resp ? resp.error : t("popupUnknownError")));
+            }
           }
         }
       );

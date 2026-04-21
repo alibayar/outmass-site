@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "Outlook erneut verbinden — Ihre Autorisierung ist abgelaufen. Bitte erneut anmelden, damit geplante Sendungen weiterlaufen."
   },
+  "sessionExpiredBannerText": {
+    "message": "Ihre Sitzung ist abgelaufen. Bitte erneut anmelden, um OutMass weiter zu verwenden."
+  },
   "reauthBannerCta": {
     "message": "Anmelden"
   },

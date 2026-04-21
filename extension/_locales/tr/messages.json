@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "Outlook bağlantını yenile — yetkilendirmen sona erdi. Zamanlanmış gönderimlerin çalışmaya devam etmesi için tekrar giriş yap."
   },
+  "sessionExpiredBannerText": {
+    "message": "Oturumun sona erdi. OutMass'i kullanmaya devam etmek için tekrar giriş yap."
+  },
   "reauthBannerCta": {
     "message": "Giriş yap"
   },

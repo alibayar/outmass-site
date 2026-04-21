@@ -51,6 +51,32 @@ async function initI18n() {
   _flushReady();
 }
 
+/**
+ * Return the active BCP-47 locale tag for `Intl`/`toLocaleString` use.
+ *
+ * Priority:
+ *   1. User's Settings → Interface Language override (e.g. "tr", "zh-CN")
+ *   2. Chrome's UI language
+ *   3. navigator.language
+ *   4. "en"
+ *
+ * We normalize underscores back to hyphens (Chrome locale dirs use
+ * `zh_CN` but `Intl` wants `zh-CN`). Never returns the translations
+ * dict by accident — callers used to confuse `_i18nOverride`
+ * (the messages object) with the locale tag, which made
+ * `toLocaleString` silently fall through to the OS default.
+ */
+function getActiveLocale() {
+  var lang = _i18nOverrideLocale;
+  if (!lang && typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) {
+    try { lang = chrome.i18n.getUILanguage(); } catch (e) {}
+  }
+  if (!lang && typeof navigator !== "undefined" && navigator.language) {
+    lang = navigator.language;
+  }
+  return (lang || "en").replace("_", "-");
+}
+
 function _flushReady() {
   var cbs = _i18nReadyCallbacks;
   _i18nReadyCallbacks = [];

@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "重新连接 Outlook — 您的授权已过期。请再次登录以便定时发送继续工作。"
   },
+  "sessionExpiredBannerText": {
+    "message": "您的会话已过期。请重新登录以继续使用 OutMass。"
+  },
   "reauthBannerCta": {
     "message": "登录"
   },

@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "أعد الاتصال بـ Outlook — انتهت صلاحية تفويضك. سجّل الدخول مجدداً حتى تستمر الرسائل المجدولة بالعمل."
   },
+  "sessionExpiredBannerText": {
+    "message": "انتهت صلاحية جلستك. سجّل الدخول مجدداً لمتابعة استخدام OutMass."
+  },
   "reauthBannerCta": {
     "message": "تسجيل الدخول"
   },

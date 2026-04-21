@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "Reconnectez Outlook — votre autorisation a expiré. Reconnectez-vous pour que les envois programmés continuent."
   },
+  "sessionExpiredBannerText": {
+    "message": "Votre session a expiré. Reconnectez-vous pour continuer à utiliser OutMass."
+  },
   "reauthBannerCta": {
     "message": "Se connecter"
   },

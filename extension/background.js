@@ -99,8 +99,12 @@ async function startMSLogin() {
   // Extension tells backend where to redirect at the end (passed via state)
   const extRedirectUri = chrome.identity.getRedirectURL("auth");
 
-  // Kick off auth via backend /auth/login which redirects to MS
-  const authUrl = OUTMASS_BACKEND_URL + "/auth/login";
+  // Pass our own extension ID so the backend routes the final
+  // chromiumapp.org redirect back to us (not to whatever AZURE_EXTENSION_ID
+  // happens to be set to on Railway). The backend allowlists accepted
+  // IDs — unknown IDs fall back to the env default.
+  const extId = chrome.runtime.id;
+  const authUrl = OUTMASS_BACKEND_URL + "/auth/login?ext=" + encodeURIComponent(extId);
 
   return new Promise((resolve) => {
     chrome.identity.launchWebAuthFlow(
@@ -154,6 +158,9 @@ async function startMSLogin() {
             backendJwt: jwtToken,
             user: user,
             plan: plan,
+            // Fresh JWT → clear any pending session-expired flag so the
+            // sidebar banner hides on next poll.
+            sessionExpired: false,
             // accessToken is managed server-side now; extension no longer needs it
             accessToken: null,
             refreshToken: null,
@@ -206,6 +213,17 @@ async function backendFetch(endpoint, options) {
       if (resp.status === 402) {
         const code = (detail && typeof detail === "object" && detail.error) || "limit_exceeded";
         return { error: code, status: 402, detail: detail };
+      }
+      // 401 means our JWT is expired or invalid. Clear it and raise the
+      // session-expired flag so the sidebar can show its reconnect banner
+      // instead of a raw "Invalid or expired token" alert. The flag is
+      // cleared by msLogin() on a successful re-auth.
+      if (resp.status === 401) {
+        await chrome.storage.local.set({
+          backendJwt: null,
+          sessionExpired: true,
+        });
+        return { error: "session_expired", status: 401 };
       }
       return { error: (detail && typeof detail === "string" ? detail : null) || `HTTP ${resp.status}` };
     }

@@ -806,6 +806,9 @@
   "reauthBannerText": {
     "message": "Reconecta con Outlook — tu autorización expiró. Vuelve a iniciar sesión para que los envíos programados sigan funcionando."
   },
+  "sessionExpiredBannerText": {
+    "message": "Tu sesión expiró. Vuelve a iniciar sesión para seguir usando OutMass."
+  },
   "reauthBannerCta": {
     "message": "Iniciar sesión"
   },
