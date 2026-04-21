@@ -1,8 +1,8 @@
-# OutMass — Handoff Document (2026-04-20)
+# OutMass — Handoff Document (2026-04-21)
 
 ## Proje Nedir?
 GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
-**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da v0.1.0 yayında, v0.1.1 inceleme sürecinde, v0.1.2 local'de hazır paketli.
+**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da v0.1.1 yayında, v0.1.3 local'de hazır paketli (review'a yüklenmek üzere).
 
 ## 🎯 Bu Handoff Neye Yarıyor
 Context dolduğundan yeni session'a geçiyoruz. Bu doküman son sessiondaki tüm ilerlemeyi, yarım kalan işleri ve kritik state'i içeriyor. Yeni session bunu okuyarak devam edebilmeli.
@@ -11,32 +11,39 @@ Context dolduğundan yeni session'a geçiyoruz. Bu doküman son sessiondaki tüm
 
 ## ⏳ Yarım Kalan İşler (Öncelik Sırasına Göre)
 
-### 1. v0.1.2 Chrome Web Store submission (user action bekliyor)
-- **Tetikleyici:** v0.1.1 review onayı geldiğinde email bildirimi gelir
-- **Action:** Dashboard → Paket → `outmass-v0.1.2.zip` upload → "İnceleme için gönder"
-- **Zip konumu:** `D:\dev\git\outmass\outmass-v0.1.2.zip` (129 KB, manifest v0.1.2 ✓)
-- **Critical content:** requires_reauth banner (silent OAuth failure fix). Backend zaten canlı (`cf26102`), sadece frontend user'lara ulaşmıyor.
+### 1. v0.1.3 Chrome Web Store submission (user action bekliyor)
+- **Action:** Dashboard → Paket → `outmass-v0.1.3.zip` upload → "İnceleme için gönder"
+- **Zip konumu:** `D:\dev\git\outmass\outmass-v0.1.3.zip` (128 KB, manifest v0.1.3 ✓)
+- **Not:** Paket artifact'i gitignore'da — her session'da yeniden paketlenir:
+  ```powershell
+  cd extension; Compress-Archive -Path * -DestinationPath ../outmass-v0.1.3.zip -Force
+  ```
 - **Release notes draft:**
   ```
-  v0.1.2 — bug fixes + UX improvements
-  • Reconnect-to-Outlook banner when MS authorization expires
-  • Test Send no longer creates placeholder campaigns in Reports
-  • Scheduled sending error shows proper upgrade prompt
-  • Fixed i18n named-placeholder substitution in non-English locales
-  • Cleaned up developer personal data from Settings placeholders
-  • Localized datetime formatting in scheduled-send confirmation
+  v0.1.3 — bug fixes + UX improvements
+  • Reconnect-to-Outlook banner when MS authorization expires (from v0.1.2)
+  • "Session expired" banner when your sign-in has timed out, with one-click re-login
+  • Scheduled-send time, reports dates, and alerts now use your selected interface language (was OS default)
+  • Manage Subscription button now shows a clear error message when billing isn't set up
+  • Unsubscribe footer label now respects your Settings → Unsubscribe text override (was always Turkish)
+  • Multi-extension OAuth support lets dev builds and the store build sign in against the same backend
+  • Test Send no longer creates placeholder campaigns in Reports (from v0.1.2)
+  • Scheduled sending error shows proper upgrade prompt (from v0.1.2)
+  • Fixed i18n named-placeholder substitution in non-English locales (from v0.1.2)
+  • Cleaned up developer personal data from Settings placeholders (from v0.1.2)
   ```
 
 ### 2. Post-launch iyileştirmeler (backlog, launch-blocker DEĞİL)
 - [ ] `ON DELETE CASCADE` FK zinciri events → contacts → campaigns → user (temizlik SQL'i sadeleşir)
-- [ ] Scheduled send token failure → campaign'i `failed_auth` status'a çek (şu an silent `sent=0` kalıyor)
-- [ ] MailerSend notification when user gets flagged `requires_reauth` (email notification, sadece in-sidebar banner değil)
-- [ ] Proactive token health check job (beat'te günde bir, expire yaklaşan token'ları önceden refresh et)
+- [x] ~~Scheduled send token failure → campaign'i `failed_auth` status'a çek~~ (done in v0.1.3 backend, commit `170edd9`)
+- [x] ~~MailerSend notification when user gets flagged `requires_reauth`~~ (done in v0.1.3 backend, commit `170edd9`)
+- [x] ~~Proactive token health check job~~ (done in v0.1.3 backend, beat 03:00 UTC, commit `170edd9`)
 - [ ] Non-root Celery worker (Dockerfile + `useradd` + `--uid 1000`) — güvenlik sıkılaştırma, paid user 500+ olunca yap
 - [ ] Gmail desteği (Phase 2, $5-10k MRR sonrası — CASA audit gerektirir)
 - [ ] Sender reputation score (SpamAssassin-benzeri)
+- [ ] Error codes yerine plain-text backend error mesajları lokalize etmek (örn. "No Stripe customer found" → structured code + i18n key)
 
-### 3. Launch marketing (v0.1.2 onay sonrası)
+### 3. Launch marketing (v0.1.3 onay sonrası)
 - Launch kit zaten hazır: `docs/launch/producthunt.md`
 - Launch günü öncesi: demo video (30-60 sn Loom), "notify me" email list'i büyüt (`getoutmass.com/launch`)
 - PH launch önerisi: Thursday, 00:01 PST (Istanbul 10:01)
@@ -44,12 +51,12 @@ Context dolduğundan yeni session'a geçiyoruz. Bu doküman son sessiondaki tüm
 
 ---
 
-## 🚦 Canlı Launch Durumu (2026-04-20)
+## 🚦 Canlı Launch Durumu (2026-04-21)
 
 ### Mağazada
-- **Chrome Web Store v0.1.0** yayında (`adcfddainnkjomddlappnnbeomhlcbmm`)
-- **v0.1.1** review'da (~1-2 gün onay bekleniyor). İçeriği: 10 dilde store listing, stateless Test Send, diğer UX polish.
-- **v0.1.2** `outmass-v0.1.2.zip` olarak local'de hazır. v0.1.1 onaylanır onaylanmaz upload edilecek. Critical fix: **requires_reauth banner** (silent OAuth failure prevention).
+- **Chrome Web Store v0.1.1** yayında (`adcfddainnkjomddlappnnbeomhlcbmm`) — onaylandı 2026-04-21
+- **v0.1.3** `outmass-v0.1.3.zip` olarak local'de hazır, review'a yüklenecek. v0.1.2 hiç ship olmadı (önceki session'da hazırlanmış zip, bu session'ın içerikleriyle süper-set olduğu için v0.1.3'e atlandı).
+- İçerik: requires_reauth banner, session-expired banner, locale-aware datetimes, manage-subscription error surfacing, unsubscribe label fix, multi-extension OAuth flow.
 
 ### Backend (Railway — 3 servis)
 - **outmass-production** (web): FastAPI, uvicorn, healthcheck `/`

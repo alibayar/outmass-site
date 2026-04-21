@@ -39,3 +39,6 @@ test_*.csv
 
 # Playwright visual regression screenshots
 e2e/screenshots/
+
+# Chrome Web Store release artifacts (built from extension/ directory)
+outmass-v*.zip
