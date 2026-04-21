@@ -80,11 +80,33 @@ def send_email_task(self, contact_id: str, campaign_id: str, access_token: str):
     # Wrap links
     tracked_body = _wrap_links(merged_body, contact_id)
 
-    # Unsubscribe footer
+    # Unsubscribe footer — honours the user's Settings → unsubscribe_text.
+    # Fetch via campaign.user_id rather than passing it through the task
+    # args, because Celery serialises args as JSON and we want to pick up
+    # the latest value if the user changed it between enqueue and send.
+    unsub_label = "Unsubscribe"
+    user_id = campaign.get("user_id")
+    if user_id:
+        user_row = (
+            db.table("users")
+            .select("unsubscribe_text")
+            .eq("id", user_id)
+            .execute()
+        )
+        if user_row.data and user_row.data[0].get("unsubscribe_text"):
+            unsub_label = user_row.data[0]["unsubscribe_text"]
+
+    safe_label = (
+        unsub_label
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
     unsub_url = f"{BACKEND_URL}/unsubscribe/{contact_id}"
     footer = (
         f'<br/><p style="font-size:11px;color:#999;">'
-        f'<a href="{unsub_url}">Abonelikten cik</a></p>'
+        f'<a href="{unsub_url}">{safe_label}</a></p>'
     )
 
     final_html = tracked_body + footer + tracking_pixel

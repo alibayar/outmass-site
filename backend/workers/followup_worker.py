@@ -93,6 +93,7 @@ def process_followups():
                         campaign=campaign,
                         followup=followup,
                         contact=contact,
+                        unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
                     sent_count += 1
                 except Exception:
@@ -135,6 +136,7 @@ def _send_followup_email(
     campaign: dict,
     followup: dict,
     contact: dict,
+    unsubscribe_text: str = "Unsubscribe",
 ):
     """Send a single follow-up email via Graph API."""
     merge_ctx = {
@@ -159,11 +161,19 @@ def _send_followup_email(
     # Wrap links
     tracked_body = _wrap_links(merged_body, contact["id"])
 
-    # Unsubscribe footer
+    # Unsubscribe footer — honours the user's Settings → unsubscribe_text
+    # override. Escape to prevent HTML injection via a crafted label.
     unsub_url = f"{BACKEND_URL}/unsubscribe/{contact['id']}"
+    safe_label = (
+        unsubscribe_text
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
     footer = (
         f'<br/><p style="font-size:11px;color:#999;">'
-        f'<a href="{unsub_url}">Abonelikten cik</a></p>'
+        f'<a href="{unsub_url}">{safe_label}</a></p>'
     )
 
     final_html = tracked_body + footer + tracking_pixel

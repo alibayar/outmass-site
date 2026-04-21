@@ -113,6 +113,7 @@ def process_scheduled_campaigns():
                         access_token=access_token,
                         campaign=campaign,
                         contact=contact,
+                        unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
                     if result["success"]:
                         contact_model.mark_sent(contact["id"])
@@ -138,8 +139,15 @@ def _send_email(
     access_token: str,
     campaign: dict,
     contact: dict,
+    unsubscribe_text: str = "Unsubscribe",
 ) -> dict:
-    """Send a single email via Graph API."""
+    """Send a single email via Graph API.
+
+    `unsubscribe_text` must be the user's configured label (from the
+    Settings tab). Defaulting to the English "Unsubscribe" means callers
+    that forget to pass it no longer silently ship the Turkish default
+    to every recipient.
+    """
     merge_ctx = {
         "firstName": contact.get("first_name", ""),
         "lastName": contact.get("last_name", ""),
@@ -160,9 +168,18 @@ def _send_email(
     tracked_body = _wrap_links(merged_body, contact["id"])
 
     unsub_url = f"{BACKEND_URL}/unsubscribe/{contact['id']}"
+    # Escape user-controlled label so a malicious value can't break out
+    # of the <a> tag context. Escape ampersands, angle brackets, quotes.
+    safe_label = (
+        unsubscribe_text
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
+        .replace('"', "&quot;")
+    )
     footer = (
         f'<br/><p style="font-size:11px;color:#999;">'
-        f'<a href="{unsub_url}">Abonelikten cik</a></p>'
+        f'<a href="{unsub_url}">{safe_label}</a></p>'
     )
 
     final_html = tracked_body + footer + tracking_pixel
@@ -333,6 +350,7 @@ def evaluate_ab_tests():
                         access_token=access_token,
                         campaign=campaign_copy,
                         contact=contact,
+                        unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
                     if result["success"]:
                         contact_model.mark_sent(contact["id"])
