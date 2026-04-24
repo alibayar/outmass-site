@@ -136,16 +136,27 @@ CREATE EXTENSION IF NOT EXISTS pgcrypto;
 
 COMMIT;
 
--- ── Verification ──
+-- ── Verification (safe — no deletion) ──
 --
--- 1) Table exists:
---    \d users_archive
+-- WARNING: Do NOT invoke archive_and_delete_user() manually with a
+-- real user_id. It permanently deletes the user and cascades through
+-- every dependent row. The function is only meant to be called from
+-- the POST /account/delete endpoint. Use the live extension flow
+-- (Account → Danger Zone → Delete my account) on a throwaway test
+-- account if you want to verify the full round-trip.
 --
--- 2) Function callable (on a throwaway test user):
---    SELECT archive_and_delete_user('<uuid>'::uuid, 'user_requested');
---    -- returns a UUID (the new archive row's archive_id)
+-- 1) Table exists with expected columns:
+--    SELECT column_name, data_type
+--    FROM information_schema.columns
+--    WHERE table_name = 'users_archive'
+--    ORDER BY ordinal_position;
 --
--- 3) Confirm deletion cascaded:
---    SELECT count(*) FROM campaigns WHERE user_id = '<uuid>';  -- 0
---    SELECT count(*) FROM user_tokens WHERE user_id = '<uuid>';  -- 0
---    SELECT * FROM users_archive WHERE original_user_id = '<uuid>';  -- 1 row
+-- 2) Function is registered with correct signature:
+--    SELECT proname, pronargs, prorettype::regtype
+--    FROM pg_proc
+--    WHERE proname = 'archive_and_delete_user';
+--    -- Expected: 1 row, pronargs=2, prorettype=uuid
+--
+-- 3) Archive is empty on a fresh install:
+--    SELECT count(*) FROM users_archive;
+--    -- Expected: 0 (grows by 1 every time a user deletes their account)
