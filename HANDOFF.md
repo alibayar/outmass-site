@@ -16,7 +16,12 @@ Context dolduğundan yeni session'a geçiyoruz. Bu doküman son sessiondaki tüm
 - **Zip konumu:** `D:\dev\git\outmass\outmass-v0.1.3.zip` (128 KB, manifest v0.1.3 ✓)
 - **Not:** Paket artifact'i gitignore'da — her session'da yeniden paketlenir:
   ```powershell
+  # Windows (PowerShell)
   cd extension; Compress-Archive -Path * -DestinationPath ../outmass-v0.1.3.zip -Force
+  ```
+  ```bash
+  # Linux / macOS
+  cd extension && zip -r ../outmass-v0.1.3.zip . -x "*.DS_Store" && cd ..
   ```
 - **Release notes draft:**
   ```
