@@ -92,7 +92,75 @@ Hedef: 2-3 haftada ilk gelir.
 
 
 
-\## Kritik Kurallar
+\## 🔴 KULLANICI ETKİSİ KURALI (EN ÖNCELİKLİ — OVERRIDES EVERYTHING)
+
+Proje artık \*\*canlı kullanıcılara hizmet veriyor\*\*. Bu nedenle her session'da aşağıdaki kuralları \*\*istisnasız\*\* uygula:
+
+\### 1. Kullanıcıyı etkileyecek her değişikten ÖNCE onay al
+
+"Kullanıcıyı etkiler" kapsamı:
+- API contract (endpoint ekle/sil/param değiştir)
+- DB schema migration (column ekle/sil/rename, index, RLS)
+- Extension davranış değişikliği (UI flow, default ayar, shortcut)
+- Email içerik/konu/rate/zamanlama değişikliği
+- OAuth / auth flow / JWT TTL
+- Pricing / plan limits / Stripe logic
+- i18n metni silme/yeniden adlandırma
+- Rate limit / quota / send delay
+- Any breaking change whatsoever
+
+\*\*Davranış:\*\* Planı yaz, trade-off'ları açıkla, \*\*"onaylar mısın?"\*\* diye sor. Onay almadan kod yazma. Commit atma. Push atma.
+
+\### 2. Minimum impact prensibi
+
+Onaylı değişiklik yaparken bile:
+- \*\*Backward compat\*\* koru (legacy client'ler kırılmamalı)
+- Default davranışı değiştirirken feature flag kullan
+- Silmek yerine deprecate et (1-2 sürüm bekle, sonra sil)
+- Migration yazarken \*\*reversible\*\* ol (down migration düşün)
+- Worker/beat değişikliklerinde iş kaybı yok — idempotent + ack late
+- Feature kapat / kısıtla ≠ feature sil
+
+Amaç: kullanıcı \*\*ne yaptığını fark etmeyecek\*\* kadar sorunsuz deploy.
+
+\### 3. Etkilenen kullanıcıya proaktif bildirim
+
+Değişiklik gerçekten user-visible ise (UX değişir, ayar resetlenir, feature kaybolur, veri taşınır, fiyat değişir), \*\*kullanıcı bilmek zorunda\*\*:
+
+| Değişiklik tipi | Bildirim yolu |
+|---|---|
+| Breaking / data migration | Email (MailerSend) + sidebar banner + release notes |
+| Feature deprecation | Sidebar notice 2 sürüm önceden |
+| Price change | Email 30 gün önceden + portal |
+| Downtime / maintenance | Email + sidebar banner + status page |
+| New feature (opt-in) | Release notes + optional onboarding tooltip |
+| Bug fix (behavior değişir) | Release notes (user-friendly dil, bug itirafı değil) |
+
+Default: \*\*sessizce değiştirme\*\*. "How would I feel if I were this user and this changed without warning?" testi yap.
+
+\### 4. Deploy öncesi sanity check
+
+Her kullanıcı-etkili commit push edilmeden önce kontrol et:
+- [ ] User'a ne değişiyor? 1 cümle yaz.
+- [ ] Migration reversible mi?
+- [ ] Canlı user'lar mid-session ise ne olur? (race condition)
+- [ ] Onay alındı mı? Bildirim planı hazır mı?
+- [ ] Geri alma planı (rollback) var mı?
+
+Herhangi biri \*\*hayır\*\* ise \*\*push atma\*\*, kullanıcıya geri dön.
+
+\### 5. Backend-only değişiklikler için istisna (sınırlı)
+
+\*\*Kullanıcıya görünmeyen\*\* iç iyileştirmeler (örn. Redis command optimizasyonu, logging, test) onay olmadan yapılabilir \*\*ancak\*\*:
+- Etki tamamen invisible olmalı (davranış değişmiyor, performans aynı ya da daha iyi)
+- Rollback trivial olmalı
+- Push'tan önce hızlı verification
+
+Şüphe varsa → onay al. \*\*Default: onay iste.\*\*
+
+---
+
+\## Kritik Kurallar (teknik)
 
 1\. \*\*Outlook Web only\*\* — desktop Outlook veya Add-in değil
 
