@@ -83,6 +83,28 @@ chrome.runtime.onInstalled.addListener(function (details) {
   }
   log("Extension installed/updated:", details.reason);
   log("Redirect URI:", AZURE_REDIRECT_URI);
+
+  // Set the URL Chrome opens when the user uninstalls the extension.
+  // Best-effort: it requires a network connection and an open browser,
+  // so it isn't guaranteed. We use it to (a) surface a reminder that
+  // paid subscriptions are separate from the extension, and (b) collect
+  // feedback on why the user left.
+  //
+  // Must run inside onInstalled because manifest.json doesn't support
+  // a declarative uninstall URL in MV3. Re-setting on updates is cheap
+  // and keeps us covered if the URL ever changes.
+  try {
+    chrome.runtime.setUninstallURL(
+      "https://getoutmass.com/uninstall.html",
+      function () {
+        if (chrome.runtime.lastError) {
+          log("setUninstallURL failed:", chrome.runtime.lastError.message);
+        }
+      }
+    );
+  } catch (e) {
+    log("setUninstallURL threw:", e);
+  }
 });
 
 // ── Microsoft OAuth 2.0 Flow (Web Auth — backend does code exchange) ──

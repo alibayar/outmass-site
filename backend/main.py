@@ -217,6 +217,66 @@ async def submit_feedback(body: UserFeedback):
     return {"status": "received"}
 
 
+# ── Uninstall Feedback ──
+#
+# Chrome opens docs/uninstall.html after the user removes the extension.
+# That page lets them submit an optional reason + free-form note. We want
+# this data to (a) learn why people churn and (b) flag them in analytics
+# so we can correlate paid-but-uninstalled → chargeback risk later.
+#
+# Anonymous by design — the uninstalled extension can no longer send a
+# JWT, so we can't identify the user. That's OK; reason distribution is
+# valuable on its own.
+
+
+class UninstallFeedback(BaseModel):
+    reason: str | None = None
+    details: str | None = None
+    user_agent: str | None = None
+
+
+@app.post("/api/uninstall-feedback")
+async def uninstall_feedback(body: UninstallFeedback):
+    reason = (body.reason or "").strip()[:40]
+    details = (body.details or "").strip()[:1000]
+    ua = (body.user_agent or "").strip()[:200]
+
+    # Silently accept empty submissions — the UI already blocks totally
+    # blank ones, but we'd rather log a no-op than 400 a churning user.
+    if not reason and not details:
+        return {"status": "empty"}
+
+    if POSTHOG_API_KEY:
+        posthog.capture(
+            distinct_id="uninstalled-anonymous",
+            event="extension_uninstall",
+            properties={
+                "reason": reason,
+                "details": details[:500],
+                "user_agent": ua,
+            },
+        )
+
+    # Telegram ping so we see churn in real time during early days.
+    if TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID:
+        text = (
+            "👋 OutMass uninstall feedback\n\n"
+            f"Reason: {reason or '(none)'}\n"
+            f"Details: {details or '(none)'}"
+        )
+        try:
+            httpx.post(
+                f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+                data={"chat_id": TELEGRAM_CHAT_ID, "text": text},
+                timeout=5.0,
+            )
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Uninstall Telegram dispatch failed: %s", e)
+
+    logger.info("Uninstall feedback: reason=%s details=%s", reason, details[:200])
+    return {"status": "received"}
+
+
 # ── Health Check ──
 @app.get("/")
 async def health_check():
