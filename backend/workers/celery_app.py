@@ -59,6 +59,28 @@ celery.conf.update(
     timezone="UTC",
     enable_utc=True,
     broker_connection_retry_on_startup=True,
+    # Redis command budget optimizations — see docs/plans or handoff for
+    # the full reasoning. Short version: Upstash charges per command, and
+    # Celery's default worker idle polling was burning ~500K commands/month
+    # on empty queues before this was tuned.
+    #
+    # polling_interval=15: workers do one BRPOP every 15s instead of ~1s
+    #   when the queue is idle. Worst-case task pickup delay grows from
+    #   ~1s to ~15s, which is invisible for our workload (scheduled sends
+    #   have minute-level precision; follow-ups hourly).
+    # prefetch_multiplier=1: each worker holds one in-flight task instead
+    #   of 4. Less aggressive polling, fairer load balancing across
+    #   workers, and smaller blast radius on worker crash.
+    # acks_late=True: worker ACKs the task AFTER it finishes (not on
+    #   receive). If a worker dies mid-task, the broker re-delivers the
+    #   task instead of losing it. All our scheduled tasks are idempotent
+    #   (they filter by DB status, re-running does nothing new).
+    worker_prefetch_multiplier=1,
+    task_acks_late=True,
+    broker_transport_options={
+        "polling_interval": 15.0,
+        "visibility_timeout": 3600,  # 1 hour — longest task we run is minutes
+    },
 )
 
 # SSL config for Upstash Redis (rediss:// URLs)
