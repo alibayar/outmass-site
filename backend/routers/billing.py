@@ -435,9 +435,21 @@ def _telegram_alert(text: str) -> None:
 
 @router.get("/portal")
 async def billing_portal(user: dict = Depends(get_current_user)):
-    """Create a Stripe Billing Portal session so the user can manage their subscription."""
+    """Create a Stripe Billing Portal session so the user can manage their subscription.
+
+    Errors are returned with structured codes in detail.error so the
+    extension can surface localized messages instead of raw English
+    strings. Each error still carries a human-readable `message` for
+    legacy clients (pre-v0.1.4 store build).
+    """
     if not STRIPE_SECRET_KEY:
-        raise HTTPException(status_code=503, detail="Stripe not configured")
+        raise HTTPException(
+            status_code=503,
+            detail={
+                "error": "stripe_not_configured",
+                "message": "Stripe not configured",
+            },
+        )
 
     # Fetch stripe_customer_id from DB
     db = get_db()
@@ -454,7 +466,10 @@ async def billing_portal(user: dict = Depends(get_current_user)):
     if not customer_id:
         raise HTTPException(
             status_code=400,
-            detail="No Stripe customer found. Please subscribe first.",
+            detail={
+                "error": "no_stripe_customer",
+                "message": "No Stripe customer found. Please subscribe first.",
+            },
         )
 
     try:
@@ -467,7 +482,13 @@ async def billing_portal(user: dict = Depends(get_current_user)):
         session = stripe.billing_portal.Session.create(**portal_kwargs)
     except stripe.StripeError as e:
         logger.error("Stripe portal error: %s (customer=%s)", e, customer_id)
-        raise HTTPException(status_code=502, detail=f"Portal error: {str(e)}")
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "portal_error",
+                "message": f"Portal error: {str(e)}",
+            },
+        )
 
     return {"portal_url": session.url}
 

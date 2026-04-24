@@ -872,5 +872,11 @@
         "content": "$1"
       }
     }
+  },
+  "portalErrorNoSubscription": {
+    "message": "您还没有有效的订阅。请先升级到付费方案，然后返回此处进行管理。"
+  },
+  "portalErrorNotConfigured": {
+    "message": "账单服务暂时不可用。请稍后重试或联系支持。"
   }
 }

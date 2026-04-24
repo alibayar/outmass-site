@@ -872,5 +872,11 @@
         "content": "$1"
       }
     }
+  },
+  "portalErrorNoSubscription": {
+    "message": "Sie haben noch kein aktives Abonnement. Wechseln Sie zuerst zu einem bezahlten Plan und kehren Sie dann hierher zurück."
+  },
+  "portalErrorNotConfigured": {
+    "message": "Die Abrechnung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es gleich erneut oder kontaktieren Sie den Support."
   }
 }

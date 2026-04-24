@@ -872,5 +872,11 @@
         "content": "$1"
       }
     }
+  },
+  "portalErrorNoSubscription": {
+    "message": "You don't have an active subscription yet. Upgrade to a paid plan first, then come back here to manage it."
+  },
+  "portalErrorNotConfigured": {
+    "message": "Billing is temporarily unavailable. Please try again in a moment or contact support."
   }
 }

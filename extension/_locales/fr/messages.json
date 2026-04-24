@@ -872,5 +872,11 @@
         "content": "$1"
       }
     }
+  },
+  "portalErrorNoSubscription": {
+    "message": "Vous n'avez pas encore d'abonnement actif. Passez d'abord à un plan payant, puis revenez ici pour le gérer."
+  },
+  "portalErrorNotConfigured": {
+    "message": "La facturation est temporairement indisponible. Veuillez réessayer dans un instant ou contacter le support."
   }
 }

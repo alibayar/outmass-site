@@ -236,12 +236,12 @@ async function backendFetch(endpoint, options) {
         const code = (detail && typeof detail === "object" && detail.error) || "limit_exceeded";
         return { error: code, status: 402, detail: detail };
       }
-      // 409 Conflict: our endpoints put the machine-readable code under
-      // detail.error (e.g. "active_subscription"). Surface it the same
-      // way as 402 so callers can branch on error code rather than raw
-      // HTTP status or Turkish/English message strings.
-      if (resp.status === 409 && detail && typeof detail === "object" && detail.error) {
-        return { error: detail.error, status: 409, detail: detail };
+      // Any endpoint can return {detail: {error: "<code>", message: "..."}}
+      // and we'll surface the code to callers so they can show a
+      // localized message. This replaces the old 402-only and 409-only
+      // special cases with a general pattern.
+      if (detail && typeof detail === "object" && detail.error) {
+        return { error: detail.error, status: resp.status, detail: detail };
       }
       // 401 means our JWT is expired or invalid. Clear it and raise the
       // session-expired flag so the sidebar can show its reconnect banner

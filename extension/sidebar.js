@@ -1923,11 +1923,22 @@
           window.open(resp.data.portal_url, "_blank");
           return;
         }
-        // Silent failure used to leave the user staring at a do-nothing
-        // button. Surface the backend error so at least they know *why*
-        // nothing happened — same UX as the popup's Manage button.
         if (handleSessionExpired(resp)) return;
-        var detail = (resp && resp.error) ? "\n\n" + resp.error : "";
+        // Backend returns a structured error code (see billing.py) so we
+        // can show a locale-aware message instead of the English detail
+        // string that pre-v0.1.4 used to append verbatim.
+        var code = resp && resp.error;
+        if (code === "no_stripe_customer") {
+          alert(t("portalErrorNoSubscription"));
+          return;
+        }
+        if (code === "stripe_not_configured") {
+          alert(t("portalErrorNotConfigured"));
+          return;
+        }
+        // Unknown error — fall back to generic + raw detail (still
+        // better than silent failure).
+        var detail = code ? "\n\n" + code : "";
         alert(t("popupPortalFailed") + detail);
       });
     });

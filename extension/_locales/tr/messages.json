@@ -872,5 +872,11 @@
         "content": "$1"
       }
     }
+  },
+  "portalErrorNoSubscription": {
+    "message": "Henüz aktif bir aboneliğin yok. Önce ücretli bir plana geç, sonra buradan yönetebilirsin."
+  },
+  "portalErrorNotConfigured": {
+    "message": "Faturalama şu an kullanılamıyor. Bir süre sonra tekrar dene veya destekle iletişime geç."
   }
 }

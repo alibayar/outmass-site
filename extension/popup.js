@@ -225,14 +225,21 @@
         if (resp && resp.data && resp.data.portal_url) {
           chrome.tabs.create({ url: resp.data.portal_url });
           window.close();
-        } else {
-          // Include the backend error string so the user can tell the
-          // difference between "no Stripe customer" (need to subscribe
-          // first) and "Stripe not configured" (misconfig). Falls back
-          // to the generic localized message if backend said nothing.
-          var detail = (resp && resp.error) ? "\n\n" + resp.error : "";
-          alert(t("popupPortalFailed") + detail);
+          return;
         }
+        // Branch on structured error codes (see billing.py /portal)
+        // so the message is localized, not raw English from the server.
+        var code = resp && resp.error;
+        if (code === "no_stripe_customer") {
+          alert(t("portalErrorNoSubscription"));
+          return;
+        }
+        if (code === "stripe_not_configured") {
+          alert(t("portalErrorNotConfigured"));
+          return;
+        }
+        var detail = code ? "\n\n" + code : "";
+        alert(t("popupPortalFailed") + detail);
       });
     });
   }

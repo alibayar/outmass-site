@@ -872,5 +872,11 @@
         "content": "$1"
       }
     }
+  },
+  "portalErrorNoSubscription": {
+    "message": "Todavía no tienes una suscripción activa. Primero pásate a un plan de pago y luego vuelve aquí para gestionarlo."
+  },
+  "portalErrorNotConfigured": {
+    "message": "La facturación no está disponible temporalmente. Inténtalo de nuevo en un momento o contacta con soporte."
   }
 }
