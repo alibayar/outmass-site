@@ -117,6 +117,28 @@ MAILERSEND_FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL", "support@getoutmass.c
 MAILERSEND_FROM_NAME = os.getenv("MAILERSEND_FROM_NAME", "OutMass Feedback")
 MAILERSEND_TO_EMAIL = os.getenv("MAILERSEND_TO_EMAIL", "support@getoutmass.com")
 
+# ── Inactivity nudge / auto-cancel (Phases 5-6) ──
+#
+# Paid users who stop logging in represent both a support risk
+# (chargeback) and a good-citizen obligation (don't bill people for
+# something they're not using). These flags gate user-visible email
+# dispatch and subscription modifications — both default OFF so the
+# code ships inert and is flipped on only after manual verification.
+def _env_bool(name: str, default: bool = False) -> bool:
+    v = os.getenv(name, "").strip().lower()
+    if not v:
+        return default
+    return v in ("1", "true", "yes", "on")
+
+INACTIVITY_NUDGE_ENABLED = _env_bool("INACTIVITY_NUDGE_ENABLED", False)
+INACTIVITY_NUDGE_DAYS = int(os.getenv("INACTIVITY_NUDGE_DAYS", "30"))
+
+# Phase 6 gates (not used yet — exposed here so the env setup is done
+# once and the flip is a single Railway variable change later).
+INACTIVITY_AUTOCANCEL_ENABLED = _env_bool("INACTIVITY_AUTOCANCEL_ENABLED", False)
+INACTIVITY_PAUSE_DAYS = int(os.getenv("INACTIVITY_PAUSE_DAYS", "60"))
+INACTIVITY_CANCEL_DAYS = int(os.getenv("INACTIVITY_CANCEL_DAYS", "90"))
+
 # ── Plan Limits ──
 FREE_PLAN_MONTHLY_LIMIT = 50
 STARTER_PLAN_MONTHLY_LIMIT = 2000

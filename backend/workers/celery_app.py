@@ -49,6 +49,7 @@ celery = Celery(
         "workers.followup_worker",
         "workers.scheduled_worker",
         "workers.daily_report",
+        "workers.inactivity_nudge",
     ],
 )
 
@@ -125,5 +126,20 @@ celery.conf.beat_schedule = {
         # 03:30 UTC daily — after the token health check. Idempotent, so
         # even if it overlaps a previous run nothing breaks.
         "schedule": crontab(hour=3, minute=30),
+    },
+    "send-inactivity-nudges": {
+        "task": "workers.inactivity_nudge.send_inactivity_nudges",
+        # 04:00 UTC daily. Gated by INACTIVITY_NUDGE_ENABLED env var —
+        # ships as a no-op until explicitly enabled.
+        "schedule": crontab(hour=4, minute=0),
+    },
+    "send-inactivity-warnings-60d": {
+        "task": "workers.inactivity_nudge.send_inactivity_warnings_60d",
+        # Same flag, staggered 15 min apart so logs are readable.
+        "schedule": crontab(hour=4, minute=15),
+    },
+    "send-inactivity-warnings-90d": {
+        "task": "workers.inactivity_nudge.send_inactivity_warnings_90d",
+        "schedule": crontab(hour=4, minute=30),
     },
 }

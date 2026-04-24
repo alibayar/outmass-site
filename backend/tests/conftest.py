@@ -54,6 +54,12 @@ class FakeQueryBuilder:
     def gte(self, *a):
         return self
 
+    def lt(self, *a):
+        return self
+
+    def gt(self, *a):
+        return self
+
     def is_(self, *a):
         return self
 
@@ -67,6 +73,14 @@ class FakeQueryBuilder:
         return self
 
     def limit(self, *a):
+        return self
+
+    # Supabase uses `.not_` as a property returning a "NotBuilder" whose
+    # `.is_()`, `.eq()`, etc. negate the filter. We don't actually filter
+    # in the fake, so `.not_` just returns self — subsequent calls still
+    # chain through the standard methods.
+    @property
+    def not_(self):
         return self
 
     def execute(self):

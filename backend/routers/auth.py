@@ -84,6 +84,11 @@ async def get_current_user(authorization: str = Header(...)) -> dict:
     user = user_model.get_by_id(payload["sub"])
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
+    # Record this request's timestamp in users.last_activity_at. Internally
+    # rate-limited to one write per 15 minutes so busy sessions don't
+    # hammer the DB, and swallows its own exceptions so a transient
+    # DB hiccup can't turn every authenticated request into a 500.
+    user_model.maybe_touch_activity(user)
     return user
 
 
@@ -265,6 +270,10 @@ async def auth_callback(
     # Monthly reset check
     _check_monthly_reset(user)
 
+    # Bump last_login_at + last_activity_at now that we're certain the
+    # login is going through. Phase 5's inactivity beat reads this.
+    user_model.touch_login(user["id"])
+
     # Issue OutMass JWT
     outmass_jwt = create_jwt(user["id"], user["email"])
 
@@ -383,6 +392,9 @@ async def microsoft_auth(body: MicrosoftAuthRequest, request: Request):
 
     # Check monthly reset
     _check_monthly_reset(user)
+
+    # Bump last_login_at + last_activity_at (mirrors web callback).
+    user_model.touch_login(user["id"])
 
     # Audit trail — mirrors the web callback path so SPA and web flows
     # both leave evidence.

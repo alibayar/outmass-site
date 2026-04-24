@@ -261,7 +261,174 @@ async def stripe_webhook(request: Request):
 
             logger.warning("Payment failed for customer %s", customer_id)
 
+    # ── charge.dispute.created (chargeback filed) ──
+    #
+    # A chargeback is the customer's bank side-stepping us entirely to
+    # reverse the charge. By the time we see this event, the money is
+    # already clawed back (or will be). Our response needs to be:
+    #
+    #   1. Cancel the subscription immediately so we don't keep billing
+    #      a customer who's telling their bank "I don't want this".
+    #   2. Mark the user row as free plan, clear stripe_subscription_id.
+    #   3. Audit log: durable record with the dispute reason + amount.
+    #   4. Telegram alert for the operator — disputes are urgent and
+    #      worth a human look (evidence submission window is 7-10 days).
+    #
+    # We do NOT auto-delete the user's account. The chargeback might be
+    # about one disputed charge, not a request to wipe everything. The
+    # operator decides on a case-by-case basis whether deletion is the
+    # right outcome after reviewing the dispute.
+    elif event_type == "charge.dispute.created":
+        _handle_dispute_created(db, data_object)
+
+    # ── charge.dispute.closed ──
+    elif event_type == "charge.dispute.closed":
+        _handle_dispute_closed(db, data_object)
+
     return {"received": True}
+
+
+def _handle_dispute_created(db, dispute: dict) -> None:
+    """Cancel subscription + audit + alert. Called from webhook handler."""
+    from models import audit
+
+    charge_id = dispute.get("charge")
+    amount = dispute.get("amount")
+    reason = dispute.get("reason") or "unknown"
+    dispute_id = dispute.get("id")
+
+    # Look up the user via Stripe charge → customer.
+    user_row = None
+    customer_id = None
+    try:
+        if charge_id:
+            charge = stripe.Charge.retrieve(charge_id)
+            customer_id = charge.get("customer")
+        if customer_id:
+            r = (
+                db.table("users")
+                .select("id, email, stripe_subscription_id, plan")
+                .eq("stripe_customer_id", customer_id)
+                .execute()
+            )
+            if r.data:
+                user_row = r.data[0]
+    except Exception:  # noqa: BLE001
+        logger.exception("Failed to resolve dispute %s to a user", dispute_id)
+
+    # Cancel the subscription in Stripe. Idempotent — if it's already
+    # gone, Stripe returns 404 which we swallow.
+    sub_id = user_row.get("stripe_subscription_id") if user_row else None
+    if sub_id:
+        try:
+            stripe.Subscription.delete(sub_id)
+        except Exception as e:  # noqa: BLE001
+            logger.warning("Dispute cancel of sub %s failed: %s", sub_id, e)
+
+    # Update our DB — drop plan to free regardless of Stripe cancel
+    # success, because the user is disputing the relationship.
+    if user_row:
+        db.table("users").update({
+            "plan": "free",
+            "stripe_subscription_id": None,
+            "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+        }).eq("id", user_row["id"]).execute()
+
+        audit.emit(
+            "subscription_canceled",
+            user_id=user_row["id"],
+            email=user_row.get("email"),
+            metadata={
+                "reason": "chargeback",
+                "dispute_id": dispute_id,
+                "dispute_reason": reason,
+                "amount": amount,
+                "charge_id": charge_id,
+            },
+        )
+
+    # Operator alert. Keep the message actionable — disputes have
+    # short evidence windows.
+    _telegram_alert(
+        "\U0001F6A8 OutMass CHARGEBACK filed\n\n"
+        f"Dispute: {dispute_id}\n"
+        f"Reason: {reason}\n"
+        f"Amount: ${(amount or 0) / 100:.2f}\n"
+        f"Customer: {customer_id or 'unresolved'}\n"
+        f"User: {user_row['email'] if user_row else 'unresolved'}\n"
+        f"Subscription canceled: {'yes' if sub_id else 'already gone'}\n\n"
+        "Submit evidence in Stripe dashboard within the response window."
+    )
+
+
+def _handle_dispute_closed(db, dispute: dict) -> None:
+    """Log the outcome. We don't unwind anything on a won dispute —
+    if the customer still wants service, they can re-subscribe."""
+    from models import audit
+
+    status = dispute.get("status")  # won, lost, warning_closed, etc.
+    charge_id = dispute.get("charge")
+    dispute_id = dispute.get("id")
+
+    customer_id = None
+    user_id = None
+    user_email = None
+    try:
+        if charge_id:
+            charge = stripe.Charge.retrieve(charge_id)
+            customer_id = charge.get("customer")
+        if customer_id:
+            r = (
+                db.table("users")
+                .select("id, email")
+                .eq("stripe_customer_id", customer_id)
+                .execute()
+            )
+            if r.data:
+                user_id = r.data[0]["id"]
+                user_email = r.data[0].get("email")
+    except Exception:  # noqa: BLE001
+        logger.exception("Dispute close: couldn't resolve %s to a user", dispute_id)
+
+    audit.emit(
+        "dispute_closed",
+        user_id=user_id,
+        email=user_email,
+        metadata={
+            "dispute_id": dispute_id,
+            "status": status,
+            "charge_id": charge_id,
+        },
+    )
+
+    _telegram_alert(
+        "\u2139\ufe0f OutMass dispute closed\n\n"
+        f"Dispute: {dispute_id}\n"
+        f"Status: {status}\n"
+        f"User: {user_email or 'unresolved'}"
+    )
+
+
+def _telegram_alert(text: str) -> None:
+    """Best-effort operator ping. Imports lazily to keep the module
+    loadable without Telegram env vars."""
+    from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+    import httpx
+
+    if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        return
+    try:
+        httpx.post(
+            f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
+            data={
+                "chat_id": TELEGRAM_CHAT_ID,
+                "text": text,
+                "disable_web_page_preview": "true",
+            },
+            timeout=5.0,
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Dispute Telegram alert failed: %s", e)
 
 
 # ─── 3. Customer Portal ─────────────────────────────────────────────────────

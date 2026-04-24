@@ -2,6 +2,36 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.4 — 2026-04-24
+
+### User lifecycle & legal posture
+- **Uninstall landing page.** When you remove the extension, Chrome opens
+  a friendly page reminding you that any paid subscription is separate
+  from the extension and helping you cancel it. Optional feedback form
+  tells us why you left.
+- **Delete my account** (Account tab → Danger Zone). Self-service
+  permanent removal of your OutMass account and all data, with a typed
+  DELETE confirmation + irreversibility checkbox. Active subscriptions
+  must be cancelled first. A GDPR-compliant anonymised audit record is
+  retained for legal and fraud-prevention purposes.
+
+### Behind the scenes (backend, affects every extension version)
+- **Immutable audit log.** Every authorization, campaign creation,
+  recipient upload, send trigger, and per-email Graph API dispatch is
+  recorded with timestamp, IP (anonymised after 12 months), and
+  SHA-256 hashes of content. Evidence chain for disputes and chargeback
+  defence. Does not store raw recipient addresses.
+- **Inactivity follow-up**. Paid users who stop logging in get up to
+  three warm, non-threatening reminder emails (30, 60, 90 days) that
+  their subscription is still active. Default-off feature flag.
+- **Chargeback handling**. A disputed charge automatically cancels the
+  subscription and alerts the operator for evidence review.
+- **Schema hardening.** FK CASCADE chain across campaigns/contacts/
+  tokens/templates/events so a single account-delete transaction
+  cleans up every dependent row atomically.
+
+---
+
 ## v0.1.3 — 2026-04-21
 
 ### Sign-in & authorization
