@@ -10,13 +10,15 @@ CREATE TABLE users (
   plan TEXT DEFAULT 'free',
   emails_sent_this_month INT DEFAULT 0,
   month_reset_date DATE DEFAULT CURRENT_DATE,
+  last_login_at TIMESTAMPTZ,
+  last_activity_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 -- ── Campaigns ──
 CREATE TABLE campaigns (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   subject TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -31,7 +33,7 @@ CREATE TABLE campaigns (
 -- ── Contacts ──
 CREATE TABLE contacts (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES campaigns(id),
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   first_name TEXT,
   last_name TEXT,
@@ -48,8 +50,8 @@ CREATE TABLE contacts (
 -- ── Events (tracking log) ──
 CREATE TABLE events (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  contact_id UUID REFERENCES contacts(id),
-  campaign_id UUID REFERENCES campaigns(id),
+  contact_id UUID REFERENCES contacts(id) ON DELETE CASCADE,
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
   event_type TEXT NOT NULL,
   metadata JSONB DEFAULT '{}',
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -58,7 +60,7 @@ CREATE TABLE events (
 -- ── Suppression List ──
 CREATE TABLE suppression_list (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   email TEXT NOT NULL,
   reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
@@ -67,8 +69,8 @@ CREATE TABLE suppression_list (
 -- ── Follow-ups ──
 CREATE TABLE follow_ups (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES campaigns(id),
-  user_id UUID REFERENCES users(id),
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   delay_days INT NOT NULL DEFAULT 3,
   subject TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -81,7 +83,7 @@ CREATE TABLE follow_ups (
 -- ── User Tokens (for server-side token refresh) ──
 CREATE TABLE IF NOT EXISTS user_tokens (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id) UNIQUE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE UNIQUE,
   refresh_token TEXT,
   access_token TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
@@ -91,7 +93,7 @@ CREATE TABLE IF NOT EXISTS user_tokens (
 -- ── Templates ──
 CREATE TABLE IF NOT EXISTS templates (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  user_id UUID REFERENCES users(id),
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   subject TEXT NOT NULL,
   body TEXT NOT NULL,
@@ -101,8 +103,8 @@ CREATE TABLE IF NOT EXISTS templates (
 -- ── A/B Tests ──
 CREATE TABLE IF NOT EXISTS ab_tests (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  campaign_id UUID REFERENCES campaigns(id),
-  user_id UUID REFERENCES users(id),
+  campaign_id UUID REFERENCES campaigns(id) ON DELETE CASCADE,
+  user_id UUID REFERENCES users(id) ON DELETE CASCADE,
   subject_a TEXT NOT NULL,
   subject_b TEXT NOT NULL,
   test_percentage INT DEFAULT 20,

@@ -39,7 +39,7 @@ Context dolduğundan yeni session'a geçiyoruz. Bu doküman son sessiondaki tüm
   ```
 
 ### 2. Post-launch iyileştirmeler (backlog, launch-blocker DEĞİL)
-- [ ] `ON DELETE CASCADE` FK zinciri events → contacts → campaigns → user (temizlik SQL'i sadeleşir)
+- [x] ~~`ON DELETE CASCADE` FK zinciri events → contacts → campaigns → user~~ (done via migration 010)
 - [x] ~~Scheduled send token failure → campaign'i `failed_auth` status'a çek~~ (done in v0.1.3 backend, commit `170edd9`)
 - [x] ~~MailerSend notification when user gets flagged `requires_reauth`~~ (done in v0.1.3 backend, commit `170edd9`)
 - [x] ~~Proactive token health check job~~ (done in v0.1.3 backend, beat 03:00 UTC, commit `170edd9`)
