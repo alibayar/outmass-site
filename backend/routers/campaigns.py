@@ -15,7 +15,7 @@ import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, Header, HTTPException
+from fastapi import APIRouter, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 
 from config import (
@@ -33,6 +33,7 @@ from config import (
 )
 from database import get_db
 from models import ab_test as ab_test_model
+from models import audit
 from models import campaign as campaign_model
 from models import contact as contact_model
 from models import followup as followup_model
@@ -77,6 +78,7 @@ class CreateAbTestRequest(BaseModel):
 @router.post("")
 async def create_campaign(
     body: CreateCampaignRequest,
+    request: Request,
     user: dict = Depends(get_current_user),
 ):
     # B.1: Reject whitespace-only / empty campaign names
@@ -104,6 +106,22 @@ async def create_campaign(
         subject=body.subject,
         body=body.body,
         scheduled_for=body.scheduled_for,
+    )
+    # Store subject+body hashes (not content) so we can later prove
+    # "this campaign was created with these parameters" without the
+    # audit log itself carrying potentially personal content.
+    audit.emit(
+        audit.EVENT_CAMPAIGN_CREATED,
+        user_id=user["id"],
+        email=user["email"],
+        metadata={
+            "campaign_id": campaign["id"],
+            "subject_hash": audit.hash_bytes(body.subject),
+            "body_hash": audit.hash_bytes(body.body),
+            "scheduled_for": body.scheduled_for,
+            "status": campaign["status"],
+        },
+        request=request,
     )
     return {"campaign_id": campaign["id"], "status": campaign["status"]}
 
@@ -231,6 +249,7 @@ async def export_campaign_csv(
 async def upload_contacts(
     campaign_id: str,
     body: UploadContactsRequest,
+    request: Request,
     user: dict = Depends(get_current_user),
 ):
     campaign = campaign_model.get_campaign(campaign_id)
@@ -332,6 +351,31 @@ async def upload_contacts(
     total = contact_model.get_campaign_contacts_count(campaign_id)
     campaign_model.update_campaign(campaign_id, {"total_contacts": total})
 
+    # Audit: evidence that the user — not us — supplied the recipient
+    # list. Store counts + an upload-source fingerprint; never the raw
+    # addresses (those live in contacts and cascade-delete with user).
+    audit_source = "csv" if body.csv_string else "json"
+    audit_csv_hash = (
+        audit.hash_bytes(body.csv_string) if body.csv_string else None
+    )
+    audit.emit(
+        audit.EVENT_CONTACTS_UPLOADED,
+        user_id=user["id"],
+        email=user["email"],
+        metadata={
+            "campaign_id": campaign_id,
+            "source": audit_source,
+            "csv_hash": audit_csv_hash,
+            "inserted": result["inserted"],
+            "skipped_invalid": result["skipped_invalid"],
+            "skipped_duplicate": result["skipped_duplicate"],
+            "skipped_suppressed": result["skipped_suppressed"],
+            "skipped_previous": skipped_previous,
+            "total_after_upload": total,
+        },
+        request=request,
+    )
+
     preview = []
     for c in contacts[:3]:
         merged_subject = _merge_template(campaign["subject"], c)
@@ -352,6 +396,7 @@ async def upload_contacts(
 @router.post("/{campaign_id}/send")
 async def send_campaign(
     campaign_id: str,
+    request: Request,
     user: dict = Depends(get_current_user),
     authorization: str = Header(...),
 ):
@@ -368,6 +413,21 @@ async def send_campaign(
         raise HTTPException(status_code=409, detail="Campaign already sending")
     if campaign["status"] == "sent":
         raise HTTPException(status_code=409, detail="Campaign already sent")
+
+    # Audit: the exact click-Send moment, before we even touch Microsoft.
+    # This is the "user initiated the send" evidence row.
+    pending_count = contact_model.get_campaign_contacts_count(campaign_id)
+    audit.emit(
+        audit.EVENT_SEND_TRIGGERED,
+        user_id=user["id"],
+        email=user["email"],
+        metadata={
+            "campaign_id": campaign_id,
+            "pending_contacts": pending_count,
+            "plan": user.get("plan", "free"),
+        },
+        request=request,
+    )
 
     # ── Get fresh access token via refresh_token (Web flow) ──
     from models.ms_token import get_fresh_access_token
@@ -917,6 +977,21 @@ async def _send_single_email(
         )
 
     if resp.status_code in (200, 202):
+        # Audit: one row per successfully dispatched email. Graph sometimes
+        # surfaces a message_id via a Location header on 202; capture it
+        # when present so the audit trail links back to Microsoft's own
+        # mailbox records.
+        try:
+            graph_msg_id = resp.headers.get("Location") or resp.headers.get("x-ms-message-id")
+        except Exception:  # noqa: BLE001
+            graph_msg_id = None
+        audit.emit_email_sent(
+            user_id=campaign.get("user_id"),
+            campaign_id=campaign.get("id"),
+            recipient_email=contact.get("email", ""),
+            graph_message_id=graph_msg_id,
+            status_code=resp.status_code,
+        )
         return {"success": True}
 
     error_detail = ""

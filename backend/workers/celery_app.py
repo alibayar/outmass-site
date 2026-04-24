@@ -120,4 +120,10 @@ celery.conf.beat_schedule = {
         # to send their morning campaign.
         "schedule": crontab(hour=3, minute=0),
     },
+    "anonymize-audit-log-ips": {
+        "task": "workers.scheduled_worker.anonymize_audit_log_ips",
+        # 03:30 UTC daily — after the token health check. Idempotent, so
+        # even if it overlaps a previous run nothing breaks.
+        "schedule": crontab(hour=3, minute=30),
+    },
 }

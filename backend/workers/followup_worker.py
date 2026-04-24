@@ -215,6 +215,19 @@ def _send_followup_email(
     if resp.status_code not in (200, 202):
         raise Exception(f"Graph API error: HTTP {resp.status_code}")
 
+    try:
+        from models import audit
+        graph_msg_id = resp.headers.get("Location") or resp.headers.get("x-ms-message-id")
+        audit.emit_email_sent(
+            user_id=campaign.get("user_id"),
+            campaign_id=campaign.get("id"),
+            recipient_email=contact.get("email", ""),
+            graph_message_id=graph_msg_id,
+            status_code=resp.status_code,
+        )
+    except Exception:  # noqa: BLE001
+        pass
+
 
 def _merge(template_str: str, context: dict) -> str:
     def replacer(match):

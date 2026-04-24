@@ -115,6 +115,7 @@ def fake_db():
         patch("models.followup.get_db", return_value=db),
         patch("models.template.get_db", return_value=db),
         patch("models.ms_token.get_db", return_value=db),
+        patch("models.audit.get_db", return_value=db),
         # Workers
         patch("workers.daily_report.get_db", return_value=db),
     ]

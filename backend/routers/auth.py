@@ -13,7 +13,7 @@ import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, Header, HTTPException, Query
+from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse, HTMLResponse
 from jose import jwt
 from pydantic import BaseModel
@@ -31,6 +31,7 @@ from config import (
     MS_GRAPH_SCOPES,
     MS_TOKEN_ENDPOINT,
 )
+from models import audit
 from models import user as user_model
 
 logger = logging.getLogger(__name__)
@@ -148,6 +149,7 @@ async def login_redirect(ext: str | None = Query(None)):
 
 @router.get("/callback")
 async def auth_callback(
+    request: Request,
     code: str = Query(None),
     state: str = Query(None),
     error: str = Query(None),
@@ -266,6 +268,26 @@ async def auth_callback(
     # Issue OutMass JWT
     outmass_jwt = create_jwt(user["id"], user["email"])
 
+    # Audit trail: OAuth consent + login. These two events separately
+    # cover the legal-defense needs — oauth_granted captures "user
+    # authorized Mail.Send scope" (survives chargeback disputes), and
+    # login ties that authorization to a specific session that may
+    # later click Send.
+    audit.emit(
+        audit.EVENT_OAUTH_GRANTED,
+        user_id=user["id"],
+        email=user["email"],
+        metadata={"scopes": MS_GRAPH_SCOPES, "microsoft_id": ms_id},
+        request=request,
+    )
+    audit.emit(
+        audit.EVENT_LOGIN,
+        user_id=user["id"],
+        email=user["email"],
+        metadata={"plan": user.get("plan", "free"), "flow": "web_callback"},
+        request=request,
+    )
+
     # Build redirect URL to extension with JWT in URL fragment (hash)
     # Fragment is not sent to server, only visible to extension.
     # Pick the chromiumapp.org subdomain from the state param if it
@@ -302,7 +324,7 @@ h1{{color:#a4262c}}.msg{{background:#fde7e9;padding:12px;border-radius:4px;margi
 
 
 @router.post("/microsoft", response_model=AuthResponse)
-async def microsoft_auth(body: MicrosoftAuthRequest):
+async def microsoft_auth(body: MicrosoftAuthRequest, request: Request):
     """
     Verify Microsoft access token via Graph API /me,
     upsert user, return OutMass JWT.
@@ -361,6 +383,16 @@ async def microsoft_auth(body: MicrosoftAuthRequest):
 
     # Check monthly reset
     _check_monthly_reset(user)
+
+    # Audit trail — mirrors the web callback path so SPA and web flows
+    # both leave evidence.
+    audit.emit(
+        audit.EVENT_LOGIN,
+        user_id=user["id"],
+        email=user["email"],
+        metadata={"plan": user.get("plan", "free"), "flow": "spa_token"},
+        request=request,
+    )
 
     # Issue JWT
     token = create_jwt(user["id"], user["email"])

@@ -217,6 +217,18 @@ def _send_email(
         )
 
     if resp.status_code in (200, 202):
+        try:
+            from models import audit
+            graph_msg_id = resp.headers.get("Location") or resp.headers.get("x-ms-message-id")
+            audit.emit_email_sent(
+                user_id=campaign.get("user_id"),
+                campaign_id=campaign.get("id"),
+                recipient_email=contact.get("email", ""),
+                graph_message_id=graph_msg_id,
+                status_code=resp.status_code,
+            )
+        except Exception:  # noqa: BLE001
+            pass
         return {"success": True}
 
     error_detail = ""
@@ -380,6 +392,34 @@ def evaluate_ab_tests():
 # still has a stored refresh_token and isn't already flagged. If the
 # refresh fails with a permanent error, `get_fresh_access_token` flags
 # the user + fires the reconnect email via `_mark_requires_reauth`.
+
+
+@celery.task
+def anonymize_audit_log_ips():
+    """Daily: anonymize IP addresses in audit_log rows older than 1 year.
+
+    Calls the Postgres function defined in migration 011
+    (`anonymize_old_audit_ips()`) which masks IPv4 to /24 and IPv6 to
+    /48. Keeps us GDPR-compliant (data minimization) without losing
+    the rough forensic value of the logs — a /24 is still useful for
+    spotting geographic patterns during fraud investigations.
+
+    The function is idempotent — already-anonymized rows are skipped
+    by the `NOT LIKE '%.0'` predicate.
+    """
+    from database import get_db
+
+    try:
+        result = get_db().rpc("anonymize_old_audit_ips", {}).execute()
+        if result.data:
+            row = result.data[0] if isinstance(result.data, list) else result.data
+            v4 = row.get("v4_updated", 0) if isinstance(row, dict) else 0
+            v6 = row.get("v6_updated", 0) if isinstance(row, dict) else 0
+            return {"v4_updated": v4, "v6_updated": v6}
+    except Exception as e:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).warning("audit IP anonymization failed: %s", e)
+    return {"v4_updated": 0, "v6_updated": 0}
 
 
 @celery.task
