@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "Tehlikeli Bölge"
+  },
+  "deleteAccountDesc": {
+    "message": "OutMass hesabınızı ve tüm verilerinizi kalıcı olarak silin."
+  },
+  "deleteAccountButton": {
+    "message": "Hesabımı sil"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "Bu işlem geri alınamaz"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "Hesabınızı silmek şunları kalıcı olarak kaldırır:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "Tüm kampanyalar ve şablonlar"
+  },
+  "deleteAccountDataContacts": {
+    "message": "Tüm kişiler ve takip verileri"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Microsoft yetkilendirmeniz"
+  },
+  "deleteAccountDataSettings": {
+    "message": "Tüm ayarlar ve tercihler"
+  },
+  "deleteAccountSubCheck": {
+    "message": "Aktif aboneliğiniz var mı? Önce Aboneliği Yönet üzerinden iptal edin."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Onaylamak için DELETE yazın:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "Bu işlemin geri alınamaz olduğunu anlıyorum"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Kalıcı olarak sil"
+  },
+  "deleteAccountSuccess": {
+    "message": "Hesabınız silindi."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Lütfen hesabınızı silmeden önce aboneliğinizi iptal edin."
+  },
+  "deleteAccountFailed": {
+    "message": "Hesap silinemedi: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

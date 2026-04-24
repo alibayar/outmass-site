@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "Danger Zone"
+  },
+  "deleteAccountDesc": {
+    "message": "Permanently remove your OutMass account and all data."
+  },
+  "deleteAccountButton": {
+    "message": "Delete my account"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "This cannot be undone"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "Deleting your account will permanently remove:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "All campaigns and templates"
+  },
+  "deleteAccountDataContacts": {
+    "message": "All contacts and tracking data"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Your Microsoft authorization"
+  },
+  "deleteAccountDataSettings": {
+    "message": "All settings and preferences"
+  },
+  "deleteAccountSubCheck": {
+    "message": "Active subscription? Cancel it first via Manage Subscription."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Type DELETE to confirm:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "I understand this is irreversible"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Permanently delete"
+  },
+  "deleteAccountSuccess": {
+    "message": "Your account has been deleted."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Please cancel your subscription first before deleting your account."
+  },
+  "deleteAccountFailed": {
+    "message": "Could not delete account: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

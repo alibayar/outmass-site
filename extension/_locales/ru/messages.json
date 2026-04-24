@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "Опасная зона"
+  },
+  "deleteAccountDesc": {
+    "message": "Безвозвратно удалите свой аккаунт OutMass и все данные."
+  },
+  "deleteAccountButton": {
+    "message": "Удалить аккаунт"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "Это действие необратимо"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "Удаление аккаунта навсегда уберёт:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "Все кампании и шаблоны"
+  },
+  "deleteAccountDataContacts": {
+    "message": "Все контакты и данные отслеживания"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Вашу авторизацию Microsoft"
+  },
+  "deleteAccountDataSettings": {
+    "message": "Все настройки и предпочтения"
+  },
+  "deleteAccountSubCheck": {
+    "message": "Активная подписка? Сначала отмените её через Управление подпиской."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Введите DELETE для подтверждения:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "Я понимаю, что это действие необратимо"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Удалить навсегда"
+  },
+  "deleteAccountSuccess": {
+    "message": "Ваш аккаунт удалён."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Пожалуйста, сначала отмените подписку, прежде чем удалять аккаунт."
+  },
+  "deleteAccountFailed": {
+    "message": "Не удалось удалить аккаунт: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

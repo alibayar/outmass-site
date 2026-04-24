@@ -386,6 +386,47 @@
         <div id="feedback-status" class="feedback-status"></div>
       </div>
 
+      <!-- Danger Zone — permanent account deletion -->
+      <div class="settings-section danger-zone" style="margin-top:28px;">
+        <h4 class="settings-title danger-title" data-i18n="dangerZone">Danger Zone</h4>
+        <p class="danger-desc" data-i18n="deleteAccountDesc">Permanently remove your OutMass account and all data.</p>
+        <button class="btn btn-danger btn-block" id="account-btn-delete" data-i18n="deleteAccountButton">Delete my account</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Delete account confirmation modal -->
+  <div id="delete-account-overlay" class="om-modal-overlay" style="display:none;">
+    <div class="om-modal">
+      <div class="om-modal-header om-modal-header-danger">
+        <span data-i18n="deleteAccountConfirmTitle">This cannot be undone</span>
+        <button type="button" class="om-modal-close" id="delete-account-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="om-modal-body">
+        <p data-i18n="deleteAccountConfirmBody1" style="margin-bottom:8px;">Deleting your account will permanently remove:</p>
+        <ul class="delete-account-data-list" style="margin:0 0 14px 20px;">
+          <li data-i18n="deleteAccountDataCampaigns">All campaigns and templates</li>
+          <li data-i18n="deleteAccountDataContacts">All contacts and tracking data</li>
+          <li data-i18n="deleteAccountDataAuth">Your Microsoft authorization</li>
+          <li data-i18n="deleteAccountDataSettings">All settings and preferences</li>
+        </ul>
+        <div class="danger-callout" data-i18n="deleteAccountSubCheck">Active subscription? Cancel it first via Manage Subscription.</div>
+        <div class="form-group" style="margin-top:14px;">
+          <label for="delete-account-type" class="settings-label" data-i18n="deleteAccountTypePrompt">Type DELETE to confirm:</label>
+          <input type="text" id="delete-account-type" autocomplete="off" placeholder="DELETE" />
+        </div>
+        <div class="form-group" style="margin-top:10px;">
+          <label class="checkbox-label">
+            <input type="checkbox" id="delete-account-understand" />
+            <span data-i18n="deleteAccountIrreversible">I understand this is irreversible</span>
+          </label>
+        </div>
+      </div>
+      <div class="om-modal-footer">
+        <button type="button" class="btn btn-secondary btn-small" id="delete-account-cancel" data-i18n="btnCancel">Cancel</button>
+        <button type="button" class="btn btn-danger btn-small" id="delete-account-confirm" data-i18n="deleteAccountFinalBtn" disabled>Permanently delete</button>
+      </div>
     </div>
   </div>
 

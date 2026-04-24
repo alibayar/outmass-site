@@ -1109,3 +1109,85 @@ body {
 .campaign-archive-btn:hover {
   background: #f3f2f1;
 }
+
+/* ── Danger Zone (Account tab → delete account) ── */
+.danger-zone {
+  border: 1px solid #f4cccc;
+  background: #fff8f8;
+  border-radius: 8px;
+  padding: 16px;
+}
+.danger-title {
+  color: #a4262c;
+}
+.danger-desc {
+  font-size: 13px;
+  color: #605e5c;
+  margin: 0 0 12px 0;
+  line-height: 1.45;
+}
+.btn-danger {
+  background: #d13438;
+  color: #fff;
+  border: 1px solid #d13438;
+  padding: 8px 14px;
+  border-radius: 4px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.btn-danger:hover:not(:disabled) {
+  background: #a4262c;
+  border-color: #a4262c;
+}
+.btn-danger:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* Delete-account modal accents */
+.om-modal-header-danger {
+  background: #fdf2f2;
+  color: #a4262c;
+  border-bottom-color: #f4cccc;
+}
+.delete-account-data-list {
+  color: #605e5c;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.danger-callout {
+  background: #fff8e6;
+  border-left: 3px solid #f2a900;
+  padding: 10px 12px;
+  border-radius: 0 4px 4px 0;
+  font-size: 13px;
+  color: #8a5a00;
+  line-height: 1.45;
+}
+#delete-account-type {
+  width: 100%;
+  padding: 8px 10px;
+  border: 1px solid #e1dfdd;
+  border-radius: 4px;
+  font-size: 14px;
+  letter-spacing: 1px;
+  font-family: monospace;
+}
+#delete-account-type:focus {
+  outline: none;
+  border-color: #d13438;
+}
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  color: #323130;
+  cursor: pointer;
+}
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}

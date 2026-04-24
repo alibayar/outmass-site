@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "Zone dangereuse"
+  },
+  "deleteAccountDesc": {
+    "message": "Supprimez définitivement votre compte OutMass et toutes les données."
+  },
+  "deleteAccountButton": {
+    "message": "Supprimer mon compte"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "Cette action est irréversible"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "La suppression de votre compte supprimera définitivement :"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "Toutes les campagnes et modèles"
+  },
+  "deleteAccountDataContacts": {
+    "message": "Tous les contacts et données de suivi"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Votre autorisation Microsoft"
+  },
+  "deleteAccountDataSettings": {
+    "message": "Tous les paramètres et préférences"
+  },
+  "deleteAccountSubCheck": {
+    "message": "Abonnement actif ? Annulez-le d'abord via Gérer l'abonnement."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Tapez DELETE pour confirmer :"
+  },
+  "deleteAccountIrreversible": {
+    "message": "Je comprends que cela est irréversible"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Supprimer définitivement"
+  },
+  "deleteAccountSuccess": {
+    "message": "Votre compte a été supprimé."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Veuillez d'abord annuler votre abonnement avant de supprimer votre compte."
+  },
+  "deleteAccountFailed": {
+    "message": "Impossible de supprimer le compte : $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

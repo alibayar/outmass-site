@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "ख़तरे का क्षेत्र"
+  },
+  "deleteAccountDesc": {
+    "message": "अपना OutMass खाता और सभी डेटा स्थायी रूप से हटाएँ।"
+  },
+  "deleteAccountButton": {
+    "message": "मेरा खाता हटाएँ"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "इसे पूर्ववत नहीं किया जा सकता"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "आपके खाते को हटाने से स्थायी रूप से हट जाएगा:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "सभी अभियान और टेम्पलेट"
+  },
+  "deleteAccountDataContacts": {
+    "message": "सभी संपर्क और ट्रैकिंग डेटा"
+  },
+  "deleteAccountDataAuth": {
+    "message": "आपका Microsoft प्राधिकरण"
+  },
+  "deleteAccountDataSettings": {
+    "message": "सभी सेटिंग्स और प्राथमिकताएँ"
+  },
+  "deleteAccountSubCheck": {
+    "message": "सक्रिय सदस्यता है? पहले सदस्यता प्रबंधन से रद्द करें।"
+  },
+  "deleteAccountTypePrompt": {
+    "message": "पुष्टि के लिए DELETE टाइप करें:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "मैं समझता हूँ कि यह अपरिवर्तनीय है"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "स्थायी रूप से हटाएँ"
+  },
+  "deleteAccountSuccess": {
+    "message": "आपका खाता हटा दिया गया है।"
+  },
+  "deleteAccountActiveSubError": {
+    "message": "कृपया अपना खाता हटाने से पहले सदस्यता रद्द करें।"
+  },
+  "deleteAccountFailed": {
+    "message": "खाता हटाया नहीं जा सका: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

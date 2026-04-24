@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "منطقة الخطر"
+  },
+  "deleteAccountDesc": {
+    "message": "احذف حسابك في OutMass وجميع البيانات نهائياً."
+  },
+  "deleteAccountButton": {
+    "message": "حذف حسابي"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "لا يمكن التراجع عن هذا"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "حذف حسابك سيزيل نهائياً:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "جميع الحملات والقوالب"
+  },
+  "deleteAccountDataContacts": {
+    "message": "جميع جهات الاتصال وبيانات التتبع"
+  },
+  "deleteAccountDataAuth": {
+    "message": "تفويض Microsoft الخاص بك"
+  },
+  "deleteAccountDataSettings": {
+    "message": "جميع الإعدادات والتفضيلات"
+  },
+  "deleteAccountSubCheck": {
+    "message": "هل لديك اشتراك نشط؟ ألغه أولاً من إدارة الاشتراك."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "اكتب DELETE للتأكيد:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "أفهم أن هذا الإجراء غير قابل للتراجع"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "حذف نهائي"
+  },
+  "deleteAccountSuccess": {
+    "message": "تم حذف حسابك."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "يرجى إلغاء اشتراكك أولاً قبل حذف حسابك."
+  },
+  "deleteAccountFailed": {
+    "message": "تعذر حذف الحساب: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

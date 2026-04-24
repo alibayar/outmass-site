@@ -236,6 +236,13 @@ async function backendFetch(endpoint, options) {
         const code = (detail && typeof detail === "object" && detail.error) || "limit_exceeded";
         return { error: code, status: 402, detail: detail };
       }
+      // 409 Conflict: our endpoints put the machine-readable code under
+      // detail.error (e.g. "active_subscription"). Surface it the same
+      // way as 402 so callers can branch on error code rather than raw
+      // HTTP status or Turkish/English message strings.
+      if (resp.status === 409 && detail && typeof detail === "object" && detail.error) {
+        return { error: detail.error, status: 409, detail: detail };
+      }
       // 401 means our JWT is expired or invalid. Clear it and raise the
       // session-expired flag so the sidebar can show its reconnect banner
       // instead of a raw "Invalid or expired token" alert. The flag is
@@ -602,6 +609,18 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     case "OPEN_PORTAL":
       backendFetch("/billing/portal").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "DELETE_ACCOUNT":
+      // backendFetch extracts the structured 409 code (e.g.
+      // "active_subscription") into result.error, so the sidebar can
+      // branch on it for a localized message.
+      backendFetch("/account/delete", {
+        method: "POST",
+        body: message.payload || {},
+      }).then(function (result) {
         sendResponse(result);
       });
       return true;

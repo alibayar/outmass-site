@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "Gefahrenzone"
+  },
+  "deleteAccountDesc": {
+    "message": "Entfernen Sie Ihr OutMass-Konto und alle Daten dauerhaft."
+  },
+  "deleteAccountButton": {
+    "message": "Mein Konto löschen"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "Das kann nicht rückgängig gemacht werden"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "Durch das Löschen Ihres Kontos werden dauerhaft entfernt:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "Alle Kampagnen und Vorlagen"
+  },
+  "deleteAccountDataContacts": {
+    "message": "Alle Kontakte und Tracking-Daten"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Ihre Microsoft-Autorisierung"
+  },
+  "deleteAccountDataSettings": {
+    "message": "Alle Einstellungen und Präferenzen"
+  },
+  "deleteAccountSubCheck": {
+    "message": "Aktives Abonnement? Kündigen Sie es zuerst über Abonnement verwalten."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Tippen Sie DELETE zur Bestätigung:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "Ich verstehe, dass dies unumkehrbar ist"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Dauerhaft löschen"
+  },
+  "deleteAccountSuccess": {
+    "message": "Ihr Konto wurde gelöscht."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Bitte kündigen Sie Ihr Abonnement, bevor Sie Ihr Konto löschen."
+  },
+  "deleteAccountFailed": {
+    "message": "Konto konnte nicht gelöscht werden: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

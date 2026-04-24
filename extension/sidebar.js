@@ -1833,6 +1833,87 @@
     });
   }
 
+  // Delete account flow (Account tab → Danger Zone).
+  // Three guards before we fire the DELETE:
+  //   1. Modal open (accidental click guard)
+  //   2. Typed "DELETE" in the input
+  //   3. Irreversibility checkbox ticked
+  // Backend additionally blocks if there's an active Stripe sub.
+  var accountBtnDelete = document.getElementById("account-btn-delete");
+  var deleteOverlay = document.getElementById("delete-account-overlay");
+  var deleteTypeInput = document.getElementById("delete-account-type");
+  var deleteUnderstand = document.getElementById("delete-account-understand");
+  var deleteConfirmBtn = document.getElementById("delete-account-confirm");
+  var deleteCancelBtn = document.getElementById("delete-account-cancel");
+  var deleteCloseBtn = document.getElementById("delete-account-close");
+
+  function refreshDeleteConfirmState() {
+    if (!deleteConfirmBtn || !deleteTypeInput || !deleteUnderstand) return;
+    var typedOk = deleteTypeInput.value === "DELETE";
+    deleteConfirmBtn.disabled = !(typedOk && deleteUnderstand.checked);
+  }
+
+  function resetDeleteModal() {
+    if (deleteTypeInput) deleteTypeInput.value = "";
+    if (deleteUnderstand) deleteUnderstand.checked = false;
+    refreshDeleteConfirmState();
+  }
+
+  function closeDeleteModal() {
+    if (deleteOverlay) deleteOverlay.style.display = "none";
+    resetDeleteModal();
+  }
+
+  if (accountBtnDelete && deleteOverlay) {
+    accountBtnDelete.addEventListener("click", function () {
+      resetDeleteModal();
+      deleteOverlay.style.display = "flex";
+    });
+  }
+  if (deleteCancelBtn) deleteCancelBtn.addEventListener("click", closeDeleteModal);
+  if (deleteCloseBtn) deleteCloseBtn.addEventListener("click", closeDeleteModal);
+  if (deleteTypeInput) deleteTypeInput.addEventListener("input", refreshDeleteConfirmState);
+  if (deleteUnderstand) deleteUnderstand.addEventListener("change", refreshDeleteConfirmState);
+
+  if (deleteConfirmBtn) {
+    deleteConfirmBtn.addEventListener("click", function () {
+      deleteConfirmBtn.disabled = true;
+      chrome.runtime.sendMessage(
+        {
+          type: "DELETE_ACCOUNT",
+          payload: {
+            confirm_text: deleteTypeInput ? deleteTypeInput.value : "",
+            understand_irreversible: !!(deleteUnderstand && deleteUnderstand.checked),
+          },
+        },
+        function (resp) {
+          deleteConfirmBtn.disabled = false;
+          if (resp && resp.data && resp.data.status === "deleted") {
+            closeDeleteModal();
+            alert(t("deleteAccountSuccess"));
+            // Wipe local auth state — the JWT now points at a deleted
+            // user, so no API call will work until they sign in again.
+            chrome.runtime.sendMessage({ type: "MS_LOGOUT" }, function () {
+              // Reload the sidebar so the login prompt reappears.
+              window.location.reload();
+            });
+            return;
+          }
+          if (handleSessionExpired(resp)) return;
+          // Detect the structured 409 "active_subscription" error so
+          // we can show the localized hint instead of raw backend text.
+          var errCode = resp && resp.error;
+          if (errCode === "active_subscription") {
+            alert(t("deleteAccountActiveSubError"));
+            return;
+          }
+          var detail = (resp && resp.error) ? resp.error : t("popupUnknownError");
+          alert(t("deleteAccountFailed", [detail]));
+        }
+      );
+    });
+  }
+
   // Manage subscription button (in Account tab)
   var accountBtnPortal = document.getElementById("account-btn-portal");
   if (accountBtnPortal) {

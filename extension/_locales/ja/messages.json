@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "危険な操作"
+  },
+  "deleteAccountDesc": {
+    "message": "OutMass アカウントとすべてのデータを完全に削除します。"
+  },
+  "deleteAccountButton": {
+    "message": "アカウントを削除"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "この操作は元に戻せません"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "アカウントを削除すると、以下が完全に削除されます:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "すべてのキャンペーンとテンプレート"
+  },
+  "deleteAccountDataContacts": {
+    "message": "すべての連絡先とトラッキングデータ"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Microsoft の認証情報"
+  },
+  "deleteAccountDataSettings": {
+    "message": "すべての設定と環境設定"
+  },
+  "deleteAccountSubCheck": {
+    "message": "有効なサブスクリプションはありますか？先にサブスクリプション管理から解約してください。"
+  },
+  "deleteAccountTypePrompt": {
+    "message": "確認のため DELETE と入力してください:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "この操作が取り消せないことを理解しています"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "完全に削除"
+  },
+  "deleteAccountSuccess": {
+    "message": "アカウントを削除しました。"
+  },
+  "deleteAccountActiveSubError": {
+    "message": "アカウントを削除する前にサブスクリプションを解約してください。"
+  },
+  "deleteAccountFailed": {
+    "message": "アカウントを削除できませんでした: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

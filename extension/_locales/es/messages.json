@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "Zona de peligro"
+  },
+  "deleteAccountDesc": {
+    "message": "Elimina permanentemente tu cuenta de OutMass y todos los datos."
+  },
+  "deleteAccountButton": {
+    "message": "Eliminar mi cuenta"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "Esto no se puede deshacer"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "Eliminar tu cuenta quitará permanentemente:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "Todas las campañas y plantillas"
+  },
+  "deleteAccountDataContacts": {
+    "message": "Todos los contactos y datos de seguimiento"
+  },
+  "deleteAccountDataAuth": {
+    "message": "Tu autorización de Microsoft"
+  },
+  "deleteAccountDataSettings": {
+    "message": "Todos los ajustes y preferencias"
+  },
+  "deleteAccountSubCheck": {
+    "message": "¿Suscripción activa? Cancélala primero desde Gestionar suscripción."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Escribe DELETE para confirmar:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "Entiendo que esto es irreversible"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Eliminar permanentemente"
+  },
+  "deleteAccountSuccess": {
+    "message": "Tu cuenta ha sido eliminada."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Por favor, cancela tu suscripción antes de eliminar tu cuenta."
+  },
+  "deleteAccountFailed": {
+    "message": "No se pudo eliminar la cuenta: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

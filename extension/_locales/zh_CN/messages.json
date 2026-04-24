@@ -819,5 +819,58 @@
         "content": "$1"
       }
     }
+  },
+  "dangerZone": {
+    "message": "危险区"
+  },
+  "deleteAccountDesc": {
+    "message": "永久删除您的 OutMass 账户和所有数据。"
+  },
+  "deleteAccountButton": {
+    "message": "删除我的账户"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "此操作无法撤销"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "删除账户将永久移除："
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "所有活动和模板"
+  },
+  "deleteAccountDataContacts": {
+    "message": "所有联系人和跟踪数据"
+  },
+  "deleteAccountDataAuth": {
+    "message": "您的 Microsoft 授权"
+  },
+  "deleteAccountDataSettings": {
+    "message": "所有设置和偏好"
+  },
+  "deleteAccountSubCheck": {
+    "message": "有活动订阅？请先通过\"管理订阅\"取消。"
+  },
+  "deleteAccountTypePrompt": {
+    "message": "输入 DELETE 以确认："
+  },
+  "deleteAccountIrreversible": {
+    "message": "我理解此操作不可逆"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "永久删除"
+  },
+  "deleteAccountSuccess": {
+    "message": "您的账户已删除。"
+  },
+  "deleteAccountActiveSubError": {
+    "message": "请先取消订阅后再删除账户。"
+  },
+  "deleteAccountFailed": {
+    "message": "无法删除账户: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }
