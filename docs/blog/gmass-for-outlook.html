@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GMass for Outlook? Use OutMass Instead — A Direct Comparison — OutMass</title>
+  <meta name="description" content="GMass is a Gmail-only mail merge tool. If you're on Outlook, here's what GMass-equivalent features look like in OutMass — pricing, deliverability, and feature mapping.">
+  <meta property="og:title" content="GMass for Outlook? Use OutMass Instead — A Direct Comparison">
+  <meta property="og:description" content="GMass is a Gmail-only mail merge tool. If you're on Outlook, here's what GMass-equivalent features look like in OutMass — pricing, deliverability, and feature mapping.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/gmass-for-outlook.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/gmass-for-outlook.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "GMass for Outlook? Use OutMass Instead — A Direct Comparison",
+    "description": "GMass is a Gmail-only mail merge tool. If you're on Outlook, here's what GMass-equivalent features look like in OutMass — pricing, deliverability, and feature mapping.",
+    "datePublished": "2026-04-29",
+    "dateModified": "2026-04-29",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/gmass-for-outlook.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "Does GMass work with Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "No. GMass is built as a Gmail browser extension and only sends through Gmail's SMTP. It does not support Outlook, Microsoft 365, or Exchange Online accounts. If you try to install it while signed into Outlook, the extension does nothing."}},
+      {"@type": "Question", "name": "What is the equivalent of GMass for Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "OutMass is the closest Outlook-native equivalent. It runs as a Chrome extension inside outlook.office.com and outlook.live.com, supports CSV mail merge, A/B testing, scheduled sends, follow-ups, and tracking — and uses your own Outlook account for delivery."}},
+      {"@type": "Question", "name": "Is OutMass cheaper than GMass?",
+       "acceptedAnswer": {"@type": "Answer", "text": "OutMass starts at $9/month for 2,000 emails (Starter) and $19/month for 10,000 emails (Pro). GMass starts at $25/month. Both have a free tier; OutMass's free tier is 50 emails/month forever."}},
+      {"@type": "Question", "name": "Can I move my GMass campaigns to OutMass?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Most workflows transfer cleanly. Export your contacts as CSV from your Google Sheet and re-upload them in OutMass; templates can be copy-pasted. Open-tracked or click-tracked history doesn't transfer because tracking is per-platform, but live campaigns can be paused on GMass and continued from scratch on OutMass."}}
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>GMass for Outlook? Use OutMass Instead</h1>
+    <p class="meta">Published April 29, 2026 · 6 min read</p>
+
+    <p><a href="https://www.gmass.co" rel="nofollow">GMass</a> is one of the most popular mass-email tools on the market — and one of the most frustrating to discover you can't use. It's built specifically for Gmail. There's no Outlook version, no plans to make one, and the closest Microsoft-side equivalent has to come from somewhere else.</p>
+
+    <p>If you searched "GMass for Outlook" and ended up here, this is the short answer: <a href="../index.html">OutMass</a> is what you're looking for. The longer answer is below — feature mapping, pricing, what's actually different, and what to expect if you're switching from a Gmail-based tool to an Outlook-based one.</p>
+
+    <div class="highlight">
+      <p><strong>Quick facts.</strong> GMass = Gmail only. OutMass = Outlook only. Both run as a Chrome extension and use your own email account to send. OutMass starts at $9/month vs $25/month for GMass.</p>
+    </div>
+
+    <h2>Why GMass doesn't work with Outlook</h2>
+
+    <p>GMass is essentially a UI layer on top of Gmail's web interface. Its features depend on:</p>
+
+    <ul>
+      <li>Gmail's SMTP for delivery</li>
+      <li>Google's OAuth for account access</li>
+      <li>Google Sheets as the canonical contact source for campaigns</li>
+      <li>Gmail-specific labels and threads for follow-up logic</li>
+    </ul>
+
+    <p>None of those concepts map cleanly onto Microsoft. Outlook uses Exchange protocols, Microsoft Graph instead of Google APIs, and folder/category metadata instead of labels. Building "GMass for Outlook" isn't a port — it's a different product that happens to solve the same problem.</p>
+
+    <h2>Feature-by-feature comparison</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>GMass (Gmail)</th>
+          <th>OutMass (Outlook)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Mail merge from a CSV / spreadsheet</td>
+          <td>Yes (Google Sheets)</td>
+          <td>Yes (CSV upload)</td>
+        </tr>
+        <tr>
+          <td>Personalization placeholders</td>
+          <td><code>{first_name}</code> etc.</td>
+          <td><code>{{firstName}}</code> etc.</td>
+        </tr>
+        <tr>
+          <td>Subject A/B testing</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Scheduled sends</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Automatic follow-ups</td>
+          <td>Yes (up to 8 stages)</td>
+          <td>Yes (1 stage today; multi-stage in roadmap)</td>
+        </tr>
+        <tr>
+          <td>Open tracking</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Click tracking</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Reply detection</td>
+          <td>Yes</td>
+          <td>Yes (daily inbox scan)</td>
+        </tr>
+        <tr>
+          <td>Engaged metric (open OR click OR reply)</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Attachments</td>
+          <td>Direct attach (Gmail limits)</td>
+          <td>OneDrive sharing links (better deliverability, larger files)</td>
+        </tr>
+        <tr>
+          <td>Templates</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>AI email writer</td>
+          <td>Yes (paid add-on)</td>
+          <td>Yes (Claude-powered, on Pro)</td>
+        </tr>
+        <tr>
+          <td>Suppression list</td>
+          <td>Yes</td>
+          <td>Yes (search + count)</td>
+        </tr>
+        <tr>
+          <td>Free tier</td>
+          <td>50 emails/day</td>
+          <td>50 emails/month, forever</td>
+        </tr>
+        <tr>
+          <td>Starting paid plan</td>
+          <td>$25/mo (Standard)</td>
+          <td>$9/mo (Starter)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>Where OutMass is genuinely different (not just GMass-shaped)</h2>
+
+    <h3>OneDrive attachments instead of file uploads</h3>
+
+    <p>Cold email with a 1 MB PDF attached typically lands in spam 25–35% of the time. The same email with a OneDrive link to the same PDF lands in the inbox almost as reliably as a plain text email. OutMass leans into that: when you attach a file, it generates a "view-only" sharing link from your own OneDrive and inserts it as a chip in the message. The recipient gets the file, you get OneDrive's built-in view analytics, and you sidestep the spam filters that hate attachments.</p>
+
+    <h3>Reply detection as a first-class metric</h3>
+
+    <p>Open rates lie. Apple Mail Privacy Protection inflates them by pre-loading every tracking pixel; Outlook 2019+ deflates them by blocking remote images by default. <strong>Replies don't lie.</strong> A reply is a recipient who saw the message, processed it, and chose to act. OutMass runs a daily scan of your Inbox via Microsoft Graph and stamps any matching contact as "replied." The Reports tab shows a Reply rate next to your open and click rates — usually a much smaller number, but the only one you can trust.</p>
+
+    <h3>"Engaged" — one honest engagement number</h3>
+
+    <p>OutMass's Engaged metric is the count of distinct contacts who either opened, clicked, OR replied. It's the closest thing to an honest single-number engagement signal in a world where opens are unreliable and clicks miss the readers who reply without clicking.</p>
+
+    <h3>Resume after partial failures</h3>
+
+    <p>If a campaign hits a transient network blip or Microsoft Graph 5xx mid-send, OutMass marks it "partial" and shows a Resume button on the Reports detail view. One click retries only the still-pending recipients. GMass and most Gmail-based tools don't have an equivalent because Gmail's send pipeline rarely partials out — but on Microsoft Graph it happens often enough to need a recovery flow.</p>
+
+    <h2>Pricing — direct comparison</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Plan</th>
+          <th>GMass</th>
+          <th>OutMass</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Free</td>
+          <td>50 emails/day with "Sent via GMass" footer</td>
+          <td>50 emails/month, no footer</td>
+        </tr>
+        <tr>
+          <td>Entry paid</td>
+          <td>$25/mo Standard — 10,000 emails/mo</td>
+          <td>$9/mo Starter — 2,000 emails/mo</td>
+        </tr>
+        <tr>
+          <td>Mid tier</td>
+          <td>$35/mo Premium — adds follow-ups + behavior triggers</td>
+          <td>$19/mo Pro — 10,000 emails/mo + AI Writer + A/B testing + templates</td>
+        </tr>
+        <tr>
+          <td>Top tier</td>
+          <td>$55/mo Professional — adds team features</td>
+          <td>(team plan in roadmap)</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>If you're in the 2,000–10,000 emails/month range, OutMass is roughly half the price of the equivalent GMass plan. If you're sending more than 10,000 emails/month from a single Outlook mailbox, you'll likely run into Microsoft's per-day throttling before either tool's plan limits matter — see <a href="how-to-send-mass-emails-from-outlook.html">our breakdown of Outlook's send limits</a>.</p>
+
+    <h2>What you give up by switching from Gmail to Outlook</h2>
+
+    <p>Honesty section. Outlook's mass-email pipeline is not a strict superset of Gmail's:</p>
+
+    <ul>
+      <li><strong>Inbox-by-thread is different.</strong> Gmail groups the entire conversation; Outlook treats threading per-folder. Reply detection works in both, but threaded views in Outlook can feel busier when you've sent a multi-stage sequence.</li>
+      <li><strong>Multi-stage follow-ups are simpler in OutMass today.</strong> One stage right now ("if not opened in N days, send X"). GMass does up to eight. Pro tip: most cold sequences use 1–2 stages anyway, but if you live and die by 6-step sequences, OutMass isn't there yet.</li>
+      <li><strong>Behavior triggers</strong> ("send if recipient clicked link X") aren't in OutMass yet.</li>
+      <li><strong>Team features</strong> (shared templates across users, role-based access) aren't in OutMass yet.</li>
+    </ul>
+
+    <p>If those features are deal-breakers, GMass + a separate Gmail account is your better bet. If you're an Outlook-native operator who doesn't want to migrate to Gmail just to send a sales sequence, OutMass covers the 80% case at a lower price.</p>
+
+    <h2>Migrating from GMass</h2>
+
+    <ol>
+      <li><strong>Pause your GMass campaigns.</strong> Especially follow-ups — you don't want both tools sending into the same thread.</li>
+      <li><strong>Export your contacts.</strong> In Google Sheets, File → Download → CSV. Your <code>email</code>, <code>first_name</code>, <code>company</code> columns are exactly what OutMass expects.</li>
+      <li><strong>Install OutMass</strong> from the <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Chrome Web Store</a> and sign in with the Outlook account you actually want to send from.</li>
+      <li><strong>Recreate templates</strong> in Settings → Templates. The merge-tag syntax is slightly different (<code>{{firstName}}</code> instead of <code>{first_name}</code>) so a quick find-replace in your existing templates will do the job.</li>
+      <li><strong>Re-import the contact list</strong> into a new campaign and you're ready to send.</li>
+    </ol>
+
+    <p>Open-tracked and click-tracked history from GMass doesn't transfer (tracking pixels and link redirects are domain-specific), so reporting starts fresh on the OutMass side. Live in-flight follow-ups are easier to cancel on GMass and restart on OutMass than to migrate mid-stream.</p>
+
+    <div class="cta">
+      <h3>Try OutMass — free up to 50 emails/month</h3>
+      <p>The Outlook-side equivalent of GMass. Set up takes one click and a Microsoft sign-in.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+
+    <h3>Does GMass work with Outlook?</h3>
+    <p>No. GMass is built as a Gmail browser extension and only sends through Gmail's SMTP. It does not support Outlook, Microsoft 365, or Exchange Online accounts. If you try to install it while signed into Outlook, the extension does nothing.</p>
+
+    <h3>What is the equivalent of GMass for Outlook?</h3>
+    <p>OutMass is the closest Outlook-native equivalent. It runs as a Chrome extension inside outlook.office.com and outlook.live.com, supports CSV mail merge, A/B testing, scheduled sends, follow-ups, and tracking — and uses your own Outlook account for delivery.</p>
+
+    <h3>Is OutMass cheaper than GMass?</h3>
+    <p>Yes — OutMass starts at $9/month for 2,000 emails (Starter) and $19/month for 10,000 emails (Pro). GMass starts at $25/month for the same 10,000-email tier. Both have a free tier; OutMass's free tier is 50 emails/month forever.</p>
+
+    <h3>Can I move my GMass campaigns to OutMass?</h3>
+    <p>Most workflows transfer cleanly. Export your contacts as CSV from your Google Sheet and re-upload them in OutMass; templates can be copy-pasted with a quick merge-tag rename. Tracked history doesn't transfer because tracking is per-platform, but live campaigns can be paused on GMass and continued from scratch on OutMass.</p>
+
+    <h3>Will my recipients know I switched tools?</h3>
+    <p>No. Both tools send from your own email account, so the From, Reply-To, and DKIM signature stay the same. The only visible change is that GMass adds a "Sent via GMass" footer on its free tier; OutMass does not.</p>
+
+    <p class="updated-note">Last updated: April 29, 2026.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>

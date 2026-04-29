@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Outlook Mail Merge Limit: How to Send 1000+ Emails Without Blocks — OutMass</title>
+  <meta name="description" content="Outlook caps daily sending. Here's the exact limit by account type, why Microsoft enforces it, and how to send 1000+ personalized emails without your account getting throttled.">
+  <meta property="og:title" content="Outlook Mail Merge Limit: How to Send 1000+ Emails Without Blocks">
+  <meta property="og:description" content="Outlook caps daily sending. Here's the exact limit by account type, why Microsoft enforces it, and how to send 1000+ personalized emails without your account getting throttled.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/outlook-mail-merge-limit.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/outlook-mail-merge-limit.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Outlook Mail Merge Limit: How to Send 1000+ Emails Without Blocks",
+    "description": "Outlook caps daily sending. Here's the exact limit by account type, why Microsoft enforces it, and how to send 1000+ personalized emails without your account getting throttled.",
+    "datePublished": "2026-04-29",
+    "dateModified": "2026-04-29",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/outlook-mail-merge-limit.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "What is the Outlook send limit?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Outlook.com personal accounts can send to roughly 500 unique recipients per day. Microsoft 365 business and Exchange Online plans allow up to 10,000 recipients per day, with a maximum of 500 per single message and a throughput cap of 30 messages per minute."}},
+      {"@type": "Question", "name": "What happens when I hit the Outlook send limit?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Microsoft returns a SubmissionQuotaExceeded error and rejects new sends until the daily counter resets at midnight UTC. The counter is a rolling 24-hour window in some regions; in most tenants it resets at the top of the UTC day."}},
+      {"@type": "Question", "name": "Can I increase my Outlook send limit?",
+       "acceptedAnswer": {"@type": "Answer", "text": "The limit is enforced server-side and cannot be raised through any user setting. For new tenants the limit is intentionally lower for the first 30 days to prevent abuse. Organisations sending high-volume legitimate mail typically use a transactional service like Microsoft Azure Communication Services, SendGrid, or Mailgun for that traffic — not their primary Outlook mailbox."}},
+      {"@type": "Question", "name": "Does sending slowly avoid the limit?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Slowing the per-minute rate avoids the throughput cap (30/min) but does not raise the daily total. If you need to send 5,000 emails on a 500/day account, you need a multi-day campaign or a different sending channel."}},
+      {"@type": "Question", "name": "Will my account get suspended for sending too much?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Hitting the daily limit by itself doesn't suspend your account — Microsoft just throttles new sends. Suspension typically happens when a high spam-complaint rate, abuse reports, or a sudden burst pattern triggers Microsoft's anti-abuse systems. Slow, personalized, per-minute-rate-limited sending stays well below those thresholds."}}
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .warning { background: #fff8e6; border-left: 4px solid #f2a900; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .warning p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>Outlook Mail Merge Limit: How to Send 1000+ Emails Without Blocks</h1>
+    <p class="meta">Published April 29, 2026 · 7 min read</p>
+
+    <p>You write a campaign, hit Send on 1,200 personalized emails, and somewhere around recipient 500 Outlook stops cooperating. New messages disappear into the Outbox. A few hours later you get a polite NDR titled <code>SubmissionQuotaExceeded</code>. Welcome to Microsoft's mail-merge limit.</p>
+
+    <p>This post covers exactly what the limit is, why it exists, what triggers it, and the realistic ways to send 1,000+ personalized emails per day from an Outlook account without getting throttled or — worse — flagged for abuse.</p>
+
+    <h2>The actual numbers</h2>
+
+    <p>Microsoft publishes their official limits at <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">learn.microsoft.com/exchange-online-limits</a>. Stripped to the essentials:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Account type</th>
+          <th>Recipients/day</th>
+          <th>Messages/min</th>
+          <th>Recipients/message</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Outlook.com (free)</td>
+          <td>~500</td>
+          <td>~30</td>
+          <td>50</td>
+        </tr>
+        <tr>
+          <td>Microsoft 365 Personal / Family</td>
+          <td>~500</td>
+          <td>~30</td>
+          <td>500</td>
+        </tr>
+        <tr>
+          <td>Microsoft 365 Business Basic / Standard / Premium</td>
+          <td>10,000</td>
+          <td>30</td>
+          <td>500</td>
+        </tr>
+        <tr>
+          <td>Exchange Online (standalone)</td>
+          <td>10,000</td>
+          <td>30</td>
+          <td>500</td>
+        </tr>
+        <tr>
+          <td>New Microsoft 365 tenant (first 30 days)</td>
+          <td>1,000–2,000 (graduated)</td>
+          <td>30</td>
+          <td>500</td>
+        </tr>
+        <tr>
+          <td>Trial / education tenants</td>
+          <td>Reduced — varies</td>
+          <td>30</td>
+          <td>500</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>Three numbers in tension:</p>
+
+    <ul>
+      <li><strong>Recipients per day</strong> — your hard ceiling. Hitting this returns <code>SubmissionQuotaExceeded</code>.</li>
+      <li><strong>Messages per minute</strong> — throughput throttle. Going above results in <code>RecipientRateLimitedTemporarily</code>; messages queue and retry.</li>
+      <li><strong>Recipients per message</strong> — caps the To/CC/BCC fields on a single message.</li>
+    </ul>
+
+    <p>For a personalized campaign you're sending one message per recipient (one address in <code>To:</code>), so the per-message cap doesn't matter. The two that do are <strong>per day</strong> and <strong>per minute</strong>.</p>
+
+    <h2>Why these limits exist</h2>
+
+    <p>Microsoft is balancing two pressures: legitimate business email throughput vs. spam/phishing prevention. If a compromised account could send 100,000 emails/hour, criminals would weaponise every breach. The 30/minute cap is anti-abuse infrastructure. The 10,000/day cap is policy.</p>
+
+    <p>The <strong>graduated limits for new tenants</strong> are about reputation. A brand-new domain with no email history that suddenly fires 10,000 messages looks exactly like a spam campaign. Microsoft restricts the first 30 days specifically so legitimate domains build a slow, normal-looking sending pattern.</p>
+
+    <div class="warning">
+      <p><strong>Important.</strong> Microsoft's limits are <em>not</em> the same as your inbox-placement limits. You can technically send 9,999 cold emails on day 30 from a fresh tenant — and watch every single one go to spam. Anti-spam filters at the receiving end (Gmail, Yahoo, corporate domains) have their own thresholds, and they're stricter than Microsoft's.</p>
+    </div>
+
+    <h2>What actually happens when you exceed the limit</h2>
+
+    <h3>Per-day limit</h3>
+
+    <p>Microsoft returns a non-delivery report (NDR) with code <code>5.2.121 RESOLVER.RST.RecipSizeLimit</code> or, more commonly, <code>5.7.1 SubmissionQuotaExceeded</code>. The message disappears from your Outbox and lands in your Sent Items as "queued." Future sends within the 24-hour window get the same treatment until the counter resets — for most tenants, at the top of the UTC day.</p>
+
+    <p>Your account is <strong>not</strong> suspended. You don't get an email from Microsoft. The only visible effect is that nothing is sending and you eventually find the NDR if you go looking.</p>
+
+    <h3>Per-minute limit</h3>
+
+    <p>Microsoft returns <code>4.7.500 Server busy</code> and the message stays in the queue. Outlook (or your sending tool) is expected to retry after a short delay — typically 30–120 seconds. If your tool doesn't retry, those messages just hang.</p>
+
+    <h3>Burst patterns trigger separate anti-abuse systems</h3>
+
+    <p>Even if you stay under the published limits, sending 200 identical messages in 10 seconds is a pattern that Microsoft's anti-abuse layer flags as automated. The penalty is escalating: temporary throttle first, soft-block on the account second, full suspension on repeat offenses. Avoiding bursts isn't optional.</p>
+
+    <h2>How to send 1000+ emails without hitting the wall</h2>
+
+    <h3>Stay below the per-minute throughput</h3>
+
+    <p>Microsoft's documented cap is 30 messages/minute. The practical cap for cold outreach is much lower — sending 30 personalized messages in 60 seconds still looks robotic to anti-abuse systems. <strong>Aim for 1 message every 1–2 seconds</strong> instead. That gives you about 1,800 messages/hour, well under throughput limits and looks like a person who's typing genuinely fast.</p>
+
+    <p>Tools like <a href="../index.html">OutMass</a> bake this in automatically — there's a 1-second delay between sends by default, and the schedule is enforced server-side so you can't accidentally trip over it.</p>
+
+    <h3>Spread campaigns across multiple days</h3>
+
+    <p>If your list is 5,000 recipients and you're on a Microsoft 365 Business plan (10,000/day cap), you can technically send the whole thing in a day. <strong>You shouldn't.</strong> A 5,000-message daily volume from an account that normally sends 50 messages/day is exactly the pattern that lights up Microsoft's anti-abuse dashboards. Split the list:</p>
+
+    <ul>
+      <li>Day 1: 500 messages (warmup)</li>
+      <li>Day 2: 1,000</li>
+      <li>Day 3: 1,500</li>
+      <li>Day 4: 2,000</li>
+    </ul>
+
+    <p>That's a normal sales operator's sending pattern. Microsoft doesn't blink, recipient mail servers don't blink, your reputation builds.</p>
+
+    <h3>Personalize past the first line</h3>
+
+    <p>Outlook's anti-spam system has a hash-similarity detector. If 1,000 messages have the same body except for <code>{{firstName}}</code> at the top, that's still ~99% the same — it triggers similarity flags. Effective personalization changes more than a name:</p>
+
+    <ul>
+      <li>Different first sentences ("I noticed you just launched X" vs "Saw your team's recent post on Y").</li>
+      <li>Reference different facts about the recipient's company.</li>
+      <li>Vary the call-to-action between two or three options (a direct meeting, a reply with a question, a link).</li>
+    </ul>
+
+    <p>This is where AI email writers shine. OutMass's AI Writer (Claude-powered) generates per-recipient first lines from a CSV column — turning a "1000-message identical send" into "1000 individually-written messages" without 1000 hours of work.</p>
+
+    <h3>Use a real, working unsubscribe link</h3>
+
+    <p>One spam complaint per 1,000 messages is normal. Three per 1,000 starts ringing alarms. The fastest way to lower complaints is to make unsubscribe trivial — a one-click link in every message. Recipients who would have hit "Mark as spam" will hit Unsubscribe instead, and Microsoft's reputation system distinguishes between the two.</p>
+
+    <h3>Skip attachments for cold outreach</h3>
+
+    <p>Attachments are the single biggest deliverability killer for cold mail. A 1 MB PDF attached to an unrecognized sender is treated like a phishing attempt by most modern filters. The same PDF as a OneDrive sharing link — the sender's name on the link, no payload in the message — sails through.</p>
+
+    <p>OutMass enforces this by default: attachments are added as OneDrive links rather than encoded into the message. <a href="gmass-for-outlook.html">More on why this matters</a>.</p>
+
+    <h2>If 10,000/day still isn't enough</h2>
+
+    <p>You've hit the policy ceiling. Three real options, all of them changing the architecture rather than working around limits:</p>
+
+    <h3>Option 1: Multiple sending accounts (carefully)</h3>
+
+    <p>Some companies set up several Microsoft 365 mailboxes — <code>sales@</code>, <code>outreach@</code>, individual reps — and split the campaign across them. This works but only if each mailbox is a real, signed-off address with a real human attached. Burner accounts created solely to escape the limit get caught and banned within days.</p>
+
+    <h3>Option 2: A transactional email service</h3>
+
+    <p>For genuine high-volume marketing or transactional traffic, the right tool is a dedicated transactional email service: <a href="https://learn.microsoft.com/en-us/azure/communication-services/concepts/email/email-overview" rel="nofollow">Azure Communication Services</a>, SendGrid, Mailgun, Postmark, Amazon SES. They're built for the 50,000+ messages/day case, with their own deliverability infrastructure, IP warming, and bounce/complaint handling.</p>
+
+    <p>The trade-off: messages send from <code>noreply@yourdomain.com</code>, not from your personal Outlook mailbox. Recipients can tell it's a marketing platform. For cold outreach where personal-looking matters, this is a downgrade. For transactional or newsletter mail, it's the correct tool.</p>
+
+    <h3>Option 3: Multi-day campaigns</h3>
+
+    <p>Most "I need to send 50,000 emails" use cases are actually "I need to send 50,000 emails over the next 30 days." A 50,000-message campaign at 1,500/day = 33 days, comfortably below limits and far better for deliverability than a 5-day blast at 10,000/day. <a href="../index.html">OutMass's scheduled sending</a> handles this natively — you upload the CSV, set the daily cap, and the worker spreads sends automatically.</p>
+
+    <div class="cta">
+      <h3>Send 1,000+ personalized emails without hitting Microsoft's ceiling</h3>
+      <p>Built-in rate limiting, automatic per-day spreading, and OneDrive attachments for better deliverability.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass — free up to 50/month</a>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+
+    <h3>What is the Outlook send limit?</h3>
+    <p>Outlook.com personal accounts can send to roughly 500 unique recipients per day. Microsoft 365 business and Exchange Online plans allow up to 10,000 recipients per day, with a maximum of 500 per single message and a throughput cap of 30 messages per minute.</p>
+
+    <h3>What happens when I hit the Outlook send limit?</h3>
+    <p>Microsoft returns a <code>SubmissionQuotaExceeded</code> error and rejects new sends until the daily counter resets at midnight UTC. The counter is a rolling 24-hour window in some regions; in most tenants it resets at the top of the UTC day.</p>
+
+    <h3>Can I increase my Outlook send limit?</h3>
+    <p>The limit is enforced server-side and cannot be raised through any user setting. For new tenants the limit is intentionally lower for the first 30 days to prevent abuse. Organisations sending high-volume legitimate mail typically use a transactional service like Microsoft Azure Communication Services, SendGrid, or Mailgun for that traffic — not their primary Outlook mailbox.</p>
+
+    <h3>Does sending slowly avoid the limit?</h3>
+    <p>Slowing the per-minute rate avoids the throughput cap (30/min) but does not raise the daily total. If you need to send 5,000 emails on a 500/day account, you need a multi-day campaign or a different sending channel.</p>
+
+    <h3>Will my account get suspended for sending too much?</h3>
+    <p>Hitting the daily limit by itself doesn't suspend your account — Microsoft just throttles new sends. Suspension typically happens when a high spam-complaint rate, abuse reports, or a sudden burst pattern triggers Microsoft's anti-abuse systems. Slow, personalized, per-minute-rate-limited sending stays well below those thresholds.</p>
+
+    <p class="updated-note">Last updated: April 29, 2026.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>

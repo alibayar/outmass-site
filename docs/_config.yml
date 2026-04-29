@@ -4,7 +4,24 @@
 # examples like {{firstName}} and {{company}}. Jekyll/Liquid would try to
 # parse those as template variables and crash the build — so we exclude them.
 # They remain accessible on GitHub as source files.
+#
+# The blog/ posts also reference {{firstName}} etc. inside <code> blocks
+# as a feature explanation — we keep them in the build because they need
+# to be live HTML pages, but we mark them up as "raw" inside the article
+# bodies. Jekyll's default Liquid rendering on .html files is permissive
+# enough that the curly braces inside <code> tags pass through unchanged
+# in practice. If a post ever breaks the build, wrap the offending block
+# in {% raw %} ... {% endraw %}.
+
+title: OutMass
+description: Mass email and mail merge for Outlook — personalized campaigns, tracking, follow-ups
+url: https://getoutmass.com
 
 exclude:
   - plans/
   - store-listing/
+
+# Important: keep the .html extensions Jekyll generates (no permalink
+# rewriting) because the existing nav links and the sitemap.xml all
+# point at .html paths.
+permalink: /:path/:basename:output_ext
