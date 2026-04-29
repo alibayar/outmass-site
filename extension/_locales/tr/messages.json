@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "Etkileşim:"
+  },
+  "statEngagedHint": {
+    "message": "Maili açan, link tıklayan VEYA cevap veren alıcılar. Ham açılış oranından daha güvenilir — Outlook ve Apple Mail gibi mail istemcileri tracking pixel'leri sıklıkla blokluyor veya önceden yüklüyor, bu da açılış sayısını çarpıtıyor."
+  },
+  "statReplied": {
+    "message": "Cevap veren:"
+  },
+  "statRepliedHint": {
+    "message": "Günlük Inbox taraması ile tespit edilir. En güçlü etkileşim sinyali — yalnızca alıcılarından gelen gerçek cevapları sayar."
+  },
+  "resumeHint": {
+    "message": "Bazı alıcılara bu kampanya ulaşmadı — genelde geçici bir ağ ya da hız limiti sorunu olur. Devam et tıklayarak yalnızca bekleyen alıcılara yeniden gönderebilirsin."
+  },
+  "btnResumeCampaign": {
+    "message": "Göndermeye devam et"
+  },
+  "resumeQueued": {
+    "message": "$N$ alıcı yeniden gönderim için sıraya alındı.",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "Devam edilemedi: $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

@@ -24,6 +24,7 @@ from config import (
     STARTER_PLAN_MONTHLY_LIMIT,
     PRO_PLAN_MONTHLY_LIMIT,
     GRAPH_API_BASE,
+    OUTBOUND_HTTP_TIMEOUT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
     FREE_UPLOAD_ROW_LIMIT,
@@ -194,6 +195,46 @@ async def campaign_stats(
     open_rate = round((campaign["open_count"] / sent) * 100, 1) if sent > 0 else 0.0
     click_rate = round((campaign["click_count"] / sent) * 100, 1) if sent > 0 else 0.0
 
+    # ── Engaged + reply metrics ──
+    # open_count and click_count are atomically incremented stat counters
+    # on the campaigns row. They aren't unique per contact (a recipient
+    # who opens five times bumps open_count five times), and they don't
+    # tell us whether opens and clicks come from the SAME recipient.
+    #
+    # We pull the contact rows ONCE and derive three distinct-recipient
+    # metrics in Python:
+    #   - opened_unique: distinct contacts with opened_at set
+    #   - replied_count: distinct contacts whose Inbox reply was matched
+    #     by the daily reply-detector beat
+    #   - engaged_count: distinct contacts who opened OR clicked OR replied
+    #
+    # Replied is the strongest signal — replies arrive even when pixels
+    # don't load and even when the recipient never clicks a link.
+    db = get_db()
+    engaged_count = 0
+    replied_count = 0
+    try:
+        engaged_rows = (
+            db.table("contacts")
+            .select("id, opened_at, clicked_at, replied_at")
+            .eq("campaign_id", campaign_id)
+            .limit(10000)
+            .execute()
+        )
+        for row in engaged_rows.data or []:
+            opened = bool(row.get("opened_at"))
+            clicked = bool(row.get("clicked_at"))
+            replied = bool(row.get("replied_at"))
+            if opened or clicked or replied:
+                engaged_count += 1
+            if replied:
+                replied_count += 1
+    except Exception:  # noqa: BLE001 — never break stats response on a count failure
+        engaged_count = 0
+        replied_count = 0
+    engaged_rate = round((engaged_count / sent) * 100, 1) if sent > 0 else 0.0
+    reply_rate = round((replied_count / sent) * 100, 1) if sent > 0 else 0.0
+
     followups = followup_model.get_campaign_followups(campaign_id)
     pending_followups = sum(1 for f in followups if f["status"] == "scheduled")
 
@@ -205,8 +246,12 @@ async def campaign_stats(
         "sent_count": sent,
         "open_count": campaign["open_count"],
         "click_count": campaign["click_count"],
+        "engaged_count": engaged_count,
+        "replied_count": replied_count,
         "open_rate": open_rate,
         "click_rate": click_rate,
+        "engaged_rate": engaged_rate,
+        "reply_rate": reply_rate,
         "pending_followups": pending_followups,
     }
 
@@ -552,7 +597,7 @@ async def send_campaign(
     sent_count = 0
     errors = []
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
         send_list = pending if not ab_test else ab_group_a + ab_group_b
         for idx, contact in enumerate(send_list):
             # Check suppression list + contact-level unsubscribe
@@ -684,7 +729,7 @@ async def _run_test_send(
         },
     }
 
-    async with httpx.AsyncClient() as client:
+    async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
         result = await _send_single_email(
             client=client,
             access_token=access_token,
@@ -771,6 +816,62 @@ async def unarchive_campaign(
         raise HTTPException(status_code=404, detail="Campaign not found")
     campaign_model.set_archived(campaign_id, False)
     return {"campaign_id": campaign_id, "archived": False}
+
+
+@router.post("/{campaign_id}/resume")
+async def resume_campaign(
+    campaign_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Resume sending the still-pending contacts of a partial / stuck
+    campaign.
+
+    A campaign reaches `partial` status when some recipients failed
+    during a send loop (network blip, Microsoft 5xx, worker crash).
+    Pre-this endpoint, the only recovery was manual SQL — change the
+    campaign status back to `scheduled` and wait for the beat task.
+    Now the user can hit Resume from the Reports detail view.
+
+    Behaviour:
+      - 404 unless the campaign belongs to the caller.
+      - 409 if status isn't `partial` (a `sent` campaign has nothing
+        left, a `draft` was never sent).
+      - Otherwise: flip status to `scheduled` with scheduled_for=now
+        so the next process_scheduled_campaigns beat picks it up
+        and sends only the contacts that are still in `pending`.
+    """
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if campaign.get("status") != "partial":
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "not_resumable",
+                "message": (
+                    "Only campaigns in 'partial' status can be resumed."
+                ),
+            },
+        )
+
+    # Confirm there are pending contacts to send before flipping the
+    # status. If everything's already gone out, mark it sent and return.
+    pending = contact_model.get_pending_contacts(campaign_id)
+    if not pending:
+        campaign_model.update_campaign(campaign_id, {"status": "sent"})
+        return {"campaign_id": campaign_id, "status": "sent", "queued": 0}
+
+    now_iso = datetime.now(timezone.utc).isoformat()
+    campaign_model.update_campaign(
+        campaign_id, {"status": "scheduled", "scheduled_for": now_iso}
+    )
+
+    return {
+        "campaign_id": campaign_id,
+        "status": "scheduled",
+        "queued": len(pending),
+    }
 
 
 # ── Follow-up Endpoints ──
@@ -977,7 +1078,9 @@ async def _send_single_email(
         "saveToSentItems": True,
     }
 
-    resp = await client.post(
+    from utils.graph_retry import async_post_with_retry
+    resp = await async_post_with_retry(
+        client,
         f"{GRAPH_API_BASE}/me/sendMail",
         headers={
             "Authorization": f"Bearer {access_token}",
@@ -985,21 +1088,6 @@ async def _send_single_email(
         },
         json=payload,
     )
-
-    # Rate limited — retry once
-    if resp.status_code == 429:
-        import asyncio
-
-        retry_after = int(resp.headers.get("Retry-After", RATE_LIMIT_WAIT_SECONDS))
-        await asyncio.sleep(retry_after)
-        resp = await client.post(
-            f"{GRAPH_API_BASE}/me/sendMail",
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-        )
 
     if resp.status_code in (200, 202):
         # Audit: one row per successfully dispatched email. Graph sometimes

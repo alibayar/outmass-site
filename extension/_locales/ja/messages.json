@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "エンゲージ:"
+  },
+  "statEngagedHint": {
+    "message": "開封、クリック、または返信した受信者。単純な開封率より信頼できます — 多くのメールクライアント（Outlook、Apple Mail）はピクセルをブロックしたり事前に読み込んだりして開封追跡を歪めます。"
+  },
+  "statReplied": {
+    "message": "返信:"
+  },
+  "statRepliedHint": {
+    "message": "毎日の受信トレイスキャンで検出。最も強いエンゲージメント信号 — 受信者からの本物の返信のみをカウントします。"
+  },
+  "resumeHint": {
+    "message": "一部の受信者がこのキャンペーンを受信できませんでした — 通常は一時的なネットワークまたはレート制限の問題です。再開すると保留中の受信者にのみ再送信します。"
+  },
+  "btnResumeCampaign": {
+    "message": "送信を再開"
+  },
+  "resumeQueued": {
+    "message": "$N$ 件の受信者を再送キューに追加しました。",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "再開できませんでした: $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "互动:"
+  },
+  "statEngagedHint": {
+    "message": "打开、点击或回复邮件的收件人。比单纯的打开率更可靠 — 许多邮件客户端（Outlook、Apple Mail）会通过阻止或预加载像素来扭曲打开追踪。"
+  },
+  "statReplied": {
+    "message": "已回复:"
+  },
+  "statRepliedHint": {
+    "message": "通过每日收件箱扫描检测。最强的互动信号 — 仅统计来自您的收件人的真实回复。"
+  },
+  "resumeHint": {
+    "message": "部分收件人未收到此活动 — 通常是临时的网络或速率限制问题。继续仅会重试待发送的收件人。"
+  },
+  "btnResumeCampaign": {
+    "message": "继续发送"
+  },
+  "resumeQueued": {
+    "message": "$N$ 位收件人已排队重发。",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "无法继续: $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

@@ -16,6 +16,7 @@ from config import (
     BACKEND_URL,
     FREE_PLAN_MONTHLY_LIMIT,
     GRAPH_API_BASE,
+    OUTBOUND_HTTP_TIMEOUT,
     PRO_PLAN_MONTHLY_LIMIT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
@@ -100,7 +101,7 @@ def process_scheduled_campaigns():
         sent_count = 0
         errors = []
 
-        with httpx.Client() as client:
+        with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in pending:
                 if contact.get("unsubscribed"):
                     continue
@@ -200,7 +201,11 @@ def _send_email(
         "saveToSentItems": True,
     }
 
-    resp = client.post(
+    # Bounded retries on 5xx + transient network errors (and 429,
+    # honouring Retry-After). 3 attempts total before giving up.
+    from utils.graph_retry import post_with_retry
+    resp = post_with_retry(
+        client,
         f"{GRAPH_API_BASE}/me/sendMail",
         headers={
             "Authorization": f"Bearer {access_token}",
@@ -208,18 +213,6 @@ def _send_email(
         },
         json=payload,
     )
-
-    if resp.status_code == 429:
-        retry_after = int(resp.headers.get("Retry-After", RATE_LIMIT_WAIT_SECONDS))
-        time.sleep(retry_after)
-        resp = client.post(
-            f"{GRAPH_API_BASE}/me/sendMail",
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-        )
 
     if resp.status_code in (200, 202):
         try:
@@ -351,7 +344,7 @@ def evaluate_ab_tests():
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
         sent_count = 0
-        with httpx.Client() as client:
+        with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in remaining:
                 if contact.get("unsubscribed"):
                     continue
@@ -397,6 +390,96 @@ def evaluate_ab_tests():
 # still has a stored refresh_token and isn't already flagged. If the
 # refresh fails with a permanent error, `get_fresh_access_token` flags
 # the user + fires the reconnect email via `_mark_requires_reauth`.
+
+
+@celery.task
+def reset_stuck_sending_campaigns():
+    """Recover campaigns stuck in 'sending' status.
+
+    The send loop marks a campaign 'sending' before iterating its
+    contacts and 'sent' / 'partial' afterwards. If the worker crashes
+    mid-loop (Railway restart, OOM, network blip), the campaign is
+    left in 'sending' forever — the scheduled-campaign beat picks up
+    only 'scheduled' rows, so it never retries on its own.
+
+    Strategy:
+      - Find campaigns in 'sending' that haven't moved in 30+ minutes
+        (we use scheduled_for as a proxy when no updated_at column).
+      - If any contact rows are status='sent', mark the campaign
+        'partial' so the user can see it + (later) hit Resume.
+      - If nothing was sent, drop it back to 'scheduled' so the next
+        beat retries from scratch.
+
+    Idempotent — running this twice in a row is a no-op the second
+    time because the status no longer matches. Hourly schedule keeps
+    recovery latency < 1 hour without putting load on the DB.
+    """
+    from datetime import datetime, timedelta, timezone
+
+    from database import get_db
+    from models import contact as contact_model
+
+    db = get_db()
+    cutoff = (datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat()
+    try:
+        stuck = (
+            db.table("campaigns")
+            .select("id, scheduled_for, sent_count, status")
+            .eq("status", "sending")
+            .execute()
+        )
+    except Exception as e:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).warning(
+            "stuck-sending lookup failed: %s", e
+        )
+        return {"reset": 0}
+
+    rows = stuck.data or []
+    reset_to_partial = 0
+    reset_to_scheduled = 0
+    for row in rows:
+        # If we have a scheduled_for that's recent (within 30 min) the
+        # campaign might genuinely still be processing — skip.
+        scheduled_for = row.get("scheduled_for")
+        if scheduled_for and scheduled_for > cutoff:
+            continue
+
+        # Count how many contacts already went out so we know whether
+        # to mark partial (some sent) vs reschedule (none sent).
+        try:
+            sent_contacts = (
+                db.table("contacts")
+                .select("id")
+                .eq("campaign_id", row["id"])
+                .eq("status", "sent")
+                .limit(1)
+                .execute()
+            )
+            has_progress = bool(sent_contacts.data)
+        except Exception:  # noqa: BLE001
+            has_progress = bool((row.get("sent_count") or 0) > 0)
+
+        new_status = "partial" if has_progress else "scheduled"
+        try:
+            (
+                db.table("campaigns")
+                .update({"status": new_status})
+                .eq("id", row["id"])
+                .eq("status", "sending")  # double-check to avoid races
+                .execute()
+            )
+            if new_status == "partial":
+                reset_to_partial += 1
+            else:
+                reset_to_scheduled += 1
+        except Exception:  # noqa: BLE001
+            continue
+
+    return {
+        "reset_to_partial": reset_to_partial,
+        "reset_to_scheduled": reset_to_scheduled,
+    }
 
 
 @celery.task

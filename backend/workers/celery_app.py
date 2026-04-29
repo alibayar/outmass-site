@@ -50,6 +50,7 @@ celery = Celery(
         "workers.scheduled_worker",
         "workers.daily_report",
         "workers.inactivity_nudge",
+        "workers.reply_detector",
     ],
 )
 
@@ -121,6 +122,12 @@ celery.conf.beat_schedule = {
         # to send their morning campaign.
         "schedule": crontab(hour=3, minute=0),
     },
+    "reset-stuck-sending-campaigns": {
+        "task": "workers.scheduled_worker.reset_stuck_sending_campaigns",
+        # Hourly — caps mid-send-crash recovery latency at ~1h while
+        # being cheap (single SELECT + a handful of UPDATEs).
+        "schedule": 3600.0,
+    },
     "anonymize-audit-log-ips": {
         "task": "workers.scheduled_worker.anonymize_audit_log_ips",
         # 03:30 UTC daily — after the token health check. Idempotent, so
@@ -141,5 +148,12 @@ celery.conf.beat_schedule = {
     "send-inactivity-warnings-90d": {
         "task": "workers.inactivity_nudge.send_inactivity_warnings_90d",
         "schedule": crontab(hour=4, minute=30),
+    },
+    "detect-replies": {
+        "task": "workers.reply_detector.detect_replies",
+        # Daily at 05:00 UTC — after the morning send-window close
+        # (when most replies for yesterday's batches will have arrived)
+        # but still off-peak for our own infra.
+        "schedule": crontab(hour=5, minute=0),
     },
 }

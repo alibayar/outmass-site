@@ -14,6 +14,7 @@ import httpx
 from config import (
     BACKEND_URL,
     GRAPH_API_BASE,
+    OUTBOUND_HTTP_TIMEOUT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
@@ -123,7 +124,7 @@ def send_email_task(self, contact_id: str, campaign_id: str, access_token: str):
     }
 
     # Send via Graph API
-    with httpx.Client() as client:
+    with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
         resp = client.post(
             f"{GRAPH_API_BASE}/me/sendMail",
             headers={

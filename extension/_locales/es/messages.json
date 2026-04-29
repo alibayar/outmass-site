@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "Interactuaron:"
+  },
+  "statEngagedHint": {
+    "message": "Destinatarios que abrieron, hicieron clic O respondieron. Más fiable que la tasa de apertura simple — muchos clientes de correo (Outlook, Apple Mail) distorsionan el seguimiento de aperturas al bloquear o precargar píxeles."
+  },
+  "statReplied": {
+    "message": "Respondieron:"
+  },
+  "statRepliedHint": {
+    "message": "Detectado mediante análisis diario de la bandeja de entrada. La señal más fuerte de interacción — solo cuenta respuestas reales de tus destinatarios."
+  },
+  "resumeHint": {
+    "message": "Algunos destinatarios no recibieron esta campaña — normalmente un problema temporal de red o límite de tasa. Reanudar reintenta solo los destinatarios pendientes."
+  },
+  "btnResumeCampaign": {
+    "message": "Reanudar envío"
+  },
+  "resumeQueued": {
+    "message": "$N$ destinatario(s) en cola para reenvío.",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "No se pudo reanudar: $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

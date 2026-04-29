@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "Reagiert:"
+  },
+  "statEngagedHint": {
+    "message": "Empfänger, die geöffnet, geklickt ODER geantwortet haben. Verlässlicher als die reine Öffnungsrate — viele E-Mail-Clients (Outlook, Apple Mail) verzerren das Öffnungs-Tracking durch Blockieren oder Vorladen von Pixeln."
+  },
+  "statReplied": {
+    "message": "Geantwortet:"
+  },
+  "statRepliedHint": {
+    "message": "Über tägliche Posteingangs-Prüfung erkannt. Das stärkste Engagement-Signal — zählt nur echte Antworten Ihrer Empfänger."
+  },
+  "resumeHint": {
+    "message": "Einige Empfänger haben diese Kampagne nicht erhalten — meist ein vorübergehendes Netzwerk- oder Rate-Limit-Problem. Wiederaufnehmen versucht den Versand nur an die ausstehenden Empfänger erneut."
+  },
+  "btnResumeCampaign": {
+    "message": "Versand fortsetzen"
+  },
+  "resumeQueued": {
+    "message": "$N$ Empfänger für erneuten Versand eingereiht.",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "Fortsetzen fehlgeschlagen: $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

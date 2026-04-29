@@ -222,8 +222,23 @@
         <span data-i18n="statOpenRate">Open rate:</span> <strong id="stat-open-rate">0%</strong>
         <span data-i18n="statClickRate">Click rate:</span> <strong id="stat-click-rate">0%</strong>
       </div>
+      <div class="stat-engaged">
+        <span data-i18n="statEngaged">Engaged:</span> <strong id="stat-engaged">0</strong>
+        <span class="stat-engaged-rate"><strong id="stat-engaged-rate">0%</strong></span>
+        <p class="stat-engaged-hint" data-i18n="statEngagedHint">Recipients who opened, clicked, OR replied. More reliable than raw open rate — many email clients (Outlook, Apple Mail) distort open tracking by blocking or pre-loading pixels.</p>
+      </div>
+      <div class="stat-reply">
+        <span data-i18n="statReplied">Replied:</span> <strong id="stat-replied">0</strong>
+        <span class="stat-reply-rate"><strong id="stat-reply-rate">0%</strong></span>
+        <p class="stat-reply-hint" data-i18n="statRepliedHint">Detected via daily Inbox scan. The strongest engagement signal — only counts genuine replies from your recipients.</p>
+      </div>
       <canvas id="stats-chart" width="320" height="160"></canvas>
       <div id="followup-status" class="followup-status"></div>
+      <!-- Resume — only visible for campaigns in `partial` status -->
+      <div id="resume-section" class="resume-section" style="display:none;">
+        <p class="resume-hint" data-i18n="resumeHint">Some recipients didn't receive this campaign — usually a temporary network or rate-limit issue. Resume to retry only the pending recipients.</p>
+        <button class="btn btn-primary" id="btn-resume-campaign" data-i18n="btnResumeCampaign">Resume sending</button>
+      </div>
       <button class="btn btn-secondary btn-export" id="btn-export-csv" data-i18n="btnExportCsv">Download CSV</button>
     </div>
   </div>

@@ -13,6 +13,7 @@ import httpx
 from config import (
     BACKEND_URL,
     GRAPH_API_BASE,
+    OUTBOUND_HTTP_TIMEOUT,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
@@ -79,7 +80,7 @@ def process_followups():
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
         sent_count = 0
-        with httpx.Client() as client:
+        with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in contacts:
                 if contact.get("unsubscribed"):
                     continue
@@ -195,7 +196,9 @@ def _send_followup_email(
         "saveToSentItems": True,
     }
 
-    resp = client.post(
+    from utils.graph_retry import post_with_retry
+    resp = post_with_retry(
+        client,
         f"{GRAPH_API_BASE}/me/sendMail",
         headers={
             "Authorization": f"Bearer {access_token}",
@@ -203,20 +206,6 @@ def _send_followup_email(
         },
         json=payload,
     )
-
-    if resp.status_code == 429:
-        retry_after = int(
-            resp.headers.get("Retry-After", RATE_LIMIT_WAIT_SECONDS)
-        )
-        time.sleep(retry_after)
-        resp = client.post(
-            f"{GRAPH_API_BASE}/me/sendMail",
-            headers={
-                "Authorization": f"Bearer {access_token}",
-                "Content-Type": "application/json",
-            },
-            json=payload,
-        )
 
     if resp.status_code not in (200, 202):
         raise Exception(f"Graph API error: HTTP {resp.status_code}")

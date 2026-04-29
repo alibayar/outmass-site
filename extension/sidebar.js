@@ -1423,6 +1423,14 @@
         document.getElementById("stat-clicked").textContent = stats.click_count || 0;
         document.getElementById("stat-open-rate").textContent = (stats.open_rate || 0) + "%";
         document.getElementById("stat-click-rate").textContent = (stats.click_rate || 0) + "%";
+        var engagedEl = document.getElementById("stat-engaged");
+        var engagedRateEl = document.getElementById("stat-engaged-rate");
+        if (engagedEl) engagedEl.textContent = String(stats.engaged_count || 0);
+        if (engagedRateEl) engagedRateEl.textContent = (stats.engaged_rate || 0) + "%";
+        var repliedEl = document.getElementById("stat-replied");
+        var replyRateEl = document.getElementById("stat-reply-rate");
+        if (repliedEl) repliedEl.textContent = String(stats.replied_count || 0);
+        if (replyRateEl) replyRateEl.textContent = (stats.reply_rate || 0) + "%";
 
         // Follow-up status
         var followupEl = document.getElementById("followup-status");
@@ -1430,6 +1438,15 @@
           followupEl.textContent = stats.pending_followups + t("reportsFollowupPending");
         } else {
           followupEl.textContent = "";
+        }
+
+        // Resume section: visible only for partial campaigns. The
+        // backend rejects resume on any other status, so we mirror that
+        // here to keep the UI from suggesting an option that won't work.
+        var resumeSection = document.getElementById("resume-section");
+        if (resumeSection) {
+          resumeSection.style.display =
+            stats.status === "partial" ? "block" : "none";
         }
 
         // Draw bar chart
@@ -1440,6 +1457,41 @@
 
   // ── CSV Export ──
   var currentDetailCampaignId = null;
+
+  // Resume button (Reports detail → partial campaign).
+  var btnResumeCampaign = document.getElementById("btn-resume-campaign");
+  if (btnResumeCampaign) {
+    btnResumeCampaign.addEventListener("click", function () {
+      if (!currentDetailCampaignId) return;
+      btnResumeCampaign.disabled = true;
+      var originalLabel = btnResumeCampaign.textContent;
+      btnResumeCampaign.textContent = t("alertSending");
+      chrome.runtime.sendMessage(
+        {
+          type: "RESUME_CAMPAIGN",
+          campaignId: currentDetailCampaignId,
+        },
+        function (resp) {
+          btnResumeCampaign.disabled = false;
+          btnResumeCampaign.textContent = originalLabel;
+          if (resp && resp.data && resp.data.queued !== undefined) {
+            alert(t("resumeQueued", [String(resp.data.queued)]));
+            // Refresh the detail view; the campaign should now be
+            // back to `scheduled` (or `sent` if there was nothing to
+            // resend) and the Resume section should hide itself.
+            showCampaignDetail(currentDetailCampaignId);
+            return;
+          }
+          if (handleSessionExpired(resp)) return;
+          alert(
+            t("resumeFailed", [
+              (resp && resp.error) || t("popupUnknownError"),
+            ])
+          );
+        }
+      );
+    });
+  }
 
   var btnExportCsv = document.getElementById("btn-export-csv");
   if (btnExportCsv) {

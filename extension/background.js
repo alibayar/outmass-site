@@ -621,6 +621,15 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "RESUME_CAMPAIGN":
+      backendFetch("/campaigns/" + encodeURIComponent(message.campaignId) + "/resume", {
+        method: "POST",
+        body: {},
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "ONEDRIVE_SHARE_LINK":
       backendFetch("/api/onedrive/share-link", {
         method: "POST",

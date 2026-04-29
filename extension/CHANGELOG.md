@@ -2,6 +2,36 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.6 — 2026-04-29
+
+### Smarter engagement metrics
+- New **Engaged** number on the Reports detail view: distinct
+  recipients who opened, clicked, OR replied. More honest than raw
+  open rate, especially given how Outlook and Apple Mail Privacy
+  Protection distort pixel-based opens.
+- New **Replied** number, populated by a daily Inbox scan that
+  detects genuine replies to your campaigns. Strongest engagement
+  signal we have — counts only real replies from your recipients.
+- Inline hint under each metric explains why it exists and why open
+  rate alone can mislead.
+
+### Resilience for partially-failed sends
+- **Resume sending** button: if a campaign ends in `partial` status
+  (some recipients failed to receive due to a transient network or
+  rate-limit issue), the Reports detail view now shows a Resume
+  button that retries only the still-pending recipients.
+- Behind the scenes, every Microsoft Graph send is wrapped in a
+  bounded retry (3 attempts, exponential backoff) for HTTP 5xx and
+  network errors — so most transient hiccups never reach you.
+- Explicit per-phase HTTP timeouts mean a single slow Microsoft
+  Graph response can't hang the worker queue indefinitely.
+- A daily background sweep detects campaigns stuck in `sending`
+  status (worker crashed mid-loop, etc.) and recovers them
+  automatically — either to `partial` (if some recipients went out)
+  or back to `scheduled` for a clean retry.
+
+---
+
 ## v0.1.5 — 2026-04-26
 
 ### Attachments via OneDrive sharing links

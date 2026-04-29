@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "Engaged:"
+  },
+  "statEngagedHint": {
+    "message": "Recipients who opened, clicked, OR replied. More reliable than raw open rate — many email clients (Outlook, Apple Mail) distort open tracking by blocking or pre-loading pixels."
+  },
+  "statReplied": {
+    "message": "Replied:"
+  },
+  "statRepliedHint": {
+    "message": "Detected via daily Inbox scan. The strongest engagement signal — only counts genuine replies from your recipients."
+  },
+  "resumeHint": {
+    "message": "Some recipients didn't receive this campaign — usually a temporary network or rate-limit issue. Resume to retry only the pending recipients."
+  },
+  "btnResumeCampaign": {
+    "message": "Resume sending"
+  },
+  "resumeQueued": {
+    "message": "$N$ recipient(s) queued for resend.",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "Could not resume: $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

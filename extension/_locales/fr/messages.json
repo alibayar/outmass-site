@@ -910,5 +910,35 @@
         "content": "$1"
       }
     }
+  },
+  "statEngaged": {
+    "message": "Engagés :"
+  },
+  "statEngagedHint": {
+    "message": "Destinataires ayant ouvert, cliqué OU répondu. Plus fiable que le taux d'ouverture brut — de nombreux clients de messagerie (Outlook, Apple Mail) faussent le suivi des ouvertures en bloquant ou pré-chargeant les pixels."
+  },
+  "statReplied": {
+    "message": "Ont répondu :"
+  },
+  "statRepliedHint": {
+    "message": "Détecté via une analyse quotidienne de la boîte de réception. Le signal d'engagement le plus fort — ne compte que les véritables réponses de vos destinataires."
+  },
+  "resumeHint": {
+    "message": "Certains destinataires n'ont pas reçu cette campagne — généralement un problème temporaire de réseau ou de limite de débit. Reprendre réessaie uniquement les destinataires en attente."
+  },
+  "btnResumeCampaign": {
+    "message": "Reprendre l'envoi"
+  },
+  "resumeQueued": {
+    "message": "$N$ destinataire(s) en file d'attente pour renvoi.",
+    "placeholders": {
+      "n": { "content": "$1" }
+    }
+  },
+  "resumeFailed": {
+    "message": "Impossible de reprendre : $ERROR$",
+    "placeholders": {
+      "error": { "content": "$1" }
+    }
   }
 }

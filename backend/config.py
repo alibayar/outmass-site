@@ -169,3 +169,28 @@ MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 SEND_DELAY_SECONDS = 1
 RATE_LIMIT_WAIT_SECONDS = 60
+
+# ── HTTPX timeouts for outbound calls ──
+#
+# httpx defaults to a 5-second connect timeout and *no* read timeout. A
+# slow / unhealthy upstream (Microsoft Graph during regional incidents,
+# MailerSend) could otherwise hang our worker thread indefinitely,
+# blocking the queue. With concurrency=2, two hangs == zero throughput.
+#
+# We set explicit per-phase timeouts so:
+#   - Connect timeout: 10s  → clearly distinguishes DNS/TCP issues from
+#                              app-level slowness
+#   - Read timeout:    30s  → Microsoft Graph sendMail typically returns
+#                              in <2s; 30s gives a generous margin while
+#                              still bounding worst-case wait
+#   - Write timeout:   10s  → uploads are tiny (email payload <1MB)
+#   - Pool timeout:    10s  → connection-pool acquisition
+#
+# Send paths (workers + immediate API send) and OAuth code-exchange
+# both wrap their httpx clients with this default. AI generation has
+# its own larger 30s overall timeout (Claude streaming).
+import httpx as _httpx_for_timeout
+
+OUTBOUND_HTTP_TIMEOUT = _httpx_for_timeout.Timeout(
+    connect=10.0, read=30.0, write=10.0, pool=10.0
+)
