@@ -125,7 +125,7 @@ def get_fresh_access_token(user_id: str) -> str | None:
     db = get_db()
     result = (
         db.table("user_tokens")
-        .select("access_token, refresh_token")
+        .select("access_token, refresh_token, has_onedrive_scope")
         .eq("user_id", user_id)
         .execute()
     )
@@ -133,6 +133,15 @@ def get_fresh_access_token(user_id: str) -> str | None:
         return None
 
     row = result.data[0]
+    # Refresh-token requests must scope-match the user's prior consent.
+    # `has_onedrive_scope` is set on the user_tokens row whenever the
+    # user successfully completes an /auth/login?include_onedrive=true
+    # flow. If we ask for OneDrive scopes but the user only granted
+    # Mail, Microsoft returns AADSTS65001 and the entire refresh fails
+    # — knocking the user out of all background sends.
+    refresh_scopes = MS_GRAPH_SCOPES
+    if row.get("has_onedrive_scope"):
+        refresh_scopes = f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}"
 
     # Strategy 1: Stored access token may still be valid
     access_token = row.get("access_token")
@@ -153,15 +162,11 @@ def get_fresh_access_token(user_id: str) -> str | None:
     if not refresh_token:
         return None
 
-    # Refresh request: ask for the union of every scope we might ever
-    # use. Microsoft returns tokens for whichever subset the user
-    # actually granted. If they incrementally consented to OneDrive
-    # later, that scope shows up in the resulting access_token.
     data = {
         "client_id": AZURE_CLIENT_ID,
         "grant_type": "refresh_token",
         "refresh_token": refresh_token,
-        "scope": f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}",
+        "scope": refresh_scopes,
     }
     if AZURE_CLIENT_SECRET:
         data["client_secret"] = AZURE_CLIENT_SECRET

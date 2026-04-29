@@ -96,34 +96,62 @@ async def get_current_user(authorization: str = Header(...)) -> dict:
 # ── Endpoints ──
 
 
-def _encode_state(ext_id: str) -> str:
-    """Pack extension_id + CSRF nonce into an opaque OAuth `state` param.
+def _encode_state(ext_id: str, include_onedrive: bool = False) -> str:
+    """Pack extension_id + CSRF nonce + onedrive flag into an opaque
+    OAuth `state` param.
 
     URL-safe base64 of JSON — Microsoft echoes `state` verbatim on the
-    callback, so we can recover which extension initiated the flow and
-    redirect the JWT back to the right chromiumapp.org subdomain.
+    callback, so we can recover which extension initiated the flow,
+    whether OneDrive scopes were requested at the authorize step (so we
+    can match them in the token-exchange step), and have an unguessable
+    nonce for CSRF protection.
     """
-    payload = json.dumps({
+    payload = {
         "ext": ext_id,
         "n": secrets.token_urlsafe(12),  # CSRF nonce — presence alone is enough
-    }, separators=(",", ":"))
-    return base64.urlsafe_b64encode(payload.encode("utf-8")).decode("ascii").rstrip("=")
+    }
+    if include_onedrive:
+        payload["od"] = True
+    payload_str = json.dumps(payload, separators=(",", ":"))
+    return base64.urlsafe_b64encode(payload_str.encode("utf-8")).decode("ascii").rstrip("=")
 
 
-def _decode_state_ext(state: str | None) -> str | None:
-    """Extract extension_id from a state param. Returns None if invalid
-    OR not in the allowlist (prevents OAuth open-redirect to attacker)."""
+def _decode_state(state: str | None) -> dict | None:
+    """Decode the JSON payload from a state param. Returns None on any
+    parse failure. Caller is responsible for validating fields like
+    ext_id against the allowlist."""
     if not state:
         return None
     try:
         padded = state + "=" * (-len(state) % 4)
         data = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")))
-        ext = data.get("ext")
+        if isinstance(data, dict):
+            return data
     except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
         return None
+    return None
+
+
+def _decode_state_ext(state: str | None) -> str | None:
+    """Extract extension_id from a state param. Returns None if invalid
+    OR not in the allowlist (prevents OAuth open-redirect to attacker)."""
+    data = _decode_state(state)
+    if not data:
+        return None
+    ext = data.get("ext")
     if ext and ext in ALLOWED_EXTENSION_IDS:
         return ext
     return None
+
+
+def _state_includes_onedrive(state: str | None) -> bool:
+    """True if the state was minted with include_onedrive=true. Lets
+    /auth/callback know whether to ask for OneDrive scopes during the
+    token exchange. Defaults to False for safety — a corrupt/missing
+    state never accidentally requests scopes the user didn't consent to.
+    """
+    data = _decode_state(state)
+    return bool(data and data.get("od"))
 
 
 @router.get("/login")
@@ -149,7 +177,7 @@ async def login_redirect(
     refresh_token usable for both Mail and OneDrive operations.
     """
     chosen_ext = ext if ext in ALLOWED_EXTENSION_IDS else AZURE_EXTENSION_ID
-    state = _encode_state(chosen_ext)
+    state = _encode_state(chosen_ext, include_onedrive=include_onedrive)
 
     scope = MS_GRAPH_SCOPES
     if include_onedrive:
@@ -197,11 +225,20 @@ async def auth_callback(
     # Exchange code for tokens using Web platform (client_secret)
     async with httpx.AsyncClient() as client:
         try:
-            # Include OneDrive scopes in the exchange request as well —
-            # Microsoft returns tokens for the intersection of "scopes
-            # the user granted" and "scopes you ask for here", so listing
-            # the OneDrive scopes is harmless if the user only granted
-            # Mail (they just won't be in the resulting token's claims).
+            # IMPORTANT: token-exchange scope MUST match (or be a subset
+            # of) what was requested at /authorize. Adding scopes the
+            # user never consented to triggers AADSTS65001 and breaks
+            # the entire sign-in. We use the state param (decoded
+            # below) to know whether the original /auth/login asked
+            # for OneDrive scopes — the include_onedrive=true path —
+            # and only then request them here. The legacy state shape
+            # (no `od` flag) defaults to Mail-only.
+            wants_onedrive = _state_includes_onedrive(state)
+            exchange_scope = (
+                f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}"
+                if wants_onedrive
+                else MS_GRAPH_SCOPES
+            )
             token_resp = await client.post(
                 MS_TOKEN_ENDPOINT,
                 data={
@@ -210,7 +247,7 @@ async def auth_callback(
                     "grant_type": "authorization_code",
                     "code": code,
                     "redirect_uri": AZURE_REDIRECT_URI,
-                    "scope": f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}",
+                    "scope": exchange_scope,
                 },
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
@@ -263,25 +300,32 @@ async def auth_callback(
         db = get_db()
         existing = (
             db.table("user_tokens")
-            .select("id")
+            .select("id, has_onedrive_scope")
             .eq("user_id", user["id"])
             .execute()
         )
+        # If THIS callback ran the OneDrive consent flow, lock in the
+        # flag so future refreshes ask for OneDrive scopes too. Once
+        # the user has granted OneDrive once, the refresh_token retains
+        # that grant indefinitely — no reason to clear the flag on a
+        # later Mail-only sign-in.
+        previously_had_onedrive = bool(
+            existing.data and existing.data[0].get("has_onedrive_scope")
+        )
+        has_onedrive_scope = previously_had_onedrive or wants_onedrive
+
+        token_row = {
+            "access_token": access_token,
+            "refresh_token": refresh_token,
+            "has_onedrive_scope": has_onedrive_scope,
+        }
         if existing.data:
-            db.table("user_tokens").update(
-                {
-                    "access_token": access_token,
-                    "refresh_token": refresh_token,
-                }
-            ).eq("user_id", user["id"]).execute()
-        else:
-            db.table("user_tokens").insert(
-                {
-                    "user_id": user["id"],
-                    "access_token": access_token,
-                    "refresh_token": refresh_token,
-                }
+            db.table("user_tokens").update(token_row).eq(
+                "user_id", user["id"]
             ).execute()
+        else:
+            token_row["user_id"] = user["id"]
+            db.table("user_tokens").insert(token_row).execute()
 
         # Fresh OAuth succeeded → clear any prior requires_reauth flag so the
         # sidebar banner disappears immediately. Idempotent if the flag was
