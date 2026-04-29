@@ -105,7 +105,12 @@ async def browse_drive(
             detail={"error": "network", "message": "Could not reach Microsoft."},
         )
 
-    if list_resp.status_code == 403:
+    if list_resp.status_code in (401, 403):
+        # Microsoft Graph returns 401 (InvalidAuthenticationToken) or
+        # 403 (insufficient_scope) when the access token is valid but
+        # missing the OneDrive scopes. Both map to the same recovery
+        # path on the frontend — launch incremental consent — so we
+        # collapse them into a single error code here.
         raise HTTPException(
             status_code=403,
             detail={
@@ -238,10 +243,12 @@ async def create_share_link(
         )
 
     # ── Insufficient-scope (incremental consent gate) ──
-    # Microsoft returns 403 when the access token is valid but missing
-    # the required scope. We return a structured error so the extension
-    # can launch a fresh OAuth flow with include_onedrive=true and retry.
-    if resp.status_code == 403:
+    # Microsoft Graph sometimes returns 403 (insufficient_scope) and
+    # sometimes 401 (InvalidAuthenticationToken) when the access token
+    # is valid for some scopes but not the OneDrive ones. We collapse
+    # both into needs_files_scope so the frontend can launch the
+    # incremental consent flow regardless of which one Microsoft picked.
+    if resp.status_code in (401, 403):
         raise HTTPException(
             status_code=403,
             detail={

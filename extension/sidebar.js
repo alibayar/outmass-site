@@ -2010,7 +2010,12 @@
           return;
         }
         var code = resp && resp.error;
-        if (code === "needs_files_scope") {
+        // needs_files_scope OR needs_reauth → both want a fresh OAuth
+        // flow with OneDrive scope included. needs_reauth happens when
+        // the user has no MS connection at all (rare); needs_files_scope
+        // when they have Mail-only token and we hit a Files endpoint.
+        // Same recovery: launch the incremental consent flow.
+        if (code === "needs_files_scope" || code === "needs_reauth") {
           _closeOneDrivePicker();
           chrome.runtime.sendMessage(
             { type: "MS_LOGIN_ONEDRIVE" },
@@ -2028,7 +2033,13 @@
           );
           return;
         }
-        _renderPickerStatus(t("oneDrivePickerError"), true);
+        // For any other error, surface the code so we (and the user
+        // if they DM us a screenshot) can debug instead of staring at
+        // a generic message.
+        _renderPickerStatus(
+          t("oneDrivePickerError") + (code ? " (" + code + ")" : ""),
+          true
+        );
       }
     );
   }

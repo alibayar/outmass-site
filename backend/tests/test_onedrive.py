@@ -311,6 +311,24 @@ def test_browse_403_returns_needs_files_scope(client, fake_db, auth_bypass):
     assert resp.json()["detail"]["error"] == "needs_files_scope"
 
 
+def test_browse_401_also_returns_needs_files_scope(client, fake_db, auth_bypass):
+    """Microsoft Graph occasionally returns 401 InvalidAuthenticationToken
+    instead of 403 when the access_token is valid but missing the right
+    scope. Both should collapse into the same incremental-consent
+    recovery path on the frontend."""
+    mock_client = _async_client_returning(
+        _ms_response(401, text="InvalidAuthenticationToken"),
+        _ms_response(401, text="InvalidAuthenticationToken"),
+    )
+
+    with patch("routers.onedrive.get_fresh_access_token", return_value="tok"), \
+         patch("httpx.AsyncClient", return_value=mock_client):
+        resp = client.get("/api/onedrive/browse")
+
+    assert resp.status_code == 403
+    assert resp.json()["detail"]["error"] == "needs_files_scope"
+
+
 def test_browse_returns_needs_reauth_when_no_token(client, fake_db, auth_bypass):
     with patch("routers.onedrive.get_fresh_access_token", return_value=None):
         resp = client.get("/api/onedrive/browse")
