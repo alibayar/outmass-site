@@ -89,8 +89,9 @@
     <ul>
       <li><strong>Mail.Send</strong> — to send emails on your behalf via Microsoft Graph API</li>
       <li><strong>Mail.Read</strong> — to detect replies for follow-up automation</li>
+      <li><strong>Files.Read.All / Files.ReadWrite</strong> (optional) — only requested if you opt into the OneDrive attachment feature. We use these scopes <em>solely</em> to read the metadata of files you explicitly select in the OneDrive picker and to generate anonymous "view" sharing links for those files. We never download, browse, modify, or read the contents of your OneDrive files. The sharing links live in your own OneDrive — they are not stored on OutMass servers.</li>
     </ul>
-    <p>OAuth access tokens are stored securely and are never shared with third parties. You can revoke access at any time from your Microsoft account settings.</p>
+    <p>OAuth access tokens are stored securely and are never shared with third parties. You can revoke access at any time from your Microsoft account settings. The OneDrive scopes are optional — if you never use the OneDrive attachment feature, they are never requested.</p>
 
     <h2>5. How We Use Your Data</h2>
     <ul>

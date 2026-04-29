@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "الفوترة غير متاحة مؤقتاً. يرجى المحاولة بعد قليل أو التواصل مع الدعم."
+  },
+  "attachmentsLabel": {
+    "message": "المرفقات"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ إضافة رابط OneDrive"
+  },
+  "btnContinue": {
+    "message": "متابعة"
+  },
+  "attachmentsHint": {
+    "message": "يرى المستلمون رابطاً بدلاً من مرفق — وصول أفضل إلى صندوق الوارد."
+  },
+  "oneDriveConsentTitle": {
+    "message": "الوصول إلى OneDrive"
+  },
+  "oneDriveConsentBody": {
+    "message": "يحتاج OutMass إلى الوصول إلى OneDrive لإنشاء روابط مشاركة للملفات التي تختارها. لا ننزّل ملفاتك أو نخزّنها أو نقرأها أبداً — نُنشئ فقط الرابط الذي اخترت مشاركته."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "يرى المستلمون رابطاً إلى OneDrive — وصول أفضل من إرفاق الملفات مباشرةً، ويمكنك تحديث الملف في أي وقت دون إعادة إرسال البريد."
+  },
+  "oneDrivePickerTitle": {
+    "message": "اختر ملفاً"
+  },
+  "oneDriveError": {
+    "message": "تعذرت إضافة ملف OneDrive: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

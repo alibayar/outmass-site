@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "Faturalama şu an kullanılamıyor. Bir süre sonra tekrar dene veya destekle iletişime geç."
+  },
+  "attachmentsLabel": {
+    "message": "Ekler"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ OneDrive bağlantısı ekle"
+  },
+  "btnContinue": {
+    "message": "Devam et"
+  },
+  "attachmentsHint": {
+    "message": "Alıcılar dosya yerine bağlantı görür — gelen kutusuna ulaşma şansı daha yüksek."
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive erişimi"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass, seçtiğin dosyalar için paylaşım bağlantıları oluşturmak amacıyla OneDrive'a erişim ister. Dosyalarını asla indirmez, saklamaz veya okumaz — yalnızca paylaşmayı seçtiğin bağlantıyı oluşturur."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Alıcılar OneDrive bağlantını görür — dosyayı doğrudan ekten daha iyi teslim edilir ve maili yeniden göndermeden dosyayı istediğin zaman güncelleyebilirsin."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Bir dosya seç"
+  },
+  "oneDriveError": {
+    "message": "OneDrive dosyası eklenemedi: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

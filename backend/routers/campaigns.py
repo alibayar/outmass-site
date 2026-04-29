@@ -47,11 +47,21 @@ router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 # ── Schemas ──
 
 
+class AttachmentRequest(BaseModel):
+    name: str
+    url: str
+
+
 class CreateCampaignRequest(BaseModel):
     name: str
     subject: str
     body: str
     scheduled_for: str | None = None  # ISO datetime string, e.g. "2026-03-30T09:00:00Z"
+    # OneDrive sharing links the user added in the sidebar's
+    # Attachments section. Stored as JSON on the campaign row and
+    # rendered as a footer block on every outgoing email by the
+    # shared utils.email_attachments helper.
+    attachments: list[AttachmentRequest] = []
 
 
 class UploadContactsRequest(BaseModel):
@@ -100,12 +110,20 @@ async def create_campaign(
                 },
             )
 
+    # Cap attachment count + reject malformed URLs as a defense-in-depth
+    # check; the picker SDK already restricts what users can submit.
+    safe_attachments = []
+    for att in (body.attachments or [])[:10]:
+        if att.url and att.name:
+            safe_attachments.append({"name": att.name[:200], "url": att.url[:1000]})
+
     campaign = campaign_model.create_campaign(
         user_id=user["id"],
         name=body.name,
         subject=body.subject,
         body=body.body,
         scheduled_for=body.scheduled_for,
+        attachments=safe_attachments,
     )
     # Store subject+body hashes (not content) so we can later prove
     # "this campaign was created with these parameters" without the
@@ -120,6 +138,7 @@ async def create_campaign(
             "body_hash": audit.hash_bytes(body.body),
             "scheduled_for": body.scheduled_for,
             "status": campaign["status"],
+            "attachment_count": len(safe_attachments),
         },
         request=request,
     )
@@ -932,6 +951,12 @@ async def _send_single_email(
     # Wrap links for click tracking (if enabled)
     tracked_body = _wrap_links(merged_body, contact["id"]) if track_clicks else merged_body
 
+    # OneDrive attachment links (chips). Rendered above the unsubscribe
+    # footer so they read as part of the message rather than mixed into
+    # the legal/footer territory.
+    from utils.email_attachments import render_attachments_footer
+    attachments_html = render_attachments_footer(campaign.get("attachments"))
+
     # Add unsubscribe footer
     unsubscribe_url = f"{BACKEND_URL}/unsubscribe/{contact['id']}"
     footer = (
@@ -939,7 +964,7 @@ async def _send_single_email(
         f'<a href="{unsubscribe_url}">{unsubscribe_text}</a></p>'
     )
 
-    final_html = tracked_body + footer + tracking_pixel
+    final_html = tracked_body + attachments_html + footer + tracking_pixel
 
     payload = {
         "message": {

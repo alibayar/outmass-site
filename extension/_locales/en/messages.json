@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "Billing is temporarily unavailable. Please try again in a moment or contact support."
+  },
+  "attachmentsLabel": {
+    "message": "Attachments"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ Add OneDrive link"
+  },
+  "btnContinue": {
+    "message": "Continue"
+  },
+  "attachmentsHint": {
+    "message": "Recipients see a link, not an attachment — better inbox delivery."
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive access"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass needs OneDrive access to create sharing links for the files you select. We never download, store, or read your files — we only generate the link you choose to share."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Recipients see a link to your OneDrive — better deliverability than attaching files directly, and you can update the file anytime without re-sending the email."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Choose a file"
+  },
+  "oneDriveError": {
+    "message": "Could not add OneDrive file: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -88,6 +88,18 @@
     <div class="form-group">
       <label for="body" data-i18n="labelBody">Email Content</label>
       <textarea id="body" rows="8" data-i18n-placeholder="placeholderBody" placeholder="Hello {{firstName}},&#10;&#10;We have a great offer for {{company}}..."></textarea>
+    </div>
+
+    <!-- Attachments (OneDrive sharing links) -->
+    <div class="attachments-section">
+      <label class="attachments-label" data-i18n="attachmentsLabel">Attachments</label>
+      <div id="attachments-list" class="attachments-list"></div>
+      <button type="button" class="btn btn-secondary btn-small" id="btn-add-onedrive" data-i18n="btnAddOneDriveFile">+ Add OneDrive link</button>
+      <p class="hint attachments-hint" data-i18n="attachmentsHint">Recipients see a link, not an attachment — better inbox delivery.</p>
+    </div>
+
+    <!-- Placeholders hint (moved below attachments so the field-action grouping reads top-down) -->
+    <div class="form-group">
       <div class="placeholders" data-i18n-html="placeholdersHint">
         Recipient: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>
         Sender: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>
@@ -393,6 +405,35 @@
         <button class="btn btn-danger btn-block" id="account-btn-delete" data-i18n="deleteAccountButton">Delete my account</button>
       </div>
 
+    </div>
+  </div>
+
+  <!-- OneDrive first-time consent modal -->
+  <div id="onedrive-consent-overlay" class="om-modal-overlay" style="display:none;">
+    <div class="om-modal">
+      <div class="om-modal-header">
+        <span data-i18n="oneDriveConsentTitle">OneDrive access</span>
+        <button type="button" class="om-modal-close" id="onedrive-consent-close" aria-label="Close">&times;</button>
+      </div>
+      <div class="om-modal-body">
+        <p data-i18n="oneDriveConsentBody">OutMass needs OneDrive access to create sharing links for the files you select. We never download, store, or read your files — we only generate the link you choose to share.</p>
+        <p data-i18n="oneDriveConsentSpamHint" style="margin-top:12px;color:#605e5c;font-size:13px;">Recipients see a link to your OneDrive — better deliverability than attaching files directly, and you can update the file anytime without re-sending the email.</p>
+      </div>
+      <div class="om-modal-footer">
+        <button type="button" class="btn btn-secondary btn-small" id="onedrive-consent-cancel" data-i18n="btnCancel">Cancel</button>
+        <button type="button" class="btn btn-primary btn-small" id="onedrive-consent-continue" data-i18n="btnContinue">Continue</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- OneDrive file picker modal (iframe) -->
+  <div id="onedrive-picker-overlay" class="om-modal-overlay" style="display:none;">
+    <div class="om-modal om-modal-large">
+      <div class="om-modal-header">
+        <span data-i18n="oneDrivePickerTitle">Choose a file</span>
+        <button type="button" class="om-modal-close" id="onedrive-picker-close" aria-label="Close">&times;</button>
+      </div>
+      <iframe id="onedrive-picker-iframe" class="om-modal-iframe" style="min-height:480px;width:100%;border:none;"></iframe>
     </div>
   </div>
 

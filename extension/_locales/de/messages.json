@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "Die Abrechnung ist vorübergehend nicht verfügbar. Bitte versuchen Sie es gleich erneut oder kontaktieren Sie den Support."
+  },
+  "attachmentsLabel": {
+    "message": "Anhänge"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ OneDrive-Link hinzufügen"
+  },
+  "btnContinue": {
+    "message": "Weiter"
+  },
+  "attachmentsHint": {
+    "message": "Empfänger sehen einen Link statt eines Anhangs — bessere Posteingangs-Zustellung."
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive-Zugriff"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass benötigt OneDrive-Zugriff, um Freigabelinks für die von Ihnen ausgewählten Dateien zu erstellen. Wir laden, speichern oder lesen Ihre Dateien niemals — wir generieren nur den Link, den Sie teilen möchten."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Empfänger sehen einen Link zu Ihrem OneDrive — bessere Zustellbarkeit als direkte Anhänge, und Sie können die Datei jederzeit aktualisieren, ohne die E-Mail neu zu senden."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Datei auswählen"
+  },
+  "oneDriveError": {
+    "message": "OneDrive-Datei konnte nicht hinzugefügt werden: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

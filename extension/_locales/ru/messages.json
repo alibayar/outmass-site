@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "Биллинг временно недоступен. Повторите попытку чуть позже или обратитесь в поддержку."
+  },
+  "attachmentsLabel": {
+    "message": "Вложения"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ Добавить ссылку OneDrive"
+  },
+  "btnContinue": {
+    "message": "Продолжить"
+  },
+  "attachmentsHint": {
+    "message": "Получатели видят ссылку, а не вложение — выше шанс попадания в Inbox."
+  },
+  "oneDriveConsentTitle": {
+    "message": "Доступ к OneDrive"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass нужен доступ к OneDrive, чтобы создавать ссылки для общего доступа к выбранным вами файлам. Мы никогда не скачиваем, не храним и не читаем ваши файлы — только создаём ссылку, которую вы решили поделиться."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Получатели видят ссылку на ваш OneDrive — лучше доставляемость, чем у обычного вложения, и вы можете обновить файл в любой момент без переотправки письма."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Выберите файл"
+  },
+  "oneDriveError": {
+    "message": "Не удалось добавить файл из OneDrive: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

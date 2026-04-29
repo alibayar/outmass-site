@@ -161,6 +161,12 @@ def _send_followup_email(
     # Wrap links
     tracked_body = _wrap_links(merged_body, contact["id"])
 
+    # OneDrive attachment chips (use the parent campaign's attachments;
+    # follow-ups inherit them so a recipient who didn't open the first
+    # email still gets the file references in the bump).
+    from utils.email_attachments import render_attachments_footer
+    attachments_html = render_attachments_footer(campaign.get("attachments"))
+
     # Unsubscribe footer — honours the user's Settings → unsubscribe_text
     # override. Escape to prevent HTML injection via a crafted label.
     unsub_url = f"{BACKEND_URL}/unsubscribe/{contact['id']}"
@@ -176,7 +182,7 @@ def _send_followup_email(
         f'<a href="{unsub_url}">{safe_label}</a></p>'
     )
 
-    final_html = tracked_body + footer + tracking_pixel
+    final_html = tracked_body + attachments_html + footer + tracking_pixel
 
     payload = {
         "message": {

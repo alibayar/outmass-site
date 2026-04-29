@@ -167,6 +167,11 @@ def _send_email(
     )
     tracked_body = _wrap_links(merged_body, contact["id"])
 
+    # OneDrive attachment chips (rendered above unsubscribe). Shared
+    # helper so all send paths produce identical markup.
+    from utils.email_attachments import render_attachments_footer
+    attachments_html = render_attachments_footer(campaign.get("attachments"))
+
     unsub_url = f"{BACKEND_URL}/unsubscribe/{contact['id']}"
     # Escape user-controlled label so a malicious value can't break out
     # of the <a> tag context. Escape ampersands, angle brackets, quotes.
@@ -182,7 +187,7 @@ def _send_email(
         f'<a href="{unsub_url}">{safe_label}</a></p>'
     )
 
-    final_html = tracked_body + footer + tracking_pixel
+    final_html = tracked_body + attachments_html + footer + tracking_pixel
 
     payload = {
         "message": {

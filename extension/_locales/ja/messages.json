@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "請求機能は一時的に利用できません。少し時間をおいて再度お試しいただくか、サポートにお問い合わせください。"
+  },
+  "attachmentsLabel": {
+    "message": "添付ファイル"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ OneDrive リンクを追加"
+  },
+  "btnContinue": {
+    "message": "続行"
+  },
+  "attachmentsHint": {
+    "message": "受信者には添付ファイルではなくリンクが表示されます — 受信箱への到達率が向上します。"
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive アクセス"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass は、選択したファイルの共有リンクを作成するために OneDrive へのアクセスが必要です。ファイルをダウンロード、保存、読み取ることはありません — 共有を選択したリンクを生成するだけです。"
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "受信者には OneDrive へのリンクが表示されます — ファイルを直接添付するより配信性が高く、メールを再送信せずにいつでもファイルを更新できます。"
+  },
+  "oneDrivePickerTitle": {
+    "message": "ファイルを選択"
+  },
+  "oneDriveError": {
+    "message": "OneDrive ファイルを追加できませんでした: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

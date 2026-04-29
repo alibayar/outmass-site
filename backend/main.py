@@ -23,7 +23,7 @@ from config import (
     TELEGRAM_BOT_TOKEN,
     TELEGRAM_CHAT_ID,
 )
-from routers import account, ai, auth, billing, campaigns, launch, settings, templates, tracking
+from routers import account, ai, auth, billing, campaigns, launch, onedrive, settings, templates, tracking
 
 logger = logging.getLogger(__name__)
 
@@ -90,6 +90,7 @@ app.include_router(ai.router)
 app.include_router(settings.router)
 app.include_router(launch.router)
 app.include_router(account.router)
+app.include_router(onedrive.router)
 
 
 # ── Extension Error Reporting ──

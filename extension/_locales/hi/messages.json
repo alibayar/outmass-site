@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "बिलिंग अस्थायी रूप से उपलब्ध नहीं है। कृपया कुछ देर बाद पुनः प्रयास करें या सहायता से संपर्क करें।"
+  },
+  "attachmentsLabel": {
+    "message": "अनुलग्नक"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ OneDrive लिंक जोड़ें"
+  },
+  "btnContinue": {
+    "message": "जारी रखें"
+  },
+  "attachmentsHint": {
+    "message": "प्राप्तकर्ताओं को अनुलग्नक के बजाय एक लिंक दिखता है — इनबॉक्स तक पहुँच बेहतर।"
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive एक्सेस"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass को आपकी चुनी गई फ़ाइलों के लिए साझाकरण लिंक बनाने के लिए OneDrive एक्सेस की आवश्यकता है। हम आपकी फ़ाइलों को कभी डाउनलोड, संग्रहीत या पढ़ते नहीं — बस वही लिंक बनाते हैं जिसे आप साझा करना चुनते हैं।"
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "प्राप्तकर्ताओं को आपके OneDrive का लिंक दिखता है — सीधे फ़ाइल अनुलग्न करने की तुलना में बेहतर डिलीवरेबिलिटी, और आप ईमेल दोबारा भेजे बिना फ़ाइल को कभी भी अपडेट कर सकते हैं।"
+  },
+  "oneDrivePickerTitle": {
+    "message": "एक फ़ाइल चुनें"
+  },
+  "oneDriveError": {
+    "message": "OneDrive फ़ाइल जोड़ी नहीं जा सकी: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

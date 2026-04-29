@@ -15,6 +15,7 @@ from config import (
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
     MAILERSEND_FROM_NAME,
+    MS_GRAPH_ONEDRIVE_SCOPES,
     MS_GRAPH_SCOPES,
     MS_TOKEN_ENDPOINT,
 )
@@ -152,11 +153,15 @@ def get_fresh_access_token(user_id: str) -> str | None:
     if not refresh_token:
         return None
 
+    # Refresh request: ask for the union of every scope we might ever
+    # use. Microsoft returns tokens for whichever subset the user
+    # actually granted. If they incrementally consented to OneDrive
+    # later, that scope shows up in the resulting access_token.
     data = {
         "client_id": AZURE_CLIENT_ID,
         "grant_type": "refresh_token",
         "refresh_token": refresh_token,
-        "scope": MS_GRAPH_SCOPES,
+        "scope": f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}",
     }
     if AZURE_CLIENT_SECRET:
         data["client_secret"] = AZURE_CLIENT_SECRET

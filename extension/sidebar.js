@@ -686,6 +686,11 @@
     if (scheduledFor) {
       createPayload.scheduled_for = scheduledFor;
     }
+    if (_attachments && _attachments.length) {
+      // Each attachment is {name, url} — backend caps the list at 10
+      // and truncates string lengths defensively, so we send it as-is.
+      createPayload.attachments = _attachments.slice();
+    }
 
     chrome.runtime.sendMessage(
       {
@@ -819,6 +824,8 @@
       alert(t("alertScheduledSuccess", [String(count), formatted]));
       log("Campaign scheduled:", campaignId, "for", scheduledFor);
       maybeCreateFollowup(campaignId);
+      _attachments = [];
+      renderAttachmentChips();
       return;
     }
 
@@ -867,6 +874,10 @@
 
         // Create follow-up if enabled
         maybeCreateFollowup(campaignId);
+
+        // Clear attachments so the next compose starts fresh.
+        _attachments = [];
+        renderAttachmentChips();
 
         // Refresh quota
         loadQuota();
@@ -1831,6 +1842,215 @@
         }
       });
     });
+  }
+
+  // ── OneDrive attachment picker (Compose tab → Attachments) ──
+  //
+  // Three sub-flows knit together here:
+  //   1. First click: show consent modal explaining the OneDrive scope
+  //      we're about to request, persist the acknowledgement so the
+  //      modal doesn't reappear on every subsequent click.
+  //   2. Picker open: launch Microsoft Graph File Picker SDK in an
+  //      iframe; communicate via postMessage; user picks one file.
+  //   3. Share-link creation: backend POST /api/onedrive/share-link
+  //      creates the anonymous "view" link. If backend says
+  //      `needs_files_scope` (user hasn't granted Files.Read.All yet),
+  //      kick off an incremental OAuth flow with include_onedrive=true,
+  //      then automatically retry the share-link request.
+  //
+  // Attachments are kept in the in-memory `_attachments` array and
+  // shipped as part of the CREATE_CAMPAIGN payload at send time.
+  var _attachments = [];
+
+  function renderAttachmentChips() {
+    var list = document.getElementById("attachments-list");
+    if (!list) return;
+    list.innerHTML = "";
+    _attachments.forEach(function (att, idx) {
+      var chip = document.createElement("span");
+      chip.className = "attachment-chip";
+      chip.title = att.url;
+      var nameEl = document.createElement("span");
+      nameEl.className = "attachment-chip-name";
+      nameEl.textContent = "📎 " + att.name;
+      var removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.className = "attachment-chip-remove";
+      removeBtn.setAttribute("aria-label", "Remove");
+      removeBtn.textContent = "×";
+      removeBtn.addEventListener("click", function () {
+        _attachments.splice(idx, 1);
+        renderAttachmentChips();
+      });
+      chip.appendChild(nameEl);
+      chip.appendChild(removeBtn);
+      list.appendChild(chip);
+    });
+  }
+
+  function _openOneDrivePicker() {
+    var overlay = document.getElementById("onedrive-picker-overlay");
+    var iframe = document.getElementById("onedrive-picker-iframe");
+    if (!overlay || !iframe) return;
+    // The Microsoft Graph File Picker SDK v8 contract: load the picker
+    // host page in an iframe, then handshake via postMessage. We use
+    // `account/me/files` to scope the picker to the user's personal
+    // OneDrive. Auth is delegated — the picker prompts the user
+    // separately if they're not already signed in there.
+    iframe.src =
+      "https://onedrive.live.com/picker?" +
+      encodeURIComponent(
+        "filePicker=" +
+          encodeURIComponent(
+            JSON.stringify({
+              sdk: "8.0",
+              entry: { oneDrive: { files: {} } },
+              authentication: {},
+              messaging: { origin: location.origin, channelId: "outmass" },
+              selection: { mode: "single" },
+              typesAndSources: {
+                mode: "files",
+                pivots: { oneDrive: true, recent: true },
+              },
+            })
+          )
+      );
+    overlay.style.display = "flex";
+  }
+
+  function _closeOneDrivePicker() {
+    var overlay = document.getElementById("onedrive-picker-overlay");
+    var iframe = document.getElementById("onedrive-picker-iframe");
+    if (overlay) overlay.style.display = "none";
+    if (iframe) iframe.src = "about:blank";
+  }
+
+  function _requestShareLink(itemId, retried) {
+    chrome.runtime.sendMessage(
+      { type: "ONEDRIVE_SHARE_LINK", payload: { item_id: itemId } },
+      function (resp) {
+        if (resp && resp.data && resp.data.share_url) {
+          _attachments.push({
+            name: resp.data.name || "file",
+            url: resp.data.share_url,
+          });
+          renderAttachmentChips();
+          return;
+        }
+        if (handleSessionExpired(resp)) return;
+        var code = resp && resp.error;
+        if (code === "needs_files_scope" && !retried) {
+          // Incremental consent: launch a fresh OAuth flow that adds
+          // Files.Read.All / Files.ReadWrite to the existing grant.
+          chrome.runtime.sendMessage(
+            { type: "MS_LOGIN_ONEDRIVE" },
+            function (loginResp) {
+              if (loginResp && !loginResp.error) {
+                _requestShareLink(itemId, true);
+              } else {
+                alert(
+                  t("oneDriveError", [
+                    (loginResp && loginResp.error) || t("popupUnknownError"),
+                  ])
+                );
+              }
+            }
+          );
+          return;
+        }
+        alert(t("oneDriveError", [code || t("popupUnknownError")]));
+      }
+    );
+  }
+
+  function _onPickerMessage(event) {
+    // Picker host posts back to us when the user selects a file. We
+    // accept messages only from onedrive.live.com / 1drv.ms to avoid
+    // an attacker-controlled iframe spoofing a selection.
+    var origin = event.origin || "";
+    if (
+      origin.indexOf("onedrive.live.com") < 0 &&
+      origin.indexOf("1drv.ms") < 0 &&
+      origin.indexOf("office.com") < 0
+    ) {
+      return;
+    }
+    var data = event.data || {};
+    // SDK v8 wraps payloads: {type: "command", data: {...}}. For
+    // selection: data.command === "pick" with data.items list.
+    if (
+      data.type === "command" &&
+      data.data &&
+      data.data.command === "pick" &&
+      Array.isArray(data.data.items) &&
+      data.data.items.length
+    ) {
+      var item = data.data.items[0];
+      var itemId = item.id || (item.parentReference && item.parentReference.id);
+      if (itemId) {
+        _closeOneDrivePicker();
+        _requestShareLink(itemId, false);
+      }
+    } else if (data.type === "notification" && data.data === "page-loaded") {
+      // Picker is up. No-op for us.
+    }
+  }
+  window.addEventListener("message", _onPickerMessage);
+
+  var btnAddOneDrive = document.getElementById("btn-add-onedrive");
+  var oneDriveConsentOverlay = document.getElementById(
+    "onedrive-consent-overlay"
+  );
+  var oneDriveConsentClose = document.getElementById(
+    "onedrive-consent-close"
+  );
+  var oneDriveConsentCancel = document.getElementById(
+    "onedrive-consent-cancel"
+  );
+  var oneDriveConsentContinue = document.getElementById(
+    "onedrive-consent-continue"
+  );
+  var oneDrivePickerClose = document.getElementById("onedrive-picker-close");
+
+  function _hasAcknowledgedOneDriveConsent(cb) {
+    chrome.storage.local.get(["oneDriveConsentAck"], function (r) {
+      cb(!!(r && r.oneDriveConsentAck));
+    });
+  }
+
+  if (btnAddOneDrive) {
+    btnAddOneDrive.addEventListener("click", function () {
+      _hasAcknowledgedOneDriveConsent(function (acked) {
+        if (!acked) {
+          if (oneDriveConsentOverlay) {
+            oneDriveConsentOverlay.style.display = "flex";
+          }
+          return;
+        }
+        _openOneDrivePicker();
+      });
+    });
+  }
+
+  function _closeConsentModal() {
+    if (oneDriveConsentOverlay) oneDriveConsentOverlay.style.display = "none";
+  }
+  if (oneDriveConsentClose) {
+    oneDriveConsentClose.addEventListener("click", _closeConsentModal);
+  }
+  if (oneDriveConsentCancel) {
+    oneDriveConsentCancel.addEventListener("click", _closeConsentModal);
+  }
+  if (oneDriveConsentContinue) {
+    oneDriveConsentContinue.addEventListener("click", function () {
+      chrome.storage.local.set({ oneDriveConsentAck: true }, function () {
+        _closeConsentModal();
+        _openOneDrivePicker();
+      });
+    });
+  }
+  if (oneDrivePickerClose) {
+    oneDrivePickerClose.addEventListener("click", _closeOneDrivePicker);
   }
 
   // Delete account flow (Account tab → Danger Zone).

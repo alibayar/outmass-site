@@ -2,6 +2,25 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.5 — 2026-04-26
+
+### Attachments via OneDrive sharing links
+- New **Attachments** section in the compose area (below the body
+  field). Click **+ Add OneDrive link**, choose a file from your own
+  OneDrive, and a sharing link is automatically created and added
+  to the email.
+- Recipients see a clean clickable chip (e.g. "📎 brochure.pdf") that
+  opens the file in OneDrive. The file lives in your OneDrive — we
+  never download, store, or read it.
+- Inbox-friendly by design: links don't trigger spam filters the way
+  raw attachments do, and you can update the file later without
+  re-sending the email.
+- First-time use shows a one-off consent dialog explaining the
+  OneDrive permission. The OneDrive permission is optional — if you
+  never use this feature, it's never requested.
+
+---
+
 ## v0.1.4 — 2026-04-24
 
 ### User lifecycle & legal posture

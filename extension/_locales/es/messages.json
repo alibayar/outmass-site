@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "La facturación no está disponible temporalmente. Inténtalo de nuevo en un momento o contacta con soporte."
+  },
+  "attachmentsLabel": {
+    "message": "Archivos adjuntos"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ Añadir enlace de OneDrive"
+  },
+  "btnContinue": {
+    "message": "Continuar"
+  },
+  "attachmentsHint": {
+    "message": "Los destinatarios ven un enlace, no un adjunto — mejor entrega a la bandeja de entrada."
+  },
+  "oneDriveConsentTitle": {
+    "message": "Acceso a OneDrive"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass necesita acceso a OneDrive para crear enlaces de uso compartido para los archivos que selecciones. Nunca descargamos, almacenamos ni leemos tus archivos — solo generamos el enlace que decides compartir."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Los destinatarios ven un enlace a tu OneDrive — mejor entrega que adjuntar archivos directamente, y puedes actualizar el archivo en cualquier momento sin reenviar el correo."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Elegir un archivo"
+  },
+  "oneDriveError": {
+    "message": "No se pudo añadir el archivo de OneDrive: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

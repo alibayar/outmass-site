@@ -11,7 +11,15 @@ def create_campaign(
     subject: str,
     body: str,
     scheduled_for: str | None = None,
+    attachments: list[dict] | None = None,
 ) -> dict:
+    """Create a campaign row.
+
+    `attachments` is a list of {name, url} dicts pointing at OneDrive
+    sharing links the user added in the sidebar's Attachments section.
+    The send pipeline renders these into a footer; the URLs themselves
+    live in OneDrive (we don't host).
+    """
     data = {
         "user_id": user_id,
         "name": name,
@@ -22,6 +30,7 @@ def create_campaign(
         "sent_count": 0,
         "open_count": 0,
         "click_count": 0,
+        "attachments": attachments or [],
     }
     if scheduled_for:
         data["scheduled_for"] = scheduled_for

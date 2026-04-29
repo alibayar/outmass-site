@@ -97,6 +97,17 @@ MS_AUTH_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/authori
 MS_TOKEN_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
 MS_GRAPH_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access"
 
+# Optional OneDrive scopes — requested only when the user opts into the
+# OneDrive-link feature for the first time (incremental consent). Keeping
+# these out of the default scope list means a brand-new sign-up does NOT
+# see OneDrive permissions on the consent screen, which preserves
+# conversion. The /auth/login endpoint accepts ?include_onedrive=true to
+# add these to the request.
+MS_GRAPH_ONEDRIVE_SCOPES = (
+    "https://graph.microsoft.com/Files.Read.All "
+    "https://graph.microsoft.com/Files.ReadWrite"
+)
+
 # ── Graph API ──
 GRAPH_API_BASE = "https://graph.microsoft.com/v1.0"
 

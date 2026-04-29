@@ -1191,3 +1191,62 @@ body {
   margin: 0;
   cursor: pointer;
 }
+
+/* ── Attachments (OneDrive links) ── */
+.attachments-section {
+  margin: 8px 0 16px 0;
+}
+.attachments-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+  color: #323130;
+  margin-bottom: 6px;
+}
+.attachments-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.attachments-list:empty {
+  display: none;
+}
+.attachment-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 8px 5px 10px;
+  background: #f3f2f1;
+  border: 1px solid #e1dfdd;
+  border-radius: 14px;
+  font-size: 12px;
+  color: #323130;
+  max-width: 240px;
+}
+.attachment-chip-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.attachment-chip-remove {
+  background: none;
+  border: none;
+  color: #605e5c;
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.attachment-chip-remove:hover {
+  color: #d13438;
+}
+.attachments-hint {
+  font-size: 11px;
+  color: #a19f9d;
+  margin-top: 6px;
+}
+.om-modal-large {
+  width: 92%;
+  max-width: 900px;
+}

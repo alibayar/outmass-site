@@ -115,8 +115,8 @@ chrome.runtime.onInstalled.addListener(function (details) {
  * exchange with client_secret, then redirects back to extension with
  * OutMass JWT in the URL fragment.
  */
-async function startMSLogin() {
-  log("Starting MS OAuth flow (Web)...");
+async function startMSLogin(includeOneDrive) {
+  log("Starting MS OAuth flow (Web)...", includeOneDrive ? "with OneDrive scope" : "");
 
   // Extension tells backend where to redirect at the end (passed via state)
   const extRedirectUri = chrome.identity.getRedirectURL("auth");
@@ -125,8 +125,16 @@ async function startMSLogin() {
   // chromiumapp.org redirect back to us (not to whatever AZURE_EXTENSION_ID
   // happens to be set to on Railway). The backend allowlists accepted
   // IDs — unknown IDs fall back to the env default.
+  // `include_onedrive=true` triggers incremental consent: Microsoft
+  // shows the consent screen only for the OneDrive scopes (the Mail
+  // scopes are already approved from the original sign-in), and the
+  // resulting token covers everything.
   const extId = chrome.runtime.id;
-  const authUrl = OUTMASS_BACKEND_URL + "/auth/login?ext=" + encodeURIComponent(extId);
+  let authUrl =
+    OUTMASS_BACKEND_URL + "/auth/login?ext=" + encodeURIComponent(extId);
+  if (includeOneDrive) {
+    authUrl += "&include_onedrive=true";
+  }
 
   return new Promise((resolve) => {
     chrome.identity.launchWebAuthFlow(
@@ -609,6 +617,25 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
     case "OPEN_PORTAL":
       backendFetch("/billing/portal").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "ONEDRIVE_SHARE_LINK":
+      backendFetch("/api/onedrive/share-link", {
+        method: "POST",
+        body: message.payload || {},
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "MS_LOGIN_ONEDRIVE":
+      // Incremental consent flow: launches OAuth with the OneDrive
+      // scopes added on top of the existing Mail grant. Microsoft
+      // shows the consent screen for ONLY the new scopes (scopes
+      // the user already approved are skipped automatically).
+      startMSLogin(true).then(function (result) {
         sendResponse(result);
       });
       return true;

@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "La facturation est temporairement indisponible. Veuillez réessayer dans un instant ou contacter le support."
+  },
+  "attachmentsLabel": {
+    "message": "Pièces jointes"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ Ajouter un lien OneDrive"
+  },
+  "btnContinue": {
+    "message": "Continuer"
+  },
+  "attachmentsHint": {
+    "message": "Les destinataires voient un lien, pas une pièce jointe — meilleure délivrabilité."
+  },
+  "oneDriveConsentTitle": {
+    "message": "Accès OneDrive"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass a besoin d'un accès à OneDrive pour créer des liens de partage pour les fichiers que vous sélectionnez. Nous ne téléchargeons, ne stockons ni ne lisons jamais vos fichiers — nous générons uniquement le lien que vous choisissez de partager."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Les destinataires voient un lien vers votre OneDrive — meilleure délivrabilité qu'une pièce jointe directe, et vous pouvez mettre à jour le fichier à tout moment sans renvoyer l'e-mail."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Choisir un fichier"
+  },
+  "oneDriveError": {
+    "message": "Impossible d'ajouter le fichier OneDrive : $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

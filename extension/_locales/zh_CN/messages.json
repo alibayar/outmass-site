@@ -878,5 +878,37 @@
   },
   "portalErrorNotConfigured": {
     "message": "账单服务暂时不可用。请稍后重试或联系支持。"
+  },
+  "attachmentsLabel": {
+    "message": "附件"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ 添加 OneDrive 链接"
+  },
+  "btnContinue": {
+    "message": "继续"
+  },
+  "attachmentsHint": {
+    "message": "收件人看到的是链接而非附件 — 收件箱投递率更高。"
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive 访问权限"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass 需要 OneDrive 访问权限来为您选择的文件创建共享链接。我们绝不下载、存储或读取您的文件 — 仅生成您选择共享的链接。"
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "收件人看到的是您 OneDrive 的链接 — 比直接附加文件投递率更好，并且您可以随时更新文件而无需重新发送邮件。"
+  },
+  "oneDrivePickerTitle": {
+    "message": "选择文件"
+  },
+  "oneDriveError": {
+    "message": "无法添加 OneDrive 文件: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
   }
 }

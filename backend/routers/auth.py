@@ -28,6 +28,7 @@ from config import (
     JWT_ALGORITHM,
     JWT_EXPIRATION_HOURS,
     JWT_SECRET,
+    MS_GRAPH_ONEDRIVE_SCOPES,
     MS_GRAPH_SCOPES,
     MS_TOKEN_ENDPOINT,
 )
@@ -126,7 +127,10 @@ def _decode_state_ext(state: str | None) -> str | None:
 
 
 @router.get("/login")
-async def login_redirect(ext: str | None = Query(None)):
+async def login_redirect(
+    ext: str | None = Query(None),
+    include_onedrive: bool = Query(False),
+):
     """Redirect user to Microsoft login. Used by extension launchWebAuthFlow.
 
     `ext` is the calling extension's chrome.runtime.id. It's echoed to
@@ -135,16 +139,32 @@ async def login_redirect(ext: str | None = Query(None)):
     chromiumapp.org redirect back to the originating extension. An
     unrecognized or missing `ext` falls back to AZURE_EXTENSION_ID so
     legacy (pre-multi-ext) clients still work.
+
+    `include_onedrive=true` adds Files.Read.All + Files.ReadWrite scopes
+    on top of the default Mail scopes. Used by the OneDrive-link feature
+    for incremental consent: the user only sees the OneDrive permission
+    on the Microsoft screen when they actually opt into the feature.
+    Microsoft re-issues a token covering all previously-granted scopes
+    plus the new ones, so a successful callback gives us a single
+    refresh_token usable for both Mail and OneDrive operations.
     """
     chosen_ext = ext if ext in ALLOWED_EXTENSION_IDS else AZURE_EXTENSION_ID
     state = _encode_state(chosen_ext)
+
+    scope = MS_GRAPH_SCOPES
+    if include_onedrive:
+        scope = f"{scope} {MS_GRAPH_ONEDRIVE_SCOPES}"
 
     params = {
         "client_id": AZURE_CLIENT_ID,
         "response_type": "code",
         "redirect_uri": AZURE_REDIRECT_URI,
         "response_mode": "query",
-        "scope": MS_GRAPH_SCOPES,
+        "scope": scope,
+        # `select_account` lets the user pick if they're signed into
+        # multiple Microsoft accounts. Doesn't force re-consent for
+        # already-granted scopes — Microsoft skips the consent step
+        # automatically when scopes are already authorized.
         "prompt": "select_account",
         "state": state,
     }
@@ -177,6 +197,11 @@ async def auth_callback(
     # Exchange code for tokens using Web platform (client_secret)
     async with httpx.AsyncClient() as client:
         try:
+            # Include OneDrive scopes in the exchange request as well —
+            # Microsoft returns tokens for the intersection of "scopes
+            # the user granted" and "scopes you ask for here", so listing
+            # the OneDrive scopes is harmless if the user only granted
+            # Mail (they just won't be in the resulting token's claims).
             token_resp = await client.post(
                 MS_TOKEN_ENDPOINT,
                 data={
@@ -185,7 +210,7 @@ async def auth_callback(
                     "grant_type": "authorization_code",
                     "code": code,
                     "redirect_uri": AZURE_REDIRECT_URI,
-                    "scope": MS_GRAPH_SCOPES,
+                    "scope": f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}",
                 },
                 headers={"Content-Type": "application/x-www-form-urlencoded"},
             )
