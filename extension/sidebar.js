@@ -2033,6 +2033,14 @@
           );
           return;
         }
+        // The Microsoft account simply has no OneDrive — some old
+        // Outlook.com / work accounts. Surface a friendly message
+        // explaining this so the user knows what to do, instead of
+        // a cryptic "graph_error".
+        if (code === "no_onedrive") {
+          _renderPickerStatus(t("oneDriveNoDrive"), true);
+          return;
+        }
         // For any other error, surface the code so we (and the user
         // if they DM us a screenshot) can debug instead of staring at
         // a generic message.

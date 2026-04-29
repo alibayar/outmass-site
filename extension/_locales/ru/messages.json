@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "Не удалось загрузить содержимое OneDrive. Повторите попытку."
+  },
+  "oneDriveNoDrive": {
+    "message": "У этой учётной записи Microsoft нет OneDrive. Войдите с учётной записью, в которой OneDrive активен, или не используйте OneDrive-вложения в этой кампании."
   }
 }

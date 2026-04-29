@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "No se pudo cargar el contenido de OneDrive. Inténtalo de nuevo."
+  },
+  "oneDriveNoDrive": {
+    "message": "Esta cuenta de Microsoft no tiene OneDrive. Inicia sesión con una cuenta que tenga OneDrive, u omite los adjuntos de OneDrive en esta campaña."
   }
 }

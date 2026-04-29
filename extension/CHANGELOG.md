@@ -2,6 +2,19 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.8 — 2026-04-29
+
+### OneDrive picker error messages
+- When the signed-in Microsoft account has no OneDrive (some old
+  Outlook.com accounts and work accounts without an SPO license),
+  the picker now shows a clear "this account doesn't have OneDrive"
+  message in your interface language, instead of a generic "Could
+  not load" error.
+- Other failure cases now include the underlying error code in the
+  picker status line so it's easier to triage if anything goes wrong.
+
+---
+
 ## v0.1.7 — 2026-04-29
 
 ### OneDrive picker rebuilt

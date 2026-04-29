@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "OneDrive सामग्री लोड नहीं हो सकी। कृपया पुनः प्रयास करें।"
+  },
+  "oneDriveNoDrive": {
+    "message": "इस Microsoft खाते में OneDrive नहीं है। OneDrive वाले खाते से साइन इन करें, या इस अभियान में OneDrive अनुलग्नक न जोड़ें।"
   }
 }

@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "تعذّر تحميل محتوى OneDrive. يرجى المحاولة مرة أخرى."
+  },
+  "oneDriveNoDrive": {
+    "message": "حساب Microsoft هذا لا يحتوي على OneDrive. سجّل الدخول بحساب فيه OneDrive، أو تخطَّ مرفقات OneDrive في هذه الحملة."
   }
 }

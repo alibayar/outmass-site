@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "Could not load OneDrive contents. Please try again."
+  },
+  "oneDriveNoDrive": {
+    "message": "This Microsoft account doesn't have OneDrive. Sign in with an account that has OneDrive, or skip OneDrive attachments for this campaign."
   }
 }

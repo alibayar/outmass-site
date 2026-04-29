@@ -337,9 +337,50 @@ def test_browse_returns_needs_reauth_when_no_token(client, fake_db, auth_bypass)
     assert resp.json()["detail"]["error"] == "needs_reauth"
 
 
-def test_browse_404_when_folder_missing(client, fake_db, auth_bypass):
+def test_browse_404_on_root_returns_no_onedrive(client, fake_db, auth_bypass):
+    """Some Microsoft accounts have no OneDrive at all (old Outlook.com,
+    work accounts without an SPO license). We surface a friendly
+    no_onedrive code so the frontend can explain instead of showing a
+    generic error."""
     mock_client = _async_client_returning(
+        _ms_response(404, text="The user does not have a OneDrive."),
         _ms_response(404, text="{}"),
+    )
+
+    with patch("routers.onedrive.get_fresh_access_token", return_value="tok"), \
+         patch("httpx.AsyncClient", return_value=mock_client):
+        resp = client.get("/api/onedrive/browse?folder_id=root")
+
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"] == "no_onedrive"
+
+
+def test_browse_400_with_license_message_returns_no_onedrive(
+    client, fake_db, auth_bypass
+):
+    """Microsoft sometimes signals 'no OneDrive provisioned' as 400
+    with body mentioning tenant/license. The body-keyword heuristic
+    should still catch it."""
+    body_text = "Tenant does not have a SPO license."
+    mock_client = _async_client_returning(
+        _ms_response(400, text=body_text),
+        _ms_response(400, text="{}"),
+    )
+
+    with patch("routers.onedrive.get_fresh_access_token", return_value="tok"), \
+         patch("httpx.AsyncClient", return_value=mock_client):
+        resp = client.get("/api/onedrive/browse?folder_id=some-subfolder")
+
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"] == "no_onedrive"
+
+
+def test_browse_404_when_folder_missing(client, fake_db, auth_bypass):
+    """For non-root folders, plain 404 with no OneDrive-absence keywords
+    must still map to folder_not_found (the legacy behaviour) rather
+    than the new no_onedrive code."""
+    mock_client = _async_client_returning(
+        _ms_response(404, text='{"error":{"code":"itemNotFound"}}'),
         _ms_response(404, text="{}"),
     )
 

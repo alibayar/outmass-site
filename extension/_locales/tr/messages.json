@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "OneDrive içeriği yüklenemedi. Lütfen tekrar dene."
+  },
+  "oneDriveNoDrive": {
+    "message": "Bu Microsoft hesabında OneDrive yok. OneDrive'ı olan bir hesapla giriş yap, veya bu kampanya için OneDrive eki kullanma."
   }
 }

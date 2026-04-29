@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "无法加载 OneDrive 内容。请重试。"
+  },
+  "oneDriveNoDrive": {
+    "message": "此 Microsoft 账户没有 OneDrive。请使用拥有 OneDrive 的账户登录，或在此次活动中不使用 OneDrive 附件。"
   }
 }

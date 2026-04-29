@@ -952,5 +952,8 @@
   },
   "oneDrivePickerError": {
     "message": "OneDrive のコンテンツを読み込めませんでした。もう一度お試しください。"
+  },
+  "oneDriveNoDrive": {
+    "message": "この Microsoft アカウントには OneDrive がありません。OneDrive のあるアカウントでサインインするか、このキャンペーンでは OneDrive 添付を使わないでください。"
   }
 }

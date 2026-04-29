@@ -121,7 +121,47 @@ async def browse_drive(
                 ),
             },
         )
-    if list_resp.status_code == 404:
+    if list_resp.status_code in (400, 404):
+        # Two sub-cases:
+        #   a) The Microsoft account has no OneDrive at all (some old
+        #      Outlook.com accounts, work accounts without an SPO
+        #      license). Microsoft signals this with various status
+        #      codes + error bodies — most reliable heuristic is "we
+        #      asked for the root drive and got 404", or a 400/404
+        #      whose error text mentions tenant/license/provisioned.
+        #   b) For a non-root browse, 404 just means that subfolder
+        #      no longer exists.
+        body_text = (list_resp.text or "").lower()
+        no_drive_markers = (
+            "tenant does not have",
+            "spo license",
+            "user has no drives",
+            "not provisioned",
+            "mysite",
+            "drive not found",
+            "doesn't exist",
+            "doesn't have a onedrive",
+        )
+        looks_like_no_drive = any(m in body_text for m in no_drive_markers)
+        if folder_id == "root" or looks_like_no_drive:
+            logger.info(
+                "OneDrive browse: account has no OneDrive (status=%s body=%s)",
+                list_resp.status_code,
+                list_resp.text[:200],
+            )
+            raise HTTPException(
+                status_code=404,
+                detail={
+                    "error": "no_onedrive",
+                    "message": (
+                        "This Microsoft account doesn't have OneDrive. "
+                        "Sign in with an account that has OneDrive enabled, "
+                        "or skip OneDrive attachments for this campaign."
+                    ),
+                },
+            )
+        # Genuine "subfolder gone" case — keep the prior error code
+        # so the frontend can still render a meaningful message.
         raise HTTPException(
             status_code=404,
             detail={
