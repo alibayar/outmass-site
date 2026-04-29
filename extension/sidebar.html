@@ -441,14 +441,18 @@
     </div>
   </div>
 
-  <!-- OneDrive file picker modal (iframe) -->
+  <!-- OneDrive file picker modal (custom — no iframe) -->
   <div id="onedrive-picker-overlay" class="om-modal-overlay" style="display:none;">
-    <div class="om-modal om-modal-large">
+    <div class="om-modal">
       <div class="om-modal-header">
         <span data-i18n="oneDrivePickerTitle">Choose a file</span>
         <button type="button" class="om-modal-close" id="onedrive-picker-close" aria-label="Close">&times;</button>
       </div>
-      <iframe id="onedrive-picker-iframe" class="om-modal-iframe" style="min-height:480px;width:100%;border:none;"></iframe>
+      <div class="om-modal-body onedrive-picker-body">
+        <div class="onedrive-picker-breadcrumbs" id="onedrive-picker-breadcrumbs"></div>
+        <div class="onedrive-picker-status" id="onedrive-picker-status"></div>
+        <ul class="onedrive-picker-list" id="onedrive-picker-list"></ul>
+      </div>
     </div>
   </div>
 

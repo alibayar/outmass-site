@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "Loading…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "This folder is empty."
+  },
+  "oneDrivePickerError": {
+    "message": "Could not load OneDrive contents. Please try again."
   }
 }

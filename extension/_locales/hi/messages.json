@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "लोड हो रहा है…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "यह फ़ोल्डर खाली है।"
+  },
+  "oneDrivePickerError": {
+    "message": "OneDrive सामग्री लोड नहीं हो सकी। कृपया पुनः प्रयास करें।"
   }
 }

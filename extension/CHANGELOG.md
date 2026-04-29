@@ -2,6 +2,21 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.7 — 2026-04-29
+
+### OneDrive picker rebuilt
+- The OneDrive file picker has been replaced with a native, in-sidebar
+  file browser. Previously it embedded Microsoft's hosted picker via
+  iframe — which Microsoft serves with `X-Frame-Options: DENY` for
+  personal accounts, producing a blank "onedrive.live.com refused to
+  connect" page.
+- The new picker shows your OneDrive contents directly: folders first,
+  files after, both alphabetical. Click a folder to navigate; breadcrumb
+  links jump back. Click a file to attach it. No external iframe, no
+  third-party page load — just a clean list inside OutMass.
+
+---
+
 ## v0.1.6 — 2026-04-29
 
 ### Smarter engagement metrics

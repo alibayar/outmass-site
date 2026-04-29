@@ -42,6 +42,154 @@ class ShareLinkRequest(BaseModel):
     item_id: str = Field(..., min_length=1, max_length=200)
 
 
+@router.get("/browse")
+async def browse_drive(
+    folder_id: str = "root",
+    user: dict = Depends(get_current_user),
+):
+    """List the user's OneDrive contents at a given folder.
+
+    Replaces the Microsoft File Picker iframe (which Microsoft serves
+    with X-Frame-Options: DENY for personal accounts) with a custom
+    browser the extension can render natively. Returns items sorted
+    folders-first then files-alphabetical, plus the current folder's
+    name + parent_id so the frontend can render breadcrumbs without
+    a second round trip.
+
+    `folder_id` defaults to "root" — Microsoft Graph treats the literal
+    string "root" as a special alias for the user's drive root. Subfolders
+    use the opaque drive item ID returned in each child's `id` field.
+    """
+    access_token = get_fresh_access_token(user["id"])
+    if not access_token:
+        raise HTTPException(
+            status_code=401,
+            detail={
+                "error": "needs_reauth",
+                "message": "Microsoft connection expired. Please sign in again.",
+            },
+        )
+
+    if folder_id == "root":
+        list_url = "https://graph.microsoft.com/v1.0/me/drive/root/children"
+        item_url = "https://graph.microsoft.com/v1.0/me/drive/root"
+    else:
+        list_url = f"https://graph.microsoft.com/v1.0/me/drive/items/{folder_id}/children"
+        item_url = f"https://graph.microsoft.com/v1.0/me/drive/items/{folder_id}"
+
+    # We restrict the field set with $select to keep payloads small —
+    # the picker UI doesn't need thumbnails, sharing settings, etc.
+    list_params = {
+        "$select": "id,name,size,lastModifiedDateTime,folder,file,parentReference",
+        "$top": "200",
+        "$orderby": "name asc",
+    }
+    item_params = {"$select": "id,name,parentReference"}
+
+    try:
+        async with httpx.AsyncClient(timeout=10.0) as client:
+            list_resp = await client.get(
+                list_url,
+                headers={"Authorization": f"Bearer {access_token}"},
+                params=list_params,
+            )
+            item_resp = await client.get(
+                item_url,
+                headers={"Authorization": f"Bearer {access_token}"},
+                params=item_params,
+            )
+    except httpx.HTTPError as e:
+        logger.error("OneDrive browse network error: %s", e)
+        raise HTTPException(
+            status_code=502,
+            detail={"error": "network", "message": "Could not reach Microsoft."},
+        )
+
+    if list_resp.status_code == 403:
+        raise HTTPException(
+            status_code=403,
+            detail={
+                "error": "needs_files_scope",
+                "message": (
+                    "OneDrive access not yet granted. Please authorize "
+                    "OneDrive integration."
+                ),
+            },
+        )
+    if list_resp.status_code == 404:
+        raise HTTPException(
+            status_code=404,
+            detail={
+                "error": "folder_not_found",
+                "message": "OneDrive folder not found.",
+            },
+        )
+    if list_resp.status_code >= 400:
+        logger.warning(
+            "OneDrive browse failed: %s %s",
+            list_resp.status_code,
+            list_resp.text[:300],
+        )
+        raise HTTPException(
+            status_code=502,
+            detail={
+                "error": "graph_error",
+                "message": f"Microsoft Graph error (HTTP {list_resp.status_code}).",
+            },
+        )
+
+    list_data = list_resp.json()
+    raw_items = list_data.get("value", []) or []
+
+    folders = []
+    files = []
+    for it in raw_items:
+        if it.get("folder"):
+            folders.append({
+                "id": it.get("id"),
+                "name": it.get("name") or "untitled",
+                "type": "folder",
+                "child_count": (it.get("folder") or {}).get("childCount", 0),
+                "last_modified": it.get("lastModifiedDateTime"),
+            })
+        elif it.get("file"):
+            mime = (it.get("file") or {}).get("mimeType")
+            files.append({
+                "id": it.get("id"),
+                "name": it.get("name") or "untitled",
+                "type": "file",
+                "size": it.get("size", 0),
+                "mime": mime,
+                "last_modified": it.get("lastModifiedDateTime"),
+            })
+        # Items that are neither file nor folder (e.g. notebooks,
+        # bundles) are dropped — we can't generate a share link for
+        # them anyway, no point cluttering the picker.
+
+    # Folders first (sorted by name, case-insensitive), then files.
+    folders.sort(key=lambda x: x["name"].lower())
+    files.sort(key=lambda x: x["name"].lower())
+
+    # Breadcrumb data: name of current folder + ID of its parent so the
+    # frontend can build a back button. Microsoft returns the root item
+    # without a parentReference, which we treat as the top of the tree.
+    item_data = item_resp.json() if item_resp.status_code == 200 else {}
+    parent_ref = item_data.get("parentReference") or {}
+    parent_id = parent_ref.get("id")
+    # The root drive item's parent is the drive itself, not a folder
+    # we can browse — surface as None so the frontend hides the back
+    # button.
+    if parent_ref.get("path") in (None, "") or folder_id == "root":
+        parent_id = None
+
+    return {
+        "folder_id": folder_id,
+        "folder_name": item_data.get("name") if folder_id != "root" else None,
+        "parent_id": parent_id,
+        "items": folders + files,
+    }
+
+
 # Microsoft drive-item IDs are opaque — typically 30-50 chars of
 # uppercase hex / base64. We don't need to enforce a strict format
 # here; Graph itself rejects bad IDs. Length cap above is just a

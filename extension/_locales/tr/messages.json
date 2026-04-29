@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "Yükleniyor…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "Bu klasör boş."
+  },
+  "oneDrivePickerError": {
+    "message": "OneDrive içeriği yüklenemedi. Lütfen tekrar dene."
   }
 }

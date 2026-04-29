@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "読み込み中…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "このフォルダは空です。"
+  },
+  "oneDrivePickerError": {
+    "message": "OneDrive のコンテンツを読み込めませんでした。もう一度お試しください。"
   }
 }

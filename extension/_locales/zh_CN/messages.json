@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "加载中…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "此文件夹为空。"
+  },
+  "oneDrivePickerError": {
+    "message": "无法加载 OneDrive 内容。请重试。"
   }
 }

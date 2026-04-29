@@ -1940,41 +1940,155 @@
     });
   }
 
+  // Custom OneDrive picker — browses the user's drive via our own
+  // backend endpoint (/api/onedrive/browse), avoiding Microsoft's
+  // X-Frame-Options:DENY response that blocks iframe-based pickers
+  // for personal accounts. Renders a simple folder/file list with
+  // breadcrumb navigation.
+  var _oneDriveStack = [{ id: "root", name: null }]; // breadcrumb stack
+
+  function _formatBytes(n) {
+    if (!n || n < 0) return "";
+    if (n < 1024) return n + " B";
+    if (n < 1024 * 1024) return Math.round(n / 1024) + " KB";
+    if (n < 1024 * 1024 * 1024) return (n / (1024 * 1024)).toFixed(1) + " MB";
+    return (n / (1024 * 1024 * 1024)).toFixed(2) + " GB";
+  }
+
+  function _renderPickerStatus(text, isError) {
+    var statusEl = document.getElementById("onedrive-picker-status");
+    if (!statusEl) return;
+    statusEl.textContent = text || "";
+    statusEl.className =
+      "onedrive-picker-status" + (isError ? " is-error" : "");
+  }
+
+  function _renderPickerBreadcrumbs() {
+    var bcEl = document.getElementById("onedrive-picker-breadcrumbs");
+    if (!bcEl) return;
+    bcEl.innerHTML = "";
+    _oneDriveStack.forEach(function (frame, idx) {
+      if (idx > 0) {
+        var sep = document.createElement("span");
+        sep.className = "onedrive-bc-sep";
+        sep.textContent = "›";
+        bcEl.appendChild(sep);
+      }
+      var link = document.createElement("a");
+      link.className = "onedrive-bc-link";
+      link.href = "#";
+      link.textContent = frame.name || t("oneDriveRootLabel");
+      link.addEventListener("click", function (e) {
+        e.preventDefault();
+        // Click on a breadcrumb → pop everything after that level
+        _oneDriveStack = _oneDriveStack.slice(0, idx + 1);
+        _loadPickerFolder(frame.id);
+      });
+      bcEl.appendChild(link);
+    });
+  }
+
+  function _loadPickerFolder(folderId) {
+    var listEl = document.getElementById("onedrive-picker-list");
+    if (listEl) listEl.innerHTML = "";
+    _renderPickerStatus(t("oneDrivePickerLoading"));
+    _renderPickerBreadcrumbs();
+
+    chrome.runtime.sendMessage(
+      {
+        type: "ONEDRIVE_BROWSE",
+        payload: { folder_id: folderId || "root" },
+      },
+      function (resp) {
+        if (resp && resp.data && Array.isArray(resp.data.items)) {
+          _renderPickerStatus("");
+          _renderPickerItems(resp.data.items);
+          return;
+        }
+        if (handleSessionExpired(resp)) {
+          _closeOneDrivePicker();
+          return;
+        }
+        var code = resp && resp.error;
+        if (code === "needs_files_scope") {
+          _closeOneDrivePicker();
+          chrome.runtime.sendMessage(
+            { type: "MS_LOGIN_ONEDRIVE" },
+            function (loginResp) {
+              if (loginResp && !loginResp.error) {
+                _openOneDrivePicker();
+              } else {
+                alert(
+                  t("oneDriveError", [
+                    (loginResp && loginResp.error) || t("popupUnknownError"),
+                  ])
+                );
+              }
+            }
+          );
+          return;
+        }
+        _renderPickerStatus(t("oneDrivePickerError"), true);
+      }
+    );
+  }
+
+  function _renderPickerItems(items) {
+    var listEl = document.getElementById("onedrive-picker-list");
+    if (!listEl) return;
+    listEl.innerHTML = "";
+
+    if (!items.length) {
+      _renderPickerStatus(t("oneDrivePickerEmpty"));
+      return;
+    }
+
+    items.forEach(function (item) {
+      var li = document.createElement("li");
+      li.className =
+        "onedrive-picker-item" +
+        (item.type === "folder" ? " is-folder" : " is-file");
+      var icon = document.createElement("span");
+      icon.className = "onedrive-picker-icon";
+      icon.textContent = item.type === "folder" ? "📁" : "📄";
+      var name = document.createElement("span");
+      name.className = "onedrive-picker-name";
+      name.textContent = item.name;
+      var meta = document.createElement("span");
+      meta.className = "onedrive-picker-meta";
+      meta.textContent =
+        item.type === "folder"
+          ? "" + (item.child_count || 0)
+          : _formatBytes(item.size || 0);
+
+      li.appendChild(icon);
+      li.appendChild(name);
+      li.appendChild(meta);
+
+      li.addEventListener("click", function () {
+        if (item.type === "folder") {
+          _oneDriveStack.push({ id: item.id, name: item.name });
+          _loadPickerFolder(item.id);
+        } else {
+          _closeOneDrivePicker();
+          _requestShareLink(item.id, false);
+        }
+      });
+      listEl.appendChild(li);
+    });
+  }
+
   function _openOneDrivePicker() {
     var overlay = document.getElementById("onedrive-picker-overlay");
-    var iframe = document.getElementById("onedrive-picker-iframe");
-    if (!overlay || !iframe) return;
-    // The Microsoft Graph File Picker SDK v8 contract: load the picker
-    // host page in an iframe, then handshake via postMessage. We use
-    // `account/me/files` to scope the picker to the user's personal
-    // OneDrive. Auth is delegated — the picker prompts the user
-    // separately if they're not already signed in there.
-    iframe.src =
-      "https://onedrive.live.com/picker?" +
-      encodeURIComponent(
-        "filePicker=" +
-          encodeURIComponent(
-            JSON.stringify({
-              sdk: "8.0",
-              entry: { oneDrive: { files: {} } },
-              authentication: {},
-              messaging: { origin: location.origin, channelId: "outmass" },
-              selection: { mode: "single" },
-              typesAndSources: {
-                mode: "files",
-                pivots: { oneDrive: true, recent: true },
-              },
-            })
-          )
-      );
+    if (!overlay) return;
+    _oneDriveStack = [{ id: "root", name: null }];
     overlay.style.display = "flex";
+    _loadPickerFolder("root");
   }
 
   function _closeOneDrivePicker() {
     var overlay = document.getElementById("onedrive-picker-overlay");
-    var iframe = document.getElementById("onedrive-picker-iframe");
     if (overlay) overlay.style.display = "none";
-    if (iframe) iframe.src = "about:blank";
   }
 
   function _requestShareLink(itemId, retried) {
@@ -2014,40 +2128,6 @@
       }
     );
   }
-
-  function _onPickerMessage(event) {
-    // Picker host posts back to us when the user selects a file. We
-    // accept messages only from onedrive.live.com / 1drv.ms to avoid
-    // an attacker-controlled iframe spoofing a selection.
-    var origin = event.origin || "";
-    if (
-      origin.indexOf("onedrive.live.com") < 0 &&
-      origin.indexOf("1drv.ms") < 0 &&
-      origin.indexOf("office.com") < 0
-    ) {
-      return;
-    }
-    var data = event.data || {};
-    // SDK v8 wraps payloads: {type: "command", data: {...}}. For
-    // selection: data.command === "pick" with data.items list.
-    if (
-      data.type === "command" &&
-      data.data &&
-      data.data.command === "pick" &&
-      Array.isArray(data.data.items) &&
-      data.data.items.length
-    ) {
-      var item = data.data.items[0];
-      var itemId = item.id || (item.parentReference && item.parentReference.id);
-      if (itemId) {
-        _closeOneDrivePicker();
-        _requestShareLink(itemId, false);
-      }
-    } else if (data.type === "notification" && data.data === "page-loaded") {
-      // Picker is up. No-op for us.
-    }
-  }
-  window.addEventListener("message", _onPickerMessage);
 
   var btnAddOneDrive = document.getElementById("btn-add-onedrive");
   var oneDriveConsentOverlay = document.getElementById(

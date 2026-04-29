@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "Загрузка…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "Эта папка пуста."
+  },
+  "oneDrivePickerError": {
+    "message": "Не удалось загрузить содержимое OneDrive. Повторите попытку."
   }
 }

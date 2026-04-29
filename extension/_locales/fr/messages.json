@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "Chargement…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "Ce dossier est vide."
+  },
+  "oneDrivePickerError": {
+    "message": "Impossible de charger le contenu OneDrive. Veuillez réessayer."
   }
 }

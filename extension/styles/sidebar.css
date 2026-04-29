@@ -1251,6 +1251,84 @@ body {
   max-width: 900px;
 }
 
+/* OneDrive custom picker */
+.onedrive-picker-body {
+  max-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 14px;
+}
+.onedrive-picker-breadcrumbs {
+  font-size: 12px;
+  color: #605e5c;
+  margin-bottom: 10px;
+  word-break: break-word;
+}
+.onedrive-bc-link {
+  color: #0078d4;
+  text-decoration: none;
+  cursor: pointer;
+}
+.onedrive-bc-link:hover {
+  text-decoration: underline;
+}
+.onedrive-bc-sep {
+  margin: 0 6px;
+  color: #a19f9d;
+}
+.onedrive-picker-status {
+  font-size: 12px;
+  color: #605e5c;
+  padding: 4px 0 8px;
+}
+.onedrive-picker-status.is-error {
+  color: #a4262c;
+}
+.onedrive-picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow-y: auto;
+  border: 1px solid #edebe9;
+  border-radius: 6px;
+  flex: 1;
+  min-height: 200px;
+}
+.onedrive-picker-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 12px;
+  cursor: pointer;
+  font-size: 13px;
+  color: #323130;
+  border-bottom: 1px solid #f3f2f1;
+}
+.onedrive-picker-item:last-child {
+  border-bottom: none;
+}
+.onedrive-picker-item:hover {
+  background: #f3f9ff;
+}
+.onedrive-picker-item.is-folder {
+  font-weight: 500;
+}
+.onedrive-picker-icon {
+  flex-shrink: 0;
+  font-size: 16px;
+}
+.onedrive-picker-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.onedrive-picker-meta {
+  flex-shrink: 0;
+  font-size: 11px;
+  color: #a19f9d;
+}
+
 /* Reports — Engaged metric */
 .stat-engaged {
   margin: 12px 0 8px 0;

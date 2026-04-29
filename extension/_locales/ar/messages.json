@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "جارٍ التحميل…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "هذا المجلد فارغ."
+  },
+  "oneDrivePickerError": {
+    "message": "تعذّر تحميل محتوى OneDrive. يرجى المحاولة مرة أخرى."
   }
 }

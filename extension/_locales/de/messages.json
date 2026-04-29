@@ -940,5 +940,17 @@
     "placeholders": {
       "error": { "content": "$1" }
     }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "Wird geladen…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "Dieser Ordner ist leer."
+  },
+  "oneDrivePickerError": {
+    "message": "OneDrive-Inhalte konnten nicht geladen werden. Bitte erneut versuchen."
   }
 }

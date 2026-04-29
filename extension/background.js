@@ -639,6 +639,18 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "ONEDRIVE_BROWSE":
+      // Custom file picker fetches the user's OneDrive folder contents
+      // through our backend (we hold the MS token server-side).
+      var folderId =
+        (message.payload && message.payload.folder_id) || "root";
+      backendFetch(
+        "/api/onedrive/browse?folder_id=" + encodeURIComponent(folderId)
+      ).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "MS_LOGIN_ONEDRIVE":
       // Incremental consent flow: launches OAuth with the OneDrive
       // scopes added on top of the existing Mail grant. Microsoft
