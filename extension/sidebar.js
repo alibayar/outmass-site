@@ -315,6 +315,10 @@
 
       updateSendButton();
       log("CSV loaded:", file.name, rows.length, "rows,", dupCount, "duplicates removed");
+      track("recipients_uploaded", {
+        recipient_count: rows.length,
+        duplicates_removed: dupCount,
+      });
     };
     reader.readAsText(file, "UTF-8");
   }
@@ -611,6 +615,9 @@
 
   // ── Send Campaign ──
   btnSend.addEventListener("click", function () {
+    track("send_clicked", {
+      recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+    });
     if (!csvData || !csvRawText) {
       alert(t("alertUploadCsvFirst"));
       return;
@@ -857,8 +864,13 @@
         campaignId: campaignId,
       },
       function (sendResp) {
+        var _recipientCount = (csvData && csvData.rows) ? csvData.rows.length : 0;
         if (!sendResp) {
           showSendError(t("alertSendFailed"));
+          track("send_failed", {
+            recipient_count: _recipientCount,
+            error_code: "no_response",
+          });
           return;
         }
         if (sendResp.error) {
@@ -866,9 +878,17 @@
             btnSend.textContent = t("btnSend");
             btnSend.disabled = false;
             showUpgradeModal();
+            track("send_failed", {
+              recipient_count: _recipientCount,
+              error_code: String(sendResp.error).slice(0, 64),
+            });
             return;
           }
           showSendError(sendResp.error);
+          track("send_failed", {
+            recipient_count: _recipientCount,
+            error_code: String(sendResp.error).slice(0, 64),
+          });
           return;
         }
 
@@ -882,12 +902,28 @@
         if (queued === 0 && sendErrors.length > 0) {
           alert(t("alertSendError") + sendErrors[0].error);
           log("Campaign send errors:", sendErrors);
+          track("send_failed", {
+            recipient_count: _recipientCount,
+            error_code: String((sendErrors[0] && sendErrors[0].error) || "all_failed").slice(0, 64),
+          });
         } else if (hasAbTest) {
           alert(t("alertAbSendSuccess", [String(queued)]));
+          track("send_completed", {
+            recipient_count: _recipientCount,
+            campaign_id: campaignId || null,
+          });
         } else if (sendErrors.length > 0) {
           alert(t("alertPartialSend", [String(queued), String(sendErrors.length)]) + sendErrors[0].error);
+          track("send_completed", {
+            recipient_count: _recipientCount,
+            campaign_id: campaignId || null,
+          });
         } else {
           alert(t("alertSendSuccess", [String(queued)]));
+          track("send_completed", {
+            recipient_count: _recipientCount,
+            campaign_id: campaignId || null,
+          });
         }
         log("Campaign sent:", queued, "emails, errors:", sendErrors.length);
 

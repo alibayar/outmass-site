@@ -113,6 +113,7 @@
   function doLogin() {
     showSection("loading");
 
+    track("signin_clicked", { context: "popup" });
     chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (response) {
       if (chrome.runtime.lastError) {
         showError(chrome.runtime.lastError.message);
