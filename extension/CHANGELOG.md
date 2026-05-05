@@ -2,6 +2,12 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.9 — 2026-05-05
+
+- internal: anonymous funnel telemetry (PostHog) + per-user extension version tracking. No user-visible behavior change. Privacy policy updated to reflect this.
+
+---
+
 ## v0.1.8 — 2026-04-29
 
 ### OneDrive picker error messages

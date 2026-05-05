@@ -112,8 +112,23 @@
       <li><strong>Stripe</strong> — Payment processing</li>
       <li><strong>Upstash</strong> — Redis queue for email scheduling</li>
       <li><strong>Microsoft Graph API</strong> — Email sending</li>
+      <li><strong>PostHog</strong> — Anonymous product analytics and error tracking</li>
     </ul>
     <p>Each service operates under their own privacy policies and data protection agreements.</p>
+
+    <p>
+      We collect anonymous usage telemetry through our extension to understand
+      how features are used and where users encounter friction. These events
+      contain no personal information beyond the email address you signed in
+      with (used to associate pre-signin and post-signin activity in our
+      analytics) — only event names (e.g. <em>sidebar_opened</em>,
+      <em>send_completed</em>) and technical metadata (extension version,
+      browser, operating system, language). The anonymous ID linking these
+      events is generated locally by your browser. Once you sign in, the
+      anonymous ID is associated with your account email so we can measure
+      end-to-end product usage. Telemetry is processed by our analytics
+      provider (PostHog).
+    </p>
 
     <h2>7. Data Retention</h2>
     <ul>
