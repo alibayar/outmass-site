@@ -109,6 +109,7 @@
       reauthBtn.textContent = "…";
       // Fresh OAuth flow. On success, backend clears the flag; on next
       // GET_SETTINGS, banner hides.
+      track("signin_clicked", { context: "reauth_banner" });
       chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
         reauthBtn.disabled = false;
         reauthBtn.textContent = t("reauthBannerCta");
@@ -178,6 +179,10 @@
       }
       if (target === "account") {
         loadAccount();
+      }
+      if (target === "compose" && !_composeViewSeenThisSession) {
+        _composeViewSeenThisSession = true;
+        track("compose_view_seen");
       }
 
       log("Tab switched to:", target);
@@ -2546,6 +2551,7 @@
     // Re-check reauth state every 5 minutes — catches the case where a
     // background scheduled send flagged the user but the sidebar stayed open.
     setInterval(pollReauthState, 5 * 60 * 1000);
+    track("sidebar_opened");
   }
 
   // Load i18n override first (if user picked a specific language), then apply
