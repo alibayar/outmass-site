@@ -11,6 +11,7 @@ import logging
 import secrets
 import urllib.parse
 from datetime import datetime, timedelta, timezone
+from typing import Annotated
 
 import httpx
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
@@ -76,20 +77,25 @@ def decode_jwt(token: str) -> dict:
         raise HTTPException(status_code=401, detail="Invalid or expired token")
 
 
-async def get_current_user(authorization: str = Header(...)) -> dict:
-    """Dependency: extract and verify JWT from Authorization header."""
+async def get_current_user(
+    authorization: str = Header(...),
+    x_extension_version: Annotated[str | None, Header()] = None,
+) -> dict:
+    """Dependency: extract and verify JWT from Authorization header.
+
+    Also records the calling extension's version (sent via X-Extension-Version
+    header). Both the activity timestamp and the version write are gated by
+    a 15-minute rate-limiter inside maybe_touch_activity, so this is cheap.
+    """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid auth header")
     token = authorization[7:]
     payload = decode_jwt(token)
-    user = user_model.get_by_id(payload["sub"])
+    user_id = payload.get("sub")
+    user = user_model.get_by_id(user_id)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    # Record this request's timestamp in users.last_activity_at. Internally
-    # rate-limited to one write per 15 minutes so busy sessions don't
-    # hammer the DB, and swallows its own exceptions so a transient
-    # DB hiccup can't turn every authenticated request into a 500.
-    user_model.maybe_touch_activity(user)
+    user_model.maybe_touch_activity(user, extension_version=x_extension_version)
     return user
 
 

@@ -238,3 +238,42 @@ def test_maybe_touch_activity_ignores_too_long_version(fake_db):
     # Either rejected entirely OR truncated — but never written full-length
     written = users.update_calls[0].get("last_seen_extension_version", "")
     assert len(written) <= 32
+
+
+def test_get_current_user_passes_extension_version_header(fake_db):
+    """The X-Extension-Version header should reach maybe_touch_activity
+    so the user's last_seen_extension_version stays current."""
+    from routers.auth import get_current_user
+
+    with patch("models.user.get_by_id",
+               return_value={**FAKE_USER,
+                             "last_activity_at": None,
+                             "last_seen_extension_version": None}), \
+         patch("models.user.maybe_touch_activity") as mock_touch, \
+         patch("routers.auth.decode_jwt", return_value={"sub": FAKE_USER["id"]}):
+        import asyncio
+        asyncio.run(get_current_user(
+            authorization="Bearer faketoken",
+            x_extension_version="0.1.9",
+        ))
+
+    mock_touch.assert_called_once()
+    call_kwargs = mock_touch.call_args
+    assert call_kwargs.kwargs.get("extension_version") == "0.1.9"
+
+
+def test_get_current_user_no_header_passes_none(fake_db):
+    """Backward compat: requests without the header (legacy clients,
+    direct API calls) should still succeed."""
+    from routers.auth import get_current_user
+
+    with patch("models.user.get_by_id",
+               return_value={**FAKE_USER, "last_activity_at": None}), \
+         patch("models.user.maybe_touch_activity") as mock_touch, \
+         patch("routers.auth.decode_jwt", return_value={"sub": FAKE_USER["id"]}):
+        import asyncio
+        asyncio.run(get_current_user(authorization="Bearer faketoken"))
+
+    mock_touch.assert_called_once()
+    call_kwargs = mock_touch.call_args
+    assert call_kwargs.kwargs.get("extension_version") is None
