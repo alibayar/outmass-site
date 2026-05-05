@@ -128,6 +128,7 @@ chrome.runtime.onInstalled.addListener(function (details) {
  */
 async function startMSLogin(includeOneDrive) {
   log("Starting MS OAuth flow (Web)...", includeOneDrive ? "with OneDrive scope" : "");
+  track("oauth_started", { with_onedrive: !!includeOneDrive });
 
   // Extension tells backend where to redirect at the end (passed via state)
   const extRedirectUri = chrome.identity.getRedirectURL("auth");
@@ -154,11 +155,13 @@ async function startMSLogin(includeOneDrive) {
         if (chrome.runtime.lastError) {
           log("Auth flow error:", chrome.runtime.lastError.message);
           resolve({ error: chrome.runtime.lastError.message });
+          track("oauth_failed", { reason: "chrome_error", message: String(chrome.runtime.lastError.message || "") });
           return;
         }
 
         if (!redirectUrl) {
           resolve({ error: "No redirect URL received" });
+          track("oauth_failed", { reason: "no_redirect" });
           return;
         }
 
@@ -171,6 +174,7 @@ async function startMSLogin(includeOneDrive) {
           fragment = u.hash.startsWith("#") ? u.hash.substring(1) : u.hash;
         } catch (e) {
           resolve({ error: "Invalid redirect URL" });
+          track("oauth_failed", { reason: "invalid_redirect" });
           return;
         }
 
@@ -183,11 +187,13 @@ async function startMSLogin(includeOneDrive) {
 
         if (errorMsg) {
           resolve({ error: errorMsg });
+          track("oauth_failed", { reason: "backend_error", code: String(errorMsg).slice(0, 64) });
           return;
         }
 
         if (!jwtToken || !email) {
           resolve({ error: "Incomplete auth response from backend" });
+          track("oauth_failed", { reason: "incomplete_response" });
           return;
         }
 
@@ -209,6 +215,10 @@ async function startMSLogin(includeOneDrive) {
           },
           function () {
             log("LOGIN_SUCCESS:", email);
+            // Backend doesn't return user_id in the redirect fragment today, so
+            // we identify by email — PostHog accepts any string as distinct_id.
+            identify(email);
+            track("oauth_completed", { plan: plan });
             resolve({ error: null, user: user });
           }
         );
