@@ -105,21 +105,54 @@ def _is_activity_fresh(last_activity_iso: str | None) -> bool:
     return (datetime.now(timezone.utc) - last) < _ACTIVITY_TOUCH_INTERVAL
 
 
-def maybe_touch_activity(user: dict) -> None:
-    """Bump last_activity_at if the current value is stale.
+_MAX_VERSION_LEN = 32  # semver + suffix is well under this; defensive cap
 
-    Called from the auth dependency on every authenticated request.
-    Mutates the passed-in dict so downstream handlers see the fresh
-    timestamp without a re-fetch.
+
+def _is_valid_version(v: str | None) -> str | None:
+    """Sanitize a version string: must be non-empty, ASCII-printable,
+    capped at 32 chars. Returns the cleaned value or None."""
+    if not v or not isinstance(v, str):
+        return None
+    cleaned = v.strip()[:_MAX_VERSION_LEN]
+    if not cleaned:
+        return None
+    # Drop anything weird; allow common semver chars only
+    if not all(c.isalnum() or c in ".-+_" for c in cleaned):
+        return None
+    return cleaned
+
+
+def maybe_touch_activity(user: dict, extension_version: str | None = None) -> None:
+    """Bump last_activity_at if stale, and/or update last_seen_extension_version
+    if it changed.
+
+    Called from the auth dependency on every authenticated request. Mutates
+    the passed-in dict so downstream handlers see the fresh values without
+    a re-fetch.
     """
-    if _is_activity_fresh(user.get("last_activity_at")):
+    activity_fresh = _is_activity_fresh(user.get("last_activity_at"))
+    cleaned_version = _is_valid_version(extension_version)
+    version_changed = (
+        cleaned_version is not None
+        and cleaned_version != user.get("last_seen_extension_version")
+    )
+
+    if activity_fresh and not version_changed:
         return
-    now = datetime.now(timezone.utc).isoformat()
+
+    updates: dict = {}
+    if not activity_fresh:
+        now = datetime.now(timezone.utc).isoformat()
+        updates["last_activity_at"] = now
+        user["last_activity_at"] = now  # mutate so downstream sees fresh
+    if version_changed:
+        updates["last_seen_extension_version"] = cleaned_version
+        user["last_seen_extension_version"] = cleaned_version
+
+    if not updates:
+        return
     try:
-        get_db().table("users").update(
-            {"last_activity_at": now}
-        ).eq("id", user["id"]).execute()
-        user["last_activity_at"] = now
+        get_db().table("users").update(updates).eq("id", user["id"]).execute()
     except Exception:  # noqa: BLE001
         logger.exception("maybe_touch_activity failed for user %s", user.get("id"))
 

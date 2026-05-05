@@ -159,3 +159,82 @@ def test_get_current_user_calls_maybe_touch_activity(fake_db):
 
     assert user is not None
     mock_touch.assert_called_once()
+
+
+# ── extension version tracking ──
+
+
+def test_maybe_touch_activity_writes_version_when_provided(fake_db):
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    user = {**FAKE_USER, "last_activity_at": None,
+            "last_seen_extension_version": None}
+    user_model.maybe_touch_activity(user, extension_version="0.1.9")
+
+    assert len(users.update_calls) == 1
+    assert users.update_calls[0].get("last_seen_extension_version") == "0.1.9"
+    assert user["last_seen_extension_version"] == "0.1.9"
+
+
+def test_maybe_touch_activity_skips_version_when_unchanged(fake_db):
+    """If version matches what's already on the row, no need to write it
+    (saves a roundtrip when the rate-limiter would otherwise have skipped)."""
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    fresh = (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat()
+    user = {**FAKE_USER,
+            "last_activity_at": fresh,
+            "last_seen_extension_version": "0.1.9"}
+    user_model.maybe_touch_activity(user, extension_version="0.1.9")
+
+    # Activity is fresh AND version matches → no write
+    assert users.update_calls == []
+
+
+def test_maybe_touch_activity_writes_version_change_even_when_activity_fresh(fake_db):
+    """Version change is rare but always interesting — bypass the
+    activity-freshness rate limiter when the version differs."""
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    fresh = (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat()
+    user = {**FAKE_USER,
+            "last_activity_at": fresh,
+            "last_seen_extension_version": "0.1.8"}
+    user_model.maybe_touch_activity(user, extension_version="0.1.9")
+
+    assert len(users.update_calls) == 1
+    assert users.update_calls[0].get("last_seen_extension_version") == "0.1.9"
+
+
+def test_maybe_touch_activity_no_version_param_keeps_existing(fake_db):
+    """Backward compat — callers that don't pass extension_version still work."""
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    user = {**FAKE_USER,
+            "last_activity_at": None,
+            "last_seen_extension_version": "0.1.5"}
+    user_model.maybe_touch_activity(user)  # no version arg
+
+    # Activity is stale → writes activity, but does NOT touch version
+    assert len(users.update_calls) == 1
+    assert "last_seen_extension_version" not in users.update_calls[0]
+
+
+def test_maybe_touch_activity_ignores_too_long_version(fake_db):
+    """Defensive: a malicious or accidental huge header value must not
+    bloat the DB. Cap at a reasonable length (e.g. 32 chars)."""
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    user = {**FAKE_USER, "last_activity_at": None,
+            "last_seen_extension_version": None}
+    huge = "X" * 5000
+    user_model.maybe_touch_activity(user, extension_version=huge)
+
+    # Either rejected entirely OR truncated — but never written full-length
+    written = users.update_calls[0].get("last_seen_extension_version", "")
+    assert len(written) <= 32
