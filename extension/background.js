@@ -682,6 +682,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "TRACK":
+      track(message.event, message.properties || {});
+      sendResponse({ ok: true });
+      return false; // sync, no async response
+
     case "DELETE_ACCOUNT":
       // backendFetch extracts the structured 409 code (e.g.
       // "active_subscription") into result.error, so the sidebar can

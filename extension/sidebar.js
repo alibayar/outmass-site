@@ -21,6 +21,20 @@
     console.log.apply(console, args);
   }
 
+  function track(eventName, properties) {
+    try {
+      chrome.runtime.sendMessage({
+        type: "TRACK",
+        event: eventName,
+        properties: properties || {},
+      });
+    } catch (e) {
+      /* never break sidebar code path */
+    }
+  }
+
+  var _composeViewSeenThisSession = false;
+
   var OUTLOOK_ORIGINS = [
     "https://outlook.live.com",
     "https://outlook.office.com",

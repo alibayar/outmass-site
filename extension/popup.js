@@ -6,6 +6,18 @@
 (function () {
   "use strict";
 
+  function track(eventName, properties) {
+    try {
+      chrome.runtime.sendMessage({
+        type: "TRACK",
+        event: eventName,
+        properties: properties || {},
+      });
+    } catch (e) {
+      /* never break popup code path */
+    }
+  }
+
   // ── Elements ──
   var loginSection = document.getElementById("login-section");
   var loadingSection = document.getElementById("loading-section");
