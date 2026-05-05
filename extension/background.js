@@ -19,6 +19,7 @@ const MS_SCOPES = [
 
 // ── Import modules ──
 importScripts("config.js");
+importScripts("analytics.js");
 importScripts("graph_api.js");
 
 // Override backend URL from storage (set during install or via settings)
@@ -104,6 +105,16 @@ chrome.runtime.onInstalled.addListener(function (details) {
     );
   } catch (e) {
     log("setUninstallURL threw:", e);
+  }
+
+  // Telemetry: install vs update
+  if (details.reason === "install") {
+    track("ext_installed", { version: chrome.runtime.getManifest().version });
+  } else if (details.reason === "update") {
+    track("ext_updated", {
+      from_version: details.previousVersion || "unknown",
+      to_version: chrome.runtime.getManifest().version,
+    });
   }
 });
 
