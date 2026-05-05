@@ -620,6 +620,10 @@
     });
     if (!csvData || !csvRawText) {
       alert(t("alertUploadCsvFirst"));
+      track("send_failed", {
+        recipient_count: 0,
+        error_code: "no_csv",
+      });
       return;
     }
 
@@ -628,6 +632,10 @@
 
     if (!subject || !body) {
       alert(t("alertFillSubjectBody"));
+      track("send_failed", {
+        recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+        error_code: "missing_subject_or_body",
+      });
       return;
     }
 
@@ -635,7 +643,13 @@
     var warnings = getContentWarnings(subject, body);
     if (warnings.length > 0) {
       var bullets = "• " + warnings.join("\n• ");
-      if (!confirm(bullets + "\n\n" + t("warnContinueAnyway"))) return;
+      if (!confirm(bullets + "\n\n" + t("warnContinueAnyway"))) {
+        track("send_failed", {
+          recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+          error_code: "content_warning_declined",
+        });
+        return;
+      }
     }
 
     // Check quota first
@@ -647,6 +661,10 @@
 
       if (remaining <= 0) {
         alert(t("alertLimitReached", [String(limit)]));
+        track("send_failed", {
+          recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+          error_code: "quota_exceeded",
+        });
         return;
       }
 
@@ -741,9 +759,17 @@
             if (confirm(t(msgKey))) {
               showUpgradeModal();
             }
+            track("send_failed", {
+              recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+              error_code: "feature_locked_" + (feature || "unknown"),
+            });
             return;
           }
           showSendError(createResp ? createResp.error : t("alertCampaignCreateFailed"));
+          track("send_failed", {
+            recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+            error_code: "create_failed",
+          });
           return;
         }
 
@@ -763,6 +789,10 @@
           function (uploadResp) {
             if (!uploadResp || uploadResp.error) {
               showSendError(uploadResp ? uploadResp.error : t("alertContactsUploadFailed"));
+              track("send_failed", {
+                recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+                error_code: "upload_failed",
+              });
               return;
             }
 
@@ -781,6 +811,10 @@
             // don't proceed to a 0-recipient scheduled/immediate send.
             if (count === 0) {
               showSendError(t("alertNoContactsAfterUpload"));
+              track("send_failed", {
+                recipient_count: 0,
+                error_code: "no_valid_contacts",
+              });
               return;
             }
 
@@ -849,6 +883,11 @@
       }
       alert(t("alertScheduledSuccess", [String(count), formatted]));
       log("Campaign scheduled:", campaignId, "for", scheduledFor);
+      track("send_completed", {
+        recipient_count: count,
+        campaign_id: campaignId,
+        scheduled: true,
+      });
       maybeCreateFollowup(campaignId);
       _attachments = [];
       renderAttachmentChips();

@@ -155,7 +155,7 @@ async function startMSLogin(includeOneDrive) {
         if (chrome.runtime.lastError) {
           log("Auth flow error:", chrome.runtime.lastError.message);
           resolve({ error: chrome.runtime.lastError.message });
-          track("oauth_failed", { reason: "chrome_error", message: String(chrome.runtime.lastError.message || "") });
+          track("oauth_failed", { reason: "chrome_error", message: String(chrome.runtime.lastError.message || "").slice(0, 256) });
           return;
         }
 
