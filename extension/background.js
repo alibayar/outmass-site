@@ -244,6 +244,7 @@ async function backendFetch(endpoint, options) {
   const headers = {
     "Content-Type": "application/json",
     Authorization: "Bearer " + storage.backendJwt,
+    "X-Extension-Version": chrome.runtime.getManifest().version,
     ...(options?.headers || {}),
   };
 
