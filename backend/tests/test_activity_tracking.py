@@ -224,20 +224,52 @@ def test_maybe_touch_activity_no_version_param_keeps_existing(fake_db):
     assert "last_seen_extension_version" not in users.update_calls[0]
 
 
-def test_maybe_touch_activity_ignores_too_long_version(fake_db):
-    """Defensive: a malicious or accidental huge header value must not
-    bloat the DB. Cap at a reasonable length (e.g. 32 chars)."""
+def test_maybe_touch_activity_truncates_oversized_clean_version(fake_db):
+    """Oversized but charset-clean input → truncate to 32 chars and write."""
     users = _RecordingUsersTable(rows=[FAKE_USER])
     fake_db.set_table("users", users)
 
     user = {**FAKE_USER, "last_activity_at": None,
             "last_seen_extension_version": None}
-    huge = "X" * 5000
-    user_model.maybe_touch_activity(user, extension_version=huge)
+    huge_clean = "X" * 5000
+    user_model.maybe_touch_activity(user, extension_version=huge_clean)
 
-    # Either rejected entirely OR truncated — but never written full-length
-    written = users.update_calls[0].get("last_seen_extension_version", "")
-    assert len(written) <= 32
+    assert len(users.update_calls) == 1
+    written = users.update_calls[0].get("last_seen_extension_version")
+    assert written == "X" * 32  # exactly 32 X's
+
+
+def test_maybe_touch_activity_rejects_invalid_chars_after_position_32(fake_db):
+    """Invalid character beyond position 32 must still cause rejection,
+    not silent truncation to a clean-looking prefix."""
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    user = {**FAKE_USER, "last_activity_at": None,
+            "last_seen_extension_version": None}
+    sneaky = "A" * 50 + "!"  # bad char at position 50, past the 32-cap
+    user_model.maybe_touch_activity(user, extension_version=sneaky)
+
+    # Activity is None → still need an activity write. But the version field
+    # MUST NOT appear in the update payload.
+    if users.update_calls:
+        for call in users.update_calls:
+            assert "last_seen_extension_version" not in call
+
+
+def test_maybe_touch_activity_rejects_invalid_chars_in_short_input(fake_db):
+    """Invalid character in a short input is also rejected (regression
+    guard for the original truncate-before-check ordering bug)."""
+    users = _RecordingUsersTable(rows=[FAKE_USER])
+    fake_db.set_table("users", users)
+
+    user = {**FAKE_USER, "last_activity_at": None,
+            "last_seen_extension_version": None}
+    user_model.maybe_touch_activity(user, extension_version="0.1.9!")
+
+    if users.update_calls:
+        for call in users.update_calls:
+            assert "last_seen_extension_version" not in call
 
 
 def test_get_current_user_passes_extension_version_header(fake_db):

@@ -109,17 +109,21 @@ _MAX_VERSION_LEN = 32  # semver + suffix is well under this; defensive cap
 
 
 def _is_valid_version(v: str | None) -> str | None:
-    """Sanitize a version string: must be non-empty, ASCII-printable,
-    capped at 32 chars. Returns the cleaned value or None."""
+    """Sanitize a version string: must be non-empty, ASCII semver charset
+    (alphanumerics + ``.-+_``), capped at 32 chars. Returns the cleaned
+    value or None.
+
+    Charset is checked on the full input BEFORE truncation, so a 50-char
+    input ending in a bad character is rejected entirely (not silently
+    truncated to a clean-looking prefix)."""
     if not v or not isinstance(v, str):
         return None
-    cleaned = v.strip()[:_MAX_VERSION_LEN]
-    if not cleaned:
+    candidate = v.strip()
+    if not candidate:
         return None
-    # Drop anything weird; allow common semver chars only
-    if not all(c.isalnum() or c in ".-+_" for c in cleaned):
+    if not all(c.isalnum() or c in ".-+_" for c in candidate):
         return None
-    return cleaned
+    return candidate[:_MAX_VERSION_LEN]
 
 
 def maybe_touch_activity(user: dict, extension_version: str | None = None) -> None:
