@@ -42,3 +42,6 @@ e2e/screenshots/
 
 # Chrome Web Store release artifacts (built from extension/ directory)
 outmass-v*.zip
+
+# Git worktrees (isolated dev branches)
+.worktrees/
