@@ -521,7 +521,12 @@ async def send_campaign(
         if malformed:
             raise HTTPException(
                 status_code=400,
-                detail=f"Malformed merge tag in {field_name}: {malformed[0]}",
+                detail={
+                    "error": "malformed_merge_tag",
+                    "tag": malformed[0],
+                    "field": field_name,
+                    "message": f"Malformed merge tag in {field_name}: {malformed[0]}",
+                },
             )
     # Collect contact keys actually present in the pending set (first row is enough)
     first_contact = pending[0]
@@ -536,9 +541,16 @@ async def send_campaign(
     unknown_body = find_unknown_tags(campaign["body"] or "", contact_keys)
     unknowns = sorted(set(unknown_subj + unknown_body))
     if unknowns:
+        # Report the field that actually contains the first unknown tag.
+        field = "subject" if unknown_subj else "body"
         raise HTTPException(
             status_code=400,
-            detail=f"Unknown merge tags (not in CSV): {', '.join(unknowns)}",
+            detail={
+                "error": "unknown_merge_tags",
+                "tags": unknowns,
+                "field": field,
+                "message": f"Unknown merge tags (not in CSV): {', '.join(unknowns)}",
+            },
         )
 
     if plan == "free":
@@ -704,7 +716,12 @@ async def _run_test_send(
         if malformed:
             raise HTTPException(
                 status_code=400,
-                detail=f"Malformed merge tag in {field_name}: {malformed[0]}",
+                detail={
+                    "error": "malformed_merge_tag",
+                    "tag": malformed[0],
+                    "field": field_name,
+                    "message": f"Malformed merge tag in {field_name}: {malformed[0]}",
+                },
             )
 
     from models.ms_token import get_fresh_access_token

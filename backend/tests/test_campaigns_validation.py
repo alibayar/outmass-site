@@ -39,8 +39,10 @@ def test_send_rejects_malformed_merge_tag_in_subject(client, fake_db, auth_bypas
         resp = client.post("/campaigns/c1/send",
                            headers={"Authorization": "Bearer t"})
     assert resp.status_code == 400
-    assert "merge" in resp.json()["detail"].lower() or \
-           "firstName" in resp.json()["detail"]
+    detail = resp.json()["detail"]
+    assert detail["error"] == "malformed_merge_tag"
+    assert detail["field"] == "subject"
+    assert "merge tag" in detail["message"].lower()
 
 
 def test_send_rejects_unknown_merge_tag_in_body(client, fake_db, auth_bypass):
@@ -58,7 +60,10 @@ def test_send_rejects_unknown_merge_tag_in_body(client, fake_db, auth_bypass):
         resp = client.post("/campaigns/c2/send",
                            headers={"Authorization": "Bearer t"})
     assert resp.status_code == 400
-    assert "fname" in resp.json()["detail"]
+    detail = resp.json()["detail"]
+    assert detail["error"] == "unknown_merge_tags"
+    assert "fname" in detail["tags"]
+    assert "fname" in detail["message"]
 
 
 def test_send_accepts_clean_merge_tags(client, fake_db, auth_bypass):
@@ -139,7 +144,9 @@ def test_stateless_test_send_rejects_malformed_tag(client, fake_db, auth_bypass)
         json={"subject": "Hi {{firstName}", "body": "Body ok"},
     )
     assert resp.status_code == 400
-    assert "merge tag" in resp.json()["detail"].lower()
+    detail = resp.json()["detail"]
+    assert detail["error"] == "malformed_merge_tag"
+    assert "merge tag" in detail["message"].lower()
 
 
 def test_stateless_test_send_rejects_empty_subject_or_body(
