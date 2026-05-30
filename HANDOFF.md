@@ -17,6 +17,10 @@ GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
 - Frontend: `mergeTagUnknown` mesajı `$AVAILABLE$` ile kullanabileceği tag'leri listeler ("Kullanabileceğin: {{firstName}}, {{adSoyad}}"). Send + test-send + Preview handler'larında. Preview graceful: validate başarısızsa (network/session) yine de açılır.
 - **YENİ API endpoint:** `POST /campaigns/validate-tags` — `{subject, body, sample}` → 400 structured veya `{valid: true}`.
 
+### Popup fixes (`99eea16`)
+- **Popup footer artık dinamik version** — `popup.html` hardcoded "v0.1.0" idi, şimdi `chrome.runtime.getManifest().version` okuyor (popup.js init). Bir daha drift etmez.
+- **Plan-aware "Manage Subscription"** — `no_stripe_customer` durumunda: paid ama Stripe yok (manuel/promo, örn. owner test veya Abid) → yeni `portalErrorManualPlan` mesajı ("manuel plan, support'a yaz"). Free → mevcut "upgrade first". popup.js + sidebar.js. Yeni i18n key 10 dilde.
+
 ### Fix 2 — 4-State Failed Contacts
 - `contacts.status` artık 4 değer: `pending` / `sent` / `deferred` (geçici hata: 408/409/429/5xx/network — Resume retry eder) / `failed` (kalıcı: 4xx — Resume atlar). Migration GEREKMEZ (status free-text TEXT).
 - `utils/send_classify.py:_classify_failure(status_code)` — sınıflandırma. `models/contact.py:mark_failed(id, status)` + `get_resumable_contacts` (pending+deferred). Send loop + `scheduled_worker.process_scheduled_campaigns` + resume endpoint kullanıyor.
