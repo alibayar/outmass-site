@@ -4,7 +4,7 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 ## v0.1.9 — 2026-05-05
 
-- internal: anonymous funnel telemetry (PostHog) + per-user extension version tracking. No user-visible behavior change. Privacy policy updated to reflect this.
+- internal: comprehensive anonymous funnel + engagement telemetry (PostHog) covering install, sign-in, compose, CSV upload (incl. failures), test send, real send, upgrade intent, onboarding, AI writer, templates, scheduling, follow-ups, attachments, exports, and more. Per-user extension version tracking. account_deleted is sent anonymously (identity reset first). No user-visible behavior change. Privacy policy covers this disclosure.
 
 ---
 
