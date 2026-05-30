@@ -408,6 +408,7 @@
   var btnTestSend = document.getElementById("btn-test-send");
   if (btnTestSend) {
     btnTestSend.addEventListener("click", function () {
+      track("test_send_clicked");
       var subject = subjectInput.value.trim();
       var body = bodyInput.value.trim();
       if (!subject || !body) { alert(t("testSendNeedsContent")); return; }
@@ -429,11 +430,13 @@
           btnTestSend.textContent = original;
           if (!resp || resp.error) {
             if (!handleSessionExpired(resp)) {
+              track("test_send_failed", { error_code: (resp && resp.error) ? String(resp.error).slice(0, 64) : "unknown" });
               alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
             }
             return;
           }
           var data = resp.data || resp;
+          track("test_send_completed");
           alert(t("testSendSuccess", [data.sent_to || ""]));
         }
       );
