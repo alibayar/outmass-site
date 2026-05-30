@@ -264,6 +264,7 @@
     // A.3: size limit check before reading
     if (file.size > CSV_MAX_BYTES) {
       alert(t("csvErrTooLarge"));
+      track("csv_upload_failed", { error_code: "too_large" });
       return;
     }
     var reader = new FileReader();
@@ -274,6 +275,7 @@
       // A.3: reject botched encoding (replacement chars)
       if (text.indexOf("\uFFFD") >= 0) {
         alert(t("csvErrEncoding"));
+        track("csv_upload_failed", { error_code: "invalid_encoding" });
         return;
       }
       csvRawText = text; // keep (normalized) raw CSV for backend upload
@@ -283,6 +285,7 @@
       // A.3: mandatory email column
       if (lowerHeaders.indexOf("email") < 0) {
         alert(t("csvErrNoEmailColumn"));
+        track("csv_upload_failed", { error_code: "no_email_column" });
         return;
       }
       var rows = [];
