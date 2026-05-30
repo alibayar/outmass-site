@@ -957,10 +957,13 @@
     "message": "This Microsoft account doesn't have OneDrive. Sign in with an account that has OneDrive, or skip OneDrive attachments for this campaign."
   },
   "mergeTagUnknown": {
-    "message": "Your CSV has no column named \"$TAGS$\". Either add that column to your CSV, or remove the tag from your email. Tip: the standard first-name tag is {{firstName}} (lowercase, no spaces).",
+    "message": "Your CSV has no column named \"$TAGS$\". You can use these tags from your CSV instead: $AVAILABLE$. Use one of them, or remove the tag from your email.",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },

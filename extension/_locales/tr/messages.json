@@ -957,10 +957,13 @@
     "message": "Bu Microsoft hesabında OneDrive yok. OneDrive'ı olan bir hesapla giriş yap, veya bu kampanya için OneDrive eki kullanma."
   },
   "mergeTagUnknown": {
-    "message": "CSV dosyanızda \"$TAGS$\" adlı bir sütun yok. Ya bu sütunu CSV'nize ekleyin ya da etiketi e-postanızdan kaldırın. İpucu: standart ad etiketi {{firstName}} şeklindedir (küçük harf, boşluksuz).",
+    "message": "CSV'nizde \"$TAGS$\" adında bir sütun yok. Bunun yerine CSV'nizdeki şu etiketleri kullanabilirsiniz: $AVAILABLE$. Birini kullanın ya da etiketi e-postadan kaldırın.",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },

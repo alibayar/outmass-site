@@ -957,10 +957,13 @@
     "message": "この Microsoft アカウントには OneDrive がありません。OneDrive のあるアカウントでサインインするか、このキャンペーンでは OneDrive 添付を使わないでください。"
   },
   "mergeTagUnknown": {
-    "message": "CSV に「$TAGS$」という名前の列がありません。その列を CSV に追加するか、メールからそのタグを削除してください。ヒント：標準の名前タグは {{firstName}} です（小文字、スペースなし）。",
+    "message": "CSV に「$TAGS$」という名前の列がありません。代わりに CSV にあるこれらのタグを使用できます：$AVAILABLE$。いずれかを使用するか、メールからそのタグを削除してください。",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },

@@ -957,10 +957,13 @@
     "message": "Esta cuenta de Microsoft no tiene OneDrive. Inicia sesión con una cuenta que tenga OneDrive, u omite los adjuntos de OneDrive en esta campaña."
   },
   "mergeTagUnknown": {
-    "message": "Tu CSV no tiene ninguna columna llamada \"$TAGS$\". Añade esa columna a tu CSV o quita la etiqueta de tu correo. Consejo: la etiqueta estándar de nombre es {{firstName}} (en minúsculas, sin espacios).",
+    "message": "Tu CSV no tiene ninguna columna llamada \"$TAGS$\". En su lugar puedes usar estas etiquetas de tu CSV: $AVAILABLE$. Usa una de ellas o quita la etiqueta de tu correo.",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },

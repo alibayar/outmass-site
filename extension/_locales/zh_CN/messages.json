@@ -957,10 +957,13 @@
     "message": "此 Microsoft 账户没有 OneDrive。请使用拥有 OneDrive 的账户登录，或在此次活动中不使用 OneDrive 附件。"
   },
   "mergeTagUnknown": {
-    "message": "你的 CSV 中没有名为“$TAGS$”的列。请将该列添加到 CSV 中，或者从邮件中删除该标签。提示：标准的名字标签是 {{firstName}}（小写，无空格）。",
+    "message": "你的 CSV 中没有名为“$TAGS$”的列。你可以改用 CSV 中的这些标签：$AVAILABLE$。请使用其中一个，或者从邮件中删除该标签。",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },

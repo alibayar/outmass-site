@@ -448,7 +448,10 @@
               if (resp && resp.error === "unknown_merge_tags") {
                 track("test_send_failed", { error_code: "unknown_merge_tags" });
                 var _tags = (resp.detail && resp.detail.tags) ? resp.detail.tags.join(", ") : "";
-                alert(t("mergeTagUnknown", [_tags]));
+                var _avail = (resp.detail && resp.detail.available_tags && resp.detail.available_tags.length)
+                  ? resp.detail.available_tags.map(function (x) { return "{{" + x + "}}"; }).join(", ")
+                  : "";
+                alert(t("mergeTagUnknown", [_tags, _avail]));
                 return;
               }
               if (resp && resp.error === "malformed_merge_tag") {
@@ -961,7 +964,10 @@
               error_code: "unknown_merge_tags",
             });
             var _tags = (sendResp.detail && sendResp.detail.tags) ? sendResp.detail.tags.join(", ") : "";
-            alert(t("mergeTagUnknown", [_tags]));
+            var _avail = (sendResp.detail && sendResp.detail.available_tags && sendResp.detail.available_tags.length)
+              ? sendResp.detail.available_tags.map(function (x) { return "{{" + x + "}}"; }).join(", ")
+              : "";
+            alert(t("mergeTagUnknown", [_tags, _avail]));
             return;
           }
           if (sendResp.error === "malformed_merge_tag") {

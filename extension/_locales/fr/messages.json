@@ -957,10 +957,13 @@
     "message": "Ce compte Microsoft n'a pas OneDrive. Connectez-vous avec un compte disposant de OneDrive, ou ignorez les pièces jointes OneDrive pour cette campagne."
   },
   "mergeTagUnknown": {
-    "message": "Votre CSV ne contient aucune colonne nommée « $TAGS$ ». Ajoutez cette colonne à votre CSV, ou retirez la balise de votre e-mail. Astuce : la balise de prénom standard est {{firstName}} (en minuscules, sans espaces).",
+    "message": "Votre CSV ne contient aucune colonne nommée « $TAGS$ ». Vous pouvez utiliser ces balises de votre CSV à la place : $AVAILABLE$. Utilisez-en une, ou retirez la balise de votre e-mail.",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },

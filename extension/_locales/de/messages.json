@@ -957,10 +957,13 @@
     "message": "Dieses Microsoft-Konto hat kein OneDrive. Melden Sie sich mit einem Konto an, das OneDrive hat, oder verzichten Sie auf OneDrive-Anhänge in dieser Kampagne."
   },
   "mergeTagUnknown": {
-    "message": "Ihre CSV-Datei hat keine Spalte mit dem Namen \"$TAGS$\". Fügen Sie diese Spalte zu Ihrer CSV hinzu oder entfernen Sie das Tag aus Ihrer E-Mail. Tipp: Das Standard-Vornamen-Tag ist {{firstName}} (kleingeschrieben, ohne Leerzeichen).",
+    "message": "Ihre CSV-Datei hat keine Spalte mit dem Namen \"$TAGS$\". Sie können stattdessen diese Tags aus Ihrer CSV verwenden: $AVAILABLE$. Verwenden Sie eines davon oder entfernen Sie das Tag aus Ihrer E-Mail.",
     "placeholders": {
       "tags": {
         "content": "$1"
+      },
+      "available": {
+        "content": "$2"
       }
     }
   },
