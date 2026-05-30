@@ -2,11 +2,45 @@
 
 ## Proje Nedir?
 GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
-**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da **v0.1.8** yayında. **v0.1.9 kodu master'da + backend deploy edildi, ZIP hazır — Web Store'a HENÜZ YÜKLENMEDİ (kullanıcı yapacak).** SEO infrastructure aktif.
+**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da **v0.1.8** yayında. **v0.1.10 kodu master'da (`17de170`) + backend deploy edildi, `outmass-v0.1.10.zip` hazır — Web Store'a HENÜZ YÜKLENMEDİ (kullanıcı yapacak). v0.1.10 = v0.1.9 telemetry + 3 UX fix, tek upload olarak gidecek.** SEO infrastructure aktif.
 
 ---
 
-## 🆕 2026-05-30 SESSION UPDATE (en güncel — önce bunu oku)
+## 🆕🆕 2026-05-30 SESSION UPDATE #2 — v0.1.10 UX FIXES (EN GÜNCEL)
+
+3 bağımsız fix, subagent-driven TDD ile, master'da `17de170`, **293 test pass**, final code review temiz (No Critical/Important). Design + plan: `docs/plans/2026-05-30-v0110-ux-fixes*.md`.
+
+### Fix 1 — Merge Tag UX (Abid'in sorunu çözüldü)
+- Backend (`campaigns.py`): 3 validation site (send malformed/unknown + test-send malformed) artık structured error döndürüyor: `detail={error, tag(s), field, message}`. `message` = İngilizce fallback (backward compat — eski client okuyabilir).
+- Frontend (`sidebar.js` + 10 locale): `unknown_merge_tags`/`malformed_merge_tag` kodlarını yakalayıp **10 dilde actionable mesaj** gösterir ("CSV'de 'FirstName' kolonu yok, ekle veya {{firstName}} kullan"). Hem send hem test-send handler'ında.
+
+### Fix 2 — 4-State Failed Contacts
+- `contacts.status` artık 4 değer: `pending` / `sent` / `deferred` (geçici hata: 408/409/429/5xx/network — Resume retry eder) / `failed` (kalıcı: 4xx — Resume atlar). Migration GEREKMEZ (status free-text TEXT).
+- `utils/send_classify.py:_classify_failure(status_code)` — sınıflandırma. `models/contact.py:mark_failed(id, status)` + `get_resumable_contacts` (pending+deferred). Send loop + `scheduled_worker.process_scheduled_campaigns` + resume endpoint kullanıyor.
+- **`send_failed` PostHog event'i artık merge-tag error code'ları da taşıyor.** Analytics: deferred/failed ayrımı Supabase `contacts.status`'tan çıkar.
+- ⚠️ **followup_worker + evaluate_ab_tests BİLİNÇLİ dokunulmadı** — follow-up original sent contact'lara bump atıyor; mark_failed eklemek duplicate-send riski yaratırdı. A/B winner-send `get_pending_contacts` kullanmaya devam ediyor.
+
+### Fix 3 — Manual Promo Expiry (Abid 2026-06-12 otomatik düşecek)
+- **Migration 019 PROD'A UYGULANDI** — `users.manual_promo_until TIMESTAMPTZ` + Abid backfill (`2026-06-12`). **Artık manuel takvim reminder GEREKMİYOR.**
+- `scheduled_worker.expire_manual_promos` beat (günlük 04:45 UTC): `manual_promo_until < now() AND plan!='free' AND stripe_subscription_id IS NULL` → free'ye düşür + audit. **Stripe abonesi KORUNUR.** Idempotent, per-row try/except.
+- Yeni audit event: `EVENT_MANUAL_PROMO_EXPIRED`.
+- **Promo verme SQL pattern** (manuel, nadir): `UPDATE users SET plan='starter', emails_sent_this_month=0, manual_promo_until=now()+interval '30 days' WHERE email='<user>';`
+
+### Atlanan / Backlog (v0.1.11)
+- **Phase 4 (send_failed failure_type aggregate) SKIP edildi** — per-contact status Supabase'de, over-engineering değil.
+- **I-1 (A/B deferred-recovery seam):** `evaluate_ab_tests` deferred A/B contact'larını winner-send'de almıyor (get_pending kullanıyor). Narrow, A/B Pro feature, 0 paid user. v0.1.11'de `get_resumable_contacts` swap + sign-off.
+- **Weak test** `test_contact_states.py` get_resumable filter coverage zayıf (conftest fake filtrelemez). Backlog.
+- **Live validation** (compose sırasında {{tag}} canlı uyarı) — v0.1.11+.
+
+### v0.1.10 KALAN İŞLER (öncelik)
+1. **🔴 Self-test:** Chrome reload → `{{FirstName}}` ile send → 10 dilde localized "FirstName kolonu yok" mesajı gör. Test-send'de de.
+2. **🔴 Web Store upload:** `outmass-v0.1.10.zip` (D:\dev\git\outmass\, ~158 KB). Privacy Practices'te "email as analytics ID" disclose et. Bu tek upload = telemetry + 3 fix.
+3. **🟡 Jack'e onboarding nudge** (business lead, audit_log incele önce).
+4. **⚪ 7 gün telemetry verisi → funnel insight → en büyük dropoff.**
+
+---
+
+## 🆕 2026-05-30 SESSION UPDATE #1 — v0.1.9 Funnel Telemetry (v0.1.10'a dahil edildi)
 
 ### v0.1.9 — Funnel Instrumentation (kapsamlı PostHog telemetry)
 **Sebep:** ~31 install ama sadece birkaç gerçek user → install→signup→first-mail funnel'ı kırık, NEDEN bilinmiyordu çünkü telemetry yoktu (PostHog sadece error tracking için kullanılıyordu).
