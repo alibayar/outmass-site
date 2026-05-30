@@ -2,6 +2,12 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.10 — 2026-05-30
+
+- Clearer, localized error messages when a merge tag doesn't match your CSV columns (e.g. {{firstName}} casing/spacing). Now tells you exactly which column to add or which tag to fix, in your language.
+- More reliable Resume: failed recipients are now distinguished as temporary (retried on Resume) vs permanent (skipped), so a partial campaign finishes correctly.
+- internal: auto-expiring manual plan promos.
+
 ## v0.1.9 — 2026-05-05
 
 - internal: comprehensive anonymous funnel + engagement telemetry (PostHog) covering install, sign-in, compose, CSV upload (incl. failures), test send, real send, upgrade intent, onboarding, AI writer, templates, scheduling, follow-ups, attachments, exports, and more. Per-user extension version tracking. account_deleted is sent anonymously (identity reset first). No user-visible behavior change. Privacy policy covers this disclosure.
