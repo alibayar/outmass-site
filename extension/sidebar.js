@@ -1928,6 +1928,7 @@
     listEl.querySelectorAll(".btn-remove-suppression").forEach(function (btn) {
       btn.addEventListener("click", function () {
         var email = btn.getAttribute("data-email");
+        track("suppression_email_removed");
         chrome.runtime.sendMessage(
           { type: "REMOVE_SUPPRESSION", payload: { email: email } },
           function () {
@@ -2202,6 +2203,7 @@
           _oneDriveStack.push({ id: item.id, name: item.name });
           _loadPickerFolder(item.id);
         } else {
+          track("onedrive_file_selected");
           _closeOneDrivePicker();
           _requestShareLink(item.id, false);
         }
@@ -2307,6 +2309,7 @@
   }
   if (oneDriveConsentContinue) {
     oneDriveConsentContinue.addEventListener("click", function () {
+      track("onedrive_consent_acknowledged");
       chrome.storage.local.set({ oneDriveConsentAck: true }, function () {
         _closeConsentModal();
         _openOneDrivePicker();
@@ -2440,6 +2443,7 @@
         { type: "ADD_SUPPRESSION", payload: { email: email } },
         function (resp) {
           if (resp && !resp.error) {
+            track("suppression_email_added");
             input.value = "";
             loadSuppressionList();
           } else {
