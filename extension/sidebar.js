@@ -180,7 +180,7 @@
       if (target === "account") {
         loadAccount();
       }
-      if (target === "compose" && !_composeViewSeenThisSession) {
+      if (target === "campaign" && !_composeViewSeenThisSession) {
         _composeViewSeenThisSession = true;
         track("compose_view_seen");
       }
