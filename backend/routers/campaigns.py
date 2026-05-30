@@ -40,7 +40,7 @@ from models import contact as contact_model
 from models import followup as followup_model
 from models import user as user_model
 from routers.auth import get_current_user
-from utils.merge_tags import find_malformed_tags, find_unknown_tags
+from utils.merge_tags import CONTACT_TAGS, find_malformed_tags, find_unknown_tags
 from utils.send_classify import _classify_failure  # re-exported for the send loop
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
@@ -543,13 +543,24 @@ async def send_campaign(
     if unknowns:
         # Report the field that actually contains the first unknown tag.
         field = "subject" if unknown_subj else "body"
+        # Tell the user which tags they CAN use: the columns actually present
+        # in their CSV (standard contact fields they filled + any custom
+        # columns like "adSoyad"). Falls back to the standard contact tags if
+        # somehow nothing CSV-derived is available. Internal row fields
+        # (id, status, ...) are excluded by intersecting with CONTACT_TAGS.
+        custom_keys = set((first_contact.get("custom_fields") or {}).keys())
+        available_tags = sorted((contact_keys & CONTACT_TAGS) | custom_keys) or sorted(CONTACT_TAGS)
         raise HTTPException(
             status_code=400,
             detail={
                 "error": "unknown_merge_tags",
                 "tags": unknowns,
                 "field": field,
-                "message": f"Unknown merge tags (not in CSV): {', '.join(unknowns)}",
+                "available_tags": available_tags,
+                "message": (
+                    f"Unknown merge tags (not in CSV): {', '.join(unknowns)}. "
+                    f"Available: {', '.join(available_tags)}"
+                ),
             },
         )
 
@@ -723,6 +734,30 @@ async def _run_test_send(
                     "message": f"Malformed merge tag in {field_name}: {malformed[0]}",
                 },
             )
+
+    # Unknown-tag check: the user's onboarding path is "try Test Send first",
+    # so catch a typo'd/unknown tag here too (not just in the real send),
+    # using the columns from the sample row (the CSV's first row, if any).
+    sample_keys = set((sample or {}).keys())
+    unknown_subj = find_unknown_tags(subject, sample_keys)
+    unknown_body = find_unknown_tags(email_body, sample_keys)
+    unknowns = sorted(set(unknown_subj + unknown_body))
+    if unknowns:
+        field = "subject" if unknown_subj else "body"
+        available_tags = sorted(sample_keys) or sorted(CONTACT_TAGS)
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "unknown_merge_tags",
+                "tags": unknowns,
+                "field": field,
+                "available_tags": available_tags,
+                "message": (
+                    f"Unknown merge tags (not in CSV): {', '.join(unknowns)}. "
+                    f"Available: {', '.join(available_tags)}"
+                ),
+            },
+        )
 
     from models.ms_token import get_fresh_access_token
 

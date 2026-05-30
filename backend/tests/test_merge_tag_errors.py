@@ -55,8 +55,16 @@ def test_unknown_merge_tag_returns_structured_error(client, fake_db, auth_bypass
     assert detail["error"] == "unknown_merge_tags"
     assert "FirstName" in detail["tags"]
     assert detail["field"] in ("subject", "body")
-    # English fallback kept identical to the legacy raw string.
-    assert detail["message"] == "Unknown merge tags (not in CSV): FirstName"
+    # available_tags lists the CSV-derived columns the user CAN use
+    # (filled standard contact fields + custom), never the unknown tag.
+    assert "firstName" in detail["available_tags"]
+    assert "FirstName" not in detail["available_tags"]
+    # English message starts with the legacy raw string, then appends the
+    # available-tags hint.
+    assert detail["message"].startswith(
+        "Unknown merge tags (not in CSV): FirstName"
+    )
+    assert "Available:" in detail["message"]
 
 
 # ── malformed merge tag (send_campaign) ──
@@ -130,3 +138,31 @@ def test_test_send_malformed_merge_tag_returns_structured_error(
     assert detail["error"] == "malformed_merge_tag"
     assert detail["field"] == "subject"
     assert detail["message"] == "Malformed merge tag in subject: " + detail["tag"]
+
+
+def test_test_send_unknown_merge_tag_returns_structured_error(
+    client, fake_db, auth_bypass
+):
+    """Test Send must also catch unknown (well-formed but not-in-CSV) tags,
+    using the sample row's columns, since onboarding tells users to Test Send
+    first. available_tags lists the sample columns."""
+    campaign = {
+        "id": "mt-ts-unknown", "user_id": FAKE_USER["id"], "status": "draft",
+        "subject": "Hi {{FistName}}", "body": "ok", "name": "Test",
+        "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
+    }
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
+    with patch("models.ms_token.get_fresh_access_token", return_value="tok"):
+        resp = client.post(
+            "/campaigns/mt-ts-unknown/test-send",
+            headers={"Authorization": "Bearer t"},
+            json={"sample": {"firstName": "Ali", "adSoyad": "Ali B"}},
+        )
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert detail["error"] == "unknown_merge_tags"
+    assert "FistName" in detail["tags"]
+    # available_tags = the sample (CSV) columns the user actually has
+    assert "firstName" in detail["available_tags"]
+    assert "adSoyad" in detail["available_tags"]
+    assert "FistName" not in detail["available_tags"]
