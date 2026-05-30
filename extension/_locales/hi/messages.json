@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "इस Microsoft खाते में OneDrive नहीं है। OneDrive वाले खाते से साइन इन करें, या इस अभियान में OneDrive अनुलग्नक न जोड़ें।"
+  },
+  "mergeTagUnknown": {
+    "message": "आपके CSV में \"$TAGS$\" नाम का कोई कॉलम नहीं है। या तो वह कॉलम अपने CSV में जोड़ें, या टैग को अपने ईमेल से हटा दें। सुझाव: मानक फ़र्स्ट-नेम टैग {{firstName}} है (छोटे अक्षर, बिना स्पेस के)।",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "आपके ईमेल में एक टूटा हुआ मर्ज टैग है: $TAG$. टैग में स्पेस नहीं हो सकते। सही रूप ऐसा दिखता है: {{firstName}}.",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "حساب Microsoft هذا لا يحتوي على OneDrive. سجّل الدخول بحساب فيه OneDrive، أو تخطَّ مرفقات OneDrive في هذه الحملة."
+  },
+  "mergeTagUnknown": {
+    "message": "ملف CSV الخاص بك لا يحتوي على عمود باسم \"$TAGS$\". أضِف هذا العمود إلى ملف CSV، أو أزِل الوسم من بريدك الإلكتروني. تلميح: وسم الاسم الأول القياسي هو {{firstName}} (أحرف صغيرة، بدون مسافات).",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "يحتوي بريدك الإلكتروني على وسم دمج معطوب: $TAG$. لا يمكن أن تحتوي الوسوم على مسافات. الشكل الصحيح يبدو هكذا: {{firstName}}.",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }

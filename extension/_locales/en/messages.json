@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "This Microsoft account doesn't have OneDrive. Sign in with an account that has OneDrive, or skip OneDrive attachments for this campaign."
+  },
+  "mergeTagUnknown": {
+    "message": "Your CSV has no column named \"$TAGS$\". Either add that column to your CSV, or remove the tag from your email. Tip: the standard first-name tag is {{firstName}} (lowercase, no spaces).",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "Your email has a broken merge tag: $TAG$. Tags can't contain spaces. The correct form looks like {{firstName}}.",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }

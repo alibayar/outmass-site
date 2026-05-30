@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "この Microsoft アカウントには OneDrive がありません。OneDrive のあるアカウントでサインインするか、このキャンペーンでは OneDrive 添付を使わないでください。"
+  },
+  "mergeTagUnknown": {
+    "message": "CSV に「$TAGS$」という名前の列がありません。その列を CSV に追加するか、メールからそのタグを削除してください。ヒント：標準の名前タグは {{firstName}} です（小文字、スペースなし）。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "メールに不正な差し込みタグがあります：$TAG$。タグにスペースは使えません。正しい形式は {{firstName}} のようになります。",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }

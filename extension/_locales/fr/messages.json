@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "Ce compte Microsoft n'a pas OneDrive. Connectez-vous avec un compte disposant de OneDrive, ou ignorez les pièces jointes OneDrive pour cette campagne."
+  },
+  "mergeTagUnknown": {
+    "message": "Votre CSV ne contient aucune colonne nommée « $TAGS$ ». Ajoutez cette colonne à votre CSV, ou retirez la balise de votre e-mail. Astuce : la balise de prénom standard est {{firstName}} (en minuscules, sans espaces).",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "Votre e-mail contient une balise de fusion incorrecte : $TAG$. Les balises ne peuvent pas contenir d'espaces. La forme correcte ressemble à {{firstName}}.",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }

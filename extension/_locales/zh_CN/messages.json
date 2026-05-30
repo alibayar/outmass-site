@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "此 Microsoft 账户没有 OneDrive。请使用拥有 OneDrive 的账户登录，或在此次活动中不使用 OneDrive 附件。"
+  },
+  "mergeTagUnknown": {
+    "message": "你的 CSV 中没有名为“$TAGS$”的列。请将该列添加到 CSV 中，或者从邮件中删除该标签。提示：标准的名字标签是 {{firstName}}（小写，无空格）。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "你的邮件中有一个错误的合并标签：$TAG$。标签不能包含空格。正确的格式如下所示：{{firstName}}。",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }

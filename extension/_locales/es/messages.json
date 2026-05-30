@@ -955,5 +955,21 @@
   },
   "oneDriveNoDrive": {
     "message": "Esta cuenta de Microsoft no tiene OneDrive. Inicia sesión con una cuenta que tenga OneDrive, u omite los adjuntos de OneDrive en esta campaña."
+  },
+  "mergeTagUnknown": {
+    "message": "Tu CSV no tiene ninguna columna llamada \"$TAGS$\". Añade esa columna a tu CSV o quita la etiqueta de tu correo. Consejo: la etiqueta estándar de nombre es {{firstName}} (en minúsculas, sin espacios).",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "Tu correo tiene una etiqueta de combinación incorrecta: $TAG$. Las etiquetas no pueden contener espacios. La forma correcta se ve así: {{firstName}}.",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
   }
 }
