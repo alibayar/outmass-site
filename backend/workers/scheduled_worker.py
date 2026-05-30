@@ -577,3 +577,108 @@ def check_user_tokens():
         "newly_flagged": newly_flagged,
         "already_flagged": len(flagged_before),
     }
+
+
+# ── Manual promo expiry ──
+#
+# When we hand a user a free promo (e.g. a 30-day Starter as an apology) we
+# set users.manual_promo_until. This daily task reverts an expired promo back
+# to 'free' so we don't have to keep a manual calendar reminder — UNLESS the
+# user became a real Stripe subscriber in the meantime (never downgrade a
+# paying customer). Idempotent: reverting clears manual_promo_until, so the
+# row drops out of the candidate set on subsequent runs and never re-fires.
+
+
+@celery.task
+def expire_manual_promos():
+    """Revert expired manual plan promos to free.
+
+    Targets rows where manual_promo_until is set and in the past, the plan
+    is not already free, and there's no Stripe subscription. The
+    stripe_subscription_id guard is the load-bearing safety check — a manual
+    promo recipient who later subscribed for real must keep their paid plan.
+
+    The DB-side filters (date, plan, stripe) are re-applied in Python so the
+    task is correct even against a client that doesn't push every predicate
+    down, and so a single broad fetch can be evaluated row-by-row. Each
+    revert is wrapped in try/except — one bad row never aborts the batch.
+    """
+    import logging
+    from datetime import datetime, timezone
+
+    from database import get_db
+    from models import audit
+
+    logger = logging.getLogger(__name__)
+    db = get_db()
+
+    now = datetime.now(timezone.utc)
+
+    try:
+        result = (
+            db.table("users")
+            .select("id, email, plan, manual_promo_until, stripe_subscription_id")
+            .not_.is_("manual_promo_until", "null")
+            .limit(500)
+            .execute()
+        )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("expire_manual_promos lookup failed: %s", e)
+        return {"reverted": 0, "considered": 0}
+
+    rows = result.data or []
+    reverted = 0
+
+    for user in rows:
+        until = user.get("manual_promo_until")
+        if not until:
+            continue
+
+        # Never touch a real paying customer.
+        if user.get("stripe_subscription_id"):
+            continue
+
+        # Already free → nothing to revert.
+        if user.get("plan") in (None, "free"):
+            continue
+
+        # Only act once the promo window has actually passed.
+        try:
+            until_dt = datetime.fromisoformat(str(until).replace("Z", "+00:00"))
+            if until_dt.tzinfo is None:
+                until_dt = until_dt.replace(tzinfo=timezone.utc)
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "expire_manual_promos: unparseable manual_promo_until %r for user %s",
+                until,
+                user.get("id"),
+            )
+            continue
+        if until_dt >= now:
+            continue
+
+        try:
+            (
+                db.table("users")
+                .update({"plan": "free", "manual_promo_until": None})
+                .eq("id", user["id"])
+                .execute()
+            )
+        except Exception:  # noqa: BLE001
+            logger.exception(
+                "expire_manual_promos: failed to revert user %s", user.get("id")
+            )
+            continue
+
+        audit.emit(
+            audit.EVENT_MANUAL_PROMO_EXPIRED,
+            user_id=user["id"],
+            email=user.get("email"),
+            metadata={
+                "previous_plan": user.get("plan"),
+                "manual_promo_until": str(until),
+            },
+        )
+        reverted += 1
+
+    return {"reverted": reverted, "considered": len(rows)}

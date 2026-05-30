@@ -149,6 +149,12 @@ celery.conf.beat_schedule = {
         "task": "workers.inactivity_nudge.send_inactivity_warnings_90d",
         "schedule": crontab(hour=4, minute=30),
     },
+    "expire-manual-promos": {
+        "task": "workers.scheduled_worker.expire_manual_promos",
+        # 04:45 UTC daily — after the inactivity tasks, off-peak. Idempotent
+        # (reverting clears manual_promo_until) so re-runs are safe no-ops.
+        "schedule": crontab(hour=4, minute=45),
+    },
     "detect-replies": {
         "task": "workers.reply_detector.detect_replies",
         # Daily at 05:00 UTC — after the morning send-window close

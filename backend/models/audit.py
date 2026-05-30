@@ -52,6 +52,7 @@ EVENT_SUBSCRIPTION_CANCELED = "subscription_canceled"
 EVENT_ACCOUNT_DELETED = "account_deleted"
 EVENT_TOKEN_REFRESH_FAILED = "token_refresh_failed"
 EVENT_REQUIRES_REAUTH_FLAGGED = "requires_reauth_flagged"
+EVENT_MANUAL_PROMO_EXPIRED = "manual_promo_expired"
 
 
 def hash_email(email: str | None) -> str | None:
