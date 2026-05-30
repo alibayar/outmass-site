@@ -1113,7 +1113,7 @@ async def _send_single_email(
     except Exception:
         error_detail = f"HTTP {resp.status_code}"
 
-    return {"success": False, "error": error_detail}
+    return {"success": False, "error": error_detail, "status_code": resp.status_code}
 
 
 def _fetch_previous_emails(
