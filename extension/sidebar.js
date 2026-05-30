@@ -1173,6 +1173,7 @@
     templateSelect.addEventListener("change", function () {
       updateDeleteTemplateButton();
       if (!templateSelect.value) return;
+      track("template_loaded");
       try {
         var tmpl = JSON.parse(templateSelect.value);
         subjectInput.value = tmpl.subject || "";
@@ -1211,6 +1212,7 @@
         function (resp) {
           btnDeleteTemplate.textContent = t("btnDeleteTemplate");
           if (resp && !resp.error) {
+            track("template_deleted");
             log("Template deleted:", templateName);
             loadTemplates();
           } else {
@@ -1255,6 +1257,7 @@
           btnSaveTemplate.textContent = t("btnSaveTemplate");
 
           if (resp && !resp.error) {
+            track("template_saved");
             log("Template saved");
             loadTemplates();
           } else {
