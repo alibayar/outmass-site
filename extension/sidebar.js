@@ -341,6 +341,7 @@
   if (csvTemplateLink) {
     csvTemplateLink.addEventListener("click", function (e) {
       e.preventDefault();
+      track("csv_template_downloaded");
       // Headers stay English — they map to merge tags ({{firstName}} etc.)
       // Sample rows are localized via i18n keys (names/companies in user's language)
       var rows = [
@@ -387,6 +388,7 @@
       alert(t("alertUploadCsvFirst"));
       return;
     }
+    track("email_preview_opened");
     var subject = subjectInput.value;
     var body = bodyInput.value;
     var firstRow = csvData.rows[0];
@@ -1280,6 +1282,7 @@
   if (abTestCheckbox) {
     abTestCheckbox.addEventListener("change", function () {
       if (abTestCheckbox.checked) {
+        track("ab_test_enabled");
         abTestFields.classList.add("visible");
       } else {
         abTestFields.classList.remove("visible");
@@ -1294,6 +1297,7 @@
   if (scheduleCheckbox) {
     scheduleCheckbox.addEventListener("change", function () {
       if (scheduleCheckbox.checked) {
+        track("schedule_send_enabled");
         scheduleFields.classList.add("visible");
         // Set default to tomorrow 9:00
         var tomorrow = new Date();
@@ -1357,6 +1361,7 @@
   if (followupCheckbox) {
     followupCheckbox.addEventListener("change", function () {
       if (followupCheckbox.checked) {
+        track("followup_enabled");
         followupFields.classList.add("visible");
       } else {
         followupFields.classList.remove("visible");
