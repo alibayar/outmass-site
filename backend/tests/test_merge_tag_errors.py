@@ -166,3 +166,47 @@ def test_test_send_unknown_merge_tag_returns_structured_error(
     assert "firstName" in detail["available_tags"]
     assert "adSoyad" in detail["available_tags"]
     assert "FistName" not in detail["available_tags"]
+
+
+# ── validate-tags endpoint (Preview) ──
+
+
+def test_validate_tags_unknown_returns_structured_error(client, fake_db, auth_bypass):
+    """Preview's validate-only endpoint surfaces the SAME unknown-tag error as
+    Send/Test Send, without sending. No campaign/token needed."""
+    resp = client.post(
+        "/campaigns/validate-tags",
+        headers={"Authorization": "Bearer t"},
+        json={"subject": "Hi {{FistName}}", "body": "ok",
+              "sample": {"firstName": "Ali", "adSoyad": "Ali B"}},
+    )
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert detail["error"] == "unknown_merge_tags"
+    assert "FistName" in detail["tags"]
+    assert "firstName" in detail["available_tags"]
+    assert "adSoyad" in detail["available_tags"]
+
+
+def test_validate_tags_malformed_returns_structured_error(client, fake_db, auth_bypass):
+    resp = client.post(
+        "/campaigns/validate-tags",
+        headers={"Authorization": "Bearer t"},
+        json={"subject": "Hi {{First Name}}", "body": "ok", "sample": {}},
+    )
+    assert resp.status_code == 400
+    detail = resp.json()["detail"]
+    assert detail["error"] == "malformed_merge_tag"
+    assert detail["field"] == "subject"
+
+
+def test_validate_tags_valid_returns_ok(client, fake_db, auth_bypass):
+    """Clean tags → 200 valid, so Preview can proceed to render the modal."""
+    resp = client.post(
+        "/campaigns/validate-tags",
+        headers={"Authorization": "Bearer t"},
+        json={"subject": "Hi {{firstName}}", "body": "Hello {{adSoyad}}",
+              "sample": {"firstName": "Ali", "adSoyad": "Ali B"}},
+    )
+    assert resp.status_code == 200
+    assert resp.json()["valid"] is True

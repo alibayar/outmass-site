@@ -84,6 +84,62 @@ class CreateAbTestRequest(BaseModel):
     test_percentage: int = 20  # % of contacts for testing
 
 
+class ValidateTagsRequest(BaseModel):
+    subject: str | None = None
+    body: str | None = None
+    sample: dict | None = None  # CSV first row (column→value), for available tags
+
+
+# ── Merge-tag validation (shared by send, test-send, validate-tags) ──
+
+
+def _raise_if_bad_merge_tags(
+    subject: str | None,
+    body: str | None,
+    allowed_keys: set[str],
+    available_tags: list[str],
+) -> None:
+    """Validate merge tags in subject+body. Raise a structured HTTPException
+    (matching the feature_locked pattern background.js parses via detail.error)
+    on the first malformed or unknown tag; otherwise return None.
+
+    Shared by send_campaign, _run_test_send, and the validate-tags endpoint so
+    all three surface IDENTICAL errors. `allowed_keys` is the set of resolvable
+    column names; `available_tags` is the user-facing list shown in the unknown
+    error (the columns the user can actually use).
+    """
+    for field_name, content in (("subject", subject or ""), ("body", body or "")):
+        malformed = find_malformed_tags(content)
+        if malformed:
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "malformed_merge_tag",
+                    "tag": malformed[0],
+                    "field": field_name,
+                    "message": f"Malformed merge tag in {field_name}: {malformed[0]}",
+                },
+            )
+    unknown_subj = find_unknown_tags(subject or "", allowed_keys)
+    unknown_body = find_unknown_tags(body or "", allowed_keys)
+    unknowns = sorted(set(unknown_subj + unknown_body))
+    if unknowns:
+        field = "subject" if unknown_subj else "body"
+        raise HTTPException(
+            status_code=400,
+            detail={
+                "error": "unknown_merge_tags",
+                "tags": unknowns,
+                "field": field,
+                "available_tags": available_tags,
+                "message": (
+                    f"Unknown merge tags (not in CSV): {', '.join(unknowns)}. "
+                    f"Available: {', '.join(available_tags)}"
+                ),
+            },
+        )
+
+
 # ── Endpoints ──
 
 
@@ -513,56 +569,23 @@ async def send_campaign(
         raise HTTPException(status_code=400, detail="No pending contacts")
 
     # ── C.2: Merge-tag validation ──
-    for field_name, content in (
-        ("subject", campaign["subject"]),
-        ("body", campaign["body"]),
-    ):
-        malformed = find_malformed_tags(content or "")
-        if malformed:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "malformed_merge_tag",
-                    "tag": malformed[0],
-                    "field": field_name,
-                    "message": f"Malformed merge tag in {field_name}: {malformed[0]}",
-                },
-            )
-    # Collect contact keys actually present in the pending set (first row is enough)
+    # Collect contact keys actually present in the pending set (first row is
+    # enough). available_tags = the CSV columns the user can actually use:
+    # filled standard contact fields + custom columns (e.g. "adSoyad"), with
+    # internal row fields (id, status, ...) excluded by intersecting with
+    # CONTACT_TAGS. Falls back to the standard contact tags if empty.
     first_contact = pending[0]
     contact_keys: set[str] = set()
     key_remap = {"first_name": "firstName", "last_name": "lastName"}
     for k, v in first_contact.items():
         if v not in (None, ""):
             contact_keys.add(key_remap.get(k, k))
-    for k in (first_contact.get("custom_fields") or {}).keys():
-        contact_keys.add(k)
-    unknown_subj = find_unknown_tags(campaign["subject"] or "", contact_keys)
-    unknown_body = find_unknown_tags(campaign["body"] or "", contact_keys)
-    unknowns = sorted(set(unknown_subj + unknown_body))
-    if unknowns:
-        # Report the field that actually contains the first unknown tag.
-        field = "subject" if unknown_subj else "body"
-        # Tell the user which tags they CAN use: the columns actually present
-        # in their CSV (standard contact fields they filled + any custom
-        # columns like "adSoyad"). Falls back to the standard contact tags if
-        # somehow nothing CSV-derived is available. Internal row fields
-        # (id, status, ...) are excluded by intersecting with CONTACT_TAGS.
-        custom_keys = set((first_contact.get("custom_fields") or {}).keys())
-        available_tags = sorted((contact_keys & CONTACT_TAGS) | custom_keys) or sorted(CONTACT_TAGS)
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error": "unknown_merge_tags",
-                "tags": unknowns,
-                "field": field,
-                "available_tags": available_tags,
-                "message": (
-                    f"Unknown merge tags (not in CSV): {', '.join(unknowns)}. "
-                    f"Available: {', '.join(available_tags)}"
-                ),
-            },
-        )
+    custom_keys = set((first_contact.get("custom_fields") or {}).keys())
+    contact_keys |= custom_keys
+    available_tags = sorted((contact_keys & CONTACT_TAGS) | custom_keys) or sorted(CONTACT_TAGS)
+    _raise_if_bad_merge_tags(
+        campaign["subject"], campaign["body"], contact_keys, available_tags
+    )
 
     if plan == "free":
         limit = FREE_PLAN_MONTHLY_LIMIT
@@ -722,42 +745,12 @@ async def _run_test_send(
             status_code=400, detail="Subject and body are required"
         )
 
-    for field_name, content in (("subject", subject), ("body", email_body)):
-        malformed = find_malformed_tags(content)
-        if malformed:
-            raise HTTPException(
-                status_code=400,
-                detail={
-                    "error": "malformed_merge_tag",
-                    "tag": malformed[0],
-                    "field": field_name,
-                    "message": f"Malformed merge tag in {field_name}: {malformed[0]}",
-                },
-            )
-
-    # Unknown-tag check: the user's onboarding path is "try Test Send first",
-    # so catch a typo'd/unknown tag here too (not just in the real send),
-    # using the columns from the sample row (the CSV's first row, if any).
+    # Merge-tag validation. The user's onboarding path is "try Test Send
+    # first", so catch malformed AND unknown tags here too (not just in the
+    # real send), using the sample row's columns (the CSV's first row, if any).
     sample_keys = set((sample or {}).keys())
-    unknown_subj = find_unknown_tags(subject, sample_keys)
-    unknown_body = find_unknown_tags(email_body, sample_keys)
-    unknowns = sorted(set(unknown_subj + unknown_body))
-    if unknowns:
-        field = "subject" if unknown_subj else "body"
-        available_tags = sorted(sample_keys) or sorted(CONTACT_TAGS)
-        raise HTTPException(
-            status_code=400,
-            detail={
-                "error": "unknown_merge_tags",
-                "tags": unknowns,
-                "field": field,
-                "available_tags": available_tags,
-                "message": (
-                    f"Unknown merge tags (not in CSV): {', '.join(unknowns)}. "
-                    f"Available: {', '.join(available_tags)}"
-                ),
-            },
-        )
+    available_tags = sorted(sample_keys) or sorted(CONTACT_TAGS)
+    _raise_if_bad_merge_tags(subject, email_body, sample_keys, available_tags)
 
     from models.ms_token import get_fresh_access_token
 
@@ -803,6 +796,20 @@ async def _run_test_send(
         )
 
     return {"success": True, "sent_to": user["email"]}
+
+
+@router.post("/validate-tags")
+async def validate_tags(
+    body: ValidateTagsRequest,
+    user: dict = Depends(get_current_user),
+):
+    """Validate merge tags without sending — used by the sidebar Preview so
+    the user sees the SAME structured error as Send/Test Send before the
+    preview modal opens. No email, no Graph token, no DB write."""
+    sample_keys = set((body.sample or {}).keys())
+    available_tags = sorted(sample_keys) or sorted(CONTACT_TAGS)
+    _raise_if_bad_merge_tags(body.subject, body.body, sample_keys, available_tags)
+    return {"valid": True}
 
 
 @router.post("/test-send")
