@@ -2630,6 +2630,14 @@
     // background scheduled send flagged the user but the sidebar stayed open.
     setInterval(pollReauthState, 5 * 60 * 1000);
     track("sidebar_opened");
+    // compose_view_seen also fires if the compose (campaign) tab is the default
+    // active tab on open — the user never clicks it, so the tab-click handler
+    // alone would miss this. Same module-level flag, so it won't double-fire.
+    var _activeTab = document.querySelector(".tab.active");
+    if (_activeTab && _activeTab.getAttribute("data-tab") === "campaign" && !_composeViewSeenThisSession) {
+      _composeViewSeenThisSession = true;
+      track("compose_view_seen");
+    }
   }
 
   // Load i18n override first (if user picked a specific language), then apply
