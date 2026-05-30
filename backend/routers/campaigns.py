@@ -41,6 +41,7 @@ from models import followup as followup_model
 from models import user as user_model
 from routers.auth import get_current_user
 from utils.merge_tags import find_malformed_tags, find_unknown_tags
+from utils.send_classify import _classify_failure  # re-exported for the send loop
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
 
@@ -507,7 +508,7 @@ async def send_campaign(
     sent_this_month = user.get("emails_sent_this_month", 0)
     plan = user.get("plan", "free")
 
-    pending = contact_model.get_pending_contacts(campaign_id)
+    pending = contact_model.get_resumable_contacts(campaign_id)
     if not pending:
         raise HTTPException(status_code=400, detail="No pending contacts")
 
@@ -636,11 +637,14 @@ async def send_campaign(
                     campaign_model.increment_stat(campaign_id, "sent_count")
                     sent_count += 1
                 else:
+                    _status = _classify_failure(result.get("status_code"))
+                    contact_model.mark_failed(contact["id"], _status)
                     errors.append(
-                        {"email": contact["email"], "error": result["error"]}
+                        {"email": contact["email"], "error": result["error"], "type": _status}
                     )
             except Exception as e:
-                errors.append({"email": contact["email"], "error": str(e)})
+                contact_model.mark_failed(contact["id"], "deferred")
+                errors.append({"email": contact["email"], "error": str(e), "type": "deferred"})
 
             # C-04: Non-blocking rate limiting between emails
             if sent_count < len(send_list):
