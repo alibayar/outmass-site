@@ -23,6 +23,7 @@ from config import (
     STARTER_PLAN_MONTHLY_LIMIT,
 )
 from models.ms_token import get_fresh_access_token
+from utils.send_classify import _classify_failure
 from workers.celery_app import celery
 
 
@@ -79,7 +80,7 @@ def process_scheduled_campaigns():
             campaign_model.update_campaign(campaign["id"], {"status": "failed"})
             continue
 
-        pending = contact_model.get_pending_contacts(campaign["id"])
+        pending = contact_model.get_resumable_contacts(campaign["id"])
         if not pending:
             campaign_model.update_campaign(campaign["id"], {"status": "sent"})
             continue
@@ -121,8 +122,13 @@ def process_scheduled_campaigns():
                         campaign_model.increment_stat(campaign["id"], "sent_count")
                         sent_count += 1
                     else:
+                        contact_model.mark_failed(
+                            contact["id"], _classify_failure(result.get("status_code"))
+                        )
                         errors.append(contact["email"])
                 except Exception:
+                    # Network/timeout: transient, retryable on next run.
+                    contact_model.mark_failed(contact["id"], "deferred")
                     errors.append(contact["email"])
 
                 time.sleep(SEND_DELAY_SECONDS)
@@ -235,7 +241,7 @@ def _send_email(
     except Exception:
         error_detail = f"HTTP {resp.status_code}"
 
-    return {"success": False, "error": error_detail}
+    return {"success": False, "error": error_detail, "status_code": resp.status_code}
 
 
 def _merge(template_str: str, context: dict) -> str:
