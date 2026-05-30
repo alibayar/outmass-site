@@ -2505,7 +2505,12 @@
         // string that pre-v0.1.4 used to append verbatim.
         var code = resp && resp.error;
         if (code === "no_stripe_customer") {
-          alert(t("portalErrorNoSubscription"));
+          // A paid plan with no Stripe customer was granted manually (promo)
+          // and can't be managed via the portal; a free user needs to upgrade.
+          chrome.storage.local.get(["plan"], function (s) {
+            var p = (s && s.plan) || "free";
+            alert(p !== "free" ? t("portalErrorManualPlan") : t("portalErrorNoSubscription"));
+          });
           return;
         }
         if (code === "stripe_not_configured") {

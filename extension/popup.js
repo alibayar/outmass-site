@@ -32,6 +32,11 @@
   var userPlan = document.getElementById("user-plan");
   var errorText = document.getElementById("error-text");
 
+  // Current plan, set in showConnected — lets the Manage Subscription
+  // handler distinguish a real free user (needs to upgrade) from a
+  // manually-granted paid plan (no Stripe customer to manage).
+  var _currentPlan = "free";
+
   // ── State Management ──
   function showSection(name) {
     loginSection.style.display = "none";
@@ -76,6 +81,7 @@
     userEmail.textContent = user.email || "";
 
     var planKey = plan || "free";
+    _currentPlan = planKey;
     var planLabel = planKey.charAt(0).toUpperCase() + planKey.slice(1);
     userPlan.textContent = planLabel;
     userPlan.className = "plan-badge " + planKey;
@@ -245,7 +251,14 @@
         // so the message is localized, not raw English from the server.
         var code = resp && resp.error;
         if (code === "no_stripe_customer") {
-          alert(t("portalErrorNoSubscription"));
+          // A paid plan with no Stripe customer was granted manually (e.g. a
+          // promo) and can't be managed via the billing portal. A genuine
+          // free user, on the other hand, just needs to upgrade first.
+          if (_currentPlan && _currentPlan !== "free") {
+            alert(t("portalErrorManualPlan"));
+          } else {
+            alert(t("portalErrorNoSubscription"));
+          }
           return;
         }
         if (code === "stripe_not_configured") {
@@ -259,6 +272,13 @@
   }
 
   // ── Init ──
+  // Footer version: always read from the manifest so it can never drift
+  // out of sync with the actual published version.
+  var _versionEl = document.getElementById("popup-version");
+  if (_versionEl) {
+    _versionEl.textContent = "OutMass v" + chrome.runtime.getManifest().version;
+  }
+
   if (typeof initI18n === "function") {
     initI18n().then(function () {
       applyI18n();
