@@ -876,6 +876,9 @@
   "portalErrorNoSubscription": {
     "message": "ليس لديك اشتراك نشط بعد. اشترك في خطة مدفوعة أولاً، ثم عد إلى هنا لإدارتها."
   },
+  "portalErrorManualPlan": {
+    "message": "تم إعداد خطتك الحالية يدويًا ولا تتم إدارتها عبر بوابة الفوترة. يرجى التواصل مع support@getoutmass.com لتغييرها."
+  },
   "portalErrorNotConfigured": {
     "message": "الفوترة غير متاحة مؤقتاً. يرجى المحاولة بعد قليل أو التواصل مع الدعم."
   },

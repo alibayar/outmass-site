@@ -876,6 +876,9 @@
   "portalErrorNoSubscription": {
     "message": "您还没有有效的订阅。请先升级到付费方案，然后返回此处进行管理。"
   },
+  "portalErrorManualPlan": {
+    "message": "您当前的套餐是手动设置的，无法通过计费门户管理。如需更改，请联系 support@getoutmass.com。"
+  },
   "portalErrorNotConfigured": {
     "message": "账单服务暂时不可用。请稍后重试或联系支持。"
   },

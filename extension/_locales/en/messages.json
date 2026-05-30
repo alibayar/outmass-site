@@ -876,6 +876,9 @@
   "portalErrorNoSubscription": {
     "message": "You don't have an active subscription yet. Upgrade to a paid plan first, then come back here to manage it."
   },
+  "portalErrorManualPlan": {
+    "message": "Your current plan was set up manually and isn't managed through the billing portal. Please contact support@getoutmass.com to change it."
+  },
   "portalErrorNotConfigured": {
     "message": "Billing is temporarily unavailable. Please try again in a moment or contact support."
   },

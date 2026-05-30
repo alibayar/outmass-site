@@ -876,6 +876,9 @@
   "portalErrorNoSubscription": {
     "message": "Vous n'avez pas encore d'abonnement actif. Passez d'abord à un plan payant, puis revenez ici pour le gérer."
   },
+  "portalErrorManualPlan": {
+    "message": "Votre forfait actuel a été configuré manuellement et n'est pas géré via le portail de facturation. Veuillez contacter support@getoutmass.com pour le modifier."
+  },
   "portalErrorNotConfigured": {
     "message": "La facturation est temporairement indisponible. Veuillez réessayer dans un instant ou contacter le support."
   },
