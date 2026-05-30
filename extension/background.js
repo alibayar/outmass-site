@@ -470,6 +470,17 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "VALIDATE_TAGS":
+      // Validate-only (no send) — used by Preview so it shows the same
+      // merge-tag errors as Send/Test Send before opening the modal.
+      backendFetch("/campaigns/validate-tags", {
+        method: "POST",
+        body: message.payload,
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "ARCHIVE_CAMPAIGN":
       backendFetch("/campaigns/" + message.campaignId + "/archive", {
         method: "POST",

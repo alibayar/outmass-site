@@ -403,14 +403,41 @@
     var body = bodyInput.value;
     var firstRow = csvData.rows[0];
 
-    getSenderDefaults(function (sender) {
-      // Merge CSV row first, then sender defaults for unresolved placeholders
-      var mergeCtx = Object.assign({}, sender, firstRow);
-      var previewSubject = mergePlaceholders(subject, mergeCtx);
-      var previewBody = mergePlaceholders(body, mergeCtx);
-      showPreviewModal(previewSubject, textToHtml(previewBody));
-      log("Preview shown for first row");
-    });
+    function renderPreview() {
+      getSenderDefaults(function (sender) {
+        // Merge CSV row first, then sender defaults for unresolved placeholders
+        var mergeCtx = Object.assign({}, sender, firstRow);
+        var previewSubject = mergePlaceholders(subject, mergeCtx);
+        var previewBody = mergePlaceholders(body, mergeCtx);
+        showPreviewModal(previewSubject, textToHtml(previewBody));
+        log("Preview shown for first row");
+      });
+    }
+
+    // Validate merge tags against the backend first (same checks as
+    // Send/Test Send) so Preview surfaces an identical, localized error
+    // instead of showing the user a {{FistName}} literal with no warning.
+    // On any non-merge-tag outcome (valid, network/session error) we still
+    // render the preview — it's a client-side merge and shouldn't be blocked.
+    chrome.runtime.sendMessage(
+      { type: "VALIDATE_TAGS", payload: { subject: subject, body: body, sample: firstRow } },
+      function (vresp) {
+        if (vresp && vresp.error === "unknown_merge_tags") {
+          var _tags = (vresp.detail && vresp.detail.tags) ? vresp.detail.tags.join(", ") : "";
+          var _avail = (vresp.detail && vresp.detail.available_tags && vresp.detail.available_tags.length)
+            ? vresp.detail.available_tags.map(function (x) { return "{{" + x + "}}"; }).join(", ")
+            : "";
+          alert(t("mergeTagUnknown", [_tags, _avail]));
+          return;
+        }
+        if (vresp && vresp.error === "malformed_merge_tag") {
+          var _tag = (vresp.detail && vresp.detail.tag) ? vresp.detail.tag : "";
+          alert(t("mergeTagMalformed", [_tag]));
+          return;
+        }
+        renderPreview();
+      }
+    );
   });
 
   function mergePlaceholders(template, row) {
