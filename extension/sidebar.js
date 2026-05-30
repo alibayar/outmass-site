@@ -1462,6 +1462,7 @@
             archBtn.addEventListener("click", function (e) {
               e.stopPropagation();
               if (!_reportsArchived && !confirm(t("archiveConfirm"))) return;
+              if (_reportsArchived) { track("campaign_unarchived"); } else { track("campaign_archived"); }
               var msgType = _reportsArchived ? "UNARCHIVE_CAMPAIGN" : "ARCHIVE_CAMPAIGN";
               chrome.runtime.sendMessage({ type: msgType, campaignId: c.id }, function () {
                 loadReports();
@@ -1484,6 +1485,7 @@
       });
       el.classList.add("active");
       _reportsArchived = el.getAttribute("data-archived") === "true";
+      track("reports_view_changed", { view: _reportsArchived ? "archived" : "active" });
       loadReports();
     });
   });
@@ -1492,6 +1494,7 @@
   var btnExportList = document.getElementById("btn-export-list");
   if (btnExportList) {
     btnExportList.addEventListener("click", function () {
+      track("campaigns_exported_to_csv");
       chrome.runtime.sendMessage({ type: "EXPORT_CAMPAIGN_LIST" }, function (resp) {
         if (!resp || resp.error) {
           if (!handleSessionExpired(resp)) {
@@ -1574,6 +1577,7 @@
   if (btnResumeCampaign) {
     btnResumeCampaign.addEventListener("click", function () {
       if (!currentDetailCampaignId) return;
+      track("campaign_resumed");
       btnResumeCampaign.disabled = true;
       var originalLabel = btnResumeCampaign.textContent;
       btnResumeCampaign.textContent = t("alertSending");
@@ -1608,6 +1612,7 @@
   if (btnExportCsv) {
     btnExportCsv.addEventListener("click", function () {
       if (!currentDetailCampaignId) return;
+      track("campaign_results_exported");
       btnExportCsv.textContent = t("csvExportDownloading");
       btnExportCsv.disabled = true;
 
@@ -2556,6 +2561,7 @@
           btnSendFeedback.textContent = t("btnSendFeedback");
 
           if (resp && !resp.error) {
+            track("feedback_submitted");
             feedbackMessage.value = "";
             if (feedbackStatus) {
               feedbackStatus.textContent = t("feedbackSent");
@@ -2584,6 +2590,7 @@
 
     langSelect.addEventListener("change", function () {
       var newLang = langSelect.value;
+      track("language_changed", { language: newLang });
       chrome.storage.local.set({ uiLanguage: newLang }, function () {
         // Reload sidebar to apply new language
         window.location.reload();
