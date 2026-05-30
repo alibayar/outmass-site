@@ -997,6 +997,7 @@
 
   if (btnAiWriter) {
     btnAiWriter.addEventListener("click", function () {
+      track("ai_writer_opened");
       showAiWriterModal();
     });
   }
@@ -1092,6 +1093,7 @@
           generateBtn.disabled = false;
 
           if (!resp || resp.error) {
+            track("ai_email_generate_failed", { error_code: (resp && resp.error) ? String(resp.error).slice(0, 64) : "unknown" });
             if (resp && resp.status === 402) {
               alert(t("alertAiProOnly"));
             } else {
@@ -1105,6 +1107,7 @@
           var data = resp.data || resp;
           if (data.subject) subjectInput.value = data.subject;
           if (data.body) bodyInput.value = data.body;
+          track("ai_email_generated", { tone: toneSelect.value, language: langSelect.value });
           updateSendButton();
           overlay.remove();
           log("AI email generated");
