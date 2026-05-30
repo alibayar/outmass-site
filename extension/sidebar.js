@@ -2596,6 +2596,7 @@
     document.getElementById("onb-prev").disabled = _onbStep === 0;
     document.getElementById("onb-next").textContent =
       _onbStep === ONB_STEPS.length - 1 ? t("onbFinish") : t("onbNext");
+    track("onboarding_step_viewed", { step: _onbStep });
   }
 
   function finishOnboarding() {
@@ -2608,6 +2609,7 @@
   if (_onbNextBtn) {
     _onbNextBtn.addEventListener("click", function () {
       if (_onbStep < ONB_STEPS.length - 1) { _onbStep++; renderOnbStep(); return; }
+      track("onboarding_completed");
       finishOnboarding();
     });
   }
@@ -2619,7 +2621,10 @@
   }
   var _onbSkipBtn = document.getElementById("onb-skip");
   if (_onbSkipBtn) {
-    _onbSkipBtn.addEventListener("click", finishOnboarding);
+    _onbSkipBtn.addEventListener("click", function () {
+      track("onboarding_skipped");
+      finishOnboarding();
+    });
   }
 
   // ── Init ──
