@@ -1720,6 +1720,7 @@
     document.body.appendChild(overlay);
 
     document.getElementById("btn-upgrade").addEventListener("click", function () {
+      track("upgrade_button_clicked", { context: "modal" });
       chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "starter" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
@@ -1986,6 +1987,7 @@
   var accountBtnUpgrade = document.getElementById("account-btn-upgrade");
   if (accountBtnUpgrade) {
     accountBtnUpgrade.addEventListener("click", function () {
+      track("upgrade_button_clicked", { context: "account_tab" });
       chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "starter" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");

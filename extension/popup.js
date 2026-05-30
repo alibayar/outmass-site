@@ -209,6 +209,7 @@
   var btnManageSub = document.getElementById("btn-manage-sub");
 
   function startCheckout(plan) {
+    track("upgrade_button_clicked", { context: "popup" });
     chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: plan }, function (resp) {
       if (resp && resp.data && resp.data.checkout_url) {
         // New subscription — open Stripe Checkout
