@@ -688,6 +688,17 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       sendResponse({ ok: true });
       return false; // sync, no async response
 
+    case "TRACK_ANONYMOUS":
+      // Clear the user_id alias FIRST, then track — so the event attaches
+      // to the anonymous distinct_id, not the signed-in email. Used for
+      // account_deleted: we keep the churn signal (count) without tying it
+      // to the identity the user just asked us to erase (GDPR-cleaner).
+      resetIdentity().then(function () {
+        track(message.event, message.properties || {});
+      });
+      sendResponse({ ok: true });
+      return false; // sync ack; track runs async after reset
+
     case "DELETE_ACCOUNT":
       // backendFetch extracts the structured 409 code (e.g.
       // "active_subscription") into result.error, so the sidebar can

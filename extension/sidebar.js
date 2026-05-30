@@ -2371,7 +2371,11 @@
   if (deleteConfirmBtn) {
     deleteConfirmBtn.addEventListener("click", function () {
       deleteConfirmBtn.disabled = true;
-      track("account_deleted");
+      // Anonymous track: reset the identity alias before sending so this
+      // churn event isn't tied to the email the user is erasing (GDPR).
+      try {
+        chrome.runtime.sendMessage({ type: "TRACK_ANONYMOUS", event: "account_deleted", properties: {} });
+      } catch (e) { /* never block the delete flow on telemetry */ }
       chrome.runtime.sendMessage(
         {
           type: "DELETE_ACCOUNT",
