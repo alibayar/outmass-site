@@ -247,7 +247,7 @@ def test_resume_marks_sent_when_no_pending(client, fake_db, auth_bypass):
     already 'sent'. Resume should clean up the status, not enqueue."""
     partial = {"id": "c-done", "user_id": FAKE_USER["id"], "status": "partial"}
     with patch("models.campaign.get_campaign", return_value=partial), \
-         patch("models.contact.get_pending_contacts", return_value=[]), \
+         patch("models.contact.get_resumable_contacts", return_value=[]), \
          patch("models.campaign.update_campaign") as mock_update:
         resp = client.post("/campaigns/c-done/resume")
 
@@ -263,7 +263,7 @@ def test_resume_flips_to_scheduled_with_now(client, fake_db, auth_bypass):
     partial = {"id": "c-resume", "user_id": FAKE_USER["id"], "status": "partial"}
     pending = [{"id": f"co-{i}"} for i in range(3)]
     with patch("models.campaign.get_campaign", return_value=partial), \
-         patch("models.contact.get_pending_contacts", return_value=pending), \
+         patch("models.contact.get_resumable_contacts", return_value=pending), \
          patch("models.campaign.update_campaign") as mock_update:
         resp = client.post("/campaigns/c-resume/resume")
 

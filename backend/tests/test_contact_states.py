@@ -1,6 +1,8 @@
 """Tests for the 4-state contact model (pending/sent/deferred/failed)."""
+from unittest.mock import patch
+
 from models import contact as contact_model
-from tests.conftest import FakeQueryBuilder
+from tests.conftest import FAKE_USER, FakeQueryBuilder
 
 
 class _RecordingContacts(FakeQueryBuilder):
@@ -49,3 +51,25 @@ def test_get_resumable_contacts_filters_pending_and_deferred(fake_db):
     # We assert the function ran a status filter using the in_ operator.
     # (Implementation detail verified below; behavior: returns rows.)
     assert isinstance(contacts._data, list)
+
+
+def test_resume_treats_deferred_contacts_as_resumable(client, fake_db, auth_bypass):
+    """A 'partial' campaign whose only remaining contacts are `deferred`
+    (transiently failed) must be resumable — flipped to 'scheduled' for the
+    next beat — not closed out as 'sent'. This is the core of the 4-state
+    model: deferred rows are recoverable, so Resume re-queues them."""
+    partial = {"id": "c-def", "user_id": FAKE_USER["id"], "status": "partial"}
+    # Real get_resumable_contacts runs against the fake contacts table; a
+    # `deferred` row is in the resumable set, so the endpoint must enqueue it.
+    deferred_rows = [{"id": "co-1", "status": "deferred"}]
+    fake_db.set_table("contacts", FakeQueryBuilder(data=deferred_rows))
+    with patch("models.campaign.get_campaign", return_value=partial), \
+         patch("models.campaign.update_campaign") as mock_update:
+        resp = client.post("/campaigns/c-def/resume")
+
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["status"] == "scheduled"
+    assert body["queued"] == 1
+    update_arg = mock_update.call_args.args[1]
+    assert update_arg.get("status") == "scheduled"

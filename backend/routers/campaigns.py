@@ -859,9 +859,11 @@ async def resume_campaign(
             },
         )
 
-    # Confirm there are pending contacts to send before flipping the
-    # status. If everything's already gone out, mark it sent and return.
-    pending = contact_model.get_pending_contacts(campaign_id)
+    # Confirm there are resumable contacts to send before flipping the
+    # status. Resumable = still pending OR transiently failed (deferred);
+    # permanently failed contacts are skipped (retry is futile). If
+    # everything recoverable has gone out, mark it sent and return.
+    pending = contact_model.get_resumable_contacts(campaign_id)
     if not pending:
         campaign_model.update_campaign(campaign_id, {"status": "sent"})
         return {"campaign_id": campaign_id, "status": "sent", "queued": 0}
