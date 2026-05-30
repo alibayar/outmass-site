@@ -445,6 +445,18 @@
           btnTestSend.textContent = original;
           if (!resp || resp.error) {
             if (!handleSessionExpired(resp)) {
+              if (resp && resp.error === "unknown_merge_tags") {
+                track("test_send_failed", { error_code: "unknown_merge_tags" });
+                var _tags = (resp.detail && resp.detail.tags) ? resp.detail.tags.join(", ") : "";
+                alert(t("mergeTagUnknown", [_tags]));
+                return;
+              }
+              if (resp && resp.error === "malformed_merge_tag") {
+                track("test_send_failed", { error_code: "malformed_merge_tag" });
+                var _tag = (resp.detail && resp.detail.tag) ? resp.detail.tag : "";
+                alert(t("mergeTagMalformed", [_tag]));
+                return;
+              }
               track("test_send_failed", { error_code: (resp && resp.error) ? String(resp.error).slice(0, 64) : "unknown" });
               alert(t("testSendFailed", [resp ? resp.error : "send failed"]));
             }
@@ -939,6 +951,28 @@
               recipient_count: _recipientCount,
               error_code: String(sendResp.error).slice(0, 64),
             });
+            return;
+          }
+          if (sendResp.error === "unknown_merge_tags") {
+            btnSend.textContent = t("btnSend");
+            btnSend.disabled = false;
+            track("send_failed", {
+              recipient_count: _recipientCount,
+              error_code: "unknown_merge_tags",
+            });
+            var _tags = (sendResp.detail && sendResp.detail.tags) ? sendResp.detail.tags.join(", ") : "";
+            alert(t("mergeTagUnknown", [_tags]));
+            return;
+          }
+          if (sendResp.error === "malformed_merge_tag") {
+            btnSend.textContent = t("btnSend");
+            btnSend.disabled = false;
+            track("send_failed", {
+              recipient_count: _recipientCount,
+              error_code: "malformed_merge_tag",
+            });
+            var _tag = (sendResp.detail && sendResp.detail.tag) ? sendResp.detail.tag : "";
+            alert(t("mergeTagMalformed", [_tag]));
             return;
           }
           showSendError(sendResp.error);
