@@ -139,6 +139,42 @@ def mark_sent(contact_id: str):
     ).eq("id", contact_id).execute()
 
 
+_FAILABLE_STATUSES = ("deferred", "failed")
+
+
+def mark_failed(contact_id: str, status: str = "failed"):
+    """Mark a contact as failed (permanent) or deferred (transient/retryable).
+
+    deferred → retryable later (rate-limit, 5xx, network); included by Resume.
+    failed   → permanent (4xx invalid recipient); excluded from Resume.
+    Any other status is ignored defensively.
+    """
+    if status not in _FAILABLE_STATUSES:
+        return
+    get_db().table("contacts").update(
+        {"status": status}
+    ).eq("id", contact_id).execute()
+
+
+def get_resumable_contacts(campaign_id: str) -> list[dict]:
+    """Contacts eligible for (re)sending: never-attempted + transiently-failed.
+
+    Excludes permanently `failed` (retry is futile) and already `sent`.
+    Used by the send loop, the scheduled worker, and the Resume endpoint so
+    a partial campaign's recoverable contacts go out on the next run.
+    """
+    result = (
+        get_db()
+        .table("contacts")
+        .select("*")
+        .eq("campaign_id", campaign_id)
+        .in_("status", ["pending", "deferred"])
+        .eq("unsubscribed", False)
+        .execute()
+    )
+    return result.data
+
+
 def mark_opened(contact_id: str):
     get_db().table("contacts").update(
         {"opened_at": _now_iso()}
