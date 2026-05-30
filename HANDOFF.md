@@ -1,8 +1,58 @@
-# OutMass — Handoff Document (2026-04-29)
+# OutMass — Handoff Document (2026-05-30)
 
 ## Proje Nedir?
 GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
-**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da **v0.1.8** yayında. SEO infrastructure aktif.
+**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da **v0.1.8** yayında. **v0.1.9 kodu master'da + backend deploy edildi, ZIP hazır — Web Store'a HENÜZ YÜKLENMEDİ (kullanıcı yapacak).** SEO infrastructure aktif.
+
+---
+
+## 🆕 2026-05-30 SESSION UPDATE (en güncel — önce bunu oku)
+
+### v0.1.9 — Funnel Instrumentation (kapsamlı PostHog telemetry)
+**Sebep:** ~31 install ama sadece birkaç gerçek user → install→signup→first-mail funnel'ı kırık, NEDEN bilinmiyordu çünkü telemetry yoktu (PostHog sadece error tracking için kullanılıyordu).
+
+**Yapıldı (hepsi master'da, commit `74a3698`):**
+- **Migration 018** — `users.last_seen_extension_version TEXT` (nullable, reversible). **Production'a UYGULANDI** (kullanıcı Supabase'de çalıştırdı).
+- **Extension `analytics.js`** — MV3 PostHog REST client (batch queue, chrome.storage.local persist, 10sn flush). Direct fetch, posthog-js paketi YOK.
+- **`X-Extension-Version` header** — her authenticated backend call'da; `get_current_user` → `maybe_touch_activity(user, extension_version)` → DB'ye yazar (15-dk rate-limit + version-change bypass).
+- **46 telemetry event** (12'den çıktı): ext_installed/updated, oauth_started/completed/failed, $identify, sidebar_opened, signin_clicked, compose_view_seen, recipients_uploaded, csv_upload_failed (3 error code), test_send_clicked/completed/failed, send_clicked/completed/failed, upgrade_button_clicked, onboarding_step_viewed/completed/skipped, ai_writer_opened/generated/failed, template_saved/loaded/deleted, ab_test_enabled, schedule_send_enabled, followup_enabled, campaign_resumed, email_preview_opened, onedrive_consent/file, suppression_add/remove, campaign_archived/unarchived, reports_view_changed, exports, language_changed, feedback_submitted, settings_updated, manage_subscription_clicked, account_deleted.
+- **account_deleted anonim** — `TRACK_ANONYMOUS` relay: distinct_id alias'ı reset edilip sonra track edilir (GDPR — silinen kimliği analytics'e bağlama).
+- **Identity:** signed-out = random UUID (chrome.storage.local), signed-in = `identify(email)` ile email distinct_id. (Karar: plain email — core business alanı, privacy policy disclose ediyor.)
+- **compose_view_seen bug fix:** tab-click handler `target==="compose"` kontrol ediyordu ama gerçek tab adı `"campaign"` → event ÖLÜYDÜ. init()'te default-tab check + literal fix ile çözüldü.
+- **Error reporter context guard:** sidebar error/unhandledrejection handler'ları artık `chrome.runtime.id` guard'lı (extension reload/update'te "context invalidated" noise'u engellenir).
+- **270 backend test pass.** Quality review temiz (No Critical/Important).
+- **Privacy policy** zaten anonymous telemetry disclose ediyordu (`docs/privacy.html` Section 6) — yeterli.
+- **Self-test DOĞRULANDI:** PostHog Live + Network'te tüm kritik event'ler (sidebar_opened, send_*, test_send_*, csv_upload_failed, compose_view_seen) + default props (extension_version, browser, os, locale) confirm edildi.
+
+### Gerçek kullanıcılar (owner test hesapları HARİÇ)
+| User | Durum | Aksiyon |
+|---|---|---|
+| **Abidali Balospura** (abidalibalospura@outlook.com) | 8 kampanya kurmuş, çoğu fail. **Root cause: merge tag mismatch** — `{{First Name}}` (boşluk) / `{{FirstName}}` (PascalCase) kullanmış, doğrusu `{{firstName}}` (camelCase, `merge_tags.py` STANDARD_TAGS). Backend 400 döndürdü, kampanya `draft` kaldı. 2 partial kampanya da var (10-12 contact `pending` kaldı — Microsoft rate limit + `mark_failed` çağrılmıyor bug'ı). | **plan='starter' 30 gün hediye** verildi (SQL). **Apology+gift maili atıldı** (delivered). **2026-06-12'de Free'ye düşür** (reminder kullanıcıda). |
+| **Dan Han** (katherineh8702@outlook.com) | Nisan'da yüklemiş, hiç mail atmamış. audit_log boş (migration öncesi). | **Onboarding nudge maili atıldı** (delivered, BCC ✓). Cevap gelmedi. |
+| **Jack Eason** (Jack@gaadvisorygroup.com) | 2026-05-27, **business domain (en kaliteli lead)**, sign-in yapmış, mail atmamış. | **Henüz mail ATILMADI** — audit_log incele + onboarding nudge at (yapılacak). |
+
+### MailerSend
+- **Trial → Free plan aktif** (100 mail/ay). Şirket bilgileri girildi (Metis Information Technologies Ltd, UK, VAT yok). Billing info tamamlandı.
+- API key (send-only) backend `.env`'de YOK (sadece Railway env'de) — local script'ten göndermek için key elden verildi.
+- **BCC kuralı:** tüm direct support mailleri `outmassapp@outlook.com`'a BCC (memory: `support_email_bcc.md`).
+
+### Azure
+- Azure subscription silindi maili geldi → **OutMass'i ETKİLEMİYOR.** OutMass sadece Entra ID App Registration (`AZURE_CLIENT_ID=3b6a9f9b-...`) kullanıyor, subscription değil. App registration sağlam, sign-in test edildi ✓.
+
+### ⏳ KALAN İŞLER (öncelik sırası)
+1. **🔴 Web Store upload** — `outmass-v0.1.9.zip` (D:\dev\git\outmass\, 156 KB) hazır. Kullanıcı yükleyecek. Privacy Practices'te "email as analytics ID" disclose et.
+2. **🟡 Jack'e onboarding nudge maili** (business lead, audit_log incele önce).
+3. **🟡 2026-06-12 reminder** — Abid starter→free (Stripe sub yoksa).
+4. **⚪ v0.1.10 plan (kullanıcı-etkili, ONAY ŞART):**
+   - **Merge tag UX fix** (Abid'in sorunu): backend structured error `{error:"unknown_merge_tags", tags:[...]}` + frontend i18n friendly mesaj (10 dil) "CSV'de '{tag}' kolonu yok".
+   - **`mark_failed` fix** (Bug #2): `campaigns.py` send loop'ta error path'inde `contact_model.mark_failed()` çağrılmıyor → contact `pending` kalıyor → Resume button + analytics yanlış. (Quality review'da da flag edildi.)
+   - **`manual_promo_until` kolonu** — Abid gibi manuel plan upgrade'lerini otomatik düşür (şu an elle reminder gerekiyor).
+5. **⚪ v0.1.9 telemetry verisi 7 gün biriksin → funnel insight çıkar → en büyük dropoff'u bul.**
+
+### 7 günlük funnel analizi (Web Store onayı + veri sonrası)
+PostHog'da funnel kur: ext_installed → sidebar_opened → signin_clicked → oauth_completed → compose_view_seen → (test_send_clicked VEYA recipients_uploaded) → send_clicked → send_completed. En büyük dropoff = ilk fix önceliği. NOT: v0.1.8 user'lar telemetry göndermez; sadece v0.1.9'a güncellenenler funnel'da görünür.
+
+---
 
 ## 🎯 Bu Handoff Neye Yarıyor
 Context dolduğundan yeni session'a geçiyoruz. Bu doküman bu session'daki tüm
