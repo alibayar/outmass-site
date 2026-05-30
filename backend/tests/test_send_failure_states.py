@@ -18,6 +18,12 @@ def test_classify_429_is_transient():
     assert _classify_failure(429) == "deferred"
 
 
+def test_classify_408_409_are_transient():
+    # 408 (timeout) and 409 (conflict) are retryable, not permanent.
+    assert _classify_failure(408) == "deferred"
+    assert _classify_failure(409) == "deferred"
+
+
 def test_classify_5xx_is_transient():
     assert _classify_failure(500) == "deferred"
     assert _classify_failure(503) == "deferred"

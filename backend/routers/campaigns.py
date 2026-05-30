@@ -842,7 +842,8 @@ async def resume_campaign(
         left, a `draft` was never sent).
       - Otherwise: flip status to `scheduled` with scheduled_for=now
         so the next process_scheduled_campaigns beat picks it up
-        and sends only the contacts that are still in `pending`.
+        and sends the contacts that are still resumable
+        (`pending` or transiently-`deferred`).
     """
     campaign = campaign_model.get_campaign(campaign_id)
     if not campaign or campaign["user_id"] != user["id"]:
