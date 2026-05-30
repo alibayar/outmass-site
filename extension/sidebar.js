@@ -1981,6 +1981,7 @@
           btnSaveSettings.disabled = false;
 
           if (resp && !resp.error) {
+            track("settings_updated");
             btnSaveSettings.textContent = t("settingsSaved");
             setTimeout(function () {
               btnSaveSettings.textContent = t("btnSaveSettings");
@@ -2365,6 +2366,7 @@
   if (deleteConfirmBtn) {
     deleteConfirmBtn.addEventListener("click", function () {
       deleteConfirmBtn.disabled = true;
+      track("account_deleted");
       chrome.runtime.sendMessage(
         {
           type: "DELETE_ACCOUNT",
@@ -2405,6 +2407,7 @@
   var accountBtnPortal = document.getElementById("account-btn-portal");
   if (accountBtnPortal) {
     accountBtnPortal.addEventListener("click", function () {
+      track("manage_subscription_clicked");
       chrome.runtime.sendMessage({ type: "OPEN_PORTAL" }, function (resp) {
         if (resp && resp.data && resp.data.portal_url) {
           window.open(resp.data.portal_url, "_blank");
