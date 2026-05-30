@@ -42,19 +42,29 @@
   ];
 
   // ── Error Reporting ──
+  // Guard against "Extension context invalidated": after an extension
+  // reload/update, an open sidebar iframe lives on with a dead runtime
+  // context. Reporting from there would itself throw — so bail if the
+  // context is gone, and never let a failed report surface as a new error.
   window.addEventListener("error", function (event) {
-    chrome.runtime.sendMessage({
-      type: "REPORT_ERROR",
-      payload: { message: event.message, stack: event.filename + ":" + event.lineno, source: "sidebar" },
-    });
+    if (!chrome.runtime || !chrome.runtime.id) return;
+    try {
+      chrome.runtime.sendMessage({
+        type: "REPORT_ERROR",
+        payload: { message: event.message, stack: event.filename + ":" + event.lineno, source: "sidebar" },
+      });
+    } catch (e) { /* context gone — nothing to report to */ }
   });
 
   window.addEventListener("unhandledrejection", function (event) {
+    if (!chrome.runtime || !chrome.runtime.id) return;
     var msg = event.reason ? event.reason.message || String(event.reason) : "Unhandled rejection";
-    chrome.runtime.sendMessage({
-      type: "REPORT_ERROR",
-      payload: { message: msg, stack: "", source: "sidebar" },
-    });
+    try {
+      chrome.runtime.sendMessage({
+        type: "REPORT_ERROR",
+        payload: { message: msg, stack: "", source: "sidebar" },
+      });
+    } catch (e) { /* context gone */ }
   });
 
   // ── Elements ──
