@@ -10,9 +10,11 @@ GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
 
 3 bağımsız fix, subagent-driven TDD ile, master'da `17de170`, **293 test pass**, final code review temiz (No Critical/Important). Design + plan: `docs/plans/2026-05-30-v0110-ux-fixes*.md`.
 
-### Fix 1 — Merge Tag UX (Abid'in sorunu çözüldü)
-- Backend (`campaigns.py`): 3 validation site (send malformed/unknown + test-send malformed) artık structured error döndürüyor: `detail={error, tag(s), field, message}`. `message` = İngilizce fallback (backward compat — eski client okuyabilir).
-- Frontend (`sidebar.js` + 10 locale): `unknown_merge_tags`/`malformed_merge_tag` kodlarını yakalayıp **10 dilde actionable mesaj** gösterir ("CSV'de 'FirstName' kolonu yok, ekle veya {{firstName}} kullan"). Hem send hem test-send handler'ında.
+### Fix 1 — Merge Tag UX (Abid'in sorunu çözüldü) + tag-hints refinement (`d9dc6d3`)
+- Backend (`campaigns.py`): validation site'ları structured error döndürüyor: `detail={error, tag(s), field, available_tags, message}`. `message` = İngilizce fallback (backward compat).
+- **`available_tags`** = kullanıcının CSV'sinde GERÇEKTEN olan kolonlar (standard contact alanları + custom kolonlar, örn. Türkçe `adSoyad`). `(contact_keys & CONTACT_TAGS) | custom_keys`, boşsa CONTACT_TAGS fallback. Generic ipucu yerine CSV'ye özel.
+- **test-send artık unknown tag de yakalıyor** (önceden sadece malformed). Onboarding "önce Test Send" stratejisi için kritik. Available = sample (CSV ilk satır) kolonları.
+- Frontend (`sidebar.js` + 10 locale): `mergeTagUnknown` mesajı `$AVAILABLE$` ile kullanabileceği tag'leri listeler ("Kullanabileceğin: {{firstName}}, {{adSoyad}}"). Hem send hem test-send handler'ında.
 
 ### Fix 2 — 4-State Failed Contacts
 - `contacts.status` artık 4 değer: `pending` / `sent` / `deferred` (geçici hata: 408/409/429/5xx/network — Resume retry eder) / `failed` (kalıcı: 4xx — Resume atlar). Migration GEREKMEZ (status free-text TEXT).
