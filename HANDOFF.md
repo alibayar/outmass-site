@@ -25,12 +25,13 @@ Live kullanıcı var — kural ihlal edilmesin.
 - **v0.1.11 kullanıcı tarafından YÜKLENDİ** (free tier raise) — review'da veya yeni onaylandı
 - `outmass-v0.1.11.zip` repo kökünde (gitignore'da, her release yeniden paketlenir)
 
-### Edge Add-ons — KAYIT YAPILDI, SUBMIT BEKLİYOR
+### Edge Add-ons — SUBMITTED, IN REVIEW (2026-06-02)
 - **Microsoft Partner Center kaydı tamamlandı.** Önemli ders: **Company account type organizational (Azure AD) hesap ister** — kullanıcının sadece personal Hotmail'i (`bayar_ali@hotmail.com`, objectId boş) olduğu için Company'de "Accept and continue" butonu kilitli kaldı. **Çözüm: Individual + Türkiye** (kişi Türkiye'de) + **Publisher display name = "OutMass"** (account type ≠ display name; müşteri "OutMass" görür). Email: `support@getoutmass.com` (Hotmail reddedilir, company domain şart).
 - **Package yüklendi + verified**: `outmass-v0.1.11.zip`, 10 dil tanındı, permission'lar OK. Category: Productivity. Store listing: **sadece English** (logo + 6 screenshot). Diğer 9 dil "Remove" edildi (sonra eklenebilir).
 - **Görseller**: `docs/ss/` altında — `logo-300.png` (300×300, icon128'den upscale), `screenshot1-6.png` (1280×800). Edge'e yüklendi. (Chrome listing'den indirilenler 120×75 thumbnail çıktı, kullanılamadı; orijinal 1280×800 PNG'ler kullanıldı.) `docs/store-listing/promo-tile.html` + `promo-tile-large.html` var ama tile opsiyonel, atlandı.
 - **🟢 OAuth allowlist HAZIR**: Edge CRX ID **`nfgnhhdeninjmnpfbhnggknimhejbelc`** config.py `_default_ext_ids`'e eklendi (`074cc50`, deploy edildi). (Railway'de `ALLOWED_EXTENSION_IDS` env YOK → kod default kullanılıyor; HANDOFF'un eski env-var notu yanlıştı.) Edge onaylanıp kullanıcı yükleyince sign-in **direkt çalışır** — ek işlem gerekmez. Store ID: `0RDCKG1JHD3S`, Product ID: `0c1e9924-3ffd-46e8-8115-31b2beafafc6`.
-- **🔴 KALAN: Submit for certification.** Extension hâlâ "In draft". Kullanıcı: Privacy bölümünü doğrula (data practices: email/auth/personal-communications + privacy URL) → **Publish/Submit** → review 1-7 gün.
+- **🟡 IN REVIEW.** Submit edildi (2026-06-02), Microsoft review ~7 iş günü. Public URL onay sonrası gelir. Onaylanınca: Edge sign-in test et (allowlist hazır) + URL'i dağıtım kanallarına ekle.
+- **⚠️ Publish gotcha (çözüldü):** Publish butonu **Store Listings sayfasının sağ üstünde** (Overview'da DEĞİL); tüm zorunlu alanlar dolunca aktifleşir. **Description tuzağı:** metni `listings.json` HAM dosyasından kopyalama — escape'ler (`\n`) düz metin yapışır. Doğru kaynak: `docs/store-listing/edge-description-en.txt` (parse edilmiş, gerçek satır atlamalı).
 
 ### Backend (Railway) — 3 service: web + worker + beat
 - **outmass-production** (FastAPI/uvicorn), **outmass-worker** (Celery), **outmass-beat**
