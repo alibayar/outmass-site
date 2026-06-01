@@ -1,649 +1,185 @@
-# OutMass — Handoff Document (2026-05-30)
+# OutMass — Handoff Document (2026-06-01)
 
 ## Proje Nedir?
-GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
-**Durum:** PRODUCTION CANLIDA. **v0.1.10 Chrome Web Store'da ONAYLANDI ve canlıda** (telemetry + UX fixes). **v0.1.11 kodu master'da (`db92ac6`) + backend deploy edildi, `outmass-v0.1.11.zip` hazır — Web Store'a YÜKLENECEK (free tier raise).** SEO infrastructure aktif. **İlk gerçek aktif kullanıcı: Abdul Khaliq, 49 mail, %84 open rate.**
+GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI/Supabase backend.
+**Durum:** PRODUCTION CANLIDA. İlk gerçek aktif kullanıcılar var.
+
+Yeni session bu doküman + `Claude.md`'yi okuyarak devam edebilmeli.
 
 ---
 
-## 🆕🆕🆕 2026-06-01 SESSION UPDATE #3 — Free Tier Raise (v0.1.11, EN GÜNCEL)
-
-### Sebep (veri-temelli)
-Free 50/ay çok dardı (GMass free 50/GÜN ~1500/ay; tipik mail-merge kampanyası 200-300 kişi). İlk aktif user Abdul **tek kampanyada 49 mail** atıp neredeyse aylık limiti bitirdi. OutMass'ta gönderim maliyeti ~0 (user'ın MS kotası) → dar free sadece conversion baskısı, aktivasyonu öldürüyordu.
-
-### Karar (asimetri-güvenli)
-**Limit artırmak hep pozitif, düşürmek hep negatif** → orta başla, sonra veriyle artır. Free 250 (1 tam tipik kampanya), Starter 2500 (10x oran korunur, paid değeri artar). **Viral footer REDDEDİLDİ** (B2B'de profesyonelliksiz; ROI ölçek-bağımlı, şu an 1 user'da ~0).
-
-### Yapıldı (master `db92ac6`, 299 unit + 48 E2E pass)
-| Plan | Aylık | Upload | Fiyat |
-|---|---|---|---|
-| Free | 50 → **250** | 100 → **250** | $0 |
-| Starter | 2.000 → **2.500** | 2.000 → **2.500** | $9 |
-| Pro | 10.000 (aynı) | 5.000 → **10.000** | $19 |
-
-- **PARAMETRİK MİMARİ (kritik):** Limitler artık **env-driven** — `config.py`'de `int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))`. **İleride limit değiştirmek = Railway env değişkeni güncelle → otomatik deploy. KOD DEĞİŞMEZ, EXTENSION GÜNCELLENMEZ, WEB STORE REVIEW YOK.**
-- **`monthly_limit_for_plan()` / `upload_limit_for_plan()`** helpers (config.py, tek kaynak).
-- **`GET /settings` artık `monthly_limit` + `upload_limit` döndürüyor** (plan-derived). Extension bunu storage'a yazıp (background.js) sidebar'da gösteriyor — hardcode YOK (fallback 250/2500 sadece offline).
-- Docs (pricing.html, index.html), store listing (10 dil), i18n (upgradeModalStandard 10 dil) güncellendi. **AI Writer "50/month" (Pro AI generation) KORUNDU** (Free mail 50 ile karıştırılmadı).
-- Backend deploy edildi → **yeni limitler ANINDA aktif** (server-authoritative). Abdul artık 49/250.
-
-### KALAN
-1. **🔴 Web Store upload** — `outmass-v0.1.11.zip` (~160 KB). v0.1.11 = free tier raise.
-2. **Geçiş notu:** v0.1.10 sidebar geçici "X/50" gösterebilir (hardcoded eski) ama backend 250 uyguluyor → kullanıcı lehine, v0.1.11 onayıyla düzelir.
-3. **Abdul outreach** — büyük free planı (250) + %84 open tebriği + upgrade nudge (conversion). Birlikte hazırlanacak.
-4. **İleride limit ayarı**: sadece Railway env (`FREE_PLAN_MONTHLY_LIMIT` vb.) — kod yok. Asimetri gereği DÜŞÜRME.
-
----
-
-## 🆕🆕 2026-05-30 SESSION UPDATE #2 — v0.1.10 UX FIXES (EN GÜNCEL)
-
-3 bağımsız fix, subagent-driven TDD ile, master'da `17de170`, **293 test pass**, final code review temiz (No Critical/Important). Design + plan: `docs/plans/2026-05-30-v0110-ux-fixes*.md`.
-
-### Fix 1 — Merge Tag UX (Abid'in sorunu çözüldü) + tag-hints + Preview (`347875b`)
-- Backend (`campaigns.py`): **DRY helper `_raise_if_bad_merge_tags(subject, body, allowed_keys, available_tags)`** — send_campaign, _run_test_send, ve yeni `/campaigns/validate-tags` endpoint'i ÜÇÜ DE bunu kullanıyor → birebir aynı structured error. `detail={error, tag(s), field, available_tags, message}`, `message` = İngilizce fallback (backward compat).
-- **`available_tags`** = kullanıcının CSV'sinde GERÇEKTEN olan kolonlar (`(contact_keys & CONTACT_TAGS) | custom_keys`, boşsa CONTACT_TAGS). Türkçe `adSoyad` gibi custom kolonları gösterir. Generic ipucu değil, CSV'ye özel.
-- **3 yerde de validation:** Send All + Test Send + **Preview** (yeni `POST /campaigns/validate-tags`, token-light, mail göndermez — Preview modal'dan önce çağrılır). test-send artık unknown tag de yakalıyor.
-- Frontend: `mergeTagUnknown` mesajı `$AVAILABLE$` ile kullanabileceği tag'leri listeler ("Kullanabileceğin: {{firstName}}, {{adSoyad}}"). Send + test-send + Preview handler'larında. Preview graceful: validate başarısızsa (network/session) yine de açılır.
-- **YENİ API endpoint:** `POST /campaigns/validate-tags` — `{subject, body, sample}` → 400 structured veya `{valid: true}`.
-
-### Popup fixes (`99eea16`)
-- **Popup footer artık dinamik version** — `popup.html` hardcoded "v0.1.0" idi, şimdi `chrome.runtime.getManifest().version` okuyor (popup.js init). Bir daha drift etmez.
-- **Plan-aware "Manage Subscription"** — `no_stripe_customer` durumunda: paid ama Stripe yok (manuel/promo, örn. owner test veya Abid) → yeni `portalErrorManualPlan` mesajı ("manuel plan, support'a yaz"). Free → mevcut "upgrade first". popup.js + sidebar.js. Yeni i18n key 10 dilde.
-
-### Fix 2 — 4-State Failed Contacts
-- `contacts.status` artık 4 değer: `pending` / `sent` / `deferred` (geçici hata: 408/409/429/5xx/network — Resume retry eder) / `failed` (kalıcı: 4xx — Resume atlar). Migration GEREKMEZ (status free-text TEXT).
-- `utils/send_classify.py:_classify_failure(status_code)` — sınıflandırma. `models/contact.py:mark_failed(id, status)` + `get_resumable_contacts` (pending+deferred). Send loop + `scheduled_worker.process_scheduled_campaigns` + resume endpoint kullanıyor.
-- **`send_failed` PostHog event'i artık merge-tag error code'ları da taşıyor.** Analytics: deferred/failed ayrımı Supabase `contacts.status`'tan çıkar.
-- ⚠️ **followup_worker + evaluate_ab_tests BİLİNÇLİ dokunulmadı** — follow-up original sent contact'lara bump atıyor; mark_failed eklemek duplicate-send riski yaratırdı. A/B winner-send `get_pending_contacts` kullanmaya devam ediyor.
-
-### Fix 3 — Manual Promo Expiry (Abid 2026-06-12 otomatik düşecek)
-- **Migration 019 PROD'A UYGULANDI** — `users.manual_promo_until TIMESTAMPTZ` + Abid backfill (`2026-06-12`). **Artık manuel takvim reminder GEREKMİYOR.**
-- `scheduled_worker.expire_manual_promos` beat (günlük 04:45 UTC): `manual_promo_until < now() AND plan!='free' AND stripe_subscription_id IS NULL` → free'ye düşür + audit. **Stripe abonesi KORUNUR.** Idempotent, per-row try/except.
-- Yeni audit event: `EVENT_MANUAL_PROMO_EXPIRED`.
-- **Promo verme SQL pattern** (manuel, nadir): `UPDATE users SET plan='starter', emails_sent_this_month=0, manual_promo_until=now()+interval '30 days' WHERE email='<user>';`
-
-### Atlanan / Backlog (v0.1.11)
-- **Phase 4 (send_failed failure_type aggregate) SKIP edildi** — per-contact status Supabase'de, over-engineering değil.
-- **I-1 (A/B deferred-recovery seam):** `evaluate_ab_tests` deferred A/B contact'larını winner-send'de almıyor (get_pending kullanıyor). Narrow, A/B Pro feature, 0 paid user. v0.1.11'de `get_resumable_contacts` swap + sign-off.
-- **Weak test** `test_contact_states.py` get_resumable filter coverage zayıf (conftest fake filtrelemez). Backlog.
-- **Live validation** (compose sırasında {{tag}} canlı uyarı) — v0.1.11+.
-
-### v0.1.10 KALAN İŞLER (öncelik)
-1. **🔴 Self-test:** Chrome reload → `{{FirstName}}` ile send → 10 dilde localized "FirstName kolonu yok" mesajı gör. Test-send'de de.
-2. **🔴 Web Store upload:** `outmass-v0.1.10.zip` (D:\dev\git\outmass\, ~158 KB). Privacy Practices'te "email as analytics ID" disclose et. Bu tek upload = telemetry + 3 fix.
-3. **🟡 Jack'e onboarding nudge** (business lead, audit_log incele önce).
-4. **⚪ 7 gün telemetry verisi → funnel insight → en büyük dropoff.**
-
----
-
-## 🆕 2026-05-30 SESSION UPDATE #1 — v0.1.9 Funnel Telemetry (v0.1.10'a dahil edildi)
-
-### v0.1.9 — Funnel Instrumentation (kapsamlı PostHog telemetry)
-**Sebep:** ~31 install ama sadece birkaç gerçek user → install→signup→first-mail funnel'ı kırık, NEDEN bilinmiyordu çünkü telemetry yoktu (PostHog sadece error tracking için kullanılıyordu).
-
-**Yapıldı (hepsi master'da, commit `74a3698`):**
-- **Migration 018** — `users.last_seen_extension_version TEXT` (nullable, reversible). **Production'a UYGULANDI** (kullanıcı Supabase'de çalıştırdı).
-- **Extension `analytics.js`** — MV3 PostHog REST client (batch queue, chrome.storage.local persist, 10sn flush). Direct fetch, posthog-js paketi YOK.
-- **`X-Extension-Version` header** — her authenticated backend call'da; `get_current_user` → `maybe_touch_activity(user, extension_version)` → DB'ye yazar (15-dk rate-limit + version-change bypass).
-- **46 telemetry event** (12'den çıktı): ext_installed/updated, oauth_started/completed/failed, $identify, sidebar_opened, signin_clicked, compose_view_seen, recipients_uploaded, csv_upload_failed (3 error code), test_send_clicked/completed/failed, send_clicked/completed/failed, upgrade_button_clicked, onboarding_step_viewed/completed/skipped, ai_writer_opened/generated/failed, template_saved/loaded/deleted, ab_test_enabled, schedule_send_enabled, followup_enabled, campaign_resumed, email_preview_opened, onedrive_consent/file, suppression_add/remove, campaign_archived/unarchived, reports_view_changed, exports, language_changed, feedback_submitted, settings_updated, manage_subscription_clicked, account_deleted.
-- **account_deleted anonim** — `TRACK_ANONYMOUS` relay: distinct_id alias'ı reset edilip sonra track edilir (GDPR — silinen kimliği analytics'e bağlama).
-- **Identity:** signed-out = random UUID (chrome.storage.local), signed-in = `identify(email)` ile email distinct_id. (Karar: plain email — core business alanı, privacy policy disclose ediyor.)
-- **compose_view_seen bug fix:** tab-click handler `target==="compose"` kontrol ediyordu ama gerçek tab adı `"campaign"` → event ÖLÜYDÜ. init()'te default-tab check + literal fix ile çözüldü.
-- **Error reporter context guard:** sidebar error/unhandledrejection handler'ları artık `chrome.runtime.id` guard'lı (extension reload/update'te "context invalidated" noise'u engellenir).
-- **270 backend test pass.** Quality review temiz (No Critical/Important).
-- **Privacy policy** zaten anonymous telemetry disclose ediyordu (`docs/privacy.html` Section 6) — yeterli.
-- **Self-test DOĞRULANDI:** PostHog Live + Network'te tüm kritik event'ler (sidebar_opened, send_*, test_send_*, csv_upload_failed, compose_view_seen) + default props (extension_version, browser, os, locale) confirm edildi.
-
-### Gerçek kullanıcılar (owner test hesapları HARİÇ)
-| User | Durum | Aksiyon |
-|---|---|---|
-| **Abidali Balospura** (abidalibalospura@outlook.com) | 8 kampanya kurmuş, çoğu fail. **Root cause: merge tag mismatch** — `{{First Name}}` (boşluk) / `{{FirstName}}` (PascalCase) kullanmış, doğrusu `{{firstName}}` (camelCase, `merge_tags.py` STANDARD_TAGS). Backend 400 döndürdü, kampanya `draft` kaldı. 2 partial kampanya da var (10-12 contact `pending` kaldı — Microsoft rate limit + `mark_failed` çağrılmıyor bug'ı). | **plan='starter' 30 gün hediye** verildi (SQL). **Apology+gift maili atıldı** (delivered). **2026-06-12'de Free'ye düşür** (reminder kullanıcıda). |
-| **Dan Han** (katherineh8702@outlook.com) | Nisan'da yüklemiş, hiç mail atmamış. audit_log boş (migration öncesi). | **Onboarding nudge maili atıldı** (delivered, BCC ✓). Cevap gelmedi. |
-| **Jack Eason** (Jack@gaadvisorygroup.com) | 2026-05-27, **business domain (en kaliteli lead)**, sign-in yapmış, mail atmamış. | **Henüz mail ATILMADI** — audit_log incele + onboarding nudge at (yapılacak). |
-
-### MailerSend
-- **Trial → Free plan aktif** (100 mail/ay). Şirket bilgileri girildi (Metis Information Technologies Ltd, UK, VAT yok). Billing info tamamlandı.
-- API key (send-only) backend `.env`'de YOK (sadece Railway env'de) — local script'ten göndermek için key elden verildi.
-- **BCC kuralı:** tüm direct support mailleri `outmassapp@outlook.com`'a BCC (memory: `support_email_bcc.md`).
-
-### Azure
-- Azure subscription silindi maili geldi → **OutMass'i ETKİLEMİYOR.** OutMass sadece Entra ID App Registration (`AZURE_CLIENT_ID=3b6a9f9b-...`) kullanıyor, subscription değil. App registration sağlam, sign-in test edildi ✓.
-
-### ⏳ KALAN İŞLER (öncelik sırası)
-1. **🔴 Web Store upload** — `outmass-v0.1.9.zip` (D:\dev\git\outmass\, 156 KB) hazır. Kullanıcı yükleyecek. Privacy Practices'te "email as analytics ID" disclose et.
-2. **🟡 Jack'e onboarding nudge maili** (business lead, audit_log incele önce).
-3. **🟡 2026-06-12 reminder** — Abid starter→free (Stripe sub yoksa).
-4. **⚪ v0.1.10 plan (kullanıcı-etkili, ONAY ŞART):**
-   - **Merge tag UX fix** (Abid'in sorunu): backend structured error `{error:"unknown_merge_tags", tags:[...]}` + frontend i18n friendly mesaj (10 dil) "CSV'de '{tag}' kolonu yok".
-   - **`mark_failed` fix** (Bug #2): `campaigns.py` send loop'ta error path'inde `contact_model.mark_failed()` çağrılmıyor → contact `pending` kalıyor → Resume button + analytics yanlış. (Quality review'da da flag edildi.)
-   - **`manual_promo_until` kolonu** — Abid gibi manuel plan upgrade'lerini otomatik düşür (şu an elle reminder gerekiyor).
-5. **⚪ v0.1.9 telemetry verisi 7 gün biriksin → funnel insight çıkar → en büyük dropoff'u bul.**
-
-### 7 günlük funnel analizi (Web Store onayı + veri sonrası)
-PostHog'da funnel kur: ext_installed → sidebar_opened → signin_clicked → oauth_completed → compose_view_seen → (test_send_clicked VEYA recipients_uploaded) → send_clicked → send_completed. En büyük dropoff = ilk fix önceliği. NOT: v0.1.8 user'lar telemetry göndermez; sadece v0.1.9'a güncellenenler funnel'da görünür.
-
----
-
-## 🎯 Bu Handoff Neye Yarıyor
-Context dolduğundan yeni session'a geçiyoruz. Bu doküman bu session'daki tüm
-ilerlemeyi, mevcut state'i ve kalan işleri kapsıyor. Yeni session sadece bunu
-+ `Claude.md`'yi okuyarak devam edebilmeli.
-
----
-
-## 🔴 ÖNCELİKLE OKUNMASI GEREKEN: `Claude.md`
-
-`Claude.md`'nin başında **"🔴 KULLANICI ETKİSİ KURALI"** var. Özet:
-1. Kullanıcı-etkili her değişiklik için ÖNCE onay al, sonra kodla.
-2. Backward compat koru, feature flag kullan, reversible migration yaz.
-3. User-visible değişiklik varsa proaktif bildirim yap (email/banner/release notes).
-4. Push öncesi sanity check listesi yap.
+## 🔴 ÖNCE OKU: `Claude.md` — KULLANICI ETKİSİ KURALI
+1. Kullanıcı-etkili her değişiklik için ÖNCE onay al, sonra kodla/commit/push.
+2. Backward compat koru, reversible migration, feature flag.
+3. User-visible değişiklik → proaktif bildirim (email/banner/release notes).
+4. Push öncesi sanity check listesi.
 5. Backend-only invisible değişiklikler için sınırlı istisna.
-
 Live kullanıcı var — kural ihlal edilmesin.
 
 ---
 
-## 🚦 Canlı Durum (2026-04-29 itibariyle)
+## 🚦 Canlı Durum (2026-06-01)
 
 ### Chrome Web Store
-- **v0.1.8 ONAYLANDI ve canlıda** (`adcfddainnkjomddlappnnbeomhlcbmm`)
-- Atlanmış sürümler: v0.1.2 (paketlendi, ship olmadı), v0.1.5/v0.1.6/v0.1.7 (review'larından geçti veya v0.1.8'e dahil oldu)
+- **v0.1.10 ONAYLANDI + canlı** (`adcfddainnkjomddlappnnbeomhlcbmm`)
+- **v0.1.11 kullanıcı tarafından YÜKLENDİ** (free tier raise) — review'da veya yeni onaylandı
+- `outmass-v0.1.11.zip` repo kökünde (gitignore'da, her release yeniden paketlenir)
 
-### Backend (Railway)
-- **outmass-production** (FastAPI/uvicorn)
-- **outmass-worker** (Celery worker, concurrency=2)
-- **outmass-beat** (Celery beat scheduler)
-- Tüm migration'lar uygulandı (010-017)
-- Env vars (önemli ekler bu session'da):
-  - `ALLOWED_EXTENSION_IDS=adcfddainnkjomddlappnnbeomhlcbmm,acdafphnihddolfhabbndfofheokckhl`
-  - `INACTIVITY_NUDGE_ENABLED=false` (default OFF, user istediğinde açacak)
-  - `INACTIVITY_AUTOCANCEL_ENABLED=false` (Phase 6 için reserve, kullanılmıyor)
+### Edge Add-ons — DEVAM EDİYOR
+- Kullanıcı `outmass-v0.1.11.zip`'i Edge'e yüklüyor (Partner Center, ücretsiz).
+- **🔴 Onay gelince KRİTİK:** Edge yeni bir extension ID atar. OAuth callback yalnızca allowlist'teki ID'lere redirect eder. **Edge ID'sini Railway `ALLOWED_EXTENSION_IDS` env'ine virgülle EKLE** (mevcutları silme — Chrome'u bozmaz) → otomatik deploy → Edge sign-in test. Azure'a dokunma (callback sabit).
 
-### Database (Supabase)
-- 17 migration (010-017) uygulandı, tüm RLS policy'leri aktif
-- Yeni tablolar bu session'da: `audit_log`, `users_archive`
-- Yeni kolonlar: `users.last_login_at, last_activity_at, requires_reauth`,
-  `users.inactivity_nudge_sent_at, inactivity_warning_60d_sent_at, inactivity_warning_90d_sent_at`,
-  `user_tokens.has_onedrive_scope`, `campaigns.attachments`,
-  `contacts.replied_at` (+ partial index)
+### Backend (Railway) — 3 service: web + worker + beat
+- **outmass-production** (FastAPI/uvicorn), **outmass-worker** (Celery), **outmass-beat**
+- Migration'lar 001-019 uygulandı (019 = manual_promo_until)
+- Health: `https://outmass-production.up.railway.app/` → `{"status":"ok"}`
 
-### Stripe
-- Live mode aktif, $9 Starter + $19 Pro
-- Webhook handler: checkout, subscription.deleted/updated, invoice.payment_failed
-- **YENİ:** `charge.dispute.created` + `charge.dispute.closed` handlers (chargeback otomatik subscription cancel + audit + Telegram alert)
+### DB (Supabase) `qhfefazyfhyqnjcmfmdd`
+- 19 migration, RLS aktif. Tablolar: users, campaigns, contacts, events, follow_ups, suppression_list, templates, ab_tests, user_tokens, audit_log, users_archive, launch_subscribers
+- Önemli kolonlar: `users.last_seen_extension_version`, `users.manual_promo_until`, `users.month_reset_date` (aylık quota reset), `contacts.status` (pending/sent/deferred/failed), `contacts.replied_at`
 
-### SEO / getoutmass.com
-- 3 blog makalesi yayında
-- robots.txt + sitemap.xml mevcut
-- Tüm ana sayfalarda canonical + meta description
-- Google Search Console: site verified, sitemap submit edildi (kullanıcı yapacak), 3 sayfa indexed
+### Stripe (live): $9 Starter + $19 Pro. Chargeback webhook'ları aktif.
+### MailerSend: **Free plan** (100 mail/ay). Domain getoutmass.com DKIM+SPF verified.
+### SEO: getoutmass.com (GitHub Pages), 3 blog makalesi, sitemap, robots.
 
 ---
 
-## ✅ Bu Session'da Yapılanlar (Özet)
+## 📦 SÜRÜM GEÇMİŞİ (bu makinede yapılanlar)
 
-### v0.1.4 — Lifecycle, audit, multi-extension OAuth (Phases 1-7)
-- **Phase 1:** Uninstall landing page (`docs/uninstall.html`) + `/api/uninstall-feedback` endpoint + extension `setUninstallURL`
-- **Phase 2:** Migration 010 — `users.last_login_at, last_activity_at` + tüm FK'lere `ON DELETE CASCADE`
-- **Phase 2.5:** Migration 011 — `audit_log` tablosu + IP anonymize fonksiyonu (1 yıl sonra /24-/48). `models/audit.py` emit helper. Hooks: oauth_granted, login, campaign_created, contacts_uploaded, send_triggered, email_sent (per recipient). Privacy policy Section 7 güncel.
-- **Phase 3:** Migration 012 — `users_archive` tablo + `archive_and_delete_user` RPC. Self-service "Delete my account" — Account tab → Danger Zone. Aktif Stripe sub varsa 409. MailerSend confirmation email. Privacy + Terms güncellemeleri.
-- **Phase 4:** `last_login_at` ve `last_activity_at` (15-dk rate-limited write) hook'lar `auth.py` ve `get_current_user`'a eklendi.
-- **Phase 5:** Migration 013 — `users.inactivity_nudge_sent_at`. 30-day inactivity nudge beat task (`workers/inactivity_nudge.py`). Default OFF.
-- **Phase 6 (minimal):** Migration 014 — 60d/90d warning kolonları. 3-tier email cadence (30/60/90 gün). Auto-cancel YAPILMADI (sadece email warnings).
-- **Phase 7:** Stripe `charge.dispute.created/closed` webhook handlers — auto subscription cancel + audit + Telegram alert.
-- **Multi-extension OAuth:** `/auth/login?ext={chrome.runtime.id}` + state-based ext_id passthrough + ALLOWED_EXTENSION_IDS allowlist. Hem store hem dev unpacked aynı backend'le sign in olabilir.
-
-### v0.1.5 — OneDrive attachments (ilk girişim, ship olmadı)
-- Migration 015 — `campaigns.attachments JSONB`
-- `/api/onedrive/share-link` endpoint
-- Microsoft Graph File Picker SDK v8 (iframe)
-- `/auth/login?include_onedrive=true` incremental consent
-- **Sorun:** Microsoft `onedrive.live.com` X-Frame-Options: DENY → personal account'larda iframe açılmıyor. Bu sürüm ship edilmedi.
-
-### v0.1.6 — Engagement metrics + resilience
-- **Engaged metric** (open OR click OR reply) — Reports'ta dürüst tek-rakam
-- **Reply detection** — daily Inbox scan beat (`workers/reply_detector.py`), Mail.Read scope kullanıyor (zaten vardı). Migration 017 — `contacts.replied_at`.
-- **Resume button** — partial campaigns için `POST /campaigns/{id}/resume`. Reports'ta yalnızca `partial` status'undaki kampanyalarda görünür.
-- **`utils/graph_retry.py`** — 5xx/network/429 için 3-attempt exponential backoff
-- **`config.OUTBOUND_HTTP_TIMEOUT`** — connect 10s / read 30s / write 10s, send path'lerde explicit
-- **Stuck `sending` resetter beat** — saatlik, 30+ dk takılı kampanyaları `partial` veya `scheduled`'a döndürür
-
-### v0.1.7 — Custom OneDrive picker (iframe yerine native)
-- `GET /api/onedrive/browse?folder_id=root` endpoint — folder navigation
-- Sidebar'da custom HTML list browser (breadcrumbs + click-to-navigate)
-- iframe + Microsoft SDK kodu kaldırıldı
-
-### v0.1.8 — Friendly no-OneDrive error
-- Microsoft "no OneDrive" senaryosu (eski Outlook.com, SPO license'sız work account) için spesifik error code `no_onedrive`
-- 10 dilde lokalize mesaj — "Bu hesapta OneDrive yok, başka hesapla giriş yap"
-
-### Critical bug fixes (commit-level)
-- `1007d72` — Microsoft Graph 401'i de `needs_files_scope` olarak handle (önceden sadece 403)
-- `1159f16` — **URGENT:** v0.1.5'teki refresh token regression'u (token exchange + refresh path'lerine OneDrive scope koşulsuz eklendi → AADSTS65001 → tüm Mail-only user sign-in kırıldı). State-based scope tracking + `user_tokens.has_onedrive_scope` flag ile çözüldü (Migration 016).
-- `36672d1` — Stripe portal errors lokalize edildi (`no_stripe_customer`, `stripe_not_configured`)
-- `0d6947b` — `user.unsubscribe_text` artık tüm async send path'lerde (3 worker) honor ediliyor (önceden hardcoded "Abonelikten cik" Türkçe)
-- `37ad2ee` — Manage Subscription error UX (sessiz failure → backend error mesajı surface)
-- `859f642` — Locale-aware datetimes (`_i18nOverride` confusion) + 401 session-expired banner
-- `ac1f0ac` — Multi-extension OAuth state-based routing
-- `c651cb1` — `Claude.md` user-impact kural eklendi (1. öncelik, OVERRIDES EVERYTHING)
-
-### SEO infrastructure (yeni bölüm)
-- 3 blog makalesi `docs/blog/` altında:
-  - `how-to-send-mass-emails-from-outlook.html` (~2,200 kelime, "outlook mail merge" hedefli)
-  - `gmass-for-outlook.html` (~1,800 kelime, "gmass alternative" hedefli, comparison)
-  - `outlook-mail-merge-limit.html` (~2,000 kelime, "outlook send limit" hedefli)
-- Her makale `Article` + `FAQPage` JSON-LD schema, OG meta, canonical, internal+external link
-- `docs/blog/index.html` — blog listing
-- `docs/sitemap.xml` — 9 URL
-- `docs/robots.txt` — sitemap point + plans/store-listing exclude
-- `docs/_config.yml` — site title/description/url
-- Tüm ana sayfalara (index, pricing, privacy, terms, refund, launch) canonical tag eklendi (`e80848c`)
-- `docs/store-listing/listings.json` — OneDrive + Reply detection feature bullets 10 dilde eklendi (`abf9300`)
+| Sürüm | İçerik |
+|---|---|
+| v0.1.8 | (önceki) OneDrive, reply detection, account delete, audit log |
+| **v0.1.9** | **Funnel telemetry** — 46 PostHog event (install→signup→send), `analytics.js` MV3 client, `X-Extension-Version` header, migration 018 (`last_seen_extension_version`). account_deleted anonim gönderilir. |
+| **v0.1.10** | **UX fixes**: (1) 4-state contacts (deferred/failed) + Resume; (2) manual promo expiry (migration 019 + beat); (3) merge-tag UX — Send/Test-Send/Preview üçü de structured error + localized + CSV-derived `available_tags`, DRY helper `_raise_if_bad_merge_tags`, yeni `POST /campaigns/validate-tags`; (4) popup dinamik version + plan-aware Manage Subscription. |
+| **v0.1.11** | **Free tier raise** (PARAMETRIK) — Free 50→250, Starter 2000→2500, upload hizalandı. Bkz. parametrik altyapı ↓ |
 
 ---
 
-## ⏳ Yarım Kalan İşler ve Sıradaki Adımlar
+## ⚙️ PARAMETRİK LİMİT ALTYAPISI (v0.1.11 — kritik bilgi)
 
-### A) HEMEN (kullanıcı yapacak)
-1. **Microsoft Edge Add-ons store yüklemesi**
-   - `partner.microsoft.com/dashboard/microsoftedge` → ücretsiz dev hesabı
-   - Aynı `outmass-v0.1.8.zip` yüklenir, manifest değişmez
-   - Listing copy'sini Chrome'dakinden paste et
-   - Review 1-3 gün
-   - Detaylı adım: bu HANDOFF altında "Edge Add-ons Detayları"
-2. **Google Search Console — sitemap submit + URL inspector**
-   - Sol menü → Site Haritaları → `sitemap.xml` ekle
-   - URL inspector → 4 yeni blog URL'i için "Dizine ekleme iste"
-   - **Not:** AppSource için OutMass uygun değil (Office Add-in framework gerek). Edge Add-ons yeterli.
+Plan limitleri artık **env-driven + API-exposed**. İleride limit değiştirmek = **Railway env değişkeni + otomatik deploy. KOD DEĞİŞMEZ, EXTENSION GÜNCELLENMEZ, WEB STORE REVIEW YOK.**
 
-### B) Yakın gelecek (post-launch quality, launch-blocker DEĞİL)
-- [ ] Non-root Celery worker (Dockerfile + `useradd --uid 1000`) — güvenlik sıkılaştırma, paid user 500+ olunca yap
-- [ ] **Phase 6 full** — auto-pause @ 60 gün + auto-cancel @ 90 gün (şu an SADECE warning email var, gerçek Stripe modifikasyon yok). Yapmak istersen kullanıcı ile detaylı tartış, feature flag default OFF + 5-10 user manuel test sonrası açılır.
-- [ ] Çoklu-stage follow-up (şu an 1 stage). GMass 8 stage destekliyor, comparison'da eksik.
-- [ ] **Behavior triggers** ("recipient X linkine tıklarsa Y mail gönder")
-- [ ] **Team plan** (paylaşılan template'ler, role-based access)
-- [ ] Bounced email handling — şu an bounce'ları izlemiyoruz
-- [ ] Sender reputation score (SpamAssassin benzeri)
-
-### C) Marketing / büyüme
-- [ ] **SEO daha fazla makale** — sıradaki önerilen başlıklar:
-  - "Best Mail Merge Tools for Outlook in 2026" (comparison hub)
-  - "Cold Email from Outlook: Complete Guide for SaaS Founders" (founder persona)
-  - "How to Schedule Email in Outlook (3 Methods + Limits)"
-  - "Outlook Add-in vs Browser Extension for Mass Email"
-  - "Track Email Opens in Outlook (Without Macros)"
-- [ ] **Backlinks** — guest post outreach, HARO, podcast appearance (sosyal — kullanıcı asosyal, yapmıyor)
-- [ ] **Niche newsletter sponsorship** ($200-500 bütçe gerek)
-- [ ] **Reddit single-post** — r/Outlook, r/sales, r/EntrepreneurRideAlong (kullanıcı engagement düşük tercih ediyor)
-- [ ] **Indie Hackers launch** — daha sosyal-low Product Hunt alternatifi
-- [ ] **Product Hunt — KULLANICI İSTEMİYOR** (sosyal anksiyete + asosyal profil). Listede tutmuyoruz.
-
-### D) Müşteri ilk gelirken yapılacaklar
-- [ ] `INACTIVITY_NUDGE_ENABLED=true` aç — ama önce kendi inbox'una test et (HANDOFF içinde test SQL var)
-- [ ] Stripe Dashboard'da `charge.dispute.created` + `charge.dispute.closed` event'lerinin webhook'a abone olduğunu kontrol et
-- [ ] Manuel: ilk paid user'a "thanks" emaili at, ne kullandığını sor
-
-### E) Doc/UX iyileştirmeler
-- [ ] Backend error code'larını lokalize etmek için general framework (örn. `error: "no_stripe_customer"` → her dilde i18n key). Şu an portal endpoint'inde manuel yapıldı, generalize edilmedi.
-- [ ] Error tracking dashboard (PostHog'da var ama görünür değil)
+- `config.py`: `FREE_PLAN_MONTHLY_LIMIT = int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))` (+ STARTER 2500, PRO 10000, FREE/STARTER/PRO_UPLOAD_ROW_LIMIT 250/2500/10000). Hepsi env-overridable.
+- `config.monthly_limit_for_plan(plan)` / `upload_limit_for_plan(plan)` — tek kaynak helper.
+- `GET /settings` → `monthly_limit` + `upload_limit` döndürür (plan-derived).
+- Extension: background.js bunu storage'a yazar (`monthlyLimit`), sidebar.js oradan okur (hardcode YOK, fallback 250/2500 sadece offline).
+- **Limit değiştirmek için:** Railway → `outmass-production` → Variables → örn. `FREE_PLAN_MONTHLY_LIMIT=300` → deploy. Enforcement + display birlikte güncellenir.
+- **ASİMETRİ KURALI:** Limit artırmak hep pozitif, düşürmek hep negatif (churn). **Sadece ARTIR, düşürme.**
 
 ---
 
-## 🔧 Backend Mimari (Quick Reference)
+## 👥 GERÇEK KULLANICILAR (owner test hesapları hariç: outmassapp@outlook.com [pro, manuel], bayar_ali@hotmail.com, outmass.review@outlook.com)
 
-### Beat schedule (`backend/workers/celery_app.py`)
-```
-process-followups-hourly     | 60 min       | followup_worker.process_followups
-process-scheduled-campaigns  | 5 min        | scheduled_worker.process_scheduled_campaigns
-evaluate-ab-tests            | 10 min       | scheduled_worker.evaluate_ab_tests
-daily-report                 | 14:00 UTC    | daily_report.send_daily_report
-check-user-tokens            | 03:00 UTC    | scheduled_worker.check_user_tokens
-reset-stuck-sending-campaigns | 60 min      | scheduled_worker.reset_stuck_sending_campaigns
-anonymize-audit-log-ips      | 03:30 UTC    | scheduled_worker.anonymize_audit_log_ips
-send-inactivity-nudges       | 04:00 UTC    | inactivity_nudge.send_inactivity_nudges (gated)
-send-inactivity-warnings-60d | 04:15 UTC    | inactivity_nudge.send_inactivity_warnings_60d (gated)
-send-inactivity-warnings-90d | 04:30 UTC    | inactivity_nudge.send_inactivity_warnings_90d (gated)
-detect-replies               | 05:00 UTC    | reply_detector.detect_replies
-```
+| User | Durum | Outreach |
+|---|---|---|
+| **Abdul Khaliq** (khaliqabdul@hotmail.com) | 🟢 İlk gerçek aktif. 49 mail tek kampanyada, **%84 open rate**, v0.1.10 kullanıyor. free→250 oldu. | ✅ "early user + büyük free + feedback" maili (2026-06-01). **Privacy: performans verisi (%84) SÖYLENMEDİ** — kullanıcı haklı olarak "izleniyor" hissini istemedi. |
+| **Jack Eason** (Jack@gaadvisorygroup.com) | Business lead (advisory). Sign-in yapmış, hiç kampanya atmamış (audit: sadece oauth+login). | ✅ onboarding nudge + 250 free + 5-dk rehber (2026-06-01) |
+| **Abid** (abidalibalospura@outlook.com) | merge-tag'e takılmıştı (v0.1.10 ile çözüldü). Starter promo verildi, `manual_promo_until=2026-06-12` → beat otomatik free'ye düşürecek. | ✅ apology + gift maili |
+| **Dan Han** (katherineh8702@outlook.com) | Nisan'da yüklemiş, hiç atmamış. | ✅ nudge maili (cevap yok) |
 
-### Tablolar (Supabase)
-```
-users                  — accounts (now with last_login_at, last_activity_at, requires_reauth, plan, ...)
-campaigns              — campaign metadata (now with attachments JSONB, scheduled_for)
-contacts               — recipients per campaign (now with replied_at)
-events                 — open/click tracking log
-follow_ups             — scheduled follow-up emails
-suppression_list       — user-level email opt-outs
-templates              — saved email templates
-ab_tests               — A/B subject test data
-user_tokens            — MS OAuth tokens (now with has_onedrive_scope)
-audit_log              — immutable action log (5-year retention, IP anon @ 1y)
-users_archive          — anonymized post-deletion records
-launch_subscribers     — pre-launch waitlist (legacy)
-```
-
-### Routes
-```
-/auth                    — OAuth flow, state-based ext routing, incremental consent
-/campaigns               — CRUD, send, test-send, archive, resume, stats, export, ab-test, followups
-/billing                 — Stripe checkout, portal, webhook (incl. chargebacks)
-/templates               — CRUD
-/ai                      — Claude email writer (Pro, 50/mo limit)
-/settings                — Sender profile, suppression, dedup config, requires_reauth flag
-/account                 — DELETE /account (self-service GDPR delete)
-/api/onedrive            — share-link, browse
-/api/uninstall-feedback  — anonymous feedback from uninstall landing
-/api/feedback            — extension feedback form
-/api/error-report        — extension client errors → PostHog
-/track                   — pixel + click + unsubscribe (lightweight, separate router)
-/launch                  — pre-launch waitlist signup
-```
-
-### Send pipeline (3 path)
-1. **Immediate** — `routers/campaigns.py:send_campaign` (sync, async httpx with retry)
-2. **Scheduled** — `workers/scheduled_worker.py:process_scheduled_campaigns` (5-min beat)
-3. **Follow-up** — `workers/followup_worker.py:process_followups` (1-hr beat)
-4. (Dead) `workers/email_worker.py` — async queue, prepared but unused
-
-Tüm 3 path:
-- `models.ms_token.get_fresh_access_token` (auto-flags `requires_reauth` on permanent failure)
-- `utils.graph_retry.post_with_retry` (5xx/429/network 3-attempt expo backoff)
-- `utils.email_attachments.render_attachments_footer` (OneDrive chips)
-- Per-email audit emit (`audit.emit_email_sent`)
-- `OUTBOUND_HTTP_TIMEOUT` ile bounded request
+**Outreach kuralı:** Tüm direct support mailleri **BCC outmassapp@outlook.com** (memory: `support_email_bcc.md`). MailerSend ile gönderilir (key Railway env'de, local `.env`'de YOK — gönderirken elden verilir veya `MAILERSEND_API_KEY=... python script`).
 
 ---
 
-## 📂 Dosya Yapısı (Quick Reference)
+## 📊 ANALYTICS / FUNNEL
 
-```
-backend/
-  config.py              | env vars + OUTBOUND_HTTP_TIMEOUT + ALLOWED_EXTENSION_IDS + INACTIVITY_*
-  main.py                | FastAPI app, error report, feedback endpoints
-  database.py            | Supabase singleton
-  schema.sql             | Full schema (all migrations applied)
-  migrations/            | 001-017 (010-017 added this session)
-  routers/
-    auth.py              | OAuth flow, multi-ext state, incremental consent (od flag)
-    campaigns.py         | Campaign + send + resume
-    billing.py           | Stripe + chargeback webhooks
-    templates.py
-    ai.py                | Claude API
-    settings.py
-    tracking.py          | /t/ pixel, /c/ click, /unsubscribe/
-    launch.py
-    account.py           | DELETE /account (NEW this session)
-    onedrive.py          | /api/onedrive/share-link, /api/onedrive/browse (NEW)
-  models/
-    user.py              | + touch_login, maybe_touch_activity
-    campaign.py          | + attachments param
-    contact.py
-    template.py
-    ab_test.py
-    followup.py
-    ms_token.py          | + has_onedrive_scope-aware refresh
-    audit.py             | Audit log emitter (NEW)
-    user_archive.py      | RPC wrapper for archive_and_delete (NEW)
-  utils/
-    merge_tags.py
-    email_classifier.py
-    email_attachments.py | OneDrive chip rendering (NEW)
-    graph_retry.py       | Bounded retry for Graph API calls (NEW)
-  workers/
-    celery_app.py        | Beat schedule (10+ tasks)
-    email_worker.py      | (dead) async per-email queue
-    scheduled_worker.py  | + reset_stuck_sending + anonymize_audit_log_ips + check_user_tokens
-    followup_worker.py
-    daily_report.py
-    inactivity_nudge.py  | 3-tier 30/60/90d nudges (NEW, gated)
-    reply_detector.py    | Daily Inbox scan (NEW)
-  tests/
-    119+ unit tests (was ~118 at session start)
-    test_audit_log.py, test_account_delete.py, test_resilience.py,
-    test_onedrive.py, test_inactivity_nudge.py, test_chargeback_webhook.py,
-    test_token_lifecycle.py, test_auth_multi_ext.py,
-    test_uninstall_feedback.py, test_unsubscribe_label.py,
-    test_activity_tracking.py (NEW this session)
-
-extension/   (v0.1.8)
-  manifest.json          | 0.1.8
-  background.js          | Multi-ext OAuth, structured 402/409 errors, ONEDRIVE_BROWSE/SHARE_LINK,
-                         | RESUME_CAMPAIGN, DELETE_ACCOUNT, MS_LOGIN_ONEDRIVE, sessionExpired flag
-  sidebar.html           | + Attachments section, OneDrive picker modal (custom),
-                         | + Engaged + Replied metric boxes, + Resume section, + Delete account modal
-  sidebar.js             | + OneDrive custom picker logic, + handleSessionExpired,
-                         | + getActiveLocale, + delete account flow
-  popup.js               | + Manage Sub error detail surface
-  i18n.js                | + getActiveLocale() shared helper
-  CHANGELOG.md           | v0.1.0 → v0.1.8
-  _locales/              | 10 dil, ~70 yeni key bu session'da
-  styles/sidebar.css     | + OneDrive picker, + danger-zone, + Engaged/Replied callouts, + Resume
-
-docs/                    | GitHub Pages (getoutmass.com)
-  index.html, pricing.html, privacy.html, terms.html, refund.html, launch.html, uninstall.html
-  blog/                  | NEW
-    index.html
-    how-to-send-mass-emails-from-outlook.html
-    gmass-for-outlook.html
-    outlook-mail-merge-limit.html
-  store-listing/listings.json   | 10 dil, +OneDrive +Reply bullets
-  sitemap.xml            | NEW
-  robots.txt             | NEW
-  _config.yml            | + url/title/description
-```
+- **PostHog** (key: `phc_kSzEWG2WxxMYzokbnxUWuohvAeXvH3ovdKioxXoez27r`, host us.i.posthog.com). **MCP genelde session'da BAĞLI DEĞİL** → PostHog web UI'dan bak, VEYA asıl behavioral veri Supabase `audit_log`'da.
+- **Funnel SQL pattern** (audit_log event_type'lar): `oauth_granted → login → campaign_created → contacts_uploaded → send_triggered → email_sent`. Engagement: `contacts` tablosu `opened_at`/`clicked_at`/`replied_at`.
+- **Sıradaki:** v0.1.9+ telemetry 7 gün veri biriktirince PostHog funnel insight → en büyük dropoff → sonraki fix.
 
 ---
 
-## 🔑 Kritik Env Var'lar (Railway)
-
+## 🔑 KRİTİK ENV VAR'LAR (Railway)
 ```
-SUPABASE_URL=https://qhfefazyfhyqnjcmfmdd.supabase.co
-SUPABASE_SERVICE_ROLE_KEY=<service_role>
-JWT_SECRET=<32-byte hex>
-
-AZURE_CLIENT_ID=3b6a9f9b-cbb6-4dcb-a3b6-d993de74a1b5
-AZURE_CLIENT_SECRET=<from Azure>
-AZURE_REDIRECT_URI=https://outmass-production.up.railway.app/auth/callback
-AZURE_EXTENSION_ID=adcfddainnkjomddlappnnbeomhlcbmm
-ALLOWED_EXTENSION_IDS=adcfddainnkjomddlappnnbeomhlcbmm,acdafphnihddolfhabbndfofheokckhl
-
-BACKEND_URL=https://outmass-production.up.railway.app
-CORS_ORIGINS=chrome-extension://adcfddainnkjomddlappnnbeomhlcbmm,...
-
-STRIPE_SECRET_KEY=sk_live_...
-STRIPE_WEBHOOK_SECRET=whsec_...
-STRIPE_STARTER_PRICE_ID=price_1TNBQNJ2B12lELVmRjjuFmth
-STRIPE_PRO_PRICE_ID=price_1TNBQlJ2B12lELVmS0rxYD4F
-STRIPE_PORTAL_CONFIG_ID=bpc_1TNvl3QsbO4Gj1Xr3VaOSWcU
-
-REDIS_URL=rediss://default:...@upstash.io:6379  (pay-as-you-go from this session)
-
-ANTHROPIC_API_KEY=sk-ant-...
-POSTHOG_API_KEY=phc_...  (EU)
-TELEGRAM_BOT_TOKEN=<from BotFather>
-TELEGRAM_CHAT_ID=8445487787
-
-MAILERSEND_API_KEY=mlsn_...
-MAILERSEND_FROM_EMAIL=support@getoutmass.com
-MAILERSEND_FROM_NAME=OutMass
-
-INACTIVITY_NUDGE_ENABLED=false   ← still OFF, user will flip when ready
-INACTIVITY_NUDGE_DAYS=30
-INACTIVITY_AUTOCANCEL_ENABLED=false   ← Phase 6 reserved
+SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY / JWT_SECRET
+AZURE_CLIENT_ID=3b6a9f9b-cbb6-4dcb-a3b6-d993de74a1b5 / AZURE_CLIENT_SECRET / AZURE_REDIRECT_URI=.../auth/callback
+ALLOWED_EXTENSION_IDS=adcfddainnkjomddlappnnbeomhlcbmm,acdafphnihddolfhabbndfofheokckhl  ← Edge onayında Edge ID EKLE
+BACKEND_URL / CORS_ORIGINS
+STRIPE_SECRET_KEY=sk_live_... / STRIPE_WEBHOOK_SECRET / STRIPE_STARTER_PRICE_ID / STRIPE_PRO_PRICE_ID / STRIPE_PORTAL_CONFIG_ID
+REDIS_URL (Upstash) / ANTHROPIC_API_KEY / POSTHOG_API_KEY (phc_kSz...) / TELEGRAM_BOT_TOKEN+CHAT_ID
+MAILERSEND_API_KEY=mlsn_... / MAILERSEND_FROM_EMAIL=support@getoutmass.com
+INACTIVITY_NUDGE_ENABLED=false (default OFF)
+# PARAMETRIK (opsiyonel, default'lar kodda): FREE_PLAN_MONTHLY_LIMIT, STARTER_PLAN_MONTHLY_LIMIT, FREE_UPLOAD_ROW_LIMIT, ...
 ```
+⚠️ MailerSend key bu session'da chat'te paylaşıldı — endişe varsa revoke + yenile.
 
 ---
 
-## 🧪 Test Komutları
-
+## 🧪 TEST & PAKETLEME
 ```bash
-npm run test:unit           # backend pytest (~250 unit)
-npm run test:e2e            # Playwright (48 i18n visual + UI)
-npm run test:all
+npm run test:unit    # backend pytest (299 geçiyor) — integration HARİÇ (env gerektirir)
+npm run test:e2e     # Playwright 48 (i18n visual regression)
+npm run test:all     # ikisi + integration (integration LOCAL'DE ÇALIŞMAZ — JWT_SECRET strong + gerçek DB gerekir, pre-existing)
+```
+NOT: `test:unit` (299) + `test:e2e` (48) = kod güvencesi. Integration testleri CI/prod env gerektirir, local fail NORMAL.
+
+Paketleme (Windows): `cd extension; Compress-Archive -Path * -DestinationPath ../outmass-vX.Y.Z.zip -Force; cd ..`
+
+**Worktree workflow:** Feature işi `.worktrees/<branch>` içinde (gitignored). `.env`'i worktree'ye kopyala (`cp backend/.env .worktrees/<b>/backend/.env`). Subagent'lara MUTLAK worktree path ver (yoksa main checkout'ta çalışıp master'ı kirletebilirler — bu session'da 2 kez oldu, recover edildi). Bitince merge + `git worktree remove --force` + `git branch -d`.
+
+---
+
+## 🏗️ BACKEND MİMARİ (quick ref)
+
+### Beat schedule (`workers/celery_app.py`)
+```
+process-followups (60m), process-scheduled-campaigns (5m), evaluate-ab-tests (10m),
+daily-report (14:00 UTC), check-user-tokens (03:00), reset-stuck-sending (60m),
+anonymize-audit-log-ips (03:30), inactivity nudges 30/60/90d (04:00/15/30, GATED OFF),
+detect-replies (05:00), expire-manual-promos (04:45)  ← v0.1.10
 ```
 
-Bu session sonunda: **261 unit + 48 E2E = 309 test geçiyor**.
+### Send pipeline (3 path, hepsi 4-state + classify)
+1. Immediate: `campaigns.py:send_campaign`
+2. Scheduled: `scheduled_worker.process_scheduled_campaigns`
+3. Follow-up: `followup_worker.process_followups` (⚠️ original sent contact'lara bump atar — mark_failed EKLENMEDİ, duplicate-send riski)
+
+Send hatası sınıflandırma: `utils/send_classify._classify_failure(status_code)` → 408/409/429/5xx/None=deferred (retry), diğer 4xx=failed (kalıcı). `contact.mark_failed(id, status)`. Resume `get_resumable_contacts` (pending+deferred).
+
+### Merge-tag validation: `_raise_if_bad_merge_tags(subject, body, allowed_keys, available_tags)` — send + test-send + `/campaigns/validate-tags` (Preview) üçü de kullanır. `utils/merge_tags`: STANDARD_TAGS camelCase (firstName, lastName, email, company, position + sender*), regex `{{\w+}}` (boşluk yok).
 
 ---
 
-## 📦 Paketleme
+## 🐛 BİLİNEN SINIRLAMALAR / BACKLOG (öncelik sırası)
 
-`outmass-v*.zip` gitignore'da. Her release için yeniden paketlenir:
+### Yakın (v0.1.12 adayları)
+- [ ] **I-1: A/B deferred recovery** — `evaluate_ab_tests` deferred A/B contact'larını winner-send'de almıyor (`get_pending_contacts` kullanıyor). Narrow (A/B Pro feature, az kullanım). `get_resumable_contacts`'e çevir + sign-off.
+- [ ] **Multi-stage follow-up** — şu an 1 stage. GMass 8 destekliyor. Kullanıcının en çok eksik dediği.
+- [ ] **Bounce handling** — Microsoft NDR'leri izlenmiyor, contact `failed` olmuyor.
 
-```bash
-# Linux / macOS
-cd extension && zip -r ../outmass-v0.1.X.zip . -x "*.DS_Store" && cd ..
-```
-```powershell
-# Windows
-cd extension; Compress-Archive -Path * -DestinationPath ../outmass-v0.1.X.zip -Force
-```
+### Orta
+- [ ] **Viral footer DENEYİ** — "Sent with OutMass" REDDEDİLDİ (B2B'de profesyonelliksiz). Ama 50+ aktif user olunca opt-out + tracking ile ROI ölçülebilir deney olarak tekrar değerlendir.
+- [ ] **Weak test** — `test_contact_states.py` get_resumable filter coverage zayıf (conftest fake filtrelemiyor).
+- [ ] **Live merge-tag validation** (compose sırasında {{tag}} canlı uyarı) — şu an sadece send/test/preview anında.
+- [ ] **send_failed failure_type aggregate** (Phase 4 skip edildi — per-contact status Supabase'de yeterli).
 
----
+### Düşük
+- [ ] Non-root Celery worker (güvenlik, 500+ paid user'da)
+- [ ] Phase 6 full (auto-pause/cancel @ 60/90d — şu an sadece email warning)
+- [ ] Team plan, sender reputation score
+- [ ] Backend error mesajları kısmen lokalize (merge-tag/portal structured, diğer 4xx raw)
 
-## 🌐 Edge Add-ons Detayları (sıradaki adım için)
-
-[Microsoft Partner Center](https://partner.microsoft.com/en-us/dashboard/microsoftedge/):
-1. Microsoft hesabı ile sign in (ücretsiz, Chrome'un $5'ından farklı)
-2. **Create new extension** → **Upload package** → `outmass-v0.1.8.zip`
-3. **Listing details:**
-   - Title: `OutMass — Mass Email for Outlook` (Chrome ile aynı)
-   - Summary: `Send personalized mail merge campaigns from Outlook. Tracking, follow-ups, AI writer, OneDrive attachments.`
-   - Description: `docs/store-listing/listings.json` → `en.description` paste
-   - Screenshots: 1280×800 veya 640×400 (Chrome'daki dosyalar uyar)
-   - Privacy URL: `https://getoutmass.com/privacy.html`
-   - Support URL: `mailto:support@getoutmass.com`
-   - Categories: Productivity / Communication
-4. **Submit for certification** → 1-3 gün
-
-Onaylanınca: Edge Add-ons store'da `Edge://extensions/` üzerinden bulunabilir.
+### Marketing
+- [ ] SEO 3-5 makale daha (founder persona, comparison hub)
+- [ ] Paid ad ARAŞTIRILDI, kullanıcı ÜCRETSIZ kanalları seçti (Bing $250 promo notu var ama ertelendi)
+- [ ] Product Hunt — kullanıcı İSTEMİYOR (sosyal anksiyete). Reddit/PH listede tutulmuyor.
 
 ---
 
-## 🔍 Kritik Bilgiler / Edge Cases
-
-### Owner test hesabı
-- `outmassapp@outlook.com`, plan='pro' (manuel set, gerçek Stripe sub yok — dogfooding)
-- user_id: `7ebce016-e2af-4f88-9e00-90bdfdb18cba`
-- "Manage Subscription" butonu bu hesapta `no_stripe_customer` döner — beklenen davranış
-
-### Dev unpacked extension ID
-- `acdafphnihddolfhabbndfofheokckhl` — Azure redirect list'inde + ALLOWED_EXTENSION_IDS'te
-- Local geliştirmede unpacked yüklenirse aynı backend ile sign in olabilir
-
-### Subscription test akışı
-- Free hesap → Stripe live ile kart ekle → $9 öder → Pro'ya geçer
-- LAUNCH50 promo kodu (50% off, 100 redemption, May 31 2026 expiry)
-
-### OneDrive feature canlıda
-- Yeni user'lar default sign-in'de OneDrive scope istemiyor (incremental consent)
-- "+ Add OneDrive link" tıklayınca:
-  1. İlk kullanım: consent modal (OneDrive scope'u açıkla)
-  2. Picker açılır → backend `/api/onedrive/browse` → user'ın OneDrive root'u listelenir
-  3. Eğer Files scope yok: backend 401/403 → `needs_files_scope` → frontend MS_LOGIN_ONEDRIVE tetikler → user MS consent ekranında approve eder → picker yeniden açılır
-- "No OneDrive" hesaplarında: `no_onedrive` error code → friendly message gösterir
-
-### Reply detection
-- Default ON, daily 05:00 UTC çalışır
-- Mail.Read scope kullanır (zaten default scope'ta vardı)
-- Inbox'tan recent messages tarar, sender email + sent_at karşılaştırması ile match eder
-- `contacts.replied_at` set eder, audit_log'a `replies_detected` event'i yazar
-- Reports'ta "Replied" + "Reply rate" gösterir
-
-### Inactivity nudge — DEFAULT OFF
-- 3 beat task gün boyunca tarar (04:00, 04:15, 04:30 UTC) ama `INACTIVITY_NUDGE_ENABLED=false` olduğu için early-return ediyor
-- Açmadan önce kendi hesabınla test:
-  ```sql
-  -- 30d test
-  UPDATE users SET last_activity_at = NOW() - INTERVAL '31 days',
-                   inactivity_nudge_sent_at = NULL
-  WHERE email='outmassapp@outlook.com';
-  ```
-  Sonra Railway worker shell'inden:
-  ```bash
-  celery -A workers.celery_app call workers.inactivity_nudge.send_inactivity_nudges
-  ```
-- Mail içeriği `workers/inactivity_nudge.py` `_html_tier1/2/3` fonksiyonlarında, value-positive ton
-
-### Account delete (self-service GDPR)
-- Sidebar Account → Danger Zone → Delete my account
-- 2-step confirmation (typed "DELETE" + irreversibility checkbox)
-- Aktif Stripe sub varsa 409 + "Cancel subscription first" mesajı
-- DB: `archive_and_delete_user` RPC → `users_archive`'e anonymized kopya + `DELETE FROM users` (CASCADE all dependents)
-- Email: MailerSend confirmation gönderilir
-
-### Audit log retention
-- 5 yıl saklanır (Türk VUK ve UK/EU tax compliance)
-- IP adresleri 1 yıl sonra `/24` (IPv4) veya `/48` (IPv6) anonymize edilir
-- Privacy policy Section 7'de açıkça belirtildi
-
-### Stripe chargeback handling
-- `charge.dispute.created` → subscription auto-cancel + plan='free' + audit + Telegram alert
-- `charge.dispute.closed` → audit + alert (kazanılan dispute'lar otomatik geri yüklenmez)
-- Stripe Dashboard'da event'lerin webhook'a abone olduğunu KONTROL ET
-
----
-
-## 🐛 Bilinen Sınırlamalar / Bug'lar
-
-1. **AppSource uyumsuz** — Office Add-in framework gerekiyor, mevcut Chrome extension uygun değil. Edge Add-ons doğru kanal.
-2. **Çoklu-stage follow-up yok** — Şu an 1 stage. GMass 8 stage destekliyor.
-3. **Behavior triggers yok** — "if clicked X then send Y" akışı yok.
-4. **Team plan yok** — paylaşılan template/role yok.
-5. **Bounce handling primitive** — Microsoft NDR'lerini takip etmiyoruz, contact `failed` status'a geçmiyor.
-6. **Phase 6 partial** — 60d/90d email warnings var, gerçek auto-pause/cancel YAPILMADI.
-7. **Sender reputation score yok** — SpamAssassin benzeri heuristic check yapılabilir.
-8. **Backend error mesajları kısmen lokalize** — portal endpoint'inde structured code var, diğer 4xx errors raw English string.
-
----
-
-## 🎯 Önerilen Bir Sonraki Adımlar
-
-Yeni session'a başlarken kullanıcıya şunu sor:
-
-1. **v0.1.8 ne kadar süredir live?** Performans nasıl? Yeni user / paid user aldı mı?
-2. **Edge Add-ons yüklendi mi?** Yoksa o Phase'i hızlandır.
-3. **Google Search Console'da indexed sayfa sayısı arttı mı?** (3 → 8-9 olmalı)
-4. **`INACTIVITY_NUDGE_ENABLED` aç ihtiyacı var mı?** İlk paid user gelince anlamlı.
-5. **Bir bug raporu / customer feedback mailini almış mı?** O öncelikli.
-
-Yoksa mantıklı sonraki yatırımlar (kullanıcı önceliği ne ise):
-
-- **SEO content** — 3-5 makale daha (HANDOFF "Marketing" bölümünde liste var)
-- **Multi-stage follow-up** — kullanıcı en çok eksik dediği şey burası, GMass parity
-- **Bounce handling** — Microsoft NDR webhook / Inbox scan ile contact `failed` işaretle
-- **Phase 6 full** — auto-pause/cancel logic (HIGH RISK, kullanıcı onayı şart)
-
----
-
-## 📝 Stack
-- **Extension:** Vanilla JS, Chrome MV3
-- **Backend:** Python 3.11+, FastAPI
-- **DB:** Supabase (PostgreSQL, RLS aktif)
-- **Queue:** Celery + Upstash Redis (SSL, pay-as-you-go from this session)
-- **AI:** Claude (Anthropic API)
-- **Error Tracking:** PostHog (EU)
-- **Billing:** Stripe live
-- **Email (outbound):** MailerSend
-- **Email (inbound):** Cloudflare Email Routing → Outlook
-- **Notifications:** Telegram Bot API
-- **Hosting:** Railway (3 services: web + worker + beat)
-- **Frontend tools:** GitHub Pages (getoutmass.com)
-- **Test:** Pytest (~261 unit) + Playwright (48 E2E) = 309 total
+## 🎯 ÖNERİLEN SONRAKİ ADIMLAR (yeni session)
+1. **Edge onayı geldi mi?** → Edge ID'yi `ALLOWED_EXTENSION_IDS`'e ekle + test.
+2. **Outreach reply'ları?** Abdul/Jack/Abid/Dan'den dönüş = en yüksek conversion sinyali. Geldiyse öncelikli.
+3. **v0.1.9+ funnel verisi** (7 gün biriktiyse) → PostHog insight → en büyük dropoff → fix.
+4. **Yeni paid user / first revenue** geldi mi? Geldiyse "thanks" + ne kullandığını sor.
+5. Yoksa backlog'dan: multi-stage follow-up (en çok istenen) veya bounce handling.
 
 ---
 
 ## 🔗 Hızlı Linkler
+- Repo: github.com/alibayar/outmass-site · Web: getoutmass.com
+- Chrome Store: chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm
+- Backend: outmass-production.up.railway.app · Supabase: qhfefazyfhyqnjcmfmdd.supabase.co
+- Design/plan docs: `docs/plans/` (2026-05-05 funnel, 2026-05-30 v0.1.10, 2026-06-01 free-tier)
+- Memory: `support_email_bcc.md`, `project_v019_funnel.md`
 
-- Repo: github.com/alibayar/outmass-site
-- Web: https://getoutmass.com
-- Chrome Web Store: https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm
-- Backend: https://outmass-production.up.railway.app
-- Supabase: https://qhfefazyfhyqnjcmfmdd.supabase.co
-- Google Search Console: https://search.google.com/search-console
-- Stripe Dashboard: https://dashboard.stripe.com/
-
----
-
-**Bu handoff'u yeni session'a verin. `Claude.md` ile birlikte yeterli olacaktır.**
+**Bu handoff + `Claude.md` yeterli. Stack: Vanilla JS MV3 + FastAPI + Supabase + Celery/Upstash + Stripe + MailerSend + PostHog + Railway.**
