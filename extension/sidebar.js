@@ -635,10 +635,12 @@
 
   // ── Quota ──
   function loadQuota() {
-    chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (result) {
+    chrome.storage.local.get(["emailsSentThisMonth", "plan", "monthlyLimit"], function (result) {
       var sent = result.emailsSentThisMonth || 0;
       var plan = result.plan || "free";
-      var limit = plan === "pro" ? 10000 : plan === "starter" ? 2000 : 50;
+      // Prefer the backend-provided limit (parametric); fall back to current
+      // defaults only if the backend value isn't cached yet (offline/first run).
+      var limit = result.monthlyLimit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
       var remaining = Math.max(0, limit - sent);
       // quotaDefault template already has "Plan" suffix, so pass just the tier name
       var planLabel = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "Free";
@@ -713,10 +715,10 @@
     }
 
     // Check quota first
-    chrome.storage.local.get(["emailsSentThisMonth", "plan"], function (storage) {
+    chrome.storage.local.get(["emailsSentThisMonth", "plan", "monthlyLimit"], function (storage) {
       var sent = storage.emailsSentThisMonth || 0;
       var plan = storage.plan || "free";
-      var limit = plan === "pro" ? 10000 : plan === "starter" ? 2000 : 50;
+      var limit = storage.monthlyLimit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
       var remaining = limit - sent;
 
       if (remaining <= 0) {

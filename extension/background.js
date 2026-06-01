@@ -355,14 +355,22 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             backendFetch("/settings").then(function (resp) {
               if (resp && resp.data && resp.data.plan) {
                 var freshPlan = resp.data.plan;
-                if (freshPlan !== result.plan) {
-                  chrome.storage.local.set({ plan: freshPlan });
-                  log("Plan refreshed from backend:", freshPlan);
+                // Cache the backend-derived monthly limit so the sidebar reads
+                // it instead of hardcoding — raising a limit needs no extension
+                // update. Stored alongside plan.
+                var freshLimit = resp.data.monthly_limit;
+                var _set = {};
+                if (freshPlan !== result.plan) _set.plan = freshPlan;
+                if (freshLimit) _set.monthlyLimit = freshLimit;
+                if (Object.keys(_set).length) {
+                  chrome.storage.local.set(_set);
+                  log("Plan/limit refreshed from backend:", freshPlan, freshLimit);
                 }
                 sendResponse({
                   user: result.user,
                   plan: freshPlan,
                   emailsSentThisMonth: resp.data.emails_sent_this_month || 0,
+                  monthlyLimit: freshLimit,
                 });
               } else {
                 sendResponse({
