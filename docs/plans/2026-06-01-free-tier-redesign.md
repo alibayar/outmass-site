@@ -4,7 +4,12 @@
 
 **Goal:** Raise limits — Free 50→250, Starter 2.000→2.500 monthly; upload rows aligned to monthly (Free 250, Starter 2.500, Pro 10.000) — across backend config, frontend display, docs, and store listing, all in sync.
 
-**Architecture:** Backend limits are config-driven (`backend/config.py` constants, read by the send/upload gates) — change the constants, enforcement follows. Frontend has DUPLICATED hardcoded numbers (sidebar.js) that must be updated by hand or the UI lies. Docs/pricing + store listing also state the numbers. Monthly reset already works (`auth.py:_check_monthly_reset` via `month_reset_date`).
+**Architecture (PARAMETRIC — revised):** Make limits changeable WITHOUT code/extension changes.
+1. **Backend config env-driven**: each limit = `int(os.getenv("NAME", "<new-default>"))` (same pattern as `INACTIVITY_PAUSE_DAYS`). Change a limit later = set a Railway env var → auto-deploy. No code edit.
+2. **Backend exposes the user's limit via API**: add `monthly_limit` + `upload_limit` to `GET /settings` (computed from the user's plan via config helpers). `GET_USER_STATE` already calls `/settings`, so it gets them too.
+3. **Frontend reads the limit from the backend** (no more hardcoded ternary): `sidebar.js` uses `result.monthly_limit` with a hardcoded fallback only for safety/offline. So a Railway env change updates enforcement AND display together — no extension update, no Web Store review.
+
+Monthly reset already works (`auth.py:_check_monthly_reset` via `month_reset_date`). This parametric design also eliminates the frontend/backend drift risk (the old hardcoded numbers could lie).
 
 **Tech Stack:** Python/FastAPI, vanilla JS (MV3), pytest, GitHub Pages HTML.
 
@@ -40,22 +45,42 @@
 
 ## PHASE 1 — Backend Config + Enforcement (TDD)
 
-### Task 1.1: Update config constants
+### Task 1.1: Make config constants env-driven (parametric)
 
-**Files:** Modify `backend/config.py` (lines ~154-167)
+**Files:** Modify `backend/config.py` (lines ~153-167)
 
-**Step 1:** Change the six constants to the new values:
+**Step 1:** Convert the six constants to env-driven, with the NEW values as defaults:
 ```python
-FREE_PLAN_MONTHLY_LIMIT = 250
-STARTER_PLAN_MONTHLY_LIMIT = 2500
-PRO_PLAN_MONTHLY_LIMIT = 10000
-# STANDARD_PLAN_MONTHLY_LIMIT = STARTER_PLAN_MONTHLY_LIMIT  (alias — auto-follows)
-...
-FREE_UPLOAD_ROW_LIMIT = 250
-STARTER_UPLOAD_ROW_LIMIT = 2_500
-PRO_UPLOAD_ROW_LIMIT = 10_000
+# ── Plan Limits (env-overridable — change in Railway, no code/deploy of code) ──
+FREE_PLAN_MONTHLY_LIMIT = int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))
+STARTER_PLAN_MONTHLY_LIMIT = int(os.getenv("STARTER_PLAN_MONTHLY_LIMIT", "2500"))
+PRO_PLAN_MONTHLY_LIMIT = int(os.getenv("PRO_PLAN_MONTHLY_LIMIT", "10000"))
+
+# Legacy alias (keep for back-compat until all code migrated)
+STANDARD_PLAN_MONTHLY_LIMIT = STARTER_PLAN_MONTHLY_LIMIT
+
+AI_GENERATION_MONTHLY_LIMIT = int(os.getenv("AI_GENERATION_MONTHLY_LIMIT", "50"))
+
+FREE_UPLOAD_ROW_LIMIT = int(os.getenv("FREE_UPLOAD_ROW_LIMIT", "250"))
+STARTER_UPLOAD_ROW_LIMIT = int(os.getenv("STARTER_UPLOAD_ROW_LIMIT", "2500"))
+PRO_UPLOAD_ROW_LIMIT = int(os.getenv("PRO_UPLOAD_ROW_LIMIT", "10000"))
 ```
-Leave `STANDARD_PLAN_MONTHLY_LIMIT = STARTER_PLAN_MONTHLY_LIMIT` as-is (it aliases, so it follows automatically).
+
+**Step 2:** Add two helper functions in `config.py` (after the constants) so plan→limit mapping lives in ONE place (used by the settings API + optionally the enforcement sites):
+```python
+def monthly_limit_for_plan(plan: str) -> int:
+    return {
+        "pro": PRO_PLAN_MONTHLY_LIMIT,
+        "starter": STARTER_PLAN_MONTHLY_LIMIT,
+    }.get(plan, FREE_PLAN_MONTHLY_LIMIT)
+
+
+def upload_limit_for_plan(plan: str) -> int:
+    return {
+        "pro": PRO_UPLOAD_ROW_LIMIT,
+        "starter": STARTER_UPLOAD_ROW_LIMIT,
+    }.get(plan, FREE_UPLOAD_ROW_LIMIT)
+```
 
 **Step 2:** Verify enforcement sites read the constants (no hardcoded numbers). Grep:
 ```bash
@@ -111,34 +136,79 @@ git commit -m "test(billing): update plan-limit assertions to new values + guard
 
 ---
 
-## PHASE 2 — Frontend Display
+## PHASE 1.5 — Expose limit via API (parametric)
 
-### Task 2.1: Update hardcoded limits in sidebar.js
+### Task 1.5: Add monthly_limit + upload_limit to GET /settings
+
+**Files:** Modify `backend/routers/settings.py` (the `get_settings` return, ~line 40-57); Test: `backend/tests/test_settings.py`
+
+**Step 1 (TDD):** Add/extend a test asserting `GET /settings` returns `monthly_limit` matching the user's plan:
+```python
+def test_settings_returns_monthly_limit_for_plan(client, fake_db, auth_bypass):
+    # auth_bypass user is free by default → 250
+    resp = client.get("/settings", headers={"Authorization": "Bearer t"})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["monthly_limit"] == 250
+    assert body["upload_limit"] == 250
+```
+(If `auth_bypass` is a paid plan, adjust expected value. Check the fixture.)
+
+**Step 2:** Run → FAIL (keys missing).
+
+**Step 3:** Import the helpers and add the two fields to the `get_settings` return dict:
+```python
+from config import monthly_limit_for_plan, upload_limit_for_plan
+...
+    plan = user.get("plan", "free")
+    return {
+        ...
+        "plan": plan,
+        "emails_sent_this_month": user.get("emails_sent_this_month", 0),
+        "monthly_limit": monthly_limit_for_plan(plan),
+        "upload_limit": upload_limit_for_plan(plan),
+        ...
+    }
+```
+
+**Step 4:** Run → PASS. Full suite green.
+
+**Step 5:** Commit:
+```bash
+git add backend/routers/settings.py backend/tests/test_settings.py
+git commit -m "feat(settings): expose monthly_limit + upload_limit (plan-derived)"
+```
+
+---
+
+## PHASE 2 — Frontend Display (read limit from backend)
+
+### Task 2.1: sidebar.js reads monthly_limit from backend
 
 **Files:** Modify `extension/sidebar.js` (lines ~641 and ~719)
 
-**Step 1:** Both lines read:
+**Step 1:** Both lines currently hardcode:
 ```js
 var limit = plan === "pro" ? 10000 : plan === "starter" ? 2000 : 50;
 ```
-Change BOTH to:
+Replace BOTH with: read the backend-provided value, fall back to the hardcoded ternary only if absent (offline/old backend):
 ```js
-var limit = plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250;
+var limit = result.monthly_limit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
 ```
-(Search the whole file for any other `2000`/`\b50\b` used as a plan limit — there were exactly 2 quota sites at 641/719, but confirm with grep.)
+(At line ~719 the variable holding the response may be named differently — check; it's the object that already has `.plan`. Use that object's `.monthly_limit`.)
 
-**Step 2:** Verify:
+**Step 2:** Verify both sites:
 ```bash
-cd D:/dev/git/outmass && grep -n "plan === \"pro\"" extension/sidebar.js
+cd D:/dev/git/outmass && grep -n "monthly_limit\|plan === \"pro\"" extension/sidebar.js
 ```
-Both should now show `2500 : 250`.
+Both quota sites should now prefer `monthly_limit`. The fallback ternary updated to 2500/250 (so even offline it's not stale).
 
 **Step 3:** `node --check extension/sidebar.js` → OK.
 
 **Step 4:** Commit:
 ```bash
 git add extension/sidebar.js
-git commit -m "feat(ext): sidebar quota display uses new plan limits (250/2500/10000)"
+git commit -m "feat(ext): sidebar quota reads backend monthly_limit (parametric, fallback 250/2500)"
 ```
 
 ### Task 2.2: Check popup.js + any other frontend limit display
