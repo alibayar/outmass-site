@@ -83,9 +83,11 @@ AZURE_EXTENSION_ID = os.getenv("AZURE_EXTENSION_ID", "adcfddainnkjomddlappnnbeom
 # otherwise a malicious page could point our OAuth flow (and the resulting
 # JWT fragment) at an attacker-controlled chromiumapp.org subdomain.
 #
-# Defaults cover the store build + the handoff-documented dev unpacked ID.
+# Defaults cover: Chrome store build, the handoff-documented dev unpacked ID,
+# and the Edge Add-ons build (CRX ID nfgnhh... — Edge assigns its own ID,
+# different from Chrome; needed so Edge sign-in closes the OAuth loop).
 # Add more by setting `ALLOWED_EXTENSION_IDS=id1,id2,id3` on Railway.
-_default_ext_ids = "adcfddainnkjomddlappnnbeomhlcbmm,acdafphnihddolfhabbndfofheokckhl"
+_default_ext_ids = "adcfddainnkjomddlappnnbeomhlcbmm,acdafphnihddolfhabbndfofheokckhl,nfgnhhdeninjmnpfbhnggknimhejbelc"
 ALLOWED_EXTENSION_IDS = [
     e.strip()
     for e in os.getenv("ALLOWED_EXTENSION_IDS", _default_ext_ids).split(",")
