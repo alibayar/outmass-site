@@ -2,7 +2,36 @@
 
 ## Proje Nedir?
 GMass'ın Outlook Web versiyonu. Chrome Extension (MV3) + FastAPI backend.
-**Durum:** PRODUCTION CANLIDA. Chrome Web Store'da **v0.1.8** yayında. **v0.1.10 kodu master'da (`17de170`) + backend deploy edildi, `outmass-v0.1.10.zip` hazır — Web Store'a HENÜZ YÜKLENMEDİ (kullanıcı yapacak). v0.1.10 = v0.1.9 telemetry + 3 UX fix, tek upload olarak gidecek.** SEO infrastructure aktif.
+**Durum:** PRODUCTION CANLIDA. **v0.1.10 Chrome Web Store'da ONAYLANDI ve canlıda** (telemetry + UX fixes). **v0.1.11 kodu master'da (`db92ac6`) + backend deploy edildi, `outmass-v0.1.11.zip` hazır — Web Store'a YÜKLENECEK (free tier raise).** SEO infrastructure aktif. **İlk gerçek aktif kullanıcı: Abdul Khaliq, 49 mail, %84 open rate.**
+
+---
+
+## 🆕🆕🆕 2026-06-01 SESSION UPDATE #3 — Free Tier Raise (v0.1.11, EN GÜNCEL)
+
+### Sebep (veri-temelli)
+Free 50/ay çok dardı (GMass free 50/GÜN ~1500/ay; tipik mail-merge kampanyası 200-300 kişi). İlk aktif user Abdul **tek kampanyada 49 mail** atıp neredeyse aylık limiti bitirdi. OutMass'ta gönderim maliyeti ~0 (user'ın MS kotası) → dar free sadece conversion baskısı, aktivasyonu öldürüyordu.
+
+### Karar (asimetri-güvenli)
+**Limit artırmak hep pozitif, düşürmek hep negatif** → orta başla, sonra veriyle artır. Free 250 (1 tam tipik kampanya), Starter 2500 (10x oran korunur, paid değeri artar). **Viral footer REDDEDİLDİ** (B2B'de profesyonelliksiz; ROI ölçek-bağımlı, şu an 1 user'da ~0).
+
+### Yapıldı (master `db92ac6`, 299 unit + 48 E2E pass)
+| Plan | Aylık | Upload | Fiyat |
+|---|---|---|---|
+| Free | 50 → **250** | 100 → **250** | $0 |
+| Starter | 2.000 → **2.500** | 2.000 → **2.500** | $9 |
+| Pro | 10.000 (aynı) | 5.000 → **10.000** | $19 |
+
+- **PARAMETRİK MİMARİ (kritik):** Limitler artık **env-driven** — `config.py`'de `int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))`. **İleride limit değiştirmek = Railway env değişkeni güncelle → otomatik deploy. KOD DEĞİŞMEZ, EXTENSION GÜNCELLENMEZ, WEB STORE REVIEW YOK.**
+- **`monthly_limit_for_plan()` / `upload_limit_for_plan()`** helpers (config.py, tek kaynak).
+- **`GET /settings` artık `monthly_limit` + `upload_limit` döndürüyor** (plan-derived). Extension bunu storage'a yazıp (background.js) sidebar'da gösteriyor — hardcode YOK (fallback 250/2500 sadece offline).
+- Docs (pricing.html, index.html), store listing (10 dil), i18n (upgradeModalStandard 10 dil) güncellendi. **AI Writer "50/month" (Pro AI generation) KORUNDU** (Free mail 50 ile karıştırılmadı).
+- Backend deploy edildi → **yeni limitler ANINDA aktif** (server-authoritative). Abdul artık 49/250.
+
+### KALAN
+1. **🔴 Web Store upload** — `outmass-v0.1.11.zip` (~160 KB). v0.1.11 = free tier raise.
+2. **Geçiş notu:** v0.1.10 sidebar geçici "X/50" gösterebilir (hardcoded eski) ama backend 250 uyguluyor → kullanıcı lehine, v0.1.11 onayıyla düzelir.
+3. **Abdul outreach** — büyük free planı (250) + %84 open tebriği + upgrade nudge (conversion). Birlikte hazırlanacak.
+4. **İleride limit ayarı**: sadece Railway env (`FREE_PLAN_MONTHLY_LIMIT` vb.) — kod yok. Asimetri gereği DÜŞÜRME.
 
 ---
 
