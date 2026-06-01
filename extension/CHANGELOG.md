@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.11 — 2026-06-01
+
+- Bigger free plan: 250 emails/month (was 50). Starter raised to 2,500/month. Upload limits raised to match. Enjoy the extra room!
+
 ## v0.1.10 — 2026-05-30
 
 - Clearer, localized error messages when a merge tag doesn't match your CSV columns (e.g. {{firstName}} casing/spacing). Now tells you exactly which column to add or which tag to fix, in your language.
