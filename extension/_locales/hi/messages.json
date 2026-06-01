@@ -519,7 +519,7 @@
     "message": "आपकी ईमेल सीमा पूरी हो गई है।<br/>अधिक भेजने के लिए अपग्रेड करें।"
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2,000 ईमेल/माह — $9/माह"
+    "message": "Starter: 2,500 ईमेल/माह — $9/माह"
   },
   "upgradeModalPro": {
     "message": "Pro: 10,000 ईमेल/माह — $19/माह"

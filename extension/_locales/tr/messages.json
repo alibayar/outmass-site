@@ -519,7 +519,7 @@
     "message": "E-posta limitinize ulaştınız.<br/>Daha fazla e-posta göndermek için planınızı yükseltin."
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2.000 email/ay — $9/ay"
+    "message": "Starter: 2.500 email/ay — $9/ay"
   },
   "upgradeModalPro": {
     "message": "Pro: 10.000 email/ay — $19/ay"

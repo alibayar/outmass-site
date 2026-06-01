@@ -519,7 +519,7 @@
     "message": "メール送信の上限に達しました。<br/>アップグレードしてより多くのメールを送信しましょう。"
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2,000通/月 — $9/月"
+    "message": "Starter: 2,500通/月 — $9/月"
   },
   "upgradeModalPro": {
     "message": "Pro: 10,000通/月 — $19/月"

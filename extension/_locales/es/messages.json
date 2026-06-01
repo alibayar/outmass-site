@@ -519,7 +519,7 @@
     "message": "Has alcanzado tu límite de correos.<br/>Mejora tu plan para enviar más."
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2.000 correos/mes — $9/mes"
+    "message": "Starter: 2.500 correos/mes — $9/mes"
   },
   "upgradeModalPro": {
     "message": "Pro: 10.000 correos/mes — $19/mes"

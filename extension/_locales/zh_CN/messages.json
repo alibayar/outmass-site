@@ -519,7 +519,7 @@
     "message": "您已达到邮件发送上限。<br/>升级以发送更多邮件。"
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2,000 封邮件/月 — $9/月"
+    "message": "Starter: 2,500 封邮件/月 — $9/月"
   },
   "upgradeModalPro": {
     "message": "Pro: 10,000 封邮件/月 — $19/月"
