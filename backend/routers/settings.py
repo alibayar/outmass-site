@@ -10,6 +10,7 @@ DELETE /settings/suppression  → remove email from suppression list
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
+from config import monthly_limit_for_plan, upload_limit_for_plan
 from database import get_db
 from routers.auth import get_current_user
 
@@ -37,11 +38,16 @@ class SuppressionRequest(BaseModel):
 @router.get("")
 async def get_settings(user: dict = Depends(get_current_user)):
     """Get user settings."""
+    plan = user.get("plan", "free")
     return {
         "email": user.get("email", ""),
         "name": user.get("name", ""),
-        "plan": user.get("plan", "free"),
+        "plan": plan,
         "emails_sent_this_month": user.get("emails_sent_this_month", 0),
+        # Plan-derived limits, so the extension reads them from the backend
+        # instead of hardcoding — raising a limit needs no extension update.
+        "monthly_limit": monthly_limit_for_plan(plan),
+        "upload_limit": upload_limit_for_plan(plan),
         "track_opens": user.get("track_opens", True),
         "track_clicks": user.get("track_clicks", True),
         "unsubscribe_text": user.get("unsubscribe_text", "Unsubscribe"),

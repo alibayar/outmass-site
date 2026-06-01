@@ -150,22 +150,39 @@ INACTIVITY_AUTOCANCEL_ENABLED = _env_bool("INACTIVITY_AUTOCANCEL_ENABLED", False
 INACTIVITY_PAUSE_DAYS = int(os.getenv("INACTIVITY_PAUSE_DAYS", "60"))
 INACTIVITY_CANCEL_DAYS = int(os.getenv("INACTIVITY_CANCEL_DAYS", "90"))
 
-# ── Plan Limits ──
-FREE_PLAN_MONTHLY_LIMIT = 50
-STARTER_PLAN_MONTHLY_LIMIT = 2000
-PRO_PLAN_MONTHLY_LIMIT = 10000
+# ── Plan Limits (env-overridable — raise later in Railway, no code change) ──
+FREE_PLAN_MONTHLY_LIMIT = int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))
+STARTER_PLAN_MONTHLY_LIMIT = int(os.getenv("STARTER_PLAN_MONTHLY_LIMIT", "2500"))
+PRO_PLAN_MONTHLY_LIMIT = int(os.getenv("PRO_PLAN_MONTHLY_LIMIT", "10000"))
 
 # Legacy alias (keep for back-compat until all code migrated)
 STANDARD_PLAN_MONTHLY_LIMIT = STARTER_PLAN_MONTHLY_LIMIT
 
 # AI generation limit (per month, Pro only)
-AI_GENERATION_MONTHLY_LIMIT = 50
+AI_GENERATION_MONTHLY_LIMIT = int(os.getenv("AI_GENERATION_MONTHLY_LIMIT", "50"))
 
 # CSV upload limits (per upload, not cumulative)
-FREE_UPLOAD_ROW_LIMIT = 100
-STARTER_UPLOAD_ROW_LIMIT = 2_000
-PRO_UPLOAD_ROW_LIMIT = 5_000
+FREE_UPLOAD_ROW_LIMIT = int(os.getenv("FREE_UPLOAD_ROW_LIMIT", "250"))
+STARTER_UPLOAD_ROW_LIMIT = int(os.getenv("STARTER_UPLOAD_ROW_LIMIT", "2500"))
+PRO_UPLOAD_ROW_LIMIT = int(os.getenv("PRO_UPLOAD_ROW_LIMIT", "10000"))
 MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
+
+
+def monthly_limit_for_plan(plan: str) -> int:
+    """Monthly send limit for a plan name — single source of truth so the
+    settings API and enforcement agree. Unknown/None plan → free."""
+    return {
+        "pro": PRO_PLAN_MONTHLY_LIMIT,
+        "starter": STARTER_PLAN_MONTHLY_LIMIT,
+    }.get(plan, FREE_PLAN_MONTHLY_LIMIT)
+
+
+def upload_limit_for_plan(plan: str) -> int:
+    """Per-upload CSV row limit for a plan name. Unknown/None plan → free."""
+    return {
+        "pro": PRO_UPLOAD_ROW_LIMIT,
+        "starter": STARTER_UPLOAD_ROW_LIMIT,
+    }.get(plan, FREE_UPLOAD_ROW_LIMIT)
 
 SEND_DELAY_SECONDS = 1
 RATE_LIMIT_WAIT_SECONDS = 60

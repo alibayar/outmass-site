@@ -253,8 +253,8 @@ def test_upload_rejects_too_many_rows_for_free_plan(client, fake_db, auth_bypass
         "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
     }
     fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
-    # Free plan = 100 row limit
-    rows = "\n".join(f"user{i}@example.com" for i in range(150))
+    # Free plan = 250 row upload limit; 300 rows must be rejected.
+    rows = "\n".join(f"user{i}@example.com" for i in range(300))
     csv_text = "email\n" + rows + "\n"
     resp = client.post("/campaigns/cU3/contacts", json={"csv_string": csv_text})
     assert resp.status_code == 413

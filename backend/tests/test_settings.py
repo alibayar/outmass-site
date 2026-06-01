@@ -13,6 +13,44 @@ def test_get_settings(client, auth_bypass, fake_db):
     assert data["timezone"] == "Europe/Istanbul"
 
 
+def test_get_settings_exposes_plan_limits(client, auth_bypass, fake_db):
+    """The extension reads monthly_limit/upload_limit from the backend
+    (parametric) instead of hardcoding. Free plan → 250/250."""
+    resp = client.get("/settings")
+    data = resp.json()
+    assert data["monthly_limit"] == 250
+    assert data["upload_limit"] == 250
+
+
+def test_plan_limit_values_are_current():
+    """Guard: pins the plan-limit defaults so they can't silently drift.
+    (Env can still override these at runtime in Railway.)"""
+    from config import (
+        FREE_PLAN_MONTHLY_LIMIT,
+        STARTER_PLAN_MONTHLY_LIMIT,
+        PRO_PLAN_MONTHLY_LIMIT,
+        FREE_UPLOAD_ROW_LIMIT,
+        STARTER_UPLOAD_ROW_LIMIT,
+        PRO_UPLOAD_ROW_LIMIT,
+        monthly_limit_for_plan,
+        upload_limit_for_plan,
+    )
+
+    assert FREE_PLAN_MONTHLY_LIMIT == 250
+    assert STARTER_PLAN_MONTHLY_LIMIT == 2500
+    assert PRO_PLAN_MONTHLY_LIMIT == 10000
+    assert FREE_UPLOAD_ROW_LIMIT == 250
+    assert STARTER_UPLOAD_ROW_LIMIT == 2500
+    assert PRO_UPLOAD_ROW_LIMIT == 10000
+    # helpers map correctly + unknown plan falls back to free
+    assert monthly_limit_for_plan("pro") == 10000
+    assert monthly_limit_for_plan("starter") == 2500
+    assert monthly_limit_for_plan("free") == 250
+    assert monthly_limit_for_plan("garbage") == 250
+    assert upload_limit_for_plan("starter") == 2500
+    assert upload_limit_for_plan(None) == 250
+
+
 def test_get_settings_unauthorized(client):
     resp = client.get("/settings")
     assert resp.status_code in (401, 422)
