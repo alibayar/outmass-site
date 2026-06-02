@@ -35,6 +35,13 @@ class FakeQueryBuilder:
             self._data = [rows]
         return self
 
+    def upsert(self, rows, on_conflict=None, **kw):
+        if isinstance(rows, list):
+            self._data = rows
+        else:
+            self._data = [rows]
+        return self
+
     def update(self, vals):
         self._data = [vals]
         return self
