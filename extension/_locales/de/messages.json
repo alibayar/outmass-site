@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "Benachrichtigungen"
+  },
+  "announcementsEmpty": {
+    "message": "Keine Benachrichtigungen"
+  },
+  "announcementsView": {
+    "message": "Ansehen"
+  },
+  "announcementsDismiss": {
+    "message": "Schließen"
+  },
+  "announcementsMore": {
+    "message": "+$COUNT$ weitere — Panel öffnen",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

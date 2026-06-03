@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "सूचनाएं"
+  },
+  "announcementsEmpty": {
+    "message": "कोई सूचना नहीं"
+  },
+  "announcementsView": {
+    "message": "देखें"
+  },
+  "announcementsDismiss": {
+    "message": "खारिज करें"
+  },
+  "announcementsMore": {
+    "message": "+$COUNT$ और — पैनल खोलें",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

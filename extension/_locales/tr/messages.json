@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "Bildirimler"
+  },
+  "announcementsEmpty": {
+    "message": "Bildirim yok"
+  },
+  "announcementsView": {
+    "message": "Görüntüle"
+  },
+  "announcementsDismiss": {
+    "message": "Kapat"
+  },
+  "announcementsMore": {
+    "message": "+$COUNT$ tane daha — paneli aç",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

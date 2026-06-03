@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "الإشعارات"
+  },
+  "announcementsEmpty": {
+    "message": "لا توجد إشعارات"
+  },
+  "announcementsView": {
+    "message": "عرض"
+  },
+  "announcementsDismiss": {
+    "message": "تجاهل"
+  },
+  "announcementsMore": {
+    "message": "+$COUNT$ أخرى — افتح اللوحة",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

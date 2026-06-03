@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "お知らせ"
+  },
+  "announcementsEmpty": {
+    "message": "お知らせはありません"
+  },
+  "announcementsView": {
+    "message": "表示"
+  },
+  "announcementsDismiss": {
+    "message": "閉じる"
+  },
+  "announcementsMore": {
+    "message": "他 $COUNT$ 件 — パネルを開く",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

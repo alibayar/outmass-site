@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "Уведомления"
+  },
+  "announcementsEmpty": {
+    "message": "Нет уведомлений"
+  },
+  "announcementsView": {
+    "message": "Открыть"
+  },
+  "announcementsDismiss": {
+    "message": "Скрыть"
+  },
+  "announcementsMore": {
+    "message": "+$COUNT$ ещё — открыть панель",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }

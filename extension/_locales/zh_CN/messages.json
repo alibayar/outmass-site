@@ -977,5 +977,25 @@
         "content": "$1"
       }
     }
+  },
+  "announcementsTitle": {
+    "message": "通知"
+  },
+  "announcementsEmpty": {
+    "message": "暂无通知"
+  },
+  "announcementsView": {
+    "message": "查看"
+  },
+  "announcementsDismiss": {
+    "message": "忽略"
+  },
+  "announcementsMore": {
+    "message": "还有 $COUNT$ 条 — 打开面板",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
   }
 }
