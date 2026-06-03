@@ -68,3 +68,40 @@ def test_summary_counts_unread_and_picks_banner(fake_db):
     summary = ann.get_summary_for_user("u")
     assert summary["unread"] == 2
     assert summary["banner"]["id"] == "h"
+
+
+def test_get_announcements_endpoint(client, auth_bypass, fake_db):
+    fake_db.set_table("announcements", FakeQueryBuilder([_row()]))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    resp = client.get("/announcements")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["count"] == 1
+    assert data["announcements"][0]["title"] == "Hi"
+
+
+def test_get_announcements_unauthorized(client):
+    assert client.get("/announcements").status_code in (401, 422)
+
+
+def test_mark_read_endpoint(client, auth_bypass, fake_db):
+    fake_db.set_table("announcements", FakeQueryBuilder([_row()]))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    resp = client.post("/announcements/ann-1/read")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "read"
+
+
+def test_mark_read_unknown_returns_404(client, auth_bypass, fake_db):
+    fake_db.set_table("announcements", FakeQueryBuilder([]))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    resp = client.post("/announcements/nope/read")
+    assert resp.status_code == 404
+
+
+def test_dismiss_endpoint(client, auth_bypass, fake_db):
+    fake_db.set_table("announcements", FakeQueryBuilder([_row()]))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    resp = client.post("/announcements/ann-1/dismiss")
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "dismissed"
