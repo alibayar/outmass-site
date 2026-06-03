@@ -161,13 +161,18 @@
       chrome.storage.local.get(["sessionExpired"], function (s) {
         var sessionExpired = !!(s && s.sessionExpired);
         var requiresReauth = false;
+        var summary = null;
         if (resp && !resp.error) {
           var data = resp.data || resp;
           requiresReauth = !!(data && data.requires_reauth);
-          // Piggyback the announcement signal on the existing settings poll.
-          updateAnnouncementSignal(data.announcements_summary);
+          summary = data.announcements_summary;
         }
+        // Apply the reauth banner FIRST, then the announcement signal, so the
+        // strip's precedence check (reauth > offline > announcement) reads the
+        // freshly-applied banner state rather than the previous poll's.
         updateReauthBanner(requiresReauth, sessionExpired);
+        // Piggyback the announcement signal on the existing settings poll.
+        updateAnnouncementSignal(summary);
       });
     });
   }
@@ -289,10 +294,18 @@
   // Called from the settings poll with data.announcements_summary.
   // Precedence: reauth > offline > announcement strip. Only show the strip
   // when neither the reauth banner nor the offline banner is visible.
+  var _lastUnreadSignal = -1;
   function updateAnnouncementSignal(summary) {
     if (!summary) return;
-    var bell = document.getElementById("bell-btn");
-    if (bell && summary.unread > 0) { bell.style.display = "inline-block"; }
+    // The summary's unread count is NOT version-filtered (the server doesn't
+    // know the client's running version). So we never drive the bell/badge
+    // directly from it — instead, when the unread signal changes, refresh the
+    // full list and let renderAnnouncements() (which IS version-aware) own the
+    // bell + badge. This keeps a single source of truth for bell visibility.
+    if (summary.unread !== _lastUnreadSignal) {
+      _lastUnreadSignal = summary.unread;
+      loadAnnouncements();
+    }
     var reauthEl = document.getElementById("reauth-banner");
     var reauthVisible = reauthEl && reauthEl.style.display !== "none";
     var offlineEl = document.getElementById("offline-banner");
