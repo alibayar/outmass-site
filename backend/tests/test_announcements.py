@@ -1,3 +1,4 @@
+from models import announcement as ann
 from tests.conftest import FakeQueryBuilder
 
 
@@ -5,10 +6,6 @@ def test_fake_upsert_sets_data():
     qb = FakeQueryBuilder()
     qb.upsert({"announcement_id": "a", "user_id": "u", "read_at": "now"})
     assert qb.execute().data == [{"announcement_id": "a", "user_id": "u", "read_at": "now"}]
-
-
-from datetime import datetime, timezone, timedelta
-from models import announcement as ann
 
 
 def _row(**kw):
@@ -68,6 +65,30 @@ def test_summary_counts_unread_and_picks_banner(fake_db):
     summary = ann.get_summary_for_user("u")
     assert summary["unread"] == 2
     assert summary["banner"]["id"] == "h"
+
+
+def test_version_tagged_not_server_filtered(fake_db):
+    """The `version` field is gated by the client (it has the manifest),
+    NOT the server. A version-tagged row must still be returned regardless
+    of value — this pins the contract so nobody adds server-side filtering."""
+    fake_db.set_table("announcements", FakeQueryBuilder([_row(version="9.9.9")]))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    out = ann.get_user_announcements("u")
+    assert len(out) == 1 and out[0]["version"] == "9.9.9"
+
+
+def test_mixed_audience_feed(fake_db):
+    """A realistic feed: broadcast + targeted-to-me + targeted-to-other.
+    'me' sees exactly the broadcast and my own targeted item."""
+    rows = [
+        _row(id="b", audience="broadcast", user_id=None),
+        _row(id="mine", audience="targeted", user_id="me"),
+        _row(id="theirs", audience="targeted", user_id="other"),
+    ]
+    fake_db.set_table("announcements", FakeQueryBuilder(rows))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    ids = {a["id"] for a in ann.get_user_announcements("me")}
+    assert ids == {"b", "mine"}
 
 
 def test_get_announcements_endpoint(client, auth_bypass, fake_db):

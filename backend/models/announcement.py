@@ -143,6 +143,10 @@ def _exists(announcement_id: str, user_id: str) -> bool:
 def mark_read(announcement_id: str, user_id: str) -> bool:
     if not _exists(announcement_id, user_id):
         return False
+    # Partial upsert: we deliberately omit dismissed_at so a `read` arriving
+    # AFTER a dismiss (e.g. bell-open marks all unread read) can't un-dismiss.
+    # Supabase upsert only writes the supplied columns, so an existing
+    # dismissed_at on the conflicting row is preserved.
     get_db().table("announcement_reads").upsert(
         {"announcement_id": announcement_id, "user_id": user_id,
          "read_at": _now().isoformat()},
