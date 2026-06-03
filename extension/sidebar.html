@@ -12,6 +12,9 @@
     <div class="header-left">
       <h1>OutMass</h1>
       <span class="conn-dot" id="conn-dot" data-i18n-title="connChecking" title="Checking connection..."></span>
+      <button class="bell-btn" id="bell-btn" data-i18n-title="announcementsTitle" title="Notifications" style="display:none;">
+        🔔<span class="bell-badge" id="bell-badge" style="display:none;">0</span>
+      </button>
     </div>
     <button class="btn-close" id="btn-close" data-i18n-title="btnClose" title="Close">&times;</button>
   </div>
@@ -28,6 +31,19 @@
     <button class="reauth-banner-btn" id="reauth-banner-btn" data-i18n="reauthBannerCta">
       Sign in
     </button>
+  </div>
+
+  <!-- High-priority announcement strip (reuses reauth-banner styling) -->
+  <div class="announce-strip" id="announce-strip" style="display:none;">
+    <span class="announce-strip-text" id="announce-strip-text"></span>
+    <button class="announce-strip-btn" id="announce-strip-btn" data-i18n="announcementsView">View</button>
+    <button class="announce-strip-x" id="announce-strip-x" title="Dismiss">&times;</button>
+  </div>
+
+  <!-- Bell dropdown panel -->
+  <div class="announce-panel" id="announce-panel" style="display:none;">
+    <div class="announce-panel-empty" id="announce-panel-empty" data-i18n="announcementsEmpty">No notifications</div>
+    <div id="announce-list"></div>
   </div>
 
   <!-- Tabs -->

@@ -164,10 +164,150 @@
         if (resp && !resp.error) {
           var data = resp.data || resp;
           requiresReauth = !!(data && data.requires_reauth);
+          // Piggyback the announcement signal on the existing settings poll.
+          updateAnnouncementSignal(data.announcements_summary);
         }
         updateReauthBanner(requiresReauth, sessionExpired);
       });
     });
+  }
+
+  // ── Announcements ──
+  // Only treat http(s) CTA URLs as links. Announcements are admin-authored,
+  // but this is defense-in-depth: a javascript:/data: URL must never become
+  // a clickable link in the sidebar DOM.
+  function safeCtaUrl(u) {
+    return (typeof u === "string" && /^https?:\/\//i.test(u)) ? u : null;
+  }
+
+  function semverGte(a, b) {
+    // returns true if version a >= version b ("0.1.12" >= "0.1.12")
+    var pa = String(a).split("."), pb = String(b).split(".");
+    for (var i = 0; i < Math.max(pa.length, pb.length); i++) {
+      var na = parseInt(pa[i] || "0", 10), nb = parseInt(pb[i] || "0", 10);
+      if (na > nb) return true;
+      if (na < nb) return false;
+    }
+    return true;
+  }
+
+  function visibleByVersion(item) {
+    if (!item || !item.version) return true;
+    return semverGte(chrome.runtime.getManifest().version, item.version);
+  }
+
+  var _announcements = [];
+
+  function renderAnnouncements() {
+    var list = document.getElementById("announce-list");
+    var empty = document.getElementById("announce-panel-empty");
+    var badge = document.getElementById("bell-badge");
+    var bell = document.getElementById("bell-btn");
+    if (!list) return;
+    var items = _announcements.filter(visibleByVersion);
+    list.innerHTML = "";
+    bell.style.display = items.length ? "inline-block" : "none";
+    empty.style.display = items.length ? "none" : "block";
+    var unread = items.filter(function (a) { return !a.read; }).length;
+    badge.textContent = unread;
+    badge.style.display = unread ? "inline-flex" : "none";
+    items.forEach(function (a) {
+      var card = document.createElement("div");
+      card.className = "announce-card";
+      var title = document.createElement("div");
+      title.className = "announce-card-title"; title.textContent = a.title;
+      var body = document.createElement("div");
+      body.className = "announce-card-body"; body.textContent = a.body;
+      card.appendChild(title); card.appendChild(body);
+      var actions = document.createElement("div");
+      actions.className = "announce-card-actions";
+      var url = safeCtaUrl(a.cta_url);
+      if (url && a.cta_label) {
+        var link = document.createElement("a");
+        link.className = "announce-card-cta"; link.textContent = a.cta_label;
+        link.href = url; link.target = "_blank"; link.rel = "noopener";
+        actions.appendChild(link);
+      }
+      var dis = document.createElement("button");
+      dis.className = "announce-card-dismiss";
+      dis.textContent = t("announcementsDismiss");
+      dis.addEventListener("click", function () { dismissAnnouncement(a.id); });
+      actions.appendChild(dis);
+      card.appendChild(actions);
+      list.appendChild(card);
+    });
+  }
+
+  function loadAnnouncements() {
+    chrome.runtime.sendMessage({ type: "GET_ANNOUNCEMENTS" }, function (resp) {
+      if (!resp || resp.error) return;
+      var data = resp.data || resp;
+      _announcements = (data.announcements || []);
+      renderAnnouncements();
+    });
+  }
+
+  function markReadVisibleUnread() {
+    _announcements.filter(visibleByVersion).filter(function (a) { return !a.read; })
+      .forEach(function (a) {
+        a.read = true;
+        chrome.runtime.sendMessage({ type: "ANNOUNCEMENT_READ", id: a.id });
+      });
+    renderAnnouncements();
+  }
+
+  function dismissAnnouncement(id) {
+    chrome.runtime.sendMessage({ type: "ANNOUNCEMENT_DISMISS", id: id });
+    _announcements = _announcements.filter(function (a) { return a.id !== id; });
+    renderAnnouncements();
+    // also hide the strip if it was this one
+    var strip = document.getElementById("announce-strip");
+    if (strip && strip.getAttribute("data-id") === id) strip.style.display = "none";
+  }
+
+  (function wireBell() {
+    var bell = document.getElementById("bell-btn");
+    var panel = document.getElementById("announce-panel");
+    if (bell && panel) {
+      bell.addEventListener("click", function () {
+        var open = panel.style.display !== "none";
+        panel.style.display = open ? "none" : "block";
+        if (!open) markReadVisibleUnread();
+      });
+    }
+    var strip = document.getElementById("announce-strip");
+    var stripBtn = document.getElementById("announce-strip-btn");
+    var stripX = document.getElementById("announce-strip-x");
+    if (stripBtn) stripBtn.addEventListener("click", function () {
+      panel.style.display = "block"; markReadVisibleUnread(); strip.style.display = "none";
+    });
+    if (stripX) stripX.addEventListener("click", function () {
+      var id = strip.getAttribute("data-id"); if (id) dismissAnnouncement(id);
+    });
+  })();
+
+  // Called from the settings poll with data.announcements_summary.
+  // Precedence: reauth > offline > announcement strip. Only show the strip
+  // when neither the reauth banner nor the offline banner is visible.
+  function updateAnnouncementSignal(summary) {
+    if (!summary) return;
+    var bell = document.getElementById("bell-btn");
+    if (bell && summary.unread > 0) { bell.style.display = "inline-block"; }
+    var reauthEl = document.getElementById("reauth-banner");
+    var reauthVisible = reauthEl && reauthEl.style.display !== "none";
+    var offlineEl = document.getElementById("offline-banner");
+    var offlineVisible = offlineEl && offlineEl.style.display !== "none" &&
+      offlineEl.style.display !== "";
+    var strip = document.getElementById("announce-strip");
+    var b = summary.banner;
+    if (b && !visibleByVersion(b)) b = null;
+    if (b && !reauthVisible && !offlineVisible) {
+      document.getElementById("announce-strip-text").textContent = b.title;
+      strip.setAttribute("data-id", b.id);
+      strip.style.display = "flex";
+    } else if (strip) {
+      strip.style.display = "none";
+    }
   }
 
   // ── Tabs ──
@@ -2749,6 +2889,7 @@
     loadTemplates();
     showOnboardingIfFirstRun();
     pollReauthState();
+    loadAnnouncements();
     // Re-check reauth state every 5 minutes — catches the case where a
     // background scheduled send flagged the user but the sidebar stayed open.
     setInterval(pollReauthState, 5 * 60 * 1000);
