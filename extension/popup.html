@@ -279,6 +279,15 @@
     .plan-badge.team {
       background: #8764b8;
     }
+
+    /* ── Announcements ── */
+    .pa-card { background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; padding:10px; margin-bottom:6px; text-align:left; }
+    .pa-title { font-size:13px; font-weight:600; color:#1e3a8a; }
+    .pa-body { font-size:12px; color:#475569; margin-top:3px; line-height:1.4; }
+    .pa-actions { margin-top:8px; display:flex; justify-content:space-between; align-items:center; }
+    .pa-cta { color:#0078d4; font-size:12px; font-weight:600; text-decoration:none; }
+    .pa-dismiss { background:none; border:none; color:#94a3b8; font-size:12px; cursor:pointer; padding:0; }
+    .pa-more { font-size:12px; color:#0078d4; cursor:pointer; text-align:center; }
   </style>
 </head>
 <body>
@@ -322,6 +331,7 @@
       <button class="btn-upgrade-popup btn-upgrade-starter" id="btn-upgrade-starter" style="display:none;" data-i18n="popupUpgradeStarter">Upgrade → Starter ($9/mo)</button>
       <button class="btn-upgrade-popup" id="btn-upgrade-pro" style="display:none;" data-i18n="popupUpgradePro">Upgrade → Pro ($19/mo)</button>
       <button class="btn-manage-sub" id="btn-manage-sub" style="display:none;" data-i18n="btnManageSub">Manage Subscription</button>
+      <div id="popup-announcements" style="display:none; margin-bottom:8px;"></div>
       <button class="btn-logout" id="btn-logout" data-i18n="btnLogout">Sign Out</button>
     </div>
   </div>

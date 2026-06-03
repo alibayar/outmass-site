@@ -108,6 +108,73 @@
     }
 
     showSection("connected");
+    loadPopupAnnouncements();
+  }
+
+  // ── Announcements ──
+  // Only treat http(s) CTA URLs as links (defense-in-depth: never let a
+  // javascript:/data: URL become a clickable link in the popup DOM).
+  function safeCtaUrl(u) {
+    return (typeof u === "string" && /^https?:\/\//i.test(u)) ? u : null;
+  }
+
+  function semverGte(a, b) {
+    var pa = String(a).split("."), pb = String(b).split(".");
+    for (var i = 0; i < Math.max(pa.length, pb.length); i++) {
+      var na = parseInt(pa[i] || "0", 10), nb = parseInt(pb[i] || "0", 10);
+      if (na > nb) return true;
+      if (na < nb) return false;
+    }
+    return true;
+  }
+
+  function openSidebarPanel() {
+    // reuse the existing dashboard button flow to open the sidebar
+    document.getElementById("btn-dashboard").click();
+  }
+
+  function loadPopupAnnouncements() {
+    var box = document.getElementById("popup-announcements");
+    if (!box) return;
+    chrome.runtime.sendMessage({ type: "GET_ANNOUNCEMENTS" }, function (resp) {
+      if (!resp || resp.error) return;
+      var data = resp.data || resp;
+      var v = chrome.runtime.getManifest().version;
+      var items = (data.announcements || []).filter(function (a) {
+        return !a.version || semverGte(v, a.version);
+      });
+      var unread = items.filter(function (a) { return !a.read; });
+      if (!unread.length) { box.style.display = "none"; return; }
+      box.style.display = "block";
+      box.innerHTML = "";
+      var a = unread[0];
+      var card = document.createElement("div"); card.className = "pa-card";
+      var title = document.createElement("div"); title.className = "pa-title"; title.textContent = a.title;
+      var body = document.createElement("div"); body.className = "pa-body"; body.textContent = a.body;
+      card.appendChild(title); card.appendChild(body);
+      var actions = document.createElement("div"); actions.className = "pa-actions";
+      var url = safeCtaUrl(a.cta_url);
+      if (url && a.cta_label) {
+        var link = document.createElement("a"); link.className = "pa-cta";
+        link.textContent = a.cta_label; link.href = url; link.target = "_blank"; link.rel = "noopener";
+        actions.appendChild(link);
+      } else { actions.appendChild(document.createElement("span")); }
+      var dis = document.createElement("button"); dis.className = "pa-dismiss";
+      dis.textContent = t("announcementsDismiss");
+      dis.addEventListener("click", function () {
+        chrome.runtime.sendMessage({ type: "ANNOUNCEMENT_DISMISS", id: a.id });
+        box.style.display = "none";
+      });
+      actions.appendChild(dis); card.appendChild(actions); box.appendChild(card);
+      if (unread.length > 1) {
+        var more = document.createElement("div"); more.className = "pa-more";
+        more.textContent = t("announcementsMore", [String(unread.length - 1)]);
+        more.addEventListener("click", openSidebarPanel);
+        box.appendChild(more);
+      }
+      // showing the popup message marks the top item read
+      chrome.runtime.sendMessage({ type: "ANNOUNCEMENT_READ", id: a.id });
+    });
   }
 
   function showError(message) {
