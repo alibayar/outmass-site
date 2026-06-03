@@ -107,3 +107,17 @@ def test_remove_suppression(client, auth_bypass, fake_db):
     )
     assert resp.status_code == 200
     assert resp.json()["status"] == "removed"
+
+
+def test_settings_includes_announcements_summary(client, auth_bypass, fake_db):
+    from tests.conftest import FakeQueryBuilder
+    fake_db.set_table("announcements", FakeQueryBuilder([{
+        "id": "h", "audience": "broadcast", "user_id": None, "priority": "high",
+        "title": "Gift", "body": "b", "cta_label": None, "cta_url": None,
+        "version": None, "starts_at": "2020-01-01T00:00:00Z", "expires_at": None,
+        "active": True, "created_at": "2026-06-02T00:00:00Z",
+    }]))
+    fake_db.set_table("announcement_reads", FakeQueryBuilder([]))
+    data = client.get("/settings").json()
+    assert data["announcements_summary"]["unread"] == 1
+    assert data["announcements_summary"]["banner"]["id"] == "h"

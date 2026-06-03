@@ -12,6 +12,7 @@ from pydantic import BaseModel
 
 from config import monthly_limit_for_plan, upload_limit_for_plan
 from database import get_db
+from models import announcement as ann
 from routers.auth import get_current_user
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -60,6 +61,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "cross_campaign_dedup_days": user.get("cross_campaign_dedup_days", 60),
         "requires_reauth": bool(user.get("requires_reauth", False)),
         "reauth_reason": user.get("reauth_reason"),
+        "announcements_summary": ann.get_summary_for_user(user["id"]),
     }
 
 
