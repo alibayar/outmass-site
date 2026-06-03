@@ -252,6 +252,11 @@ async function backendFetch(endpoint, options) {
     const resp = await fetch(OUTMASS_BACKEND_URL + endpoint, {
       method: options?.method || "GET",
       headers: headers,
+      // Never serve authenticated API responses from the HTTP cache: the URL
+      // is identical across users and Authorization isn't a cache key, so a
+      // cached GET (e.g. /announcements, /settings) could leak the previous
+      // account's data after switching accounts in the same browser.
+      cache: "no-store",
       body: options?.body ? JSON.stringify(options.body) : undefined,
     });
 

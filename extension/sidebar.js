@@ -330,6 +330,40 @@
     }
   }
 
+  // Reset all announcement UI + state. Used when the signed-in account
+  // changes (sign-out/in, or switching accounts in the same browser) so the
+  // previous account's bell/badge/strip/panel never linger for the new one.
+  function resetAnnouncements() {
+    _announcements = [];
+    _lastUnreadSignal = -1;
+    var bell = document.getElementById("bell-btn");
+    var badge = document.getElementById("bell-badge");
+    var strip = document.getElementById("announce-strip");
+    var panel = document.getElementById("announce-panel");
+    var list = document.getElementById("announce-list");
+    if (bell) bell.style.display = "none";
+    if (badge) badge.style.display = "none";
+    if (strip) strip.style.display = "none";
+    if (panel) panel.style.display = "none";
+    if (list) list.innerHTML = "";
+  }
+
+  // Account switches don't reload the Outlook page, so the sidebar (a
+  // persistent iframe) would otherwise keep showing the prior account's
+  // announcements until the next 5-min poll. Watch the stored JWT: when it
+  // changes, wipe state and re-fetch immediately for the new identity.
+  if (chrome.storage && chrome.storage.onChanged) {
+    chrome.storage.onChanged.addListener(function (changes, area) {
+      if (area !== "local" || !changes.backendJwt) return;
+      resetAnnouncements();
+      if (changes.backendJwt.newValue) {
+        // Signed in (possibly as a different account) — refresh for the new user.
+        pollReauthState();
+        loadAnnouncements();
+      }
+    });
+  }
+
   // ── Tabs ──
   tabs.forEach(function (tab) {
     tab.addEventListener("click", function () {
