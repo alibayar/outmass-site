@@ -2,10 +2,14 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.13 — 2026-06-02
+
+- Sending account is now shown above the Send button ("Sending as: …"), so you always know which OutMass account a campaign goes out from — with a quick Change link to switch.
+- Polish: in-app notifications now refresh instantly when you switch accounts, and the notification panel closes cleanly once everything is read/dismissed.
+
 ## v0.1.12 — 2026-06-02
 
 - In-app notifications: a new bell in the sidebar header shows announcements and updates, with a highlighted banner for important news (like a gift or a new release). A matching card appears in the extension popup under Manage Subscription. Read and dismiss right where you work — no need to check email.
-- Sending account is now shown above the Send button ("Sending as: …"), so you always know which OutMass account a campaign goes out from — with a quick Change link to switch.
 
 ## v0.1.11 — 2026-06-01
 
