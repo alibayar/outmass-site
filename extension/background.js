@@ -585,6 +585,28 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "GET_ANNOUNCEMENTS":
+      backendFetch("/announcements").then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "ANNOUNCEMENT_READ":
+      backendFetch("/announcements/" + message.id + "/read", {
+        method: "POST",
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "ANNOUNCEMENT_DISMISS":
+      backendFetch("/announcements/" + message.id + "/dismiss", {
+        method: "POST",
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "GET_SUPPRESSION_LIST":
       backendFetch("/settings/suppression").then(function (result) {
         sendResponse(result);
