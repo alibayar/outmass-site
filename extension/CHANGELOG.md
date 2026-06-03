@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.12 — 2026-06-02
+
+- In-app notifications: a new bell in the sidebar header shows announcements and updates, with a highlighted banner for important news (like a gift or a new release). A matching card appears in the extension popup under Manage Subscription. Read and dismiss right where you work — no need to check email.
+
 ## v0.1.11 — 2026-06-01
 
 - Bigger free plan: 250 emails/month (was 50). Starter raised to 2,500/month. Upload limits raised to match. Enjoy the extra room!
