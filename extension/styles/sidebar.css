@@ -351,13 +351,18 @@ body {
 }
 
 /* ── Buttons ── */
+/* The separator now lives on the actions group so the sending-identity
+   line and the buttons sit together below one divider. */
+.actions-group {
+  margin-top: 20px;
+  padding-top: 16px;
+  border-top: 1px solid #edebe9;
+}
+
 .form-actions {
   display: flex;
   gap: 8px;
-  margin-top: 20px;
   margin-bottom: 16px;
-  padding-top: 16px;
-  border-top: 1px solid #edebe9;
 }
 
 .btn {

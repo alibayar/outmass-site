@@ -180,19 +180,24 @@
       </div>
     </div>
 
-    <!-- Sending identity: which OutMass account this campaign sends from.
-         OutMass auth is independent of the displayed Outlook account. -->
-    <div class="sending-as" id="sending-as" style="display:none;">
-      <span class="sending-as-label" data-i18n="sendingAsLabel">Sending as:</span>
-      <span class="sending-as-email" id="sending-as-email"></span>
-      <button type="button" class="sending-as-change" id="sending-as-change" data-i18n="sendingAsChange">Change</button>
-    </div>
+    <!-- Actions group: the sending-identity line + send buttons live below
+         one separator, so the line reads as part of the send area (not the
+         follow-up option above it). -->
+    <div class="actions-group">
+      <!-- Sending identity: which OutMass account this campaign sends from.
+           OutMass auth is independent of the displayed Outlook account. -->
+      <div class="sending-as" id="sending-as" style="display:none;">
+        <span class="sending-as-label" data-i18n="sendingAsLabel">Sending as:</span>
+        <span class="sending-as-email" id="sending-as-email"></span>
+        <button type="button" class="sending-as-change" id="sending-as-change" data-i18n="sendingAsChange">Change</button>
+      </div>
 
-    <!-- Actions (moved below all options) -->
-    <div class="form-actions">
-      <button class="btn btn-secondary" id="btn-preview" data-i18n="btnPreview">Preview</button>
-      <button class="btn btn-secondary" id="btn-test-send" data-i18n="btnTestSend">Test Send</button>
-      <button class="btn btn-primary" id="btn-send" data-i18n="btnSend" disabled>Send</button>
+      <!-- Actions (moved below all options) -->
+      <div class="form-actions">
+        <button class="btn btn-secondary" id="btn-preview" data-i18n="btnPreview">Preview</button>
+        <button class="btn btn-secondary" id="btn-test-send" data-i18n="btnTestSend">Test Send</button>
+        <button class="btn btn-primary" id="btn-send" data-i18n="btnSend" disabled>Send</button>
+      </div>
     </div>
 
     <!-- Quota -->
