@@ -121,3 +121,22 @@ def test_settings_includes_announcements_summary(client, auth_bypass, fake_db):
     data = client.get("/settings").json()
     assert data["announcements_summary"]["unread"] == 1
     assert data["announcements_summary"]["banner"]["id"] == "h"
+
+
+def test_settings_survives_announcements_failure(client, auth_bypass, fake_db, monkeypatch):
+    """/settings is a hot path (quota + reauth). An announcements-table error
+    (e.g. migration 020 lagging a deploy) must degrade to an empty summary,
+    not 500 the whole settings response."""
+    import models.announcement as ann
+
+    def _boom(_user_id):
+        raise RuntimeError("relation \"announcements\" does not exist")
+
+    monkeypatch.setattr(ann, "get_summary_for_user", _boom)
+    resp = client.get("/settings")
+    assert resp.status_code == 200
+    data = resp.json()
+    assert data["announcements_summary"] == {"unread": 0, "banner": None}
+    # core settings still present
+    assert data["plan"] == "free"
+    assert data["monthly_limit"] == 250

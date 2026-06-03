@@ -109,7 +109,9 @@ def get_user_announcements(user_id: str) -> list[dict]:
             "read": bool(rd.get("read_at")),
             "dismissed": False,
         })
-    # Stable sort: newest first, then high priority first.
+    # Two stable sorts compose to: high-priority group first, newest-first
+    # within each group. (Sort by recency first, then a stable sort by
+    # priority preserves that recency order inside each priority bucket.)
     out.sort(key=lambda a: a.get("created_at") or "", reverse=True)
     out.sort(key=lambda a: 0 if a["priority"] == "high" else 1)
     return out

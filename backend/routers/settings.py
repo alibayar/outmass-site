@@ -40,6 +40,14 @@ class SuppressionRequest(BaseModel):
 async def get_settings(user: dict = Depends(get_current_user)):
     """Get user settings."""
     plan = user.get("plan", "free")
+    # Announcements live on a hot, critical path (the sidebar polls /settings
+    # for quota + reauth state). Never let an announcements-table hiccup — e.g.
+    # migration 020 lagging a backend deploy, or a transient DB error — take
+    # down the whole settings response. Degrade to "no announcements" instead.
+    try:
+        announcements_summary = ann.get_summary_for_user(user["id"])
+    except Exception:
+        announcements_summary = {"unread": 0, "banner": None}
     return {
         "email": user.get("email", ""),
         "name": user.get("name", ""),
@@ -61,7 +69,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "cross_campaign_dedup_days": user.get("cross_campaign_dedup_days", 60),
         "requires_reauth": bool(user.get("requires_reauth", False)),
         "reauth_reason": user.get("reauth_reason"),
-        "announcements_summary": ann.get_summary_for_user(user["id"]),
+        "announcements_summary": announcements_summary,
     }
 
 
