@@ -213,6 +213,13 @@
     list.innerHTML = "";
     bell.style.display = items.length ? "inline-block" : "none";
     empty.style.display = items.length ? "none" : "block";
+    // When nothing remains (e.g. the user dismissed the last item), close the
+    // panel too — otherwise it lingers open on "No notifications" while the
+    // bell has just vanished, leaving no control to close it.
+    if (!items.length) {
+      var panel = document.getElementById("announce-panel");
+      if (panel) panel.style.display = "none";
+    }
     var unread = items.filter(function (a) { return !a.read; }).length;
     badge.textContent = unread;
     badge.style.display = unread ? "inline-flex" : "none";
