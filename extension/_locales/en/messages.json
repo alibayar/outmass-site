@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ recipient(s) queued for resend.",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "Could not resume: $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "Sending as:"
+  },
+  "sendingAsChange": {
+    "message": "Change"
   }
 }

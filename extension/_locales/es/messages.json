@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ destinatario(s) en cola para reenvío.",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "No se pudo reanudar: $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "Enviando como:"
+  },
+  "sendingAsChange": {
+    "message": "Cambiar"
   }
 }

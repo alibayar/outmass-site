@@ -352,14 +352,57 @@
   // persistent iframe) would otherwise keep showing the prior account's
   // announcements until the next 5-min poll. Watch the stored JWT: when it
   // changes, wipe state and re-fetch immediately for the new identity.
+  // ── Sending identity ──
+  // Show which OutMass account a campaign will send from. OutMass auth is
+  // independent of the displayed Outlook account, so we surface the exact
+  // signed-in account (stored at login) right above the Send button.
+  function renderSenderIdentity() {
+    var box = document.getElementById("sending-as");
+    var emailEl = document.getElementById("sending-as-email");
+    if (!box || !emailEl) return;
+    chrome.storage.local.get("user", function (r) {
+      var email = r && r.user && r.user.email;
+      if (email) {
+        emailEl.textContent = email;
+        box.style.display = "flex";
+      } else {
+        box.style.display = "none";
+      }
+    });
+  }
+
+  (function wireSenderChange() {
+    var btn = document.getElementById("sending-as-change");
+    if (!btn) return;
+    btn.addEventListener("click", function () {
+      track("signin_clicked", { context: "sending_as" });
+      chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+        // On success the new user/JWT are stored; the storage.onChanged
+        // listener below refreshes identity + announcements. We also refresh
+        // here for immediacy.
+        if (resp && resp.user) {
+          renderSenderIdentity();
+          if (typeof loadQuota === "function") loadQuota();
+        }
+      });
+    });
+  })();
+
   if (chrome.storage && chrome.storage.onChanged) {
     chrome.storage.onChanged.addListener(function (changes, area) {
-      if (area !== "local" || !changes.backendJwt) return;
-      resetAnnouncements();
-      if (changes.backendJwt.newValue) {
-        // Signed in (possibly as a different account) — refresh for the new user.
-        pollReauthState();
-        loadAnnouncements();
+      if (area !== "local") return;
+      // Sending-identity line follows the stored user.
+      if (changes.user) renderSenderIdentity();
+      // Account switches don't reload the Outlook page, so the sidebar (a
+      // persistent iframe) would otherwise keep showing the prior account's
+      // announcements until the next 5-min poll. When the JWT changes, wipe
+      // state and re-fetch immediately for the new identity.
+      if (changes.backendJwt) {
+        resetAnnouncements();
+        if (changes.backendJwt.newValue) {
+          pollReauthState();
+          loadAnnouncements();
+        }
       }
     });
   }
@@ -2944,6 +2987,7 @@
     showOnboardingIfFirstRun();
     pollReauthState();
     loadAnnouncements();
+    renderSenderIdentity();
     // Re-check reauth state every 5 minutes — catches the case where a
     // background scheduled send flagged the user but the sidebar stayed open.
     setInterval(pollReauthState, 5 * 60 * 1000);

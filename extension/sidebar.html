@@ -180,6 +180,14 @@
       </div>
     </div>
 
+    <!-- Sending identity: which OutMass account this campaign sends from.
+         OutMass auth is independent of the displayed Outlook account. -->
+    <div class="sending-as" id="sending-as" style="display:none;">
+      <span class="sending-as-label" data-i18n="sendingAsLabel">Sending as:</span>
+      <span class="sending-as-email" id="sending-as-email"></span>
+      <button type="button" class="sending-as-change" id="sending-as-change" data-i18n="sendingAsChange">Change</button>
+    </div>
+
     <!-- Actions (moved below all options) -->
     <div class="form-actions">
       <button class="btn btn-secondary" id="btn-preview" data-i18n="btnPreview">Preview</button>

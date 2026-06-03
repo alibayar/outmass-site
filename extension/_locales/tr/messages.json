@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ alıcı yeniden gönderim için sıraya alındı.",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "Devam edilemedi: $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "Gönderen hesap:"
+  },
+  "sendingAsChange": {
+    "message": "Değiştir"
   }
 }

@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ 件の受信者を再送キューに追加しました。",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "再開できませんでした: $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "送信元:"
+  },
+  "sendingAsChange": {
+    "message": "変更"
   }
 }

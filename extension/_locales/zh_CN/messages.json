@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ 位收件人已排队重发。",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "无法继续: $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "发送身份："
+  },
+  "sendingAsChange": {
+    "message": "更改"
   }
 }

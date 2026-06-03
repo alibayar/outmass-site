@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ destinataire(s) en file d'attente pour renvoi.",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "Impossible de reprendre : $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "Envoi en tant que :"
+  },
+  "sendingAsChange": {
+    "message": "Modifier"
   }
 }

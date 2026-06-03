@@ -935,13 +935,17 @@
   "resumeQueued": {
     "message": "$N$ Empfänger für erneuten Versand eingereiht.",
     "placeholders": {
-      "n": { "content": "$1" }
+      "n": {
+        "content": "$1"
+      }
     }
   },
   "resumeFailed": {
     "message": "Fortsetzen fehlgeschlagen: $ERROR$",
     "placeholders": {
-      "error": { "content": "$1" }
+      "error": {
+        "content": "$1"
+      }
     }
   },
   "oneDriveRootLabel": {
@@ -997,5 +1001,11 @@
         "content": "$1"
       }
     }
+  },
+  "sendingAsLabel": {
+    "message": "Senden als:"
+  },
+  "sendingAsChange": {
+    "message": "Ändern"
   }
 }
