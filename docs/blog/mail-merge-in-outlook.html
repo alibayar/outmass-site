@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mail Merge in Outlook (with Attachments & Tracking) — the Easy Way — OutMass</title>
+  <meta name="description" content="How to mail merge in Outlook the native way (Word + Excel) — and the easy way with attachments, open/click tracking, scheduling, and follow-ups using OutMass.">
+  <meta property="og:title" content="Mail Merge in Outlook (with Attachments & Tracking) — the Easy Way">
+  <meta property="og:description" content="How to mail merge in Outlook the native way (Word + Excel) — and the easy way with attachments, open/click tracking, scheduling, and follow-ups using OutMass.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/mail-merge-in-outlook.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/mail-merge-in-outlook.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Mail Merge in Outlook — the Native Way vs the Easy Way",
+    "description": "How to mail merge in Outlook the native way (Word + Excel) — and the easy way with attachments, open/click tracking, scheduling, and follow-ups using OutMass.",
+    "datePublished": "2026-06-12",
+    "dateModified": "2026-06-12",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/mail-merge-in-outlook.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "HowTo",
+    "name": "How to mail merge in Outlook (native Word method)",
+    "description": "Send personalized bulk email from Outlook using Microsoft Word's Mail Merge with an Excel recipient list.",
+    "step": [
+      {"@type": "HowToStep", "position": 1, "name": "Build your list in Excel", "text": "Create an Excel sheet with one row per recipient and columns like Email, First Name, and Company."},
+      {"@type": "HowToStep", "position": 2, "name": "Start the merge in Word", "text": "In Microsoft Word, go to Mailings > Start Mail Merge > Email Messages."},
+      {"@type": "HowToStep", "position": 3, "name": "Select recipients", "text": "Click Select Recipients > Use an Existing List and choose your Excel file."},
+      {"@type": "HowToStep", "position": 4, "name": "Insert merge fields", "text": "Write the message and use Insert Merge Field to drop in First Name, Company, and other columns."},
+      {"@type": "HowToStep", "position": 5, "name": "Finish and send", "text": "Click Finish & Merge > Send Email Messages, pick the email column and subject line, and Word hands the messages to Outlook to send."}
+    ]
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "How do I mail merge in Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "The native way is Microsoft Word's Mail Merge: build a recipient list in Excel, then in Word go to Mailings > Start Mail Merge > Email Messages, select your Excel list, insert merge fields like First Name, and Finish & Merge > Send Email Messages so Word sends them through Outlook. The easier way is OutMass — a CSV-based mail merge that runs inside Outlook on the web and adds open/click tracking, scheduling, and follow-ups."}},
+      {"@type": "Question", "name": "Can you mail merge with attachments in Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Not with the native Word email merge — it sends one message body to each recipient but has no field for a per-recipient file attachment, so the standard mail merge cannot attach files at all. Workarounds rely on VBA macros or third-party add-ins and are clunky. OutMass solves it differently: it attaches files as OneDrive sharing links, which give better deliverability, allow larger files, and add view analytics."}},
+      {"@type": "Question", "name": "Can you track a mail merge in Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "The native Word + Outlook mail merge has no open tracking, no click tracking, and no per-recipient reporting — once you hit send, you are blind. OutMass adds pixel open tracking, click tracking, reply detection via a daily inbox scan, and a per-recipient reports view you can export to CSV."}},
+      {"@type": "Question", "name": "Why do mail merge emails from Outlook go to spam?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Common causes are sending too many messages too fast, spammy subject lines or content, and large file attachments. OutMass sends through your own mailbox at a controlled rate and uses OneDrive sharing links instead of heavy attachments, both of which help deliverability. If volume is the issue, see our breakdown of Outlook and Microsoft 365 send limits."}}
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>Mail Merge in Outlook — the Native Way vs the Easy Way</h1>
+    <p class="meta">Published June 12, 2026 · 7 min read</p>
+
+    <p>There are two ways to do a <strong>mail merge in Outlook</strong>. The first is the native one Microsoft ships: you drive it from Word, pull recipients from an Excel sheet, and let Outlook do the sending. The second is to skip the Word-and-Excel dance entirely and run the merge inside Outlook on the web with a CSV. This guide covers both — the exact native steps, the limitations nobody tells you about (attachments and tracking are the big ones), and where the easy way fits.</p>
+
+    <p>If you searched for "<strong>outlook mail merge with attachments</strong>" or "<strong>track mail merge outlook</strong>," you already hit the wall that brings most people here. We'll get to why, and what to do about it.</p>
+
+    <div class="highlight">
+      <p><strong>Short version.</strong> Native Word mail merge sends personalized bulk email through Outlook, but it can't attach per-recipient files, has zero open/click tracking, no scheduling, and no follow-ups. <a href="../index.html">OutMass</a> does the merge from a CSV inside Outlook on the web and adds all of that.</p>
+    </div>
+
+    <h2>How to mail merge in Outlook the native way (Word + Excel)</h2>
+
+    <p>The built-in method has no "mail merge" button inside Outlook itself — it lives in Microsoft Word. Here's the full flow:</p>
+
+    <ol>
+      <li><strong>Build your list in Excel.</strong> One row per recipient, with columns like <code>Email</code>, <code>First Name</code>, and <code>Company</code>. Save and close the file.</li>
+      <li><strong>Start the merge in Word.</strong> Open Word and go to <strong>Mailings → Start Mail Merge → Email Messages</strong>.</li>
+      <li><strong>Select recipients.</strong> Click <strong>Select Recipients → Use an Existing List</strong> and pick your Excel file (choose the right sheet when prompted).</li>
+      <li><strong>Insert merge fields.</strong> Write your message, then use <strong>Insert Merge Field</strong> to drop in <code>First Name</code>, <code>Company</code>, and any other columns where you want personalization.</li>
+      <li><strong>Finish &amp; Merge.</strong> Click <strong>Finish &amp; Merge → Send Email Messages</strong>. In the dialog, set the <em>To</em> field to your email column, type a subject line, and send. Word hands each message to Outlook, which delivers them from your mailbox.</li>
+    </ol>
+
+    <p>That's it — the native mail merge works, and for a one-off personalized blast it's genuinely fine. The problems start the moment you want anything more than a plain, fire-and-forget email.</p>
+
+    <h2>The hard limitations of native Outlook mail merge</h2>
+
+    <p>This is the part the tutorials skip. None of these are bugs you can work around with a setting — they're structural gaps in how Word's email merge works:</p>
+
+    <ul>
+      <li><strong>No attachments.</strong> Word's email merge sends a message body and nothing else. There is simply no field for attaching a file, so you <em>cannot</em> attach a PDF, deck, or contract to a native mail merge. This is the single most-searched pain point — and the workarounds (VBA macros, paid add-ins) are fiddly and break easily.</li>
+      <li><strong>No open or click tracking.</strong> Once you hit send, you're blind. No idea who opened, who clicked, or whether anything landed at all.</li>
+      <li><strong>No per-recipient reporting.</strong> There's no campaign view, no bounce list, no "who engaged" — Word doesn't keep any record beyond your Sent folder.</li>
+      <li><strong>No scheduling.</strong> The merge sends immediately. You can't queue it for 9am Tuesday in the recipient's timezone.</li>
+      <li><strong>No follow-ups.</strong> Re-emailing the people who didn't open means rebuilding the whole merge by hand against a manually filtered list.</li>
+      <li><strong>Limited personalization.</strong> You get column substitution and basic conditional fields, but no easy unsubscribe link, no suppression list, no A/B subject testing.</li>
+      <li><strong>You hit send limits fast.</strong> Microsoft 365 and Outlook.com throttle how many recipients you can send to per day. A large Word merge can trip those limits and get the rest of the batch silently deferred — see <a href="outlook-mail-merge-limit.html">our deep dive on the Outlook mail merge limit</a>.</li>
+    </ul>
+
+    <h2>Native Word mail merge vs OutMass</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>Native Word + Outlook merge</th>
+          <th>OutMass</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Where you work</td>
+          <td>Word + Excel, then Outlook</td>
+          <td>Inside Outlook on the web</td>
+        </tr>
+        <tr>
+          <td>Recipient source</td>
+          <td>Excel sheet</td>
+          <td>CSV upload</td>
+        </tr>
+        <tr>
+          <td>Personalization</td>
+          <td>Merge fields</td>
+          <td><code>{{firstName}}</code>, <code>{{company}}</code> merge tags</td>
+        </tr>
+        <tr>
+          <td>Attachments</td>
+          <td><strong>Not supported</strong></td>
+          <td>OneDrive sharing links (larger files, view analytics)</td>
+        </tr>
+        <tr>
+          <td>Open tracking</td>
+          <td>No</td>
+          <td>Yes (pixel)</td>
+        </tr>
+        <tr>
+          <td>Click tracking</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Reply detection</td>
+          <td>No</td>
+          <td>Yes (daily inbox scan)</td>
+        </tr>
+        <tr>
+          <td>Per-recipient reporting</td>
+          <td>No</td>
+          <td>Reports + CSV export</td>
+        </tr>
+        <tr>
+          <td>Scheduling</td>
+          <td>No (sends now)</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Follow-ups</td>
+          <td>No (manual rebuild)</td>
+          <td>Yes (1 stage today, for non-openers)</td>
+        </tr>
+        <tr>
+          <td>Subject A/B testing</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Unsubscribe + suppression list</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Resume after a partial failure</td>
+          <td>No</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Cost</td>
+          <td>Included with Office</td>
+          <td>Free up to 250/mo; $9/mo Starter; $19/mo Pro</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <h2>The easy way: mail merge in Outlook with OutMass</h2>
+
+    <p><a href="../index.html">OutMass</a> is a Chrome extension that runs inside Outlook on the web (outlook.office.com, outlook.live.com, and outlook.office365.com). It sends through <em>your own</em> Microsoft account via Microsoft Graph — there's no separate sending server, and it doesn't store your email content. The merge itself is the part that takes thirty seconds instead of the Word-and-Excel round trip:</p>
+
+    <ol>
+      <li>Upload a CSV of recipients (the same <code>email, firstName, company</code> columns you'd put in Excel).</li>
+      <li>Write your message with <code>{{firstName}}</code>-style merge tags and preview a few rows.</li>
+      <li>Attach files as OneDrive links, schedule the send if you want, and turn on follow-up for non-openers.</li>
+      <li>Send — then watch opens, clicks, and replies populate in the Reports tab.</li>
+    </ol>
+
+    <h3>Solving the attachment gap</h3>
+
+    <p>This is the headline fix. Because the native merge can't attach files at all, people contort themselves with macros. OutMass sidesteps it: when you add a file, it generates a view-only sharing link from your own OneDrive and inserts it into the message. The recipient gets the file, you can send something far larger than an email attachment limit allows, and you get OneDrive's built-in view analytics on top. As a bonus, links don't drag your deliverability down the way a heavy attached PDF does.</p>
+
+    <h3>Solving the tracking gap</h3>
+
+    <p>Where the native method leaves you blind, OutMass stamps every recipient with open, click, and reply status. A daily Microsoft Graph scan of your inbox catches replies; pixel and link tracking handle opens and clicks; and an "Engaged" metric rolls them into a single honest number. Everything exports to CSV from the Reports tab. If you want the full picture of how high-volume sending behaves from an Outlook mailbox — including the throttling math — read <a href="how-to-send-mass-emails-from-outlook.html">how to send mass emails from Outlook</a>.</p>
+
+    <div class="cta">
+      <h3>Try OutMass — free up to 250 emails/month</h3>
+      <p>Mail merge inside Outlook with attachments, tracking, scheduling, and follow-ups. One click and a Microsoft sign-in.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+
+    <h3>How do I mail merge in Outlook?</h3>
+    <p>The native way is Microsoft Word's Mail Merge: build a recipient list in Excel, then in Word go to <strong>Mailings → Start Mail Merge → Email Messages</strong>, select your Excel list, insert merge fields like First Name, and <strong>Finish &amp; Merge → Send Email Messages</strong> so Word sends them through Outlook. The easier way is OutMass — a CSV-based mail merge that runs inside Outlook on the web and adds open/click tracking, scheduling, and follow-ups.</p>
+
+    <h3>Can you mail merge with attachments in Outlook?</h3>
+    <p>Not with the native Word email merge — it sends one message body to each recipient but has no field for a per-recipient file attachment, so the standard mail merge can't attach files at all. The usual workarounds rely on VBA macros or third-party add-ins and are clunky. OutMass solves it differently: it attaches files as OneDrive sharing links, which give better deliverability, allow larger files, and add view analytics.</p>
+
+    <h3>Can you track a mail merge in Outlook?</h3>
+    <p>The native Word + Outlook mail merge has no open tracking, no click tracking, and no per-recipient reporting — once you hit send, you're blind. OutMass adds pixel open tracking, click tracking, reply detection via a daily inbox scan, and a per-recipient reports view you can export to CSV.</p>
+
+    <h3>Why do mail merge emails from Outlook go to spam?</h3>
+    <p>Common causes are sending too many messages too fast, spammy subject lines or content, and large file attachments. OutMass sends through your own mailbox at a controlled rate and uses OneDrive sharing links instead of heavy attachments, both of which help deliverability. If raw volume is the issue, see our breakdown of <a href="outlook-mail-merge-limit.html">Outlook and Microsoft 365 send limits</a>.</p>
+
+    <p class="updated-note">Last updated: June 12, 2026.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>

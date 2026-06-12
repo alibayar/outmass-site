@@ -36,28 +36,56 @@
 
   <url>
     <loc>https://getoutmass.com/blog/</loc>
-    <lastmod>2026-04-29</lastmod>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://getoutmass.com/blog/gmass-for-outlook.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://getoutmass.com/blog/outlook-mail-merge-limit.html</loc>
-    <lastmod>2026-04-29</lastmod>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://getoutmass.com/blog/mailmeteor-alternative-for-outlook.html</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://getoutmass.com/blog/yamm-alternative-for-outlook.html</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://getoutmass.com/blog/mail-merge-in-outlook.html</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://getoutmass.com/blog/cold-email-tools-for-outlook.html</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>

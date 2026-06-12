@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Yet Another Mail Merge (YAMM) for Outlook? Use OutMass — OutMass</title>
+  <meta name="description" content="Yet Another Mail Merge (YAMM) is a Google Workspace add-on for Gmail + Sheets — there's no Outlook version. OutMass is the Outlook-native mail merge: CSV personalization, tracking, scheduling, and follow-ups from your own Outlook account.">
+  <meta property="og:title" content="Yet Another Mail Merge (YAMM) for Outlook? Use OutMass">
+  <meta property="og:description" content="Yet Another Mail Merge (YAMM) is a Google Workspace add-on for Gmail + Sheets — there's no Outlook version. OutMass is the Outlook-native mail merge: CSV personalization, tracking, scheduling, and follow-ups from your own Outlook account.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/yamm-alternative-for-outlook.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/yamm-alternative-for-outlook.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Yet Another Mail Merge for Outlook? Use OutMass",
+    "description": "Yet Another Mail Merge (YAMM) is a Google Workspace add-on for Gmail + Sheets — there's no Outlook version. OutMass is the Outlook-native mail merge: CSV personalization, tracking, scheduling, and follow-ups from your own Outlook account.",
+    "datePublished": "2026-06-12",
+    "dateModified": "2026-06-12",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/yamm-alternative-for-outlook.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {"@type": "Question", "name": "Does Yet Another Mail Merge (YAMM) work with Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "No. Yet Another Mail Merge is a Google Workspace add-on that runs inside Gmail and Google Sheets. It depends on Google's APIs and sends through Gmail, so it does not run in Outlook, Outlook on the web, or Microsoft 365 at all."}},
+      {"@type": "Question", "name": "Is there a YAMM equivalent for Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "OutMass is the closest Outlook-native equivalent. It's a Chrome extension that adds mail merge inside Outlook on the web (outlook.office.com, outlook.live.com, outlook.office365.com). You merge from a CSV instead of a Google Sheet, and it handles open and click tracking, scheduled sending, automatic follow-ups for non-openers, and reply detection — all sent through your own Microsoft account."}},
+      {"@type": "Question", "name": "How is OutMass different from YAMM?",
+       "acceptedAnswer": {"@type": "Answer", "text": "YAMM lives in the Google world (Gmail + Google Sheets). OutMass is Outlook-native: it works inside Outlook on the web, merges from a CSV instead of a spreadsheet, and sends through Microsoft Graph using your own mailbox. It also adds Outlook-specific features such as OneDrive attachment links, daily reply detection via Graph, an Engaged metric, and Resume after partial failures."}},
+      {"@type": "Question", "name": "Can I move my YAMM mail merges to Outlook?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Yes. Export your Google Sheet as a CSV (File → Download → Comma-separated values), install OutMass, and recreate your templates using the double-brace merge-tag syntax such as {{firstName}}. Then re-import the CSV into a new campaign and send. Tracking history doesn't carry over because it's per-platform, but your contacts and message templates transfer cleanly."}}
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>Yet Another Mail Merge for Outlook? Use OutMass</h1>
+    <p class="meta">Published June 12, 2026 · 6 min read</p>
+
+    <p><a href="https://yamm.com" rel="nofollow">Yet Another Mail Merge</a> (usually shortened to YAMM) is a hugely popular way to send personalized bulk email — but it lives entirely inside Google's world. It's a Google Workspace add-on: you install it from the Google Workspace Marketplace, you build your list in Google Sheets, and you send through Gmail. That's great if you're a Google shop. It's useless if your email lives in Outlook.</p>
+
+    <p>If you searched "YAMM for Outlook" or "Yet Another Mail Merge Outlook" and landed here, here's the blunt answer: <strong>there is no Outlook version of YAMM, and there isn't going to be one</strong> — it's architecturally tied to Gmail and Sheets. The Outlook-native option you actually want is <a href="../index.html">OutMass</a>. Below: why a Google Workspace add-on can't run in Outlook, a feature-by-feature comparison, what OutMass adds on the Microsoft side, an honest take on when sticking with Google is the better call, and how to migrate.</p>
+
+    <div class="highlight">
+      <p><strong>Quick facts.</strong> YAMM = a Google Workspace add-on for Gmail + Google Sheets. OutMass = a Chrome extension for Outlook on the web. Both personalize from your data and send through your own mailbox — but they run on opposite platforms, so they're not interchangeable installs. If you're on Microsoft 365 or Outlook.com, OutMass is the YAMM-shaped tool that actually works for you.</p>
+    </div>
+
+    <h2>Why a Google Workspace add-on can't run in Outlook</h2>
+
+    <p>YAMM isn't a standalone app — it's an add-on that extends Google's own products. Everything it does is built on top of the Google stack:</p>
+
+    <ul>
+      <li>It installs from the <strong>Google Workspace Marketplace</strong> and runs inside the Gmail / Sheets UI, not as a browser extension you can point anywhere.</li>
+      <li>It reads your recipient list from a <strong>Google Sheet</strong> — the spreadsheet <em>is</em> the campaign.</li>
+      <li>It authenticates with <strong>Google OAuth</strong> and sends through <strong>Gmail</strong>.</li>
+      <li>It tracks opens and manages state using <strong>Google APIs</strong> tied to your Google account.</li>
+    </ul>
+
+    <p>Outlook has none of those building blocks. There's no Google Sheet to read, no Gmail to send through, and no Google OAuth to authenticate against. Microsoft email runs on <strong>Microsoft Graph</strong> and Exchange Online, and the natural data source is a <strong>CSV</strong>, not a live Google Sheet. So "YAMM for Outlook" can't be a port or a setting — it would have to be a different product built against Microsoft's APIs. That's exactly what OutMass is.</p>
+
+    <h2>Feature-by-feature comparison</h2>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Capability</th>
+          <th>YAMM (Gmail / Sheets)</th>
+          <th>OutMass (Outlook)</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Where it runs</td>
+          <td>Google Workspace add-on, inside Gmail + Sheets</td>
+          <td>Chrome extension, inside Outlook on the web</td>
+        </tr>
+        <tr>
+          <td>Data source for the merge</td>
+          <td>Google Sheet</td>
+          <td>CSV upload</td>
+        </tr>
+        <tr>
+          <td>Sends through</td>
+          <td>Your Gmail / Google Workspace account</td>
+          <td>Your own Microsoft account (via Graph)</td>
+        </tr>
+        <tr>
+          <td>Personalization placeholders</td>
+          <td>Spreadsheet column markers</td>
+          <td><code>{{firstName}}</code>, <code>{{company}}</code> (any column)</td>
+        </tr>
+        <tr>
+          <td>Subject A/B testing</td>
+          <td>Check their current features</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Scheduled sends</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Automatic follow-ups</td>
+          <td>Yes</td>
+          <td>Yes (1 stage today; multi-stage on roadmap)</td>
+        </tr>
+        <tr>
+          <td>Open tracking</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Click tracking</td>
+          <td>Check their current features</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Reply detection</td>
+          <td>Check their current features</td>
+          <td>Yes (daily inbox scan via Graph)</td>
+        </tr>
+        <tr>
+          <td>Engaged metric (open OR click OR reply)</td>
+          <td>—</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>Attachments</td>
+          <td>Spreadsheet / Drive workflow</td>
+          <td>OneDrive sharing links (better deliverability)</td>
+        </tr>
+        <tr>
+          <td>Unsubscribe links</td>
+          <td>Yes</td>
+          <td>Yes</td>
+        </tr>
+        <tr>
+          <td>UI languages</td>
+          <td>Several</td>
+          <td>10, including Arabic (RTL)</td>
+        </tr>
+        <tr>
+          <td>Free tier</td>
+          <td>Check their current pricing</td>
+          <td>250 emails/month, forever, no footer</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>(We've kept the YAMM column qualitative on purpose — feature sets and pricing change, so check their current pricing and product pages for the latest.)</p>
+
+    <h2>What OutMass adds on the Microsoft side</h2>
+
+    <p>OutMass isn't trying to be a clone of a Google add-on. Because it's built on Microsoft Graph, it leans into things that only make sense in the Outlook world.</p>
+
+    <h3>OneDrive attachment links instead of raw file attachments</h3>
+
+    <p>A cold email with a heavy PDF attached is far more likely to land in spam than the same email carrying a link. OutMass uses that to your advantage: attach a file and it generates a view-only sharing link from your own OneDrive and drops it into the message as a chip. The recipient still gets the file, you avoid the attachment-related spam penalty, and large files aren't a problem.</p>
+
+    <h3>Reply detection as a first-class metric</h3>
+
+    <p>Open rates are noisy — Apple Mail Privacy Protection inflates them and Outlook's image blocking deflates them. <strong>Replies don't lie.</strong> OutMass runs a daily scan of your Inbox through Microsoft Graph and stamps any matching contact as "replied," so your Reports tab shows a reply rate next to opens and clicks. It's usually a smaller number, but it's the one you can actually trust.</p>
+
+    <h3>"Engaged" — one honest engagement number</h3>
+
+    <p>The Engaged metric counts the distinct contacts who opened, clicked, <em>or</em> replied. In a world where opens are unreliable and clicks miss the people who reply without clicking, it's the closest thing to a single trustworthy engagement signal.</p>
+
+    <h3>Resume after partial failures</h3>
+
+    <p>If a send hits a transient network blip or a Microsoft Graph 5xx mid-campaign, OutMass marks it "partial" and shows a Resume button in the Reports detail view. One click retries only the still-pending recipients — no duplicate sends to the people who already received it. It's a recovery flow that matters specifically because Graph send pipelines partial out more often than Gmail's do.</p>
+
+    <h2>When YAMM (and staying on Google) is the better choice</h2>
+
+    <p>To be straight with you: if your whole world is already Google, OutMass isn't for you, and switching platforms just to change tools would be a mistake. Stick with Yet Another Mail Merge if:</p>
+
+    <ul>
+      <li><strong>You live in Gmail and Google Sheets.</strong> If your contacts already sit in a shared Sheet that your team edits collaboratively, that live-spreadsheet workflow is a real advantage YAMM gives you that a CSV upload doesn't.</li>
+      <li><strong>You send from a Google Workspace or Gmail address.</strong> Deliverability rides on the sending mailbox; there's no reason to move your sending domain to Microsoft just to get a different UI.</li>
+      <li><strong>Your team is standardized on Google.</strong> Fewer tools, one identity provider, one place for IT to manage.</li>
+    </ul>
+
+    <p>OutMass only makes sense if your email actually lives in Outlook / Microsoft 365 or Outlook.com. If that's you, you've been stuck watching every "mail merge" tutorial point at a Google add-on you can't install. That's the gap OutMass fills.</p>
+
+    <h2>Migrating from YAMM to Outlook</h2>
+
+    <ol>
+      <li><strong>Export your Sheet as a CSV.</strong> In Google Sheets, File → Download → Comma-separated values (.csv). Your <code>email</code>, <code>firstName</code>, and <code>company</code> columns are exactly what OutMass reads.</li>
+      <li><strong>Install OutMass</strong> from the <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Chrome Web Store</a> and sign in with the Outlook account you want to send from.</li>
+      <li><strong>Recreate your templates</strong> in Settings → Templates, swapping your spreadsheet column markers for OutMass's double-brace syntax — <code>{{firstName}}</code>, <code>{{company}}</code>, and so on for any column in your CSV.</li>
+      <li><strong>Re-import the CSV</strong> into a new campaign, check the merge preview, and send.</li>
+    </ol>
+
+    <p>Open- and click-tracking history doesn't carry over (tracking is per-platform), so reporting starts fresh on the OutMass side. But your recipient list and your message copy transfer with almost no rework — the only real change is the merge-tag format.</p>
+
+    <h2>Pricing</h2>
+
+    <p>OutMass keeps it simple:</p>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Plan</th>
+          <th>Price</th>
+          <th>What you get</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Free</td>
+          <td>$0</td>
+          <td>250 emails/month, forever, no footer</td>
+        </tr>
+        <tr>
+          <td>Starter</td>
+          <td>$9/mo</td>
+          <td>2,500 emails/month</td>
+        </tr>
+        <tr>
+          <td>Pro</td>
+          <td>$19/mo</td>
+          <td>10,000 emails/month + AI Writer (Claude-powered) + A/B testing + templates</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p>For YAMM's current plans and quotas, check their current pricing — they price per Google account and the tiers move over time. If you're sending from a single Outlook mailbox, keep in mind you'll hit Microsoft's per-day send throttling before any plan limit becomes the constraint; see <a href="how-to-send-mass-emails-from-outlook.html">our breakdown of Outlook's send limits</a>.</p>
+
+    <div class="cta">
+      <h3>Try OutMass — free up to 250 emails/month</h3>
+      <p>The Outlook-native answer to Yet Another Mail Merge. Setup takes one click and a Microsoft sign-in.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
+    </div>
+
+    <h2>Frequently asked questions</h2>
+
+    <h3>Does Yet Another Mail Merge (YAMM) work with Outlook?</h3>
+    <p>No. Yet Another Mail Merge is a Google Workspace add-on that runs inside Gmail and Google Sheets. It depends on Google's APIs and sends through Gmail, so it does not run in Outlook, Outlook on the web, or Microsoft 365 at all.</p>
+
+    <h3>Is there a YAMM equivalent for Outlook?</h3>
+    <p>OutMass is the closest Outlook-native equivalent. It's a Chrome extension that adds mail merge inside Outlook on the web (outlook.office.com, outlook.live.com, outlook.office365.com). You merge from a CSV instead of a Google Sheet, and it handles open and click tracking, scheduled sending, automatic follow-ups for non-openers, and reply detection — all sent through your own Microsoft account.</p>
+
+    <h3>How is OutMass different from YAMM?</h3>
+    <p>YAMM lives in the Google world (Gmail + Google Sheets). OutMass is Outlook-native: it works inside Outlook on the web, merges from a CSV instead of a spreadsheet, and sends through Microsoft Graph using your own mailbox. It also adds Outlook-specific features such as OneDrive attachment links, daily reply detection via Graph, an Engaged metric, and Resume after partial failures.</p>
+
+    <h3>Can I move my YAMM mail merges to Outlook?</h3>
+    <p>Yes. Export your Google Sheet as a CSV (File → Download → Comma-separated values), install OutMass, and recreate your templates using the double-brace merge-tag syntax such as <code>{{firstName}}</code>. Then re-import the CSV into a new campaign and send. Tracking history doesn't carry over because it's per-platform, but your contacts and message templates transfer cleanly.</p>
+
+    <p class="updated-note">Last updated: June 12, 2026.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>
