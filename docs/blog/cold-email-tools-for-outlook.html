@@ -201,13 +201,15 @@
 
     <p>Cold email lives and dies on the reputation of the sending domain. OutMass sends through your own Microsoft account, so your From address, Reply-To, and DKIM signature are exactly what your recipients already see from you — there's no third-party relay in the middle. It throttles the send to a controlled rate rather than blasting, which is the behavior you want from a mailbox you care about.</p>
 
+    <p>Because the mail goes through your own mailbox, your real ceiling is whatever Microsoft allows on your account — not a platform quota. Microsoft 365 / Exchange Online caps sending at <strong>10,000 recipients per day</strong> and <strong>30 messages per minute</strong> (with brand-new tenants throttled lower for their first 30 days), per <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Microsoft's published Exchange Online limits</a>. A serious cold-emailer should know that number before scaling; OutMass paces sends to stay comfortably inside it. For the full breakdown of personal vs. business mailbox caps, see our <a href="outlook-mail-merge-limit.html">guide to Outlook mail merge limits</a>.</p>
+
     <h3>OneDrive links instead of attachments</h3>
 
     <p>Cold email with a file attached is more likely to trip spam filters. When you attach a file in OutMass, it inserts a view-only OneDrive sharing link as a chip instead. The recipient still gets the file, you sidestep the attachment penalty, and you get OneDrive's view analytics for free.</p>
 
     <h3>Reply detection, not just opens</h3>
 
-    <p>Open rates are noisy — privacy features inflate them and image-blocking deflates them. OutMass runs a daily scan of your Inbox via Microsoft Graph and marks any matching contact as replied, then surfaces a Reply rate alongside opens and clicks. For cold email, a reply is the only signal that really counts, and the "Engaged" metric rolls opens, clicks, and replies into one honest number.</p>
+    <p>Open rates are noisy — privacy features inflate them and image-blocking deflates them. It's well documented that since Apple Mail Privacy Protection launched with iOS 15 in 2021, Apple Mail automatically pre-loads tracking pixels for users who enable it, registering "opens" that never happened and quietly inflating reported open rates across the industry. That's why replies and clicks are far more reliable engagement signals than opens. OutMass runs a daily scan of your Inbox via Microsoft Graph and marks any matching contact as replied, then surfaces a Reply rate alongside opens and clicks. For cold email, a reply is the only signal that really counts, and the "Engaged" metric rolls opens, clicks, and replies into one honest number.</p>
 
     <h2>When a dedicated platform is the better choice</h2>
 

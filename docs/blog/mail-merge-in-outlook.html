@@ -142,8 +142,12 @@
       <li><strong>No scheduling.</strong> The merge sends immediately. You can't queue it for 9am Tuesday in the recipient's timezone.</li>
       <li><strong>No follow-ups.</strong> Re-emailing the people who didn't open means rebuilding the whole merge by hand against a manually filtered list.</li>
       <li><strong>Limited personalization.</strong> You get column substitution and basic conditional fields, but no easy unsubscribe link, no suppression list, no A/B subject testing.</li>
-      <li><strong>You hit send limits fast.</strong> Microsoft 365 and Outlook.com throttle how many recipients you can send to per day. A large Word merge can trip those limits and get the rest of the batch silently deferred — see <a href="outlook-mail-merge-limit.html">our deep dive on the Outlook mail merge limit</a>.</li>
+      <li><strong>You hit send limits fast.</strong> Microsoft 365 and Outlook.com throttle how many recipients you can send to per day. A large Word merge fires messages as fast as Outlook can hand them off, with no rate control, so it trips those limits and gets the rest of the batch silently deferred — see our <a href="outlook-mail-merge-limit.html">full breakdown of Outlook's send limits</a>.</li>
     </ul>
+
+    <div class="highlight">
+      <p><strong>Why a big native merge stalls.</strong> Microsoft enforces server-side caps on every Exchange Online mailbox: <strong>10,000 recipients per day</strong>, a <strong>30-messages-per-minute</strong> send rate, and <strong>500 recipients per single message</strong> (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Microsoft Learn — Exchange Online limits</a>). Because Word's merge has no rate control of its own, a few-thousand-recipient blast slams straight into that 30/minute ceiling; push past the daily cap and Microsoft returns a <code>SubmissionQuotaExceeded</code> non-delivery report and stops sending. Brand-new tenants are throttled even lower for their first 30 days. Personal <strong>Outlook.com</strong> accounts hit a wall far sooner — roughly <strong>500 unique recipients per day</strong>. This is exactly why per-minute rate-limited sending matters; for the full math see our <a href="outlook-mail-merge-limit.html">breakdown of Outlook's send limits</a>.</p>
+    </div>
 
     <h2>Native Word mail merge vs OutMass</h2>
 
@@ -266,7 +270,7 @@
     <p>The native Word + Outlook mail merge has no open tracking, no click tracking, and no per-recipient reporting — once you hit send, you're blind. OutMass adds pixel open tracking, click tracking, reply detection via a daily inbox scan, and a per-recipient reports view you can export to CSV.</p>
 
     <h3>Why do mail merge emails from Outlook go to spam?</h3>
-    <p>Common causes are sending too many messages too fast, spammy subject lines or content, and large file attachments. OutMass sends through your own mailbox at a controlled rate and uses OneDrive sharing links instead of heavy attachments, both of which help deliverability. If raw volume is the issue, see our breakdown of <a href="outlook-mail-merge-limit.html">Outlook and Microsoft 365 send limits</a>.</p>
+    <p>Common causes are sending too many messages too fast, spammy subject lines or content, and large file attachments. The native Word merge has no throttle, so it can outrun Microsoft's documented <strong>30-messages-per-minute</strong> send rate on Exchange Online (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Microsoft Learn</a>) — a burst that looks like spam. OutMass sends through your own mailbox at a controlled rate and uses OneDrive sharing links instead of heavy attachments, both of which help deliverability. If raw volume is the issue, see our breakdown of <a href="outlook-mail-merge-limit.html">Outlook and Microsoft 365 send limits</a>.</p>
 
     <p class="updated-note">Last updated: June 12, 2026.</p>
 

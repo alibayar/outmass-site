@@ -115,6 +115,10 @@
 
     <p>None of that exists on the Microsoft side. Outlook doesn't read Google Sheets, doesn't send through Gmail, and uses Microsoft Graph instead of Google APIs. So an "Outlook version" of a Sheets tool isn't a port — it's a different product that solves the same job a different way. For Outlook, the spreadsheet becomes a <strong>CSV upload</strong>, sending happens through <strong>your own Microsoft account</strong>, and follow-up logic rides on Graph rather than Gmail labels. That's the model OutMass is built on.</p>
 
+    <div class="highlight">
+      <p><strong>Sending headroom favors Outlook.</strong> A Mailmeteor-style workflow on Gmail is bounded by Google's send limits: free consumer Gmail allows roughly <strong>500 messages/day</strong>, and a Google Workspace account is capped at <strong>2,000 messages/day</strong> and <strong>3,000 external recipients/day</strong> (<a href="https://support.google.com/a/answer/166852" rel="nofollow">Google Workspace sending limits</a>). Sending from Outlook / Microsoft 365 raises that ceiling to <strong>10,000 recipients/day</strong>, with up to 500 recipients per message and a 30-messages-per-minute throttle (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Exchange Online limits</a>). For an Outlook-native operator that's meaningfully more external-send room — see our <a href="outlook-mail-merge-limit.html">Outlook mail merge limit guide</a> for how OutMass paces sends to stay inside it. (Personal Outlook.com accounts sit far lower, around 500 recipients/day; brand-new Microsoft 365 tenants are throttled below the headline number for their first 30 days.)</p>
+    </div>
+
     <h2>Feature-by-feature comparison</h2>
 
     <table>
@@ -214,7 +218,7 @@
 
     <h3>Reply detection as a first-class signal</h3>
 
-    <p>Open rates are noisy — Apple Mail Privacy Protection inflates them and Outlook's default image-blocking deflates them. <strong>Replies don't lie.</strong> OutMass runs a daily scan of your Inbox via Microsoft Graph and stamps any matching contact as "replied," then surfaces a reply rate alongside opens and clicks in the campaign report. It's usually a smaller number, but it's the one you can actually trust.</p>
+    <p>Open rates are noisy — since iOS 15 (2021), Apple's Mail Privacy Protection pre-loads tracking pixels for Apple Mail users regardless of whether the message was actually read, which inflates reported opens, while Outlook's default image-blocking deflates them. <strong>Replies don't lie.</strong> OutMass runs a daily scan of your Inbox via Microsoft Graph and stamps any matching contact as "replied," then surfaces a reply rate alongside opens and clicks in the campaign report. It's usually a smaller number, but it's the one you can actually trust.</p>
 
     <h3>"Engaged" — one honest engagement number</h3>
 
