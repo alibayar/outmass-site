@@ -114,8 +114,10 @@ MS_GRAPH_ONEDRIVE_SCOPES = (
 GRAPH_API_BASE = "https://graph.microsoft.com/v1.0"
 
 # ── PostHog ──
+# Project lives on PostHog EU (key phc_kSzE…). Railway sets POSTHOG_HOST=EU,
+# but default to EU too so telemetry doesn't silently break if the env is lost.
 POSTHOG_API_KEY = os.getenv("POSTHOG_API_KEY", "")
-POSTHOG_HOST = os.getenv("POSTHOG_HOST", "https://us.i.posthog.com")
+POSTHOG_HOST = os.getenv("POSTHOG_HOST", "https://eu.i.posthog.com")
 
 # ── AI ──
 ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")

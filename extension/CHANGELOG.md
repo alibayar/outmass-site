@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.14 — 2026-06-14
+
+- internal: fixed product analytics region (events were being sent to the US PostHog endpoint while the project is in the EU, so all extension usage telemetry was silently dropped since launch). Now sends to the EU endpoint via CORS; removed the now-unused US host permission. No user-visible change.
+
 ## v0.1.13 — 2026-06-02
 
 - Sending account is now shown above the Send button ("Sending as: …"), so you always know which OutMass account a campaign goes out from — with a quick Change link to switch.
