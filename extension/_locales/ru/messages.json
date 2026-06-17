@@ -339,7 +339,7 @@
     "message": "Произошла неизвестная ошибка."
   },
   "popupUpgradePro": {
-    "message": "Перейти → Pro ($19/мес)"
+    "message": "Перейти → Pro ($$19/мес)"
   },
   "popupCheckoutFailed": {
     "message": "Не удалось создать страницу оплаты: "
@@ -519,16 +519,16 @@
     "message": "Вы достигли лимита писем.<br/>Улучшите план, чтобы отправлять больше."
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2 500 писем/мес — $9/мес"
+    "message": "Starter: 2 500 писем/мес — $$9/мес"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10 000 писем/мес — $19/мес"
+    "message": "Pro: 10 000 писем/мес — $$19/мес"
   },
   "upgradeModalFeatures": {
     "message": "Подробные отчёты + приоритетная поддержка"
   },
   "upgradeModalBtn": {
-    "message": "Перейти сейчас — Starter $9/мес"
+    "message": "Перейти сейчас — Starter $$9/мес"
   },
   "upgradeModalLater": {
     "message": "Может быть позже"
@@ -597,7 +597,7 @@
     "message": "Авто (Язык браузера)"
   },
   "popupUpgradeStarter": {
-    "message": "Перейти → Starter ($9/мес)"
+    "message": "Перейти → Starter ($$9/мес)"
   },
   "upgradeSuccessProrated": {
     "message": "Обновление успешно! Stripe автоматически спишет пропорциональную разницу."

@@ -339,7 +339,7 @@
     "message": "Une erreur inconnue est survenue."
   },
   "popupUpgradePro": {
-    "message": "Passer à Pro ($19/mois)"
+    "message": "Passer à Pro ($$19/mois)"
   },
   "popupCheckoutFailed": {
     "message": "Impossible de créer la page de paiement : "
@@ -519,16 +519,16 @@
     "message": "Vous avez atteint votre limite d'e-mails.<br/>Passez à un plan supérieur pour envoyer plus d'e-mails."
   },
   "upgradeModalStandard": {
-    "message": "Starter : 2 500 e-mails/mois — $9/mois"
+    "message": "Starter : 2 500 e-mails/mois — $$9/mois"
   },
   "upgradeModalPro": {
-    "message": "Pro : 10 000 e-mails/mois — $19/mois"
+    "message": "Pro : 10 000 e-mails/mois — $$19/mois"
   },
   "upgradeModalFeatures": {
     "message": "Rapports détaillés + support prioritaire"
   },
   "upgradeModalBtn": {
-    "message": "Passer à Starter $9/mois"
+    "message": "Passer à Starter $$9/mois"
   },
   "upgradeModalLater": {
     "message": "Peut-être plus tard"
@@ -597,7 +597,7 @@
     "message": "Automatique (Langue du navigateur)"
   },
   "popupUpgradeStarter": {
-    "message": "Passer à Starter ($9/mois)"
+    "message": "Passer à Starter ($$9/mois)"
   },
   "upgradeSuccessProrated": {
     "message": "Mise a niveau reussie ! Stripe facturera automatiquement la difference au prorata."

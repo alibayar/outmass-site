@@ -117,6 +117,10 @@ function _applySubs(message, placeholders, subs) {
       message = message.split("$" + (i + 1)).join(subs[i]);
     }
   }
+  // Pass 3: collapse Chrome's literal-dollar escape ($$ -> $), so a price
+  // written as "$$9/mo" in messages.json renders as "$9/mo" on this override
+  // path too (Chrome's native getMessage already collapses $$ -> $).
+  message = message.split("$$").join("$");
   return message;
 }
 

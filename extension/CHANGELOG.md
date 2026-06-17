@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.15 — 2026-06-17
+
+- Fixed the prices shown on the upgrade buttons and upgrade dialog. The "$" before a number was being swallowed by the translation system, so Starter showed no price and Pro showed "9/mo" instead of "$19/mo". Prices now display correctly in all languages.
+
 ## v0.1.14 — 2026-06-14
 
 - internal: fixed product analytics region (events were being sent to the US PostHog endpoint while the project is in the EU, so all extension usage telemetry was silently dropped since launch). Now sends to the EU endpoint via CORS; removed the now-unused US host permission. No user-visible change.

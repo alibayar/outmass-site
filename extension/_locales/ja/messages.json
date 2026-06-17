@@ -339,7 +339,7 @@
     "message": "不明なエラーが発生しました。"
   },
   "popupUpgradePro": {
-    "message": "アップグレード → Pro ($19/月)"
+    "message": "アップグレード → Pro ($$19/月)"
   },
   "popupCheckoutFailed": {
     "message": "決済ページを作成できませんでした："
@@ -519,16 +519,16 @@
     "message": "メール送信の上限に達しました。<br/>アップグレードしてより多くのメールを送信しましょう。"
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2,500通/月 — $9/月"
+    "message": "Starter: 2,500通/月 — $$9/月"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10,000通/月 — $19/月"
+    "message": "Pro: 10,000通/月 — $$19/月"
   },
   "upgradeModalFeatures": {
     "message": "詳細レポート + 優先サポート"
   },
   "upgradeModalBtn": {
-    "message": "今すぐアップグレード — Starter $9/月"
+    "message": "今すぐアップグレード — Starter $$9/月"
   },
   "upgradeModalLater": {
     "message": "後で"
@@ -597,7 +597,7 @@
     "message": "自動（ブラウザー言語）"
   },
   "popupUpgradeStarter": {
-    "message": "アップグレード → Starter ($9/月)"
+    "message": "アップグレード → Starter ($$9/月)"
   },
   "upgradeSuccessProrated": {
     "message": "アップグレード成功！Stripeは按分された差額を自動的に請求します。"
