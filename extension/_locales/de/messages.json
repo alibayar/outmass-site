@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "Ändern"
+  },
+  "authErrorConsent": {
+    "message": "Anmeldung nicht abgeschlossen. Ihre Organisation benötigt möglicherweise eine Administratorgenehmigung für OutMass – wenden Sie sich an support@getoutmass.com oder verwenden Sie ein privates Outlook.com-Konto."
+  },
+  "authErrorPageLoad": {
+    "message": "Die Microsoft-Anmeldeseite konnte nicht geöffnet werden. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
   }
 }

@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "बदलें"
+  },
+  "authErrorConsent": {
+    "message": "साइन-इन पूरा नहीं हुआ। आपके संगठन को पहले OutMass को मंज़ूरी देने के लिए किसी एडमिन की ज़रूरत हो सकती है — support@getoutmass.com से संपर्क करें, या व्यक्तिगत Outlook.com खाता उपयोग करें।"
+  },
+  "authErrorPageLoad": {
+    "message": "Microsoft साइन-इन पेज नहीं खुल सका। अपना इंटरनेट कनेक्शन जांचें और फिर से प्रयास करें।"
   }
 }

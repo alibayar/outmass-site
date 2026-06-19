@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.16 — 2026-06-20
+
+- Clearer sign-in errors. If your organization requires an administrator to approve new apps (common on Microsoft 365 work accounts), OutMass now explains what happened and how to proceed — contact support or use a personal Outlook.com account — instead of showing a generic failure.
+
 ## v0.1.15 — 2026-06-17
 
 - Fixed the prices shown on the upgrade buttons and upgrade dialog. The "$" before a number was being swallowed by the translation system, so Starter showed no price and Pro showed "9/mo" instead of "$19/mo". Prices now display correctly in all languages.

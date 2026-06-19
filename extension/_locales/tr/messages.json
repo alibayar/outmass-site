@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "Değiştir"
+  },
+  "authErrorConsent": {
+    "message": "Giriş tamamlanamadı. Kurumunuzun OutMass'i onaylaması için bir yönetici gerekebilir — support@getoutmass.com ile iletişime geçin veya kişisel bir Outlook.com hesabı kullanın."
+  },
+  "authErrorPageLoad": {
+    "message": "Microsoft giriş sayfası açılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin."
   }
 }

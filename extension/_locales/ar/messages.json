@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "تغيير"
+  },
+  "authErrorConsent": {
+    "message": "لم تكتمل عملية تسجيل الدخول. قد تحتاج مؤسستك إلى موافقة المسؤول على OutMass أولاً — تواصل مع support@getoutmass.com أو استخدم حساب Outlook.com شخصي."
+  },
+  "authErrorPageLoad": {
+    "message": "تعذّر فتح صفحة تسجيل الدخول الخاصة بـ Microsoft. تحقق من اتصالك بالإنترنت وحاول مرة أخرى."
   }
 }

@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "Cambiar"
+  },
+  "authErrorConsent": {
+    "message": "El inicio de sesión no se completó. Es posible que tu organización requiera la aprobación de un administrador para OutMass: escribe a support@getoutmass.com o usa una cuenta personal de Outlook.com."
+  },
+  "authErrorPageLoad": {
+    "message": "No se pudo abrir la página de inicio de sesión de Microsoft. Comprueba tu conexión a Internet e inténtalo de nuevo."
   }
 }

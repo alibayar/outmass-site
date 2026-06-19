@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "更改"
+  },
+  "authErrorConsent": {
+    "message": "登录未完成。您的组织可能需要管理员先批准 OutMass — 请联系 support@getoutmass.com，或使用个人 Outlook.com 账户。"
+  },
+  "authErrorPageLoad": {
+    "message": "无法打开 Microsoft 登录页面。请检查网络连接后重试。"
   }
 }

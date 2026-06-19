@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "Change"
+  },
+  "authErrorConsent": {
+    "message": "Sign-in didn't complete. Your organization may need an admin to approve OutMass first — contact support@getoutmass.com, or use a personal Outlook.com account."
+  },
+  "authErrorPageLoad": {
+    "message": "Couldn't open the Microsoft sign-in page. Check your internet connection and try again."
   }
 }

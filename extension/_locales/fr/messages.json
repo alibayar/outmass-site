@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "Modifier"
+  },
+  "authErrorConsent": {
+    "message": "Connexion non aboutie. Votre organisation peut exiger l'approbation d'un administrateur pour OutMass — contactez support@getoutmass.com ou utilisez un compte Outlook.com personnel."
+  },
+  "authErrorPageLoad": {
+    "message": "Impossible d'ouvrir la page de connexion Microsoft. Vérifiez votre connexion Internet et réessayez."
   }
 }

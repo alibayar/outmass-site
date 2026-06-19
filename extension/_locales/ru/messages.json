@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "Изменить"
+  },
+  "authErrorConsent": {
+    "message": "Вход не завершён. Возможно, вашей организации требуется одобрение администратора для OutMass — напишите на support@getoutmass.com или войдите с личной учётной записью Outlook.com."
+  },
+  "authErrorPageLoad": {
+    "message": "Не удалось открыть страницу входа Microsoft. Проверьте подключение к интернету и попробуйте снова."
   }
 }

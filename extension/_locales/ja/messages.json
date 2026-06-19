@@ -1007,5 +1007,11 @@
   },
   "sendingAsChange": {
     "message": "変更"
+  },
+  "authErrorConsent": {
+    "message": "サインインが完了しませんでした。組織で OutMass の利用に管理者の承認が必要な場合があります。support@getoutmass.com までご連絡いただくか、個人用 Outlook.com アカウントをご利用ください。"
+  },
+  "authErrorPageLoad": {
+    "message": "Microsoft のサインインページを開けませんでした。インターネット接続を確認して、もう一度お試しください。"
   }
 }

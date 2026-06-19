@@ -124,7 +124,10 @@
         reauthBtn.disabled = false;
         reauthBtn.textContent = t("reauthBannerCta");
         if (resp && resp.error) {
-          alert(t("reauthFailed", [resp.error]));
+          var ac = resp.errorCode;
+          alert(ac === "consent_declined" ? t("authErrorConsent")
+              : ac === "auth_page_failed" ? t("authErrorPageLoad")
+              : t("reauthFailed", [resp.error]));
           return;
         }
         // Refresh settings so banner hides (backend cleared the flag,

@@ -182,6 +182,17 @@
     showSection("error");
   }
 
+  // Map a classified OAuth failure to a helpful, localized message. The key
+  // case is consent_declined: M365 work/school tenants block end-user consent
+  // for unverified multitenant apps, so point the user at admin approval /
+  // support / a personal account instead of showing a raw error string.
+  function friendlyAuthError(resp) {
+    var code = resp && resp.errorCode;
+    if (code === "consent_declined") return t("authErrorConsent");
+    if (code === "auth_page_failed") return t("authErrorPageLoad");
+    return (resp && resp.error) || t("popupUnknownError");
+  }
+
   // ── Login ──
   function doLogin() {
     showSection("loading");
@@ -199,7 +210,7 @@
       }
 
       if (response.error) {
-        showError(response.error);
+        showError(friendlyAuthError(response));
         return;
       }
 

@@ -153,9 +153,21 @@ async function startMSLogin(includeOneDrive) {
       { url: authUrl, interactive: true },
       function (redirectUrl) {
         if (chrome.runtime.lastError) {
-          log("Auth flow error:", chrome.runtime.lastError.message);
-          resolve({ error: chrome.runtime.lastError.message });
-          track("oauth_failed", { reason: "chrome_error", message: String(chrome.runtime.lastError.message || "").slice(0, 256) });
+          const m = String(chrome.runtime.lastError.message || "");
+          log("Auth flow error:", m);
+          // Classify the Chrome WebAuthFlow error so the UI can show a helpful,
+          // localized message instead of a raw string. The big one is
+          // consent-declined: work/school (M365) tenants block end-user consent
+          // for unverified multitenant apps, so the flow returns "did not
+          // approve" — users need to know their org may require admin approval.
+          let errorCode = "auth_failed";
+          if (/did not approve|access was denied|consent_required/i.test(m)) {
+            errorCode = "consent_declined";
+          } else if (/could not be loaded|failed to load|page could not/i.test(m)) {
+            errorCode = "auth_page_failed";
+          }
+          resolve({ error: m, errorCode: errorCode });
+          track("oauth_failed", { reason: "chrome_error", message: m.slice(0, 256), code: errorCode });
           return;
         }
 
