@@ -21,6 +21,12 @@ exclude:
   - plans/
   - store-listing/
 
+# Jekyll ignores dot-directories by default, so .well-known would not be
+# published. Force-include it — Azure AD publisher-domain verification needs
+# https://getoutmass.com/.well-known/microsoft-identity-association.json live.
+include:
+  - .well-known
+
 # Important: keep the .html extensions Jekyll generates (no permalink
 # rewriting) because the existing nav links and the sitemap.xml all
 # point at .html paths.
