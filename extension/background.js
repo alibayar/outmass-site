@@ -149,94 +149,142 @@ async function startMSLogin(includeOneDrive) {
   }
 
   return new Promise((resolve) => {
-    chrome.identity.launchWebAuthFlow(
-      { url: authUrl, interactive: true },
-      function (redirectUrl) {
-        if (chrome.runtime.lastError) {
-          const m = String(chrome.runtime.lastError.message || "");
-          log("Auth flow error:", m);
-          // Classify the Chrome WebAuthFlow error so the UI can show a helpful,
-          // localized message instead of a raw string. The big one is
-          // consent-declined: work/school (M365) tenants block end-user consent
-          // for unverified multitenant apps, so the flow returns "did not
-          // approve" — users need to know their org may require admin approval.
-          let errorCode = "auth_failed";
-          if (/did not approve|access was denied|consent_required/i.test(m)) {
-            errorCode = "consent_declined";
-          } else if (/could not be loaded|failed to load|page could not/i.test(m)) {
-            errorCode = "auth_page_failed";
-          }
-          resolve({ error: m, errorCode: errorCode });
-          track("oauth_failed", { reason: "chrome_error", message: m.slice(0, 256), code: errorCode });
+    // One-shot auto-retry guard. The auth window's first navigation is our own
+    // backend (/auth/login on Railway), so a cold / restarting / just-deployed
+    // backend can make Chrome report "Authorization page could not be loaded."
+    // We warm the backend and relaunch ONCE before giving up.
+    let retried = false;
+
+    function launch() {
+      chrome.identity.launchWebAuthFlow(
+        { url: authUrl, interactive: true },
+        handleResult
+      );
+    }
+
+    function handleResult(redirectUrl) {
+      if (chrome.runtime.lastError) {
+        const m = String(chrome.runtime.lastError.message || "");
+        log("Auth flow error:", m);
+        // Classify the Chrome WebAuthFlow error so the UI can show a helpful,
+        // localized message instead of a raw string. The big one is
+        // consent-declined: work/school (M365) tenants block end-user consent
+        // for unverified multitenant apps, so the flow returns "did not
+        // approve" — users need to know their org may require admin approval.
+        let errorCode = "auth_failed";
+        if (/did not approve|access was denied|consent_required/i.test(m)) {
+          errorCode = "consent_declined";
+        } else if (/could not be loaded|failed to load|page could not/i.test(m)) {
+          errorCode = "auth_page_failed";
+        }
+
+        // Auto-retry ONCE when the authorization PAGE failed to load — almost
+        // always a transient backend blip (cold start / restart / fresh deploy).
+        // Wake the backend, then relaunch. Never retry consent declines: that's
+        // a user/tenant decision, and reopening the window would only annoy.
+        if (errorCode === "auth_page_failed" && !retried) {
+          retried = true;
+          log("Auth page failed to load — warming backend, retrying once");
+          track("oauth_retry", { after: "auth_page_failed" });
+          warmBackend(20000).then(launch);
           return;
         }
 
-        if (!redirectUrl) {
-          resolve({ error: "No redirect URL received" });
-          track("oauth_failed", { reason: "no_redirect" });
-          return;
-        }
-
-        log("Auth redirect received");
-
-        // Parse URL fragment (#jwt=...&email=...&name=...&plan=...)
-        let fragment = "";
-        try {
-          const u = new URL(redirectUrl);
-          fragment = u.hash.startsWith("#") ? u.hash.substring(1) : u.hash;
-        } catch (e) {
-          resolve({ error: "Invalid redirect URL" });
-          track("oauth_failed", { reason: "invalid_redirect" });
-          return;
-        }
-
-        const params = new URLSearchParams(fragment);
-        const jwtToken = params.get("jwt");
-        const email = params.get("email");
-        const name = params.get("name");
-        const plan = params.get("plan") || "free";
-        const errorMsg = params.get("error");
-
-        if (errorMsg) {
-          resolve({ error: errorMsg });
-          track("oauth_failed", { reason: "backend_error", code: String(errorMsg).slice(0, 64) });
-          return;
-        }
-
-        if (!jwtToken || !email) {
-          resolve({ error: "Incomplete auth response from backend" });
-          track("oauth_failed", { reason: "incomplete_response" });
-          return;
-        }
-
-        const user = { email: email, name: name || email };
-
-        // Save auth state
-        chrome.storage.local.set(
-          {
-            backendJwt: jwtToken,
-            user: user,
-            plan: plan,
-            // Fresh JWT → clear any pending session-expired flag so the
-            // sidebar banner hides on next poll.
-            sessionExpired: false,
-            // accessToken is managed server-side now; extension no longer needs it
-            accessToken: null,
-            refreshToken: null,
-            expiresAt: null,
-          },
-          function () {
-            log("LOGIN_SUCCESS:", email);
-            // Backend doesn't return user_id in the redirect fragment today, so
-            // we identify by email — PostHog accepts any string as distinct_id.
-            identify(email);
-            track("oauth_completed", { plan: plan });
-            resolve({ error: null, user: user });
-          }
-        );
+        resolve({ error: m, errorCode: errorCode });
+        track("oauth_failed", { reason: "chrome_error", message: m.slice(0, 256), code: errorCode });
+        return;
       }
-    );
+
+      if (!redirectUrl) {
+        resolve({ error: "No redirect URL received" });
+        track("oauth_failed", { reason: "no_redirect" });
+        return;
+      }
+
+      log("Auth redirect received");
+
+      // Parse URL fragment (#jwt=...&email=...&name=...&plan=...)
+      let fragment = "";
+      try {
+        const u = new URL(redirectUrl);
+        fragment = u.hash.startsWith("#") ? u.hash.substring(1) : u.hash;
+      } catch (e) {
+        resolve({ error: "Invalid redirect URL" });
+        track("oauth_failed", { reason: "invalid_redirect" });
+        return;
+      }
+
+      const params = new URLSearchParams(fragment);
+      const jwtToken = params.get("jwt");
+      const email = params.get("email");
+      const name = params.get("name");
+      const plan = params.get("plan") || "free";
+      const errorMsg = params.get("error");
+
+      if (errorMsg) {
+        resolve({ error: errorMsg });
+        track("oauth_failed", { reason: "backend_error", code: String(errorMsg).slice(0, 64) });
+        return;
+      }
+
+      if (!jwtToken || !email) {
+        resolve({ error: "Incomplete auth response from backend" });
+        track("oauth_failed", { reason: "incomplete_response" });
+        return;
+      }
+
+      const user = { email: email, name: name || email };
+
+      // Save auth state
+      chrome.storage.local.set(
+        {
+          backendJwt: jwtToken,
+          user: user,
+          plan: plan,
+          // Fresh JWT → clear any pending session-expired flag so the
+          // sidebar banner hides on next poll.
+          sessionExpired: false,
+          // accessToken is managed server-side now; extension no longer needs it
+          accessToken: null,
+          refreshToken: null,
+          expiresAt: null,
+        },
+        function () {
+          log("LOGIN_SUCCESS:", email);
+          // Backend doesn't return user_id in the redirect fragment today, so
+          // we identify by email — PostHog accepts any string as distinct_id.
+          identify(email);
+          track("oauth_completed", { plan: plan });
+          resolve({ error: null, user: user });
+        }
+      );
+    }
+
+    launch();
   });
+}
+
+/**
+ * Best-effort warm-up of the OutMass backend before retrying the OAuth flow.
+ *
+ * The Railway web service can be momentarily unavailable — a cold start, a
+ * crash-restart, or a fresh deploy with no readiness gate — during which the
+ * auth window's first navigation (/auth/login) fails with "Authorization page
+ * could not be loaded." Hitting the lightweight "/" health route wakes the
+ * instance and blocks until it answers (or we time out), so the retried
+ * launchWebAuthFlow lands on a backend that's actually ready. Never throws.
+ */
+async function warmBackend(timeoutMs) {
+  try {
+    const ctrl = new AbortController();
+    const timer = setTimeout(function () { ctrl.abort(); }, timeoutMs || 15000);
+    await fetch(OUTMASS_BACKEND_URL + "/", { method: "GET", cache: "no-store", signal: ctrl.signal });
+    clearTimeout(timer);
+    log("warmBackend: backend responded, retrying auth");
+  } catch (e) {
+    // Network error or timeout — relaunch anyway; the retry is still worthwhile.
+    log("warmBackend: warm-up failed, retrying anyway:", e && e.message);
+  }
 }
 
 /**

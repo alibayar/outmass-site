@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.17 — 2026-06-23
+
+- More reliable sign-in. Occasionally the Microsoft authorization page failed to load on the first attempt — usually a brief server hiccup — and sign-in would error out. OutMass now wakes the backend and automatically retries once, so most of these transient failures recover on their own instead of showing an error. (Consent prompts you decline are never retried.)
+
 ## v0.1.16 — 2026-06-20
 
 - Clearer sign-in errors. If your organization requires an administrator to approve new apps (common on Microsoft 365 work accounts), OutMass now explains what happened and how to proceed — contact support or use a personal Outlook.com account — instead of showing a generic failure.
