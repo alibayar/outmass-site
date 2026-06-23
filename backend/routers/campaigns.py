@@ -643,6 +643,7 @@ async def send_campaign(
     # ── Send emails synchronously (MVP, no Celery) ──
     sent_count = 0
     errors = []
+    token_expired_midbatch = False
 
     async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
         send_list = pending if not ab_test else ab_group_a + ab_group_b
@@ -683,7 +684,20 @@ async def send_campaign(
                     campaign_model.increment_stat(campaign_id, "sent_count")
                     sent_count += 1
                 else:
-                    _status = _classify_failure(result.get("status_code"))
+                    sc = result.get("status_code")
+                    if sc in (401, 403):
+                        # The access token died mid-batch — a large list can
+                        # outrun the ~1h token lifetime, or the grant was
+                        # revoked. This is an auth failure that hits EVERY
+                        # remaining send, not a per-recipient problem, so stop
+                        # here and leave this contact + the rest 'pending'
+                        # (resumable). Resume re-fetches a fresh token via the
+                        # refresh_token and finishes them; if the refresh_token
+                        # is itself dead, Resume's get_fresh_access_token flags
+                        # requires_reauth and the reconnect banner appears.
+                        token_expired_midbatch = True
+                        break
+                    _status = _classify_failure(sc)
                     contact_model.mark_failed(contact["id"], _status)
                     errors.append(
                         {"email": contact["email"], "error": result["error"], "type": _status}
@@ -700,7 +714,12 @@ async def send_campaign(
     user_model.increment_sent_count(user["id"], sent_count)
 
     # Handle A/B test: if test phase done, mark status (winner evaluated later by worker)
-    if ab_test and ab_remaining:
+    if token_expired_midbatch:
+        # The token died part-way through; some recipients went out, the rest
+        # are still 'pending' and resumable. Mark 'partial' so the Resume button
+        # surfaces and the user can finish the batch (Resume refreshes the token).
+        campaign_model.update_campaign(campaign_id, {"status": "partial"})
+    elif ab_test and ab_remaining:
         ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})
         # Update campaign to "ab_testing" — remaining contacts will be sent by worker
         campaign_model.update_campaign(campaign_id, {"status": "ab_testing"})

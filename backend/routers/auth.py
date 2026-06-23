@@ -299,7 +299,10 @@ async def auth_callback(
         name=name,
     )
 
-    # Save refresh_token for server-side token refresh (worker, scheduled sending)
+    # Save refresh_token for server-side token refresh (worker, scheduled
+    # sending). Only overwrite the stored token when Microsoft actually
+    # returned one — a repeat consent can omit the refresh_token, and we must
+    # not clobber a still-good stored token with nothing.
     if refresh_token:
         from database import get_db
 
@@ -333,14 +336,20 @@ async def auth_callback(
             token_row["user_id"] = user["id"]
             db.table("user_tokens").insert(token_row).execute()
 
-        # Fresh OAuth succeeded → clear any prior requires_reauth flag so the
-        # sidebar banner disappears immediately. Idempotent if the flag was
-        # already false.
-        db.table("users").update({
-            "requires_reauth": False,
-            "reauth_reason": None,
-            "reauth_flagged_at": None,
-        }).eq("id", user["id"]).execute()
+    # Clear any prior requires_reauth flag on ANY successful interactive
+    # sign-in — not only when a refresh_token came back. Nesting this inside
+    # the `if refresh_token:` block above meant a repeat consent that omitted
+    # the refresh_token left the flag set, so the reconnect banner reappeared
+    # on the next poll and the user was trapped in a reconnect loop. If the
+    # stored token is genuinely still dead, the daily token-health beat / next
+    # send re-flags it.
+    from database import get_db
+
+    get_db().table("users").update({
+        "requires_reauth": False,
+        "reauth_reason": None,
+        "reauth_flagged_at": None,
+    }).eq("id", user["id"]).execute()
 
     # Monthly reset check
     _check_monthly_reset(user)

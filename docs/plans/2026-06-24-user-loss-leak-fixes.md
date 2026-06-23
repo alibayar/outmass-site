@@ -23,11 +23,11 @@ plan. No push without explicit approval.
 | 2 | 🔴 high | One bad `created_at` aborts the entire A/B evaluation beat | `workers/scheduled_worker.py:301` | ✅ |
 | 3 | 🔴 high | Scheduled campaign permanently `failed` on transient over-quota / user-read | `workers/scheduled_worker.py:50,80` | ✅ |
 | 4 | 🔴 high | Quota bar + pre-send gate always read 0 sent → 402 ambush after campaign created | `extension/sidebar.js`, `extension/background.js:437` | ⬜ |
-| 5 | 🔴 high | Reconnect banner infinite loop when reconnect returns no refresh_token | `routers/auth.py:303-343` | ⬜ |
+| 5 | 🔴 high | Reconnect banner infinite loop when reconnect returns no refresh_token | `routers/auth.py:303-343` | ✅ |
 | 6 | 🔴 high | Send flow never calls `handleSessionExpired` → raw error + orphaned/duplicate campaign | `extension/sidebar.js:1047,1092,1217` | ⬜ |
-| 7 | 🟠 med | Mid-batch Graph 401/403 marks recipients permanently `failed` (unresumable) | `routers/campaigns.py:667-693`, `utils/send_classify.py:17-23` | ⬜ |
-| 8 | 🟠 med | Long immediate sends reuse one ~1h token, dying mid-batch on large campaigns | `routers/campaigns.py:647-698` | ⬜ |
-| 9 | 🟠 med | Follow-up sends swallow all failures, force-mark follow-up `sent` | `workers/followup_worker.py:90-109` | ⬜ |
+| 7 | 🟠 med | Mid-batch Graph 401/403 marks recipients permanently `failed` (unresumable) | `routers/campaigns.py:667-693`, `utils/send_classify.py:17-23` | ✅ |
+| 8 | 🟠 med | Long immediate sends reuse one ~1h token, dying mid-batch on large campaigns | `routers/campaigns.py:647-698` | ✅ |
+| 9 | 🟠 med | Follow-up sends swallow all failures, force-mark follow-up `sent` | `workers/followup_worker.py:90-109` | ✅ |
 | 10 | 🟠 med | Logout leaves stale `sessionExpired` flag → wrong "session expired" banner | `extension/background.js:365-374` | ⬜ |
 | 11 | 🟠 med | Over-quota 402 shows generic upgrade modal, discards localized "used X of Y" | `extension/sidebar.js:1217-1227` | ⬜ |
 | 12 | 🟠 med | No in-Outlook affordance to discover the sidebar; documented shortcut doesn't exist | `extension/content_script.js`, `extension/manifest.json` | ⬜ |

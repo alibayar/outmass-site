@@ -80,6 +80,7 @@ def process_followups():
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
         sent_count = 0
+        failed_count = 0
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in contacts:
                 if contact.get("unsubscribed"):
@@ -98,7 +99,7 @@ def process_followups():
                     )
                     sent_count += 1
                 except Exception:
-                    pass
+                    failed_count += 1
 
                 time.sleep(SEND_DELAY_SECONDS)
 
@@ -106,7 +107,15 @@ def process_followups():
             followup["campaign_id"], "sent_count", sent_count
         )
         user_model.increment_sent_count(user["id"], sent_count)
-        followup_model.update_followup_status(followup["id"], "sent")
+        # Only mark 'sent' if something actually went out (or there was nothing
+        # to fail). If EVERY send failed, leave the follow-up pending so the
+        # next hourly run retries it instead of falsely reporting 'sent' while
+        # the bump reached no one — these recipients already received the
+        # original campaign, so their addresses are valid and the failures are
+        # transient. A genuinely dead token is caught before this loop
+        # (failed_auth), so this cannot retry forever.
+        if sent_count > 0 or failed_count == 0:
+            followup_model.update_followup_status(followup["id"], "sent")
         total_sent += sent_count
 
     return {"processed": len(pending), "sent": total_sent}
