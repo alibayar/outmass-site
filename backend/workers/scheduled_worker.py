@@ -47,7 +47,29 @@ def process_scheduled_campaigns():
     for campaign in due:
         user = user_model.get_by_id(campaign["user_id"])
         if not user:
-            campaign_model.update_campaign(campaign["id"], {"status": "failed"})
+            # A deleted user's campaigns are FK-cascaded away, so a missing
+            # user here is a transient DB read blip — not a real deletion.
+            # Leave the campaign 'scheduled' so the next beat retries instead
+            # of permanently 'failed' (which would silently drop it).
+            continue
+
+        # Freemium check BEFORE the token refresh: an over-quota campaign would
+        # otherwise burn a token refresh every beat. Over-quota is transient —
+        # the monthly counter resets — so we keep the campaign 'scheduled' to
+        # send after the reset, never permanently 'failed'.
+        sent_this_month = user.get("emails_sent_this_month", 0)
+        plan = user.get("plan", "free")
+        if plan == "free":
+            limit = FREE_PLAN_MONTHLY_LIMIT
+        elif plan == "starter":
+            limit = STARTER_PLAN_MONTHLY_LIMIT
+        else:
+            limit = PRO_PLAN_MONTHLY_LIMIT
+
+        remaining = limit - sent_this_month
+        if remaining <= 0:
+            # Over quota now, but the counter resets monthly — stay scheduled
+            # and retry after the reset rather than dropping the campaign.
             continue
 
         # Get fresh access token (auto-flags user as requires_reauth on permanent failure)
@@ -63,21 +85,6 @@ def process_scheduled_campaigns():
                     campaign["id"], {"status": "failed_auth"}
                 )
             # Transient failures keep the campaign scheduled for retry.
-            continue
-
-        # Freemium check
-        sent_this_month = user.get("emails_sent_this_month", 0)
-        plan = user.get("plan", "free")
-        if plan == "free":
-            limit = FREE_PLAN_MONTHLY_LIMIT
-        elif plan == "starter":
-            limit = STARTER_PLAN_MONTHLY_LIMIT
-        else:
-            limit = PRO_PLAN_MONTHLY_LIMIT
-
-        remaining = limit - sent_this_month
-        if remaining <= 0:
-            campaign_model.update_campaign(campaign["id"], {"status": "failed"})
             continue
 
         pending = contact_model.get_resumable_contacts(campaign["id"])
@@ -297,10 +304,18 @@ def evaluate_ab_tests():
     total_sent = 0
 
     for ab_test in result.data:
-        # Only evaluate if enough time has passed
+        # Only evaluate if enough time has passed. Parse defensively — a single
+        # malformed created_at must not raise out of the loop and abort the
+        # whole beat (which would freeze EVERY awaiting A/B test indefinitely).
+        # Treat an unparseable value as old-enough so the test still evaluates.
         created_at = ab_test.get("created_at", "")
-        if created_at and datetime.fromisoformat(created_at.replace("Z", "+00:00")) > cutoff:
-            continue
+        if created_at:
+            try:
+                created_dt = datetime.fromisoformat(str(created_at).replace("Z", "+00:00"))
+            except (ValueError, TypeError):
+                created_dt = None
+            if created_dt is not None and created_dt > cutoff:
+                continue
 
         # Determine winner
         opens_a = ab_test.get("opens_a", 0)
@@ -350,6 +365,7 @@ def evaluate_ab_tests():
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
         sent_count = 0
+        errors = []
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in remaining:
                 if contact.get("unsubscribed"):
@@ -372,14 +388,27 @@ def evaluate_ab_tests():
                         contact_model.mark_sent(contact["id"])
                         campaign_model.increment_stat(ab_test["campaign_id"], "sent_count")
                         sent_count += 1
+                    else:
+                        # A failed send must mark the contact (so Resume can
+                        # retry it) and flip the campaign to 'partial' — never
+                        # silently drop most of the list while reporting 'sent'.
+                        contact_model.mark_failed(
+                            contact["id"], _classify_failure(result.get("status_code"))
+                        )
+                        errors.append(contact.get("email"))
                 except Exception:
-                    pass
+                    # Network/timeout: transient, retryable via Resume.
+                    contact_model.mark_failed(contact["id"], "deferred")
+                    errors.append(contact.get("email"))
 
                 time.sleep(SEND_DELAY_SECONDS)
 
         user_model.increment_sent_count(user["id"], sent_count)
         ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
-        campaign_model.update_campaign(ab_test["campaign_id"], {"status": "sent"})
+        # 'partial' (not 'sent') when any send failed, so the Resume button
+        # surfaces and the still-pending/deferred contacts can be retried.
+        final_status = "sent" if not errors else "partial"
+        campaign_model.update_campaign(ab_test["campaign_id"], {"status": final_status})
         total_sent += sent_count
 
     return {"evaluated": len(result.data), "sent": total_sent}
