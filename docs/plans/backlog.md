@@ -73,22 +73,40 @@ supersedes it.
 
 ## 🟡 P2 — flagged bugs / cleanup
 
-### ⬜ Truncated unsubscribe IDs
+### ✅ Truncated unsubscribe IDs — DONE (2026-06-25)
+
+> **Resolved.** `get_contact()` now validates the id is a UUID and returns
+> `None` before the query, so the public tracking routes (`/t`, `/c`,
+> `/unsubscribe`) fall into their existing "not found" path (clean 200)
+> instead of crashing with 22P02 → 500. Test: `test_contact_uuid_guard.py`.
+> _(Committed `93815ee`, not yet deployed — batched with the dedup fix.)_
 PostHog `$exception` (backend): `/unsubscribe/NjhjYWRjMT…` — 10-char, non-UUID →
 `invalid input syntax for type uuid`. Either the unsubscribe links are being
-truncated, or email scanners hit partial URLs. Investigate URL generation vs.
-harmless bot traffic; if bot traffic, return a clean 400 instead of throwing.
+truncated, or email scanners hit partial URLs.
 
-### ⬜ Filter benign $exception noise
+### ✅ Filter benign $exception noise — DONE (2026-06-25)
+
+> **Resolved.** Two layers share one denylist (ResizeObserver loop,
+> port-closed/bfcache, extension-context-invalidated): the backend
+> `/api/error-report` returns `{"status":"filtered"}` without capturing
+> (scrubs noise from already-shipped versions immediately), and
+> `reportError()` in `background.js` short-circuits before the fetch.
+> Tests in `test_posthog.py`. _(Committed `527941d`; backend deploys in
+> the batch, client ships with 0.1.18.)_
 363 `ResizeObserver loop completed…` events flooded error tracking
-(`extension-client`). Filter ResizeObserver + known-benign messages in the
-extension before POSTing to `/api/error-report` — protects the signal + PostHog
-quota.
+(`extension-client`).
 
-### ⬜ Feedback form confirmation
-The in-app feedback form gives no clear "we got it — we'll reply to your email"
-confirmation, so users feel unheard (Miriam: *"I can't even email support"*, yet
-her feedback did arrive). Add a clear success state.
+### ✅ Feedback form confirmation — DONE (2026-06-25)
+
+> **Resolved.** The success toast now promises a reply — "Thanks — we got
+> your message and will reply to your email soon." across all 10 locales —
+> instead of the passive "submitted!". Also fixed the feedback context
+> reporting a hardcoded version `"0.1.0"` (now the real manifest version)
+> so support tickets carry accurate build info. _(Committed `04e4a6b`;
+> ships with 0.1.18.)_
+The in-app feedback form gave no clear "we got it — we'll reply to your email"
+confirmation, so users felt unheard (Miriam: *"I can't even email support"*, yet
+her feedback did arrive).
 
 ---
 
