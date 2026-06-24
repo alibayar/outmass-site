@@ -297,7 +297,7 @@
     "message": "Por favor, escribe un mensaje."
   },
   "feedbackSent": {
-    "message": "¡Tu comentario ha sido enviado!"
+    "message": "¡Gracias! Recibimos tu mensaje y te responderemos por correo electrónico pronto."
   },
   "feedbackFailed": {
     "message": "No se pudo enviar. Puedes escribirnos por correo."

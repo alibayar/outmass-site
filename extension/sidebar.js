@@ -3011,7 +3011,7 @@
             context: {
               url: window.location.href,
               userAgent: navigator.userAgent,
-              version: "0.1.0",
+              version: (chrome.runtime.getManifest && chrome.runtime.getManifest().version) || "unknown",
             },
           },
         },

@@ -297,7 +297,7 @@
     "message": "请输入内容。"
   },
   "feedbackSent": {
-    "message": "您的反馈已提交！"
+    "message": "谢谢 — 我们已收到您的消息，会尽快通过电子邮件回复您。"
   },
   "feedbackFailed": {
     "message": "发送失败。您可以发送邮件联系我们。"

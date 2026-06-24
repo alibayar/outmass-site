@@ -297,7 +297,7 @@
     "message": "Please write a message."
   },
   "feedbackSent": {
-    "message": "Your feedback has been submitted!"
+    "message": "Thanks — we got your message and will reply to your email soon."
   },
   "feedbackFailed": {
     "message": "Could not send. You can email us instead."

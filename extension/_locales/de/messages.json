@@ -297,7 +297,7 @@
     "message": "Bitte schreiben Sie eine Nachricht."
   },
   "feedbackSent": {
-    "message": "Ihr Feedback wurde gesendet!"
+    "message": "Danke — wir haben Ihre Nachricht erhalten und antworten Ihnen bald per E-Mail."
   },
   "feedbackFailed": {
     "message": "Konnte nicht gesendet werden. Sie können uns stattdessen per E-Mail kontaktieren."

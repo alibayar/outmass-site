@@ -297,7 +297,7 @@
     "message": "Veuillez rédiger un message."
   },
   "feedbackSent": {
-    "message": "Votre retour a été envoyé !"
+    "message": "Merci — nous avons bien reçu votre message et vous répondrons bientôt par e-mail."
   },
   "feedbackFailed": {
     "message": "Envoi impossible. Vous pouvez nous contacter par e-mail."

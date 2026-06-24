@@ -297,7 +297,7 @@
     "message": "Lütfen bir mesaj yazın."
   },
   "feedbackSent": {
-    "message": "Geri bildiriminiz gönderildi!"
+    "message": "Teşekkürler — mesajınızı aldık, en kısa sürede e-posta ile yanıtlayacağız."
   },
   "feedbackFailed": {
     "message": "Gönderilemedi. Bunun yerine bize e-posta atabilirsiniz."
