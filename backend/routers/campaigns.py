@@ -1243,30 +1243,36 @@ async def _send_single_email(
 def _fetch_previous_emails(
     user_id: str, exclude_campaign_id: str, sent_cutoff_iso: str
 ) -> set[str]:
-    """Return lowercase emails the user has already contacted (sent or pending).
+    """Return lowercase emails the user has already contacted.
 
-    - Limited to campaigns owned by user_id.
+    - `sent` contacts (actually delivered) with sent_at >= cutoff, from any of
+      the user's other campaigns.
+    - `pending` contacts ONLY from campaigns still on track to deliver them
+      (scheduled / sending / ab_testing) — the live outbox. Pending contacts in
+      a failed / partial / cancelled campaign never reached the recipient, so
+      they are NOT deduped — otherwise one failed/timed-out send would lock the
+      user out of re-mailing their own list (a real complaint we hit).
     - The current campaign (exclude_campaign_id) is excluded.
-    - sent contacts are filtered by sent_at >= cutoff; pending contacts
-      are always included regardless of age (they're an active outbox).
     """
     db = get_db()
     camps = (
         db.table("campaigns")
-        .select("id")
+        .select("id, status")
         .eq("user_id", user_id)
         .execute()
     )
-    camp_ids = [
-        c["id"]
-        for c in (camps.data or [])
-        if c.get("id") != exclude_campaign_id
+    camps_to_scan = [
+        c for c in (camps.data or []) if c.get("id") != exclude_campaign_id
     ]
-    if not camp_ids:
+    if not camps_to_scan:
         return set()
 
+    # A 'pending' contact only counts as "already contacted" while its campaign
+    # is still going to deliver it; a done/dead campaign's pending never arrives.
+    ACTIVE_OUTBOX = {"scheduled", "sending", "ab_testing"}
     emails: set[str] = set()
-    for cid in camp_ids:
+    for c in camps_to_scan:
+        cid = c["id"]
         sent = (
             db.table("contacts")
             .select("email")
@@ -1275,19 +1281,20 @@ def _fetch_previous_emails(
             .gte("sent_at", sent_cutoff_iso)
             .execute()
         )
-        pending = (
-            db.table("contacts")
-            .select("email")
-            .eq("campaign_id", cid)
-            .eq("status", "pending")
-            .execute()
-        )
         for r in (sent.data or []):
             if r.get("email"):
                 emails.add(r["email"].lower())
-        for r in (pending.data or []):
-            if r.get("email"):
-                emails.add(r["email"].lower())
+        if c.get("status") in ACTIVE_OUTBOX:
+            pending = (
+                db.table("contacts")
+                .select("email")
+                .eq("campaign_id", cid)
+                .eq("status", "pending")
+                .execute()
+            )
+            for r in (pending.data or []):
+                if r.get("email"):
+                    emails.add(r["email"].lower())
     return emails
 
 

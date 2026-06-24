@@ -4,9 +4,11 @@ Behavior:
 - Free/Starter users: flag is ignored entirely (no query overhead either).
 - Pro users with dedup_enabled=False: flag is ignored.
 - Pro users with dedup_enabled=True (default): upload_contacts filters out
-  emails already present in previous campaigns (sent within lookback window,
-  or pending regardless of age). The current campaign is excluded from the
-  "previous" set.
+  emails already present in previous campaigns — 'sent' within the lookback
+  window, or 'pending' but only from a campaign still on track to deliver
+  (scheduled/sending/ab_testing). Pending from a failed/partial campaign is
+  NOT deduped (it never reached the recipient). The current campaign is
+  excluded from the "previous" set.
 - Response payload includes `skipped_previous` count.
 """
 from unittest.mock import patch
@@ -73,9 +75,13 @@ def _campaign(cid: str, user_id: str) -> dict:
 
 
 def _install(fake_db, campaign, sent_rows=None, pending_rows=None,
-             other_campaign_ids=None):
+             other_campaign_ids=None, other_status="scheduled"):
+    # other_status = status of the "previous" campaigns. Pending contacts are
+    # only deduped from campaigns still on track to deliver (the live outbox);
+    # a failed/partial campaign's pending never arrives, so it must NOT dedup.
+    # 'sent' contacts dedup regardless of campaign status.
     fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign] + [
-        {"id": cid, "user_id": campaign["user_id"]}
+        {"id": cid, "user_id": campaign["user_id"], "status": other_status}
         for cid in (other_campaign_ids or [])
     ]))
     fake_db.set_table("contacts", _ContactsTable(sent_rows, pending_rows))
@@ -117,13 +123,14 @@ def test_pro_user_dedup_skips_previous_sent(client, fake_db, auth_bypass_pro):
     assert body["count"] == 1  # only bob inserted
 
 
-def test_pro_user_dedup_skips_pending_regardless_of_age(client, fake_db, auth_bypass_pro):
-    """Pending contacts are always treated as 'previously contacted'."""
+def test_pro_user_dedup_skips_pending_from_active_campaign(client, fake_db, auth_bypass_pro):
+    """Pending in a still-delivering campaign (the live outbox) IS deduped."""
     camp = _campaign("cP2", FAKE_PRO_USER["id"])
     _install(
         fake_db, camp,
         pending_rows=[{"email": "carol@example.com"}],
         other_campaign_ids=["cQueued"],
+        other_status="scheduled",  # still on track to deliver carol
     )
     csv = "email\ncarol@example.com\ndave@example.com\n"
     resp = client.post("/campaigns/cP2/contacts", json={"csv_string": csv})
@@ -131,6 +138,25 @@ def test_pro_user_dedup_skips_pending_regardless_of_age(client, fake_db, auth_by
     body = resp.json()
     assert body["skipped_previous"] == 1
     assert body["count"] == 1
+
+
+def test_pro_user_dedup_keeps_pending_from_failed_campaign(client, fake_db, auth_bypass_pro):
+    """Pending left by a failed/partial send never reached the recipient, so it
+    must NOT be deduped — otherwise one failed/timed-out send locks the user out
+    of re-mailing their own list (the real complaint that prompted this fix)."""
+    camp = _campaign("cP2b", FAKE_PRO_USER["id"])
+    _install(
+        fake_db, camp,
+        pending_rows=[{"email": "carol@example.com"}],
+        other_campaign_ids=["cFailed"],
+        other_status="partial",  # done/dead — carol never arrived
+    )
+    csv = "email\ncarol@example.com\ndave@example.com\n"
+    resp = client.post("/campaigns/cP2b/contacts", json={"csv_string": csv})
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["skipped_previous"] == 0
+    assert body["count"] == 2  # both carol and dave can be sent
 
 
 def test_pro_user_dedup_disabled_skips_nothing(client, fake_db):

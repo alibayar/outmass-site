@@ -45,7 +45,13 @@ To finish (Azure → App registrations → OutMass `3b6a9f9b-cbb6-4dcb-a3b6-d993
 
 ## 🟠 P1 — bit a paying customer / ship pending
 
-### ⬜ Cross-campaign dedup skips never-delivered recipients
+### ✅ Cross-campaign dedup skips never-delivered recipients — DONE (2026-06-24)
+
+> **Resolved.** `_fetch_previous_emails` now dedups `pending` only from campaigns
+> still on track to deliver (scheduled/sending/ab_testing); `pending` from a
+> failed/partial/cancelled campaign is no longer skipped, so a failed send can't
+> lock a user out of re-mailing their own list. `sent` dedup unchanged. Added a
+> regression test (`test_pro_user_dedup_keeps_pending_from_failed_campaign`).
 `_fetch_previous_emails` (`backend/routers/campaigns.py` ~1204) returns **sent OR
 pending** addresses; the upload dedup (~447) then skips them. Recipients left
 `pending` by a FAILED/partial send (e.g. the 502 timeout) never received the email
