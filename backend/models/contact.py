@@ -4,12 +4,31 @@ OutMass — Contact model helpers
 
 import re
 from datetime import datetime, timezone
+from uuid import UUID
 
 from database import get_db
 from utils.email_classifier import is_role_account, is_disposable
 
 # Simple email regex for validation
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
+
+
+def _is_uuid(value: str) -> bool:
+    """True if `value` is a well-formed UUID string.
+
+    contacts.id is a Postgres UUID column. Public tracking routes take the
+    id straight from the URL, so scanners / link-truncating clients send
+    garbage. Querying with a non-UUID raises 22P02 (invalid input syntax
+    for type uuid) → unhandled 500. Callers use this to short-circuit
+    before the query.
+    """
+    if not value or not isinstance(value, str):
+        return False
+    try:
+        UUID(value)
+        return True
+    except (ValueError, AttributeError, TypeError):
+        return False
 
 
 def bulk_insert(
@@ -115,6 +134,11 @@ def get_pending_contacts(campaign_id: str) -> list[dict]:
 
 
 def get_contact(contact_id: str) -> dict | None:
+    # contacts.id is a UUID column — a non-UUID id (truncated tracking link,
+    # scanner garbage) can never match a real contact and would otherwise
+    # crash the query with 22P02. Treat it as "not found".
+    if not _is_uuid(contact_id):
+        return None
     result = (
         get_db()
         .table("contacts")
