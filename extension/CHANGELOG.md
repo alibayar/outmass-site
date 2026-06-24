@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.18 — 2026-06-24
+
+- Large sends now stay within Outlook's limits automatically. OutMass paces every send (~30 emails/min) so it no longer trips Microsoft's rate limit — and before a big send (500+ recipients) you'll see a heads-up with the estimated time and a reminder that very large cold lists deliver best when spread over several days.
+
 ## v0.1.17 — 2026-06-24
 
 - More reliable sign-in. If the Microsoft authorization page occasionally failed to load on the first try (a brief server hiccup), OutMass now wakes the backend and retries once instead of erroring out. (Consent prompts you decline are never retried.)

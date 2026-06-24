@@ -1025,6 +1025,27 @@
         alert(t("alertPartialCsvQuota", [String(remaining), String(csvData.rows.length)]));
       }
 
+      // Large-send guidance: above a threshold, tell the user OutMass paces the
+      // send within Outlook's per-minute limit (so it takes time + runs in the
+      // background) and that very large cold lists deliver best when spread over
+      // several days. Heads-up + confirm only — the send is always paced
+      // server-side regardless of this dialog.
+      var _recipients = (csvData && csvData.rows) ? csvData.rows.length : 0;
+      if (_recipients > 500) {
+        var _estMin = Math.max(1, Math.ceil((_recipients * 2) / 60));
+        var _warn = t("largeSendWarn", [String(_recipients), String(_estMin)]);
+        if (!_warn || _warn === "largeSendWarn") {
+          _warn =
+            "You're about to send to " + _recipients + " recipients.\n\n" +
+            "To stay within Outlook's sending limits and protect your account from being flagged, OutMass automatically paces this send (about 30/min), so it will take roughly " + _estMin + " minutes and continues in the background.\n\n" +
+            "For large cold lists, deliverability is best if you spread the send over several days (a few hundred per day) using Schedule.\n\nContinue?";
+        }
+        if (!confirm(_warn)) {
+          track("send_failed", { recipient_count: _recipients, error_code: "large_send_declined" });
+          return;
+        }
+      }
+
       startSendFlow(subject, body);
     });
     });

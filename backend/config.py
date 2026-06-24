@@ -188,7 +188,11 @@ def upload_limit_for_plan(plan: str) -> int:
         "starter": STARTER_UPLOAD_ROW_LIMIT,
     }.get(plan, FREE_UPLOAD_ROW_LIMIT)
 
-SEND_DELAY_SECONDS = 1
+# 2s between sends ≈ 30 emails/min — under Microsoft's ~30 messages/minute
+# throttle (Exchange Online), so we pace within the provider's limit instead
+# of triggering 429s and account spam-flagging on large sends. Slower but
+# safer for both throttling and deliverability.
+SEND_DELAY_SECONDS = 2
 RATE_LIMIT_WAIT_SECONDS = 60
 
 # ── HTTPX timeouts for outbound calls ──
