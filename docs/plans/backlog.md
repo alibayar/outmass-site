@@ -60,10 +60,11 @@ this.** **Fix:** dedup should skip only actually-`sent` (delivered) contacts, no
 `pending` from failed/partial campaigns. (Today's workaround: Settings → "Skip
 Repeat Recipients" → off.)
 
-### ⬜ Package + upload extension v0.1.18
-The large-send warning is committed (manifest `0.1.18`). Backend pacing is already
-live; the warning ships with the store upload. Build `outmass-0.1.18.zip` → upload
-to Chrome (over 0.1.17) + Edge.
+### 🔧 Package + upload extension v0.1.18 — PACKAGED (2026-06-25), upload pending
+`outmass-0.1.18.zip` is **built + verified** at the repo root (26 entries,
+forward-slash paths, 10 locales, manifest 0.1.18, README/CHANGELOG excluded).
+Bundles: large-send warning + benign-noise client filter (P2 #2) + feedback
+reassurance copy (P2 #3). **Remaining: Ali uploads to Chrome (over 0.1.17) + Edge.**
 
 ### ⬜ Confirm 0.1.17 on Edge
 Chrome has 0.1.17. Edge: was it uploaded (cancel 0.1.15 → 0.1.17)? If not, 0.1.18
@@ -146,3 +147,8 @@ Telemetry EU fix · Railway healthcheck (zero-downtime deploys) · sign-in auto-
 · M365 FAQ + Fix A error message · Stripe verified end-to-end · 13 user-loss leak
 fixes (`docs/plans/2026-06-24-user-loss-leak-fixes.md`) · async immediate send (no
 more 502) · rate-limit pacing (30/min) + large-send warning.
+
+**Deployed 2026-06-25** (`449be63`, verified live on prod): cross-campaign dedup
+fix · P2 #1 non-UUID tracking ids → clean 200 (no 500) · P2 #2 benign-noise filter
+(server `{"status":"filtered"}` + client) · P2 #3 feedback reassurance · FAQ
+reframed (M365 work/school now supported by default after publisher verification).
