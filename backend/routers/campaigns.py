@@ -15,7 +15,7 @@ import urllib.parse
 from datetime import datetime, timedelta, timezone
 
 import httpx
-from fastapi import APIRouter, Depends, Header, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
 from pydantic import BaseModel
 
 from config import (
@@ -518,6 +518,7 @@ async def upload_contacts(
 async def send_campaign(
     campaign_id: str,
     request: Request,
+    background_tasks: BackgroundTasks,
     user: dict = Depends(get_current_user),
     authorization: str = Header(...),
 ):
@@ -626,6 +627,7 @@ async def send_campaign(
     # ── A/B Test setup ──
     ab_test = ab_test_model.get_ab_test(campaign_id)
     ab_test_size = 0
+    half = 0
     ab_group_a = []
     ab_group_b = []
     ab_remaining = []
@@ -640,100 +642,137 @@ async def send_campaign(
     else:
         ab_test = None  # Ignore non-testing AB tests
 
-    # ── Send emails synchronously (MVP, no Celery) ──
+    # ── Hand the actual send to a background task ──
+    # The recipient loop runs one Graph call + a delay PER recipient, so a large
+    # list takes minutes — far longer than the platform's HTTP request timeout,
+    # which used to 502 a big "Send now" even though the send itself was fine.
+    # All the synchronous prep above (token, quota, merge-tag validation, dedup,
+    # suppression, A/B split) already gave the user immediate feedback; the send
+    # itself now runs after the response returns, so the request never times out.
+    send_list = pending if not ab_test else ab_group_a + ab_group_b
+    background_tasks.add_task(
+        _run_campaign_send,
+        campaign_id,
+        campaign,
+        send_list,
+        ab_test,
+        half,
+        ab_remaining,
+        x_ms_token,
+        user,
+        suppressed_emails,
+    )
+
+    return {
+        "queued": len(send_list),
+        "campaign_id": campaign_id,
+        "status": "sending",
+        "errors": [],
+        "ab_test": bool(ab_test),
+    }
+
+
+async def _run_campaign_send(
+    campaign_id: str,
+    campaign: dict,
+    send_list: list,
+    ab_test: dict | None,
+    half: int,
+    ab_remaining: list,
+    access_token: str,
+    user: dict,
+    suppressed_emails: set,
+):
+    """Send a campaign's recipients off the request path (FastAPI BackgroundTask).
+
+    A large list (one Graph call + SEND_DELAY per recipient) can run for minutes —
+    longer than the platform's HTTP request timeout — so doing it inside the
+    request 502'd big "Send now" campaigns even though the send was fine. The
+    caller has already validated everything and marked the campaign 'sending';
+    this drives it to 'sent' / 'partial' / 'ab_testing'. A process restart
+    mid-send leaves it 'sending', which the hourly stuck-sending sweep recovers
+    to 'partial' for Resume — so no recipients are silently lost.
+    """
     sent_count = 0
     errors = []
     token_expired_midbatch = False
+    try:
+        async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
+            for idx, contact in enumerate(send_list):
+                if contact.get("unsubscribed"):
+                    continue
+                if contact.get("email", "").lower() in suppressed_emails:
+                    continue
 
-    async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
-        send_list = pending if not ab_test else ab_group_a + ab_group_b
-        for idx, contact in enumerate(send_list):
-            # Check suppression list + contact-level unsubscribe
-            if contact.get("unsubscribed"):
-                continue
-            if contact.get("email", "").lower() in suppressed_emails:
-                continue
+                # Determine subject for A/B testing
+                subject_override = None
+                ab_variant = None
+                if ab_test:
+                    if idx < half:
+                        subject_override = ab_test["subject_a"]
+                        ab_variant = "A"
+                    else:
+                        subject_override = ab_test["subject_b"]
+                        ab_variant = "B"
 
-            # Determine subject for A/B testing
-            subject_override = None
-            ab_variant = None
-            if ab_test:
-                if idx < half:
-                    subject_override = ab_test["subject_a"]
-                    ab_variant = "A"
-                else:
-                    subject_override = ab_test["subject_b"]
-                    ab_variant = "B"
-
-            try:
-                result = await _send_single_email(
-                    client=client,
-                    access_token=x_ms_token,
-                    campaign=campaign,
-                    contact=contact,
-                    subject_override=subject_override,
-                    track_opens=user.get("track_opens", True),
-                    track_clicks=user.get("track_clicks", True),
-                    unsubscribe_text=user.get("unsubscribe_text", "Unsubscribe"),
-                    sender_info=user,
-                )
-                if result["success"]:
-                    contact_model.mark_sent(contact["id"])
-                    if ab_variant:
-                        contact_model.set_ab_variant(contact["id"], ab_variant)
-                    campaign_model.increment_stat(campaign_id, "sent_count")
-                    sent_count += 1
-                else:
-                    sc = result.get("status_code")
-                    if sc in (401, 403):
-                        # The access token died mid-batch — a large list can
-                        # outrun the ~1h token lifetime, or the grant was
-                        # revoked. This is an auth failure that hits EVERY
-                        # remaining send, not a per-recipient problem, so stop
-                        # here and leave this contact + the rest 'pending'
-                        # (resumable). Resume re-fetches a fresh token via the
-                        # refresh_token and finishes them; if the refresh_token
-                        # is itself dead, Resume's get_fresh_access_token flags
-                        # requires_reauth and the reconnect banner appears.
-                        token_expired_midbatch = True
-                        break
-                    _status = _classify_failure(sc)
-                    contact_model.mark_failed(contact["id"], _status)
-                    errors.append(
-                        {"email": contact["email"], "error": result["error"], "type": _status}
+                try:
+                    result = await _send_single_email(
+                        client=client,
+                        access_token=access_token,
+                        campaign=campaign,
+                        contact=contact,
+                        subject_override=subject_override,
+                        track_opens=user.get("track_opens", True),
+                        track_clicks=user.get("track_clicks", True),
+                        unsubscribe_text=user.get("unsubscribe_text", "Unsubscribe"),
+                        sender_info=user,
                     )
-            except Exception as e:
-                contact_model.mark_failed(contact["id"], "deferred")
-                errors.append({"email": contact["email"], "error": str(e), "type": "deferred"})
+                    if result["success"]:
+                        contact_model.mark_sent(contact["id"])
+                        if ab_variant:
+                            contact_model.set_ab_variant(contact["id"], ab_variant)
+                        campaign_model.increment_stat(campaign_id, "sent_count")
+                        sent_count += 1
+                    else:
+                        sc = result.get("status_code")
+                        if sc in (401, 403):
+                            # Token died mid-batch — auth failure that hits every
+                            # remaining send. Stop and leave the rest 'pending'
+                            # (resumable); Resume refreshes the token and finishes.
+                            token_expired_midbatch = True
+                            break
+                        contact_model.mark_failed(contact["id"], _classify_failure(sc))
+                        errors.append(contact.get("email"))
+                except Exception:  # noqa: BLE001
+                    contact_model.mark_failed(contact["id"], "deferred")
+                    errors.append(contact.get("email"))
 
-            # C-04: Non-blocking rate limiting between emails
-            if sent_count < len(send_list):
-                await asyncio.sleep(SEND_DELAY_SECONDS)
+                if sent_count < len(send_list):
+                    await asyncio.sleep(SEND_DELAY_SECONDS)
 
-    # Update user's monthly count
-    user_model.increment_sent_count(user["id"], sent_count)
+        user_model.increment_sent_count(user["id"], sent_count)
 
-    # Handle A/B test: if test phase done, mark status (winner evaluated later by worker)
-    if token_expired_midbatch:
-        # The token died part-way through; some recipients went out, the rest
-        # are still 'pending' and resumable. Mark 'partial' so the Resume button
-        # surfaces and the user can finish the batch (Resume refreshes the token).
-        campaign_model.update_campaign(campaign_id, {"status": "partial"})
-    elif ab_test and ab_remaining:
-        ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})
-        # Update campaign to "ab_testing" — remaining contacts will be sent by worker
-        campaign_model.update_campaign(campaign_id, {"status": "ab_testing"})
-    else:
-        # Update campaign status
-        final_status = "sent" if not errors else "partial"
-        campaign_model.update_campaign(campaign_id, {"status": final_status})
-
-    return {
-        "queued": sent_count,
-        "campaign_id": campaign_id,
-        "errors": errors[:10],  # Cap error list
-        "ab_test": bool(ab_test),
-    }
+        if token_expired_midbatch:
+            campaign_model.update_campaign(campaign_id, {"status": "partial"})
+        elif ab_test and ab_remaining:
+            ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})
+            campaign_model.update_campaign(campaign_id, {"status": "ab_testing"})
+        else:
+            campaign_model.update_campaign(
+                campaign_id, {"status": "sent" if not errors else "partial"}
+            )
+    except Exception:  # noqa: BLE001
+        import logging
+        logging.getLogger(__name__).exception(
+            "Background campaign send failed: campaign=%s", campaign_id
+        )
+        try:
+            user_model.increment_sent_count(user["id"], sent_count)
+            campaign_model.update_campaign(
+                campaign_id, {"status": "partial" if sent_count else "scheduled"}
+            )
+        except Exception:  # noqa: BLE001
+            pass
 
 
 # ── C.3: Test Send ──
