@@ -2,9 +2,16 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.1.18 — 2026-06-24
+## v0.1.18 — 2026-06-25
 
 - Large sends now stay within Outlook's limits automatically. OutMass paces every send (~30 emails/min) so it no longer trips Microsoft's rate limit — and before a big send (500+ recipients) you'll see a heads-up with the estimated time and a reminder that very large cold lists deliver best when spread over several days.
+- Clearer feedback confirmation. After you send a message from the Support tab, OutMass now confirms we received it and will reply to your email — instead of a bare "submitted".
+
+### Behind the scenes (backend — affects all extension versions)
+
+- Re-mailing your own list is no longer blocked by a failed send. Cross-campaign de-duplication now only skips recipients who were actually delivered to (or are still queued in a live campaign) — recipients left un-sent by a failed or partial campaign are no longer treated as "already contacted".
+- Unsubscribe and open/click links with a truncated or garbled ID (e.g. from some email security scanners) now return a clean page instead of a server error.
+- Less noise in our error tracking from harmless browser-internal warnings, so real issues surface faster.
 
 ## v0.1.17 — 2026-06-24
 
