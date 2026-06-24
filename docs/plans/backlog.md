@@ -10,7 +10,15 @@ site, so this never ships to getoutmass.com.)
 
 ## 🔴 P0 — blocks users / revenue now
 
-### ⬜ Publisher verification → Azure MPN ID
+### ✅ Publisher verification → Azure MPN ID — DONE (2026-06-24)
+
+> **Resolved.** The app `3b6a9f9b` was already in the work tenant
+> (`outmassappoutlook.onmicrosoft.com`) — no migration / no client-ID change.
+> The earlier error was just the wrong signed-in account; redoing it as
+> `partner@…onmicrosoft.com` (a CPP admin) got past `MPNAccountNotFoundOrNoAccess`.
+> Then `metisbilisim.com` was added as a verified tenant custom domain (DNS TXT)
+> to satisfy the publisher-domain match. **M365 work/school consent block lifted.
+> Zero code/deploy change, zero service disruption.** _(original notes below.)_
 The M365 work/school **consent block** is still live — an unverified multitenant
 publisher means end users can't grant consent. Telemetry shows real, motivated
 users lost to it (*"The user did not approve access"* — e.g. person `988a5fe3`,
