@@ -76,6 +76,32 @@
     });
   }
 
+  function showSidebar() {
+    if (!sidebarVisible) {
+      toggleSidebar();
+    }
+  }
+
+  // ── Floating launcher button (in-Outlook affordance to open the sidebar) ──
+  function injectLauncher() {
+    // Idempotent: never inject twice.
+    if (document.getElementById("outmass-launcher")) return;
+    if (!document.body) return;
+
+    const btn = document.createElement("button");
+    btn.id = "outmass-launcher";
+    btn.type = "button";
+    btn.textContent = "OM";
+    btn.title = "OutMass — open sidebar";
+    btn.setAttribute("aria-label", "OutMass — open sidebar");
+    btn.addEventListener("click", function () {
+      showSidebar();
+    });
+
+    document.body.appendChild(btn);
+    log("Launcher button injected");
+  }
+
   // ── Message listener from sidebar (postMessage) ──
   window.addEventListener("message", function (event) {
     // Only accept messages from our extension's chrome-extension:// origin
@@ -99,12 +125,13 @@
       sendResponse({ ack: true });
     } else if (message.type === "SHOW_SIDEBAR") {
       // Only open, never close
-      if (!sidebarVisible) {
-        toggleSidebar();
-      }
+      showSidebar();
       sendResponse({ ack: true });
     }
   });
+
+  // Single injection at document_idle is sufficient — no MutationObserver needed.
+  injectLauncher();
 
   log("Content script loaded on", location.hostname);
 })();

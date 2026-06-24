@@ -2,9 +2,22 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.1.17 — 2026-06-23
+## v0.1.17 — 2026-06-24
 
-- More reliable sign-in. Occasionally the Microsoft authorization page failed to load on the first attempt — usually a brief server hiccup — and sign-in would error out. OutMass now wakes the backend and automatically retries once, so most of these transient failures recover on their own instead of showing an error. (Consent prompts you decline are never retried.)
+- More reliable sign-in. If the Microsoft authorization page occasionally failed to load on the first try (a brief server hiccup), OutMass now wakes the backend and retries once instead of erroring out. (Consent prompts you decline are never retried.)
+- Accurate monthly quota. The usage bar and the pre-send check now read your real sent-this-month count from the server, so you're warned about your remaining quota up front instead of only hitting a limit error after building a whole campaign.
+- Clearer "limit reached" prompt. The upgrade dialog now shows exactly how much of your plan you've used (e.g. "250 / 250") instead of a numberless wall.
+- Smoother recovery if your sign-in expires while composing. Sending now shows the one-click reconnect banner (and keeps your work) instead of a raw error, and won't leave a half-created campaign behind.
+- Easier to reopen OutMass. A small floating OutMass button now sits in the corner of Outlook so you can open the sidebar anytime, without going through the menu.
+- Clearer CSV import. Rows with no email address are now counted and shown (like duplicates are), and the "missing email column" error points you to the example file.
+- Fixed a rare glitch where a stray "session expired" banner could appear right after you deliberately signed out.
+
+### Behind the scenes (backend — affects all extension versions)
+
+- Scheduled and A/B campaigns no longer silently drop recipients on a send hiccup — failures are recorded and the campaign is marked "partial" so **Resume** can finish it. A single malformed record can no longer freeze A/B winner evaluation for everyone.
+- Over-quota scheduled campaigns now wait and retry after your monthly reset instead of being marked failed.
+- A large send that outruns the ~1-hour Microsoft token now stops cleanly and becomes resumable (Resume refreshes the token and finishes the rest) instead of dropping the remainder.
+- Fixed a reconnect-banner loop, and a case where a fully-failed follow-up was reported as sent.
 
 ## v0.1.16 — 2026-06-20
 

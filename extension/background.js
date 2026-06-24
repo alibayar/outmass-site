@@ -369,6 +369,14 @@ async function msLogout() {
     expiresAt: null,
     user: null,
     backendJwt: null,
+    // A deliberate sign-out must not leave the prior 401's session-expired
+    // flag set, otherwise the reauth poll shows a wrong "session expired —
+    // reconnect" banner. Clear it plus cached plan state so the next account
+    // starts clean.
+    sessionExpired: false,
+    plan: "free",
+    monthlyLimit: null,
+    emailsSentThisMonth: 0,
   });
   log("User logged out, storage cleared");
 }
@@ -424,17 +432,20 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                 // it instead of hardcoding — raising a limit needs no extension
                 // update. Stored alongside plan.
                 var freshLimit = resp.data.monthly_limit;
-                var _set = {};
+                // Persist the real monthly count from the backend so the sidebar
+                // quota bar + pre-send guard (which read storage) see the true
+                // value instead of a stale 0 — a returning user was otherwise
+                // ambushed by a 402 after creating a campaign.
+                var freshSent = resp.data.emails_sent_this_month || 0;
+                var _set = { emailsSentThisMonth: freshSent };
                 if (freshPlan !== result.plan) _set.plan = freshPlan;
                 if (freshLimit) _set.monthlyLimit = freshLimit;
-                if (Object.keys(_set).length) {
-                  chrome.storage.local.set(_set);
-                  log("Plan/limit refreshed from backend:", freshPlan, freshLimit);
-                }
+                chrome.storage.local.set(_set);
+                log("Plan/limit/count refreshed from backend:", freshPlan, freshLimit, freshSent);
                 sendResponse({
                   user: result.user,
                   plan: freshPlan,
-                  emailsSentThisMonth: resp.data.emails_sent_this_month || 0,
+                  emailsSentThisMonth: freshSent,
                   monthlyLimit: freshLimit,
                 });
               } else {

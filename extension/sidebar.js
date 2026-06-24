@@ -534,13 +534,29 @@
       var lowerHeaders = headers.map(function (h) { return h.toLowerCase(); });
       // A.3: mandatory email column
       if (lowerHeaders.indexOf("email") < 0) {
-        alert(t("csvErrNoEmailColumn"));
+        // Point the user at the template that shows the required 'email' column,
+        // appending a hint to the error and triggering the example-CSV download
+        // so they can see the correct format immediately.
+        var noColMsg = t("csvErrNoEmailColumn");
+        var tmplHint = t("csvErrNoEmailColumnHint");
+        if (!tmplHint || tmplHint === "csvErrNoEmailColumnHint") {
+          tmplHint = "Download the example CSV to see the required format.";
+        }
+        alert(noColMsg + "\n\n" + tmplHint);
         track("csv_upload_failed", { error_code: "no_email_column" });
+        // Open the example CSV (same action as the "Download example CSV" link)
+        // so the correct column layout is one step away.
+        var _tmplLink = document.getElementById("csv-template-link");
+        if (_tmplLink) {
+          try { _tmplLink.scrollIntoView({ block: "nearest" }); } catch (e) { /* ignore */ }
+          _tmplLink.click();
+        }
         return;
       }
       var rows = [];
       var seen = {};
       var dupCount = 0;
+      var emptyEmailCount = 0;
       for (var i = 1; i < lines.length; i++) {
         if (!lines[i].trim()) continue; // skip empty lines
         var values = parseCSVLine(lines[i]);
@@ -550,7 +566,10 @@
         });
         // A.1 mirror: lowercase + dedupe on email
         var em = (row.email || row.Email || row.EMAIL || "").trim().toLowerCase();
-        if (!em) continue;
+        // Rows with a blank email can't be sent — count them so the user
+        // isn't silently surprised by a lower recipient total (mirrors how
+        // duplicates are surfaced below).
+        if (!em) { emptyEmailCount++; continue; }
         row.email = em;
         if (seen[em]) { dupCount++; continue; }
         seen[em] = true;
@@ -563,14 +582,26 @@
       csvInfo.style.display = "flex";
       csvFilename.textContent = file.name;
       var msg = rows.length + " " + t("csvCountSuffix");
-      if (dupCount > 0) msg += " (" + dupCount + " " + t("csvDupRemoved") + ")";
+      // Report removed/skipped rows in the same parenthetical style as dups.
+      var notes = [];
+      if (dupCount > 0) notes.push(dupCount + " " + t("csvDupRemoved"));
+      if (emptyEmailCount > 0) {
+        var emptyLabel = t("csvEmptyEmailSkipped");
+        // Defensive fallback (matches the csvTemplateRow pattern) so a locale
+        // missing this key still shows a sensible English label, never the key.
+        if (!emptyLabel || emptyLabel === "csvEmptyEmailSkipped") emptyLabel = "skipped (no email)";
+        notes.push(emptyEmailCount + " " + emptyLabel);
+      }
+      if (notes.length) msg += " (" + notes.join(", ") + ")";
       csvCount.textContent = msg;
 
       updateSendButton();
-      log("CSV loaded:", file.name, rows.length, "rows,", dupCount, "duplicates removed");
+      log("CSV loaded:", file.name, rows.length, "rows,", dupCount,
+          "duplicates removed,", emptyEmailCount, "skipped (no email)");
       track("recipients_uploaded", {
         recipient_count: rows.length,
         duplicates_removed: dupCount,
+        empty_email_skipped: emptyEmailCount,
       });
     };
     reader.readAsText(file, "UTF-8");
@@ -874,7 +905,11 @@
   }
 
   // ── Quota ──
-  function loadQuota() {
+  // Read the quota straight from storage. The backend-derived count/limit are
+  // persisted by background's GET_USER_STATE; loadQuota() below pulls a fresh
+  // copy before we render so a returning user sees their real usage instead of
+  // a stale 0 (which used to ambush them with a 402 mid-campaign).
+  function renderQuota() {
     chrome.storage.local.get(["emailsSentThisMonth", "plan", "monthlyLimit"], function (result) {
       var sent = result.emailsSentThisMonth || 0;
       var plan = result.plan || "free";
@@ -887,6 +922,18 @@
 
       quotaText.textContent = t("quotaDefault", [String(remaining), String(limit), planLabel]);
       quotaFill.style.width = (remaining / limit * 100) + "%";
+    });
+  }
+
+  // Request the live user state (which persists the real emailsSentThisMonth /
+  // monthlyLimit / plan into chrome.storage.local) and then render. Falls back
+  // to whatever is already cached if the message round-trip fails (offline).
+  function loadQuota() {
+    chrome.runtime.sendMessage({ type: "GET_USER_STATE" }, function () {
+      // GET_USER_STATE has already written the fresh values to storage by the
+      // time this callback fires; renderQuota reads them. We ignore the resp
+      // payload and read storage so this stays the single source of truth.
+      renderQuota();
     });
   }
 
@@ -954,7 +1001,11 @@
       }
     }
 
-    // Check quota first
+    // Check quota first. Refresh the live count/limit (GET_USER_STATE persists
+    // the real backend values into storage) before reading, so a returning user
+    // is guarded against the real remaining quota — not a stale 0 that would let
+    // them create a campaign only to hit a 402 on send.
+    chrome.runtime.sendMessage({ type: "GET_USER_STATE" }, function () {
     chrome.storage.local.get(["emailsSentThisMonth", "plan", "monthlyLimit"], function (storage) {
       var sent = storage.emailsSentThisMonth || 0;
       var plan = storage.plan || "free";
@@ -975,6 +1026,7 @@
       }
 
       startSendFlow(subject, body);
+    });
     });
   });
 
@@ -1067,7 +1119,14 @@
             });
             return;
           }
-          showSendError(createResp ? createResp.error : t("alertCampaignCreateFailed"));
+          // Route expired sessions through the reconnect banner like every
+          // other backend handler; otherwise re-enable Send and show the error.
+          if (!handleSessionExpired(createResp)) {
+            showSendError(createResp ? createResp.error : t("alertCampaignCreateFailed"));
+          } else {
+            btnSend.textContent = t("btnSend");
+            btnSend.disabled = false;
+          }
           track("send_failed", {
             recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
             error_code: "create_failed",
@@ -1090,7 +1149,15 @@
           },
           function (uploadResp) {
             if (!uploadResp || uploadResp.error) {
-              showSendError(uploadResp ? uploadResp.error : t("alertContactsUploadFailed"));
+              // A 401 here would orphan the campaign we just created (duplicate
+              // risk on retry). Surface the reconnect banner instead of a raw
+              // error so the user re-auths and resumes cleanly.
+              if (!handleSessionExpired(uploadResp)) {
+                showSendError(uploadResp ? uploadResp.error : t("alertContactsUploadFailed"));
+              } else {
+                btnSend.textContent = t("btnSend");
+                btnSend.disabled = false;
+              }
               track("send_failed", {
                 recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
                 error_code: "upload_failed",
@@ -1218,7 +1285,15 @@
           if (sendResp.status === 402 || sendResp.error === "limit_exceeded") {
             btnSend.textContent = t("btnSend");
             btnSend.disabled = false;
-            showUpgradeModal();
+            // Surface the backend's structured quota payload (localized message
+            // + emails_sent/limit) inside the upgrade modal instead of a numberless
+            // "you've reached your limit". detail is { error, message, emails_sent, limit }.
+            var _qd = sendResp.detail && typeof sendResp.detail === "object" ? sendResp.detail : null;
+            showUpgradeModal(_qd ? {
+              message: _qd.message || null,
+              emailsSent: _qd.emails_sent,
+              limit: _qd.limit,
+            } : null);
             track("send_failed", {
               recipient_count: _recipientCount,
               error_code: String(sendResp.error).slice(0, 64),
@@ -1250,7 +1325,15 @@
             alert(t("mergeTagMalformed", [_tag]));
             return;
           }
-          showSendError(sendResp.error);
+          // An expired 24h JWT used to surface here as a raw
+          // alert('Send error: session_expired'); route it through the
+          // reconnect banner like every other handler and re-enable Send.
+          if (!handleSessionExpired(sendResp)) {
+            showSendError(sendResp.error);
+          } else {
+            btnSend.textContent = t("btnSend");
+            btnSend.disabled = false;
+          }
           track("send_failed", {
             recipient_count: _recipientCount,
             error_code: String(sendResp.error).slice(0, 64),
@@ -2028,10 +2111,36 @@
   }
 
   // ── Upgrade Modal ──
-  function showUpgradeModal() {
+  // opts (optional): { message, emailsSent, limit } from a 402 quota response.
+  // When present we show a quota-specific line ("X / Y used") so the user sees
+  // exactly how much of their plan they've consumed, not a numberless prompt.
+  function showUpgradeModal(opts) {
     // Remove existing modal if any
     var existing = document.getElementById("upgrade-modal");
     if (existing) existing.remove();
+
+    // Build a quota-specific, localized line from the backend payload.
+    // Prefer the backend's localized message; otherwise fall back to a numeric
+    // "X / Y" usage line built from the structured emails_sent / limit.
+    var quotaLineHtml = "";
+    if (opts) {
+      var usageText = "";
+      var hasNums = (opts.emailsSent != null && opts.limit != null);
+      if (hasNums) {
+        // alertLimitReached is localized in every locale and takes the limit;
+        // pair it with the explicit used/limit counts for a clear message.
+        usageText = t("alertLimitReached", [String(opts.limit)]).split("\n")[0] +
+          " (" + String(opts.emailsSent) + " / " + String(opts.limit) + ")";
+      } else if (opts.message) {
+        usageText = opts.message;
+      }
+      if (usageText) {
+        // escapeHtml() guards against HTML injection from the backend message.
+        quotaLineHtml =
+          '<p style="color:#a4262c;font-size:13px;font-weight:600;margin:0 0 12px;">' +
+          escapeHtml(usageText) + '</p>';
+      }
+    }
 
     var overlay = document.createElement("div");
     overlay.id = "upgrade-modal";
@@ -2042,6 +2151,7 @@
     modal.innerHTML =
       '<div style="font-size:32px;margin-bottom:12px;">🚀</div>' +
       '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">' + t("upgradeModalTitle") + '</h3>' +
+      quotaLineHtml +
       '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">' + t("upgradeModalText") + '</p>' +
       '<ul style="text-align:left;font-size:12px;color:#605e5c;margin:0 0 20px 16px;padding:0;">' +
         '<li>' + t("upgradeModalStandard") + '</li>' +

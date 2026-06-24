@@ -703,8 +703,14 @@
   "csvErrNoEmailColumn": {
     "message": "CSV must have an 'email' column."
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "Download the example CSV to see the required format."
+  },
   "csvDupRemoved": {
     "message": "duplicates removed"
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "skipped (no email)"
   },
   "campaignNameDuplicate": {
     "message": "A campaign named \"$NAME$\" already exists. Continue?",

@@ -19,3 +19,39 @@
   height: 100%;
   border: none;
 }
+
+/* ── Floating Launcher Button ── */
+#outmass-launcher {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: none;
+  margin: 0;
+  padding: 0;
+  background: #5b5fc7;
+  color: #fff;
+  font-family: "Segoe UI", system-ui, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  line-height: 1;
+  text-align: center;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+  /* Below the sidebar wrapper (999999) so it never covers the open sidebar. */
+  z-index: 999990;
+  transition: background 0.15s ease, box-shadow 0.15s ease;
+}
+
+#outmass-launcher:hover {
+  background: #4a4eb0;
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+#outmass-launcher:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 2px;
+}
