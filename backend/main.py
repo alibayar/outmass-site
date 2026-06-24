@@ -102,9 +102,29 @@ class ClientErrorReport(BaseModel):
     context: dict = {}
 
 
+# Browser-internal warnings that are harmless but noisy. They flooded error
+# tracking (363 ResizeObserver events) and drowned the real signal. Matched
+# as case-insensitive substrings of the reported message. Filtering here —
+# server-side — also scrubs noise from already-shipped extension versions
+# that predate the client-side filter, without waiting for a store update.
+_BENIGN_ERROR_PATTERNS = (
+    "resizeobserver loop",
+    "could not establish connection. receiving end does not exist",
+    "the message channel closed before a response was received",
+    "extension context invalidated",
+)
+
+
+def _is_benign_client_error(message: str) -> bool:
+    msg = (message or "").lower()
+    return any(p in msg for p in _BENIGN_ERROR_PATTERNS)
+
+
 @app.post("/api/error-report")
 async def report_client_error(body: ClientErrorReport):
     """Receive error reports from the Chrome extension."""
+    if _is_benign_client_error(body.message):
+        return {"status": "filtered"}
     if POSTHOG_API_KEY:
         posthog.capture(
             distinct_id="extension-client",

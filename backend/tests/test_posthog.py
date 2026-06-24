@@ -61,3 +61,57 @@ def test_error_report_without_posthog(client):
             json={"message": "Some error"},
         )
     assert resp.status_code == 200
+
+
+# ── Benign-noise filtering ──
+# Browser-internal warnings (ResizeObserver loop, port-closed/bfcache,
+# extension-context-invalidated) are harmless but flooded error tracking
+# (363 ResizeObserver events). The endpoint drops them before capture so
+# the $exception signal — and the PostHog quota — stay clean. This also
+# scrubs noise from already-shipped extension versions that lack the
+# client-side filter.
+
+
+def test_error_report_filters_resize_observer_noise(client):
+    """ResizeObserver loop warnings must NOT reach PostHog."""
+    mock_posthog = MagicMock()
+    with patch("main.POSTHOG_API_KEY", "test-key"), \
+         patch("main.posthog", mock_posthog):
+        resp = client.post(
+            "/api/error-report",
+            json={"message": "ResizeObserver loop completed with undelivered notifications."},
+        )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "filtered"
+    mock_posthog.capture.assert_not_called()
+
+
+def test_error_report_filters_port_closed_and_context_noise(client):
+    """Port-closed / bfcache / extension-context-invalidated are benign."""
+    benign = [
+        "Could not establish connection. Receiving end does not exist.",
+        "The message channel closed before a response was received.",
+        "Extension context invalidated.",
+    ]
+    for msg in benign:
+        mock_posthog = MagicMock()
+        with patch("main.POSTHOG_API_KEY", "test-key"), \
+             patch("main.posthog", mock_posthog):
+            resp = client.post("/api/error-report", json={"message": msg})
+        assert resp.status_code == 200, msg
+        assert resp.json()["status"] == "filtered", msg
+        mock_posthog.capture.assert_not_called()
+
+
+def test_error_report_still_captures_real_errors(client):
+    """A genuine error must still be forwarded (filter isn't over-broad)."""
+    mock_posthog = MagicMock()
+    with patch("main.POSTHOG_API_KEY", "test-key"), \
+         patch("main.posthog", mock_posthog):
+        resp = client.post(
+            "/api/error-report",
+            json={"message": "TypeError: cannot read property 'send' of undefined"},
+        )
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "received"
+    mock_posthog.capture.assert_called_once()

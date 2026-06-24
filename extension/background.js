@@ -41,7 +41,28 @@ function log(...args) {
 }
 
 // ── Error Reporting ──
+// Browser-internal warnings that are harmless but noisy (a ResizeObserver
+// reflow loop, message-port/bfcache teardown, extension-context-invalidated
+// after a reload). They flooded error tracking and drowned the real signal,
+// so we drop them before the network round-trip. The backend filters the
+// same list as a backstop for older clients.
+var BENIGN_ERROR_PATTERNS = [
+  "resizeobserver loop",
+  "could not establish connection. receiving end does not exist",
+  "the message channel closed before a response was received",
+  "extension context invalidated",
+];
+
+function isBenignError(message) {
+  var msg = String(message || "").toLowerCase();
+  for (var i = 0; i < BENIGN_ERROR_PATTERNS.length; i++) {
+    if (msg.indexOf(BENIGN_ERROR_PATTERNS[i]) !== -1) return true;
+  }
+  return false;
+}
+
 function reportError(message, stack, context) {
+  if (isBenignError(message)) return; // harmless browser-internal noise
   try {
     fetch(OUTMASS_BACKEND_URL + "/api/error-report", {
       method: "POST",
