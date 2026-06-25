@@ -17,6 +17,14 @@
   let _debugEnabled = false;
   chrome.storage.local.get("debug", function (r) { _debugEnabled = !!r.debug; });
 
+  // Record which Outlook host the user actually uses, so background's
+  // "Open Campaign Panel" reopens the RIGHT host (work=outlook.office.com,
+  // personal=outlook.live.com) instead of a hardcoded guess that bounced
+  // work/school accounts to a Microsoft login page they read as a sign-in loop.
+  try {
+    chrome.storage.local.set({ lastOutlookOrigin: window.location.origin });
+  } catch (e) { /* extension context may be invalidated */ }
+
   function log(...args) {
     if (!_debugEnabled) return;
     console.log(LOG_PREFIX, ...args);

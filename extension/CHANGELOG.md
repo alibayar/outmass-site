@@ -2,6 +2,11 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.20 — 2026-06-25
+
+- Fixed a sign-in loop that hit Microsoft 365 **work & school accounts**. The "Open Campaign Panel" button now opens *your* Outlook — work accounts land on outlook.office.com, personal accounts on outlook.live.com — instead of always opening the personal host, which bounced work users to a Microsoft sign-in page that looked like an endless login loop.
+- Hardened the session: a routine background refresh (when you open the popup) can no longer sign you out on a transient hiccup. Only deliberate sign-out or a real expiry ends your session now.
+
 ## v0.1.19 — 2026-06-25
 
 - Smoother sign-in. Clicking "Sign in" (or the reconnect banner) several times in a row no longer opens multiple Microsoft sign-in windows at once — OutMass now reuses the one already in progress. This also clears the stray "didn't approve access" errors that came from closing the extra windows.

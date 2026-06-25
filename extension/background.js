@@ -387,11 +387,19 @@ async function backendFetch(endpoint, options) {
       // session-expired flag so the sidebar can show its reconnect banner
       // instead of a raw "Invalid or expired token" alert. The flag is
       // cleared by msLogin() on a successful re-auth.
+      //
+      // EXCEPT for `silent` (background/refresh) calls: a routine plan-refresh
+      // on popup-open must never wipe auth on a single transient/edge 401 —
+      // that dropped the popup to a hard login screen and re-prompted sign-in
+      // in a loop. Silent callers just get the error; genuine expiry is still
+      // caught by user-initiated calls and the sidebar's reconnect poll.
       if (resp.status === 401) {
-        await chrome.storage.local.set({
-          backendJwt: null,
-          sessionExpired: true,
-        });
+        if (!options || !options.silent) {
+          await chrome.storage.local.set({
+            backendJwt: null,
+            sessionExpired: true,
+          });
+        }
         return { error: "session_expired", status: 401 };
       }
       return { error: (detail && typeof detail === "string" ? detail : null) || `HTTP ${resp.status}` };
@@ -424,6 +432,44 @@ async function msLogout() {
     emailsSentThisMonth: 0,
   });
   log("User logged out, storage cleared");
+}
+
+// ── Outlook host resolution ──
+// Which Outlook Web host to open for "Open Campaign Panel" when the user has no
+// Outlook tab open. Hardcoding outlook.live.com (the PERSONAL host) bounced
+// work/school (M365) accounts — whose mailbox lives on outlook.office.com — to
+// a Microsoft sign-in page that they read as an endless OutMass login loop.
+var VALID_OUTLOOK_ORIGINS = [
+  "https://outlook.live.com",
+  "https://outlook.office.com",
+  "https://outlook.office365.com",
+];
+
+var PERSONAL_OUTLOOK_DOMAINS = [
+  "outlook.com", "hotmail.com", "live.com", "msn.com", "passport.com",
+  "hotmail.co.uk", "live.co.uk", "outlook.co.uk",
+];
+
+function isPersonalOutlookEmail(email) {
+  var domain = String(email || "").toLowerCase().split("@")[1] || "";
+  return PERSONAL_OUTLOOK_DOMAINS.indexOf(domain) !== -1;
+}
+
+async function resolveOutlookMailUrl() {
+  var s = await chrome.storage.local.get(["lastOutlookOrigin", "user"]);
+  // 1) Reopen the exact host the user actually uses (content_script records it
+  //    on every Outlook page load) — the most reliable signal.
+  if (s.lastOutlookOrigin && VALID_OUTLOOK_ORIGINS.indexOf(s.lastOutlookOrigin) !== -1) {
+    return s.lastOutlookOrigin + "/mail/";
+  }
+  // 2) No prior host yet: infer from the signed-in account. Personal Microsoft
+  //    accounts use outlook.live.com; work/school (custom domain) use
+  //    outlook.office.com. Default to office.com when unknown — work accounts
+  //    are exactly the ones the old hardcode broke.
+  var email = s.user && s.user.email;
+  return isPersonalOutlookEmail(email)
+    ? "https://outlook.live.com/mail/"
+    : "https://outlook.office.com/mail/";
 }
 
 // ── Message Handler ──
@@ -468,9 +514,11 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
             return;
           }
 
-          // Refresh plan from backend (catches Stripe upgrades)
+          // Refresh plan from backend (catches Stripe upgrades).
+          // `silent`: a 401 on this background refresh must NOT clear the JWT
+          // or it would log the user out on a mere popup-open (see backendFetch).
           if (result.backendJwt) {
-            backendFetch("/settings").then(function (resp) {
+            backendFetch("/settings", { silent: true }).then(function (resp) {
               if (resp && resp.data && resp.data.plan) {
                 var freshPlan = resp.data.plan;
                 // Cache the backend-derived monthly limit so the sidebar reads
@@ -911,17 +959,21 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       return true; // async sendResponse
 
     case "OPEN_OUTLOOK_WITH_SIDEBAR":
-      chrome.tabs.create({ url: "https://outlook.live.com/mail/" }, function (newTab) {
-        function onUpdated(tabId, changeInfo) {
-          if (tabId === newTab.id && changeInfo.status === "complete") {
-            chrome.tabs.onUpdated.removeListener(onUpdated);
-            // Wait for content script to initialize after page load
-            setTimeout(function () {
-              chrome.tabs.sendMessage(newTab.id, { type: "SHOW_SIDEBAR" });
-            }, 1500);
+      // Open the user's REAL Outlook host (work=office.com, personal=live.com),
+      // not a hardcoded guess — see resolveOutlookMailUrl.
+      resolveOutlookMailUrl().then(function (mailUrl) {
+        chrome.tabs.create({ url: mailUrl }, function (newTab) {
+          function onUpdated(tabId, changeInfo) {
+            if (tabId === newTab.id && changeInfo.status === "complete") {
+              chrome.tabs.onUpdated.removeListener(onUpdated);
+              // Wait for content script to initialize after page load
+              setTimeout(function () {
+                chrome.tabs.sendMessage(newTab.id, { type: "SHOW_SIDEBAR" });
+              }, 1500);
+            }
           }
-        }
-        chrome.tabs.onUpdated.addListener(onUpdated);
+          chrome.tabs.onUpdated.addListener(onUpdated);
+        });
       });
       sendResponse({ ack: true });
       break;
