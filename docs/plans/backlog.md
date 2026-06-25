@@ -60,15 +60,16 @@ this.** **Fix:** dedup should skip only actually-`sent` (delivered) contacts, no
 `pending` from failed/partial campaigns. (Today's workaround: Settings → "Skip
 Repeat Recipients" → off.)
 
-### 🔧 Package + upload extension v0.1.18 — PACKAGED (2026-06-25), upload pending
-`outmass-0.1.18.zip` is **built + verified** at the repo root (26 entries,
-forward-slash paths, 10 locales, manifest 0.1.18, README/CHANGELOG excluded).
-Bundles: large-send warning + benign-noise client filter (P2 #2) + feedback
-reassurance copy (P2 #3). **Remaining: Ali uploads to Chrome (over 0.1.17) + Edge.**
+### ✅ Upload extension v0.1.18 to Chrome — DONE (2026-06-25, LIVE)
+`outmass-0.1.18.zip` built + verified and **live on the Chrome Web Store** —
+confirmed by an organic new user (India, person `2348cf80`) already running
+0.1.18 end-to-end. Bundles large-send warning + benign-noise client filter
+(P2 #2) + feedback reassurance copy (P2 #3).
 
-### ⬜ Confirm 0.1.17 on Edge
-Chrome has 0.1.17. Edge: was it uploaded (cancel 0.1.15 → 0.1.17)? If not, 0.1.18
-supersedes it.
+### ⬜ Upload extension v0.1.18 to Edge
+Chrome is live on 0.1.18. Edge still pending — upload `outmass-0.1.18.zip` at
+https://partner.microsoft.com/dashboard/microsoftedge/ (if 0.1.15 is still
+"in review", cancel it first, then submit 0.1.18).
 
 ---
 
@@ -124,6 +125,18 @@ In 2-3 days, re-run the auth + send funnel: did *"Authorization page could not b
 loaded"* drop (healthcheck + retry)? did *"did not approve"* drop after publisher
 verification lands? are the new fixes (async send, pacing, the 13 leaks) behaving?
 Watch `send_failed` / HTTP 502.
+
+### ⬜ Debounce the sign-in button (prevent stacked OAuth popups)
+Telemetry from the first 0.1.18 organic user (2026-06-25, person `2348cf80`):
+**10 `oauth_started` / 3 `oauth_completed` / 2 `oauth_failed`** in one ~12-min
+session, six `oauth_started` within ~10s. The user rapidly re-clicked sign-in,
+spawning multiple OAuth popups; the abandoned ones logged
+`oauth_failed: "The user did not approve access."` (benign user-cancellation,
+**not** the consent block — they completed and ran a successful test send).
+**Fix:** disable / debounce the sign-in button while an OAuth flow is in
+progress (`background.js` launch path + the sidebar/popup buttons) so a flow
+can't be started twice. Also dampens false "did not approve" noise in the
+oauth funnel. Low effort, UX-only.
 
 ### ⬜ Separate the polluting game events
 PostHog project 152466 also receives a game's events (`match_started`,
