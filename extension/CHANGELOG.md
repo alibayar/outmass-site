@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.19 — 2026-06-25
+
+- Smoother sign-in. Clicking "Sign in" (or the reconnect banner) several times in a row no longer opens multiple Microsoft sign-in windows at once — OutMass now reuses the one already in progress. This also clears the stray "didn't approve access" errors that came from closing the extra windows.
+
 ## v0.1.18 — 2026-06-25
 
 - Large sends now stay within Outlook's limits automatically. OutMass paces every send (~30 emails/min) so it no longer trips Microsoft's rate limit — and before a big send (500+ recipients) you'll see a heads-up with the estimated time and a reminder that very large cold lists deliver best when spread over several days.

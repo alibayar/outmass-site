@@ -378,8 +378,16 @@
     var btn = document.getElementById("sending-as-change");
     if (!btn) return;
     btn.addEventListener("click", function () {
+      // Disable while the OAuth flow is open so a second click can't try to
+      // start another one (the background single-flights anyway, but this
+      // gives immediate feedback and avoids a confusing dead click).
+      if (btn.disabled) return;
+      var prevLabel = btn.textContent;
+      btn.disabled = true;
       track("signin_clicked", { context: "sending_as" });
       chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+        btn.disabled = false;
+        btn.textContent = prevLabel;
         // On success the new user/JWT are stored; the storage.onChanged
         // listener below refreshes identity + announcements. We also refresh
         // here for immediacy.

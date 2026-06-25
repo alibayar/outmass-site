@@ -147,7 +147,31 @@ chrome.runtime.onInstalled.addListener(function (details) {
  * exchange with client_secret, then redirects back to extension with
  * OutMass JWT in the URL fragment.
  */
-async function startMSLogin(includeOneDrive) {
+// Single-flight guard for the OAuth flow. Rapid re-clicks on "Sign in" or a
+// reconnect banner must NOT spawn multiple launchWebAuthFlow popups — we saw
+// real users fire 6+ oauth_started in ~10s, stacking auth windows and logging
+// spurious "did not approve" failures from the ones they closed. While a flow
+// is in progress, every new request joins the SAME in-flight promise instead
+// of launching another window. Keyed by flow type so a OneDrive incremental-
+// consent flow and a plain sign-in don't return each other's result. The key
+// is cleared when the flow settles (success OR cancel/error), so the next
+// deliberate sign-in always starts fresh.
+var _authFlightByKey = {};
+
+function startMSLogin(includeOneDrive) {
+  var key = includeOneDrive ? "onedrive" : "signin";
+  if (_authFlightByKey[key]) {
+    log("MS OAuth already in progress (" + key + ") — joining existing flow");
+    return _authFlightByKey[key];
+  }
+  var flight = _startMSLoginInner(includeOneDrive);
+  _authFlightByKey[key] = flight;
+  var clear = function () { delete _authFlightByKey[key]; };
+  flight.then(clear, clear);
+  return flight;
+}
+
+async function _startMSLoginInner(includeOneDrive) {
   log("Starting MS OAuth flow (Web)...", includeOneDrive ? "with OneDrive scope" : "");
   track("oauth_started", { with_onedrive: !!includeOneDrive });
 
