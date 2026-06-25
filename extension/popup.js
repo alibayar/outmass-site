@@ -258,8 +258,11 @@
         var activeTab = tabs[0];
 
         if (activeTab && isOutlookUrl(activeTab.url)) {
-          // Active tab is Outlook — ensure sidebar is open
-          chrome.tabs.sendMessage(activeTab.id, { type: "SHOW_SIDEBAR" });
+          // Active tab is Outlook — ensure sidebar is open. The .catch swallows
+          // the benign "Could not establish connection. Receiving end does not
+          // exist." that fires when the content script isn't in this tab yet
+          // (e.g. an Outlook tab opened before the extension loaded/updated).
+          chrome.tabs.sendMessage(activeTab.id, { type: "SHOW_SIDEBAR" }).catch(function () {});
           window.close();
         } else {
           // Not on Outlook — find an existing Outlook tab or open one
@@ -272,13 +275,13 @@
               // Focus existing Outlook tab and ensure sidebar is open
               chrome.tabs.update(outlookTab.id, { active: true }, function () {
                 chrome.windows.update(outlookTab.windowId, { focused: true }, function () {
-                  chrome.tabs.sendMessage(outlookTab.id, { type: "SHOW_SIDEBAR" });
+                  chrome.tabs.sendMessage(outlookTab.id, { type: "SHOW_SIDEBAR" }).catch(function () {});
                   window.close();
                 });
               });
             } else {
               // No Outlook tab open — ask background to open Outlook and toggle sidebar
-              chrome.runtime.sendMessage({ type: "OPEN_OUTLOOK_WITH_SIDEBAR" });
+              chrome.runtime.sendMessage({ type: "OPEN_OUTLOOK_WITH_SIDEBAR" }).catch(function () {});
               window.close();
             }
           });
