@@ -1,0 +1,1017 @@
+{
+  "appName": {
+    "message": "OutMass"
+  },
+  "appDesc": {
+    "message": "直接从 Outlook Web 发送批量邮件营销活动"
+  },
+  "tabCampaign": {
+    "message": "活动"
+  },
+  "tabReports": {
+    "message": "报告"
+  },
+  "tabSettings": {
+    "message": "设置"
+  },
+  "tabAccount": {
+    "message": "账户"
+  },
+  "connChecking": {
+    "message": "正在检查连接..."
+  },
+  "connOnline": {
+    "message": "已连接到服务器"
+  },
+  "connOffline": {
+    "message": "无法连接到服务器"
+  },
+  "offlineBanner": {
+    "message": "无法连接到服务器。请检查您的网络连接。"
+  },
+  "extUpdatedReload": {
+    "message": "扩展已更新。请刷新页面。"
+  },
+  "btnClose": {
+    "message": "关闭"
+  },
+  "csvLabel": {
+    "message": "收件人列表 (CSV)"
+  },
+  "csvDropHint": {
+    "message": "拖放 CSV 文件到此处"
+  },
+  "csvDropHintAlt": {
+    "message": "或点击选择"
+  },
+  "csvCountSuffix": {
+    "message": "位收件人"
+  },
+  "btnAiWriter": {
+    "message": "AI 写作"
+  },
+  "templateDefault": {
+    "message": "-- 选择模板 --"
+  },
+  "btnSaveTemplate": {
+    "message": "保存"
+  },
+  "btnDeleteTemplate": {
+    "message": "删除"
+  },
+  "templateDeleteTitle": {
+    "message": "删除所选模板"
+  },
+  "templateSaveTitle": {
+    "message": "将当前内容保存为模板"
+  },
+  "labelSubject": {
+    "message": "主题"
+  },
+  "placeholderSubject": {
+    "message": "您好 {{firstName}}，我们有一个适合您的方案"
+  },
+  "labelBody": {
+    "message": "邮件内容"
+  },
+  "placeholderBody": {
+    "message": "您好 {{firstName}}，\n\n我们为 {{company}} 准备了一个很好的方案..."
+  },
+  "placeholdersHint": {
+    "message": "收件人：<code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>发件人：<code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "预览"
+  },
+  "btnSend": {
+    "message": "发送"
+  },
+  "abTestLabel": {
+    "message": "A/B 测试（尝试 2 个主题行）"
+  },
+  "abSubjectBLabel": {
+    "message": "备选主题 (B)"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "第二个主题行..."
+  },
+  "abTestPctLabel": {
+    "message": "测试比例 (%)"
+  },
+  "abTestNote": {
+    "message": "将向部分收件人发送两个不同的主题。获胜者将发送给其余收件人。"
+  },
+  "scheduleLabel": {
+    "message": "定时发送"
+  },
+  "scheduleDateLabel": {
+    "message": "发送时间"
+  },
+  "scheduleNote": {
+    "message": "将在指定时间自动发送。"
+  },
+  "followupLabel": {
+    "message": "自动跟进未打开者"
+  },
+  "followupDelayLabel": {
+    "message": "多少天后？"
+  },
+  "followupSubjectLabel": {
+    "message": "跟进主题"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}，您看到我们的方案了吗？"
+  },
+  "followupBodyLabel": {
+    "message": "跟进内容"
+  },
+  "followupBodyPlaceholder": {
+    "message": "您好 {{firstName}}，\n\n您看到我们之前的邮件了吗？"
+  },
+  "followupNote": {
+    "message": "除主邮件外，还将发送给未打开邮件的收件人。"
+  },
+  "quotaDefault": {
+    "message": "剩余 $1/$2 封邮件（$3 计划）"
+  },
+  "reportsLoading": {
+    "message": "加载中..."
+  },
+  "btnBack": {
+    "message": "返回"
+  },
+  "statSent": {
+    "message": "已发送"
+  },
+  "statOpened": {
+    "message": "已打开"
+  },
+  "statClicked": {
+    "message": "已点击"
+  },
+  "statOpenRate": {
+    "message": "打开率："
+  },
+  "statClickRate": {
+    "message": "点击率："
+  },
+  "btnExportCsv": {
+    "message": "下载 CSV"
+  },
+  "noCampaignsFound": {
+    "message": "未找到活动。"
+  },
+  "noCampaignsYet": {
+    "message": "暂无活动。"
+  },
+  "chartSent": {
+    "message": "已发送"
+  },
+  "chartOpened": {
+    "message": "已打开"
+  },
+  "chartClicked": {
+    "message": "已点击"
+  },
+  "settingsAccount": {
+    "message": "账户"
+  },
+  "settingsEmail": {
+    "message": "邮箱"
+  },
+  "settingsPlan": {
+    "message": "计划"
+  },
+  "settingsSentThisMonth": {
+    "message": "本月已发送"
+  },
+  "btnUpgrade": {
+    "message": "升级计划"
+  },
+  "btnManageSub": {
+    "message": "管理订阅"
+  },
+  "settingsTracking": {
+    "message": "追踪"
+  },
+  "settingsTrackOpens": {
+    "message": "打开追踪"
+  },
+  "settingsTrackClicks": {
+    "message": "点击追踪"
+  },
+  "settingsUnsub": {
+    "message": "退订链接"
+  },
+  "settingsUnsubHint": {
+    "message": "显示在邮件底部的链接文字"
+  },
+  "settingsTimezone": {
+    "message": "时区"
+  },
+  "tzTurkey": {
+    "message": "土耳其 (UTC+3)"
+  },
+  "tzLondon": {
+    "message": "伦敦 (UTC+0/+1)"
+  },
+  "tzBerlin": {
+    "message": "柏林 (UTC+1/+2)"
+  },
+  "tzNewYork": {
+    "message": "纽约 (UTC-5/-4)"
+  },
+  "tzLosAngeles": {
+    "message": "洛杉矶 (UTC-8/-7)"
+  },
+  "tzDubai": {
+    "message": "迪拜 (UTC+4)"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "发件人信息"
+  },
+  "settingsSenderHint": {
+    "message": "用于您的邮件签名和 AI 生成的邮件。"
+  },
+  "settingsSenderName": {
+    "message": "您的姓名"
+  },
+  "settingsSenderPosition": {
+    "message": "您的职位"
+  },
+  "settingsSenderCompany": {
+    "message": "您的公司"
+  },
+  "settingsSenderPhone": {
+    "message": "电话（选填）"
+  },
+  "btnSaveSettings": {
+    "message": "保存设置"
+  },
+  "settingsSaving": {
+    "message": "保存中..."
+  },
+  "settingsSaved": {
+    "message": "已保存！"
+  },
+  "settingsSuppression": {
+    "message": "已屏蔽邮箱"
+  },
+  "settingsSuppressionHint": {
+    "message": "此列表中的邮箱将不会收到任何活动邮件。"
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "email@example.com"
+  },
+  "btnAdd": {
+    "message": "添加"
+  },
+  "suppressionSearch": {
+    "message": "搜索..."
+  },
+  "suppressionEmpty": {
+    "message": "暂无已屏蔽的邮箱。"
+  },
+  "suppressionReasonUnsub": {
+    "message": "已退订"
+  },
+  "suppressionReasonManual": {
+    "message": "手动添加"
+  },
+  "suppressionEmailSuffix": {
+    "message": "个邮箱"
+  },
+  "settingsSupport": {
+    "message": "支持"
+  },
+  "feedbackPlaceholder": {
+    "message": "描述您的问题或建议..."
+  },
+  "btnSendFeedback": {
+    "message": "发送"
+  },
+  "feedbackEmpty": {
+    "message": "请输入内容。"
+  },
+  "feedbackSent": {
+    "message": "谢谢 — 我们已收到您的消息，会尽快通过电子邮件回复您。"
+  },
+  "feedbackFailed": {
+    "message": "发送失败。您可以发送邮件联系我们。"
+  },
+  "popupSubtitle": {
+    "message": "批量邮件营销活动"
+  },
+  "popupLoginHint": {
+    "message": "使用您的 Outlook 账户登录以开始创建活动。"
+  },
+  "btnMicrosoftLogin": {
+    "message": "使用 Microsoft 登录"
+  },
+  "popupLoading": {
+    "message": "正在连接您的 Microsoft 账户..."
+  },
+  "popupErrorDefault": {
+    "message": "发生错误。"
+  },
+  "btnRetry": {
+    "message": "重试"
+  },
+  "btnDashboard": {
+    "message": "打开活动面板"
+  },
+  "btnLogout": {
+    "message": "退出登录"
+  },
+  "popupConnected": {
+    "message": "已连接"
+  },
+  "popupNoResponse": {
+    "message": "未收到响应。"
+  },
+  "popupUserInfoFailed": {
+    "message": "无法获取用户信息。"
+  },
+  "popupUnknownError": {
+    "message": "发生未知错误。"
+  },
+  "popupUpgradePro": {
+    "message": "升级到 Pro ($$19/月)"
+  },
+  "popupCheckoutFailed": {
+    "message": "无法创建付款页面："
+  },
+  "popupPortalFailed": {
+    "message": "无法打开门户。"
+  },
+  "alertUploadCsvFirst": {
+    "message": "请先上传 CSV 文件。"
+  },
+  "alertFillSubjectBody": {
+    "message": "请填写主题和邮件内容。"
+  },
+  "alertPreviewTitle": {
+    "message": "--- 预览 ---\n主题："
+  },
+  "alertScheduling": {
+    "message": "正在安排..."
+  },
+  "alertPreparing": {
+    "message": "正在准备..."
+  },
+  "alertCampaignCreateFailed": {
+    "message": "无法创建活动"
+  },
+  "alertContactsUploading": {
+    "message": "正在上传联系人..."
+  },
+  "alertContactsUploadFailed": {
+    "message": "无法上传联系人"
+  },
+  "alertAbTestProOnly": {
+    "message": "A/B 测试仅在 Pro 计划中可用。"
+  },
+  "alertScheduledSuccess": {
+    "message": "成功！将于 $2 向 $1 位收件人发送。"
+  },
+  "alertSending": {
+    "message": "发送中... 0/"
+  },
+  "alertSendFailed": {
+    "message": "发送失败"
+  },
+  "alertSendError": {
+    "message": "发送失败！\n\n错误："
+  },
+  "alertAbSendSuccess": {
+    "message": "成功！已发送 $1 封邮件（A/B 测试）。\n获胜主题将自动发送。"
+  },
+  "alertPartialSend": {
+    "message": "已发送 $1 封邮件，出现 $2 个错误。\n\n首个错误："
+  },
+  "alertSendSuccess": {
+    "message": "成功！已发送 $1 封邮件。"
+  },
+  "alertLimitReached": {
+    "message": "您已达到计划上限（$1 封邮件/月）。\n请升级您的计划。"
+  },
+  "aiModalTitle": {
+    "message": "AI 邮件写作助手"
+  },
+  "aiPromptPlaceholder": {
+    "message": "邮件内容是关于什么的？\n\n示例：针对我们 SaaS 产品的冷启动邮件"
+  },
+  "aiToneProfessional": {
+    "message": "专业"
+  },
+  "aiToneFriendly": {
+    "message": "友好"
+  },
+  "aiToneFormal": {
+    "message": "正式"
+  },
+  "aiToneCasual": {
+    "message": "随意"
+  },
+  "aiLangTr": {
+    "message": "土耳其语"
+  },
+  "aiLangEn": {
+    "message": "英语"
+  },
+  "aiLangDe": {
+    "message": "德语"
+  },
+  "aiLangFr": {
+    "message": "法语"
+  },
+  "aiLangEs": {
+    "message": "西班牙语"
+  },
+  "aiLangRu": {
+    "message": "俄语"
+  },
+  "aiLangAr": {
+    "message": "阿拉伯语"
+  },
+  "aiLangHi": {
+    "message": "印地语"
+  },
+  "aiLangZh": {
+    "message": "中文"
+  },
+  "aiLangJa": {
+    "message": "日语"
+  },
+  "btnAiGenerate": {
+    "message": "生成"
+  },
+  "btnCancel": {
+    "message": "取消"
+  },
+  "alertAiPromptEmpty": {
+    "message": "请描述您想要的邮件类型。"
+  },
+  "aiGenerating": {
+    "message": "生成中..."
+  },
+  "alertAiProOnly": {
+    "message": "AI 邮件写作助手仅在 Pro 计划中可用。"
+  },
+  "alertAiFailed": {
+    "message": "AI 生成失败："
+  },
+  "templatePromptName": {
+    "message": "模板名称："
+  },
+  "templateDefaultName": {
+    "message": "我的模板"
+  },
+  "templateConfirmDelete": {
+    "message": "删除模板「$1」？"
+  },
+  "alertTemplateFillFirst": {
+    "message": "请先填写主题和内容。"
+  },
+  "alertTemplateStandardOnly": {
+    "message": "邮件模板在 Standard 和 Pro 计划中可用。"
+  },
+  "alertTemplateSaveFailed": {
+    "message": "无法保存模板："
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "无法删除模板："
+  },
+  "csvExportDownloading": {
+    "message": "下载中..."
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "CSV 导出在 Standard 和 Pro 计划中可用。"
+  },
+  "alertCsvExportFailed": {
+    "message": "导出失败："
+  },
+  "alertCsvExportEmpty": {
+    "message": "CSV 导出成功但数据为空。"
+  },
+  "reportsSentSuffix": {
+    "message": " 已发送"
+  },
+  "reportsOpenRate": {
+    "message": "打开："
+  },
+  "reportsClickRate": {
+    "message": "点击："
+  },
+  "reportsError": {
+    "message": "错误"
+  },
+  "reportsFollowupPending": {
+    "message": " 个跟进待发送"
+  },
+  "upgradeModalTitle": {
+    "message": "升级您的计划"
+  },
+  "upgradeModalText": {
+    "message": "您已达到邮件发送上限。<br/>升级以发送更多邮件。"
+  },
+  "upgradeModalStandard": {
+    "message": "Starter: 2,500 封邮件/月 — $$9/月"
+  },
+  "upgradeModalPro": {
+    "message": "Pro: 10,000 封邮件/月 — $$19/月"
+  },
+  "upgradeModalFeatures": {
+    "message": "详细报告 + 优先支持"
+  },
+  "upgradeModalBtn": {
+    "message": "立即升级 — Starter $$9/月"
+  },
+  "upgradeModalLater": {
+    "message": "以后再说"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "无法创建付款页面。请重试。"
+  },
+  "settingsSaveFailed": {
+    "message": "无法保存设置："
+  },
+  "settingsCheckoutFailed": {
+    "message": "无法创建付款页面。"
+  },
+  "quotaInfoTitle": {
+    "message": "关于邮件限制"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook 还强制执行每日发送限制（个人~300/天，Business ~10,000/天）。我们的配额是额外的。"
+  },
+  "quotaInfoBody1": {
+    "message": "Microsoft 在我们的计划配额之外还对 Outlook 账户实施发送限制。以更严格的为准："
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com（个人）：约 300 封/天"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business：约 10,000 封/天"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online：每分钟 30 条限流"
+  },
+  "quotaInfoBody2": {
+    "message": "将大型活动分散到几天可避免限流并保护发件人声誉。OutMass 无法绕过 Microsoft 平台限制。"
+  },
+  "tzMoscow": {
+    "message": "莫斯科 (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "印度 (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "中国 (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "东京 (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "芝加哥 (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "丹佛 (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "圣保罗 (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "您的配额中剩余 $1 封邮件。\nCSV 有 $2 个收件人。\n仅发送给前 $1 个收件人。"
+  },
+  "settingsLanguage": {
+    "message": "界面语言"
+  },
+  "settingsLanguageHint": {
+    "message": "立即生效。仅对此扩展覆盖您的浏览器语言。"
+  },
+  "langAuto": {
+    "message": "自动（浏览器语言）"
+  },
+  "popupUpgradeStarter": {
+    "message": "升级到 Starter ($$9/月)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "升级成功！Stripe 将自动收取按比例计算的差额。"
+  },
+  "labelCampaignName": {
+    "message": "活动名称（可选）"
+  },
+  "placeholderCampaignName": {
+    "message": "例如：Q2 推广 第1波"
+  },
+  "csvTemplateDownload": {
+    "message": "下载示例 CSV"
+  },
+  "csvTemplateRow1": {
+    "message": "zhang@example.com,张伟,,科技创新公司,首席执行官"
+  },
+  "csvTemplateRow2": {
+    "message": "li@example.com,李娜,,腾讯科技,市场总监"
+  },
+  "csvTemplateRow3": {
+    "message": "wang@example.com,王芳,,先锋实验室,销售副总裁"
+  },
+  "btnTestSend": {
+    "message": "测试发送"
+  },
+  "testSendPrompt": {
+    "message": "将向您自己的邮箱发送一封测试邮件。继续?"
+  },
+  "testSendSuccess": {
+    "message": "测试邮件已发送到 $EMAIL$。请查收。",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "测试发送失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "发送测试前请填写主题和正文。"
+  },
+  "warnSubjectLong": {
+    "message": "主题超过 78 个字符 — 在手机上可能被截断。"
+  },
+  "warnAllCaps": {
+    "message": "主题大写字母过多 — 看起来像垃圾邮件。"
+  },
+  "warnSpamWords": {
+    "message": "可能的垃圾邮件词: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "正文中有 $N$ 个链接 — 可能触发垃圾邮件过滤。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "仍然继续发送?"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV 文件过大(最大 5 MB)。"
+  },
+  "csvErrEncoding": {
+    "message": "无法识别 CSV 编码。请另存为 UTF-8。"
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV 必须包含 'email' 列。"
+  },
+  "csvDupRemoved": {
+    "message": "已删除重复项"
+  },
+  "campaignNameDuplicate": {
+    "message": "名为 \"$NAME$\" 的活动已存在。继续?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "预览"
+  },
+  "reportsTabActive": {
+    "message": "活动中"
+  },
+  "reportsTabArchived": {
+    "message": "已归档"
+  },
+  "btnArchive": {
+    "message": "归档"
+  },
+  "btnUnarchive": {
+    "message": "取消归档"
+  },
+  "archiveConfirm": {
+    "message": "归档该活动?可从\"已归档\"选项卡恢复。"
+  },
+  "onbTitle": {
+    "message": "欢迎使用 OutMass"
+  },
+  "onbStep1": {
+    "message": "第 1 步 — 上传收件人 CSV。第一列必须为 'email'。"
+  },
+  "onbStep2": {
+    "message": "第 2 步 — 撰写主题和正文。使用 {{firstName}} 进行个性化。"
+  },
+  "onbStep3": {
+    "message": "第 3 步 — 点击预览或测试发送核对,然后点发送。"
+  },
+  "onbNext": {
+    "message": "下一步"
+  },
+  "onbBack": {
+    "message": "返回"
+  },
+  "onbFinish": {
+    "message": "完成"
+  },
+  "btnExportList": {
+    "message": "导出全部"
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML 不平衡(未闭合标签: $TAGS$)。发送前请检查。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "正文中有 $N$ 张图片 — 过多图片看起来像垃圾邮件。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "检测到短链接 ($LIST$) — 可能影响送达率。",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "settingsDedupTitle": {
+    "message": "跳过重复收件人"
+  },
+  "settingsDedupHint": {
+    "message": "在指定时间窗口内,避免在不同活动中重复发给同一人。"
+  },
+  "settingsDedupEnabled": {
+    "message": "已启用 (Pro 功能)"
+  },
+  "settingsDedupDays": {
+    "message": "回溯期(天)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "已跳过 $N$ 位收件人 — 近期活动中已联系过。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "placeholderSenderName": {
+    "message": "张伟"
+  },
+  "placeholderSenderPosition": {
+    "message": "创始人"
+  },
+  "placeholderSenderCompany": {
+    "message": "示例公司"
+  },
+  "placeholderSenderPhone": {
+    "message": "+86 000 0000 0000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "选择日期和时间,以您的本地格式查看。"
+  },
+  "scheduleParsedPrefix": {
+    "message": "将在 "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "定时发送是 Starter/Pro 功能。立即升级?"
+  },
+  "errFeatureLocked": {
+    "message": "此功能仅在付费计划中可用。是否升级?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "没有可发送的收件人 — 所有行都被屏蔽列表、去重或无效邮箱过滤。"
+  },
+  "reauthBannerText": {
+    "message": "重新连接 Outlook — 您的授权已过期。请再次登录以便定时发送继续工作。"
+  },
+  "sessionExpiredBannerText": {
+    "message": "您的会话已过期。请重新登录以继续使用 OutMass。"
+  },
+  "reauthBannerCta": {
+    "message": "登录"
+  },
+  "reauthFailed": {
+    "message": "登录失败: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "dangerZone": {
+    "message": "危险区"
+  },
+  "deleteAccountDesc": {
+    "message": "永久删除您的 OutMass 账户和所有数据。"
+  },
+  "deleteAccountButton": {
+    "message": "删除我的账户"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "此操作无法撤销"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "删除账户将永久移除："
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "所有活动和模板"
+  },
+  "deleteAccountDataContacts": {
+    "message": "所有联系人和跟踪数据"
+  },
+  "deleteAccountDataAuth": {
+    "message": "您的 Microsoft 授权"
+  },
+  "deleteAccountDataSettings": {
+    "message": "所有设置和偏好"
+  },
+  "deleteAccountSubCheck": {
+    "message": "有活动订阅？请先通过\"管理订阅\"取消。"
+  },
+  "deleteAccountTypePrompt": {
+    "message": "输入 DELETE 以确认："
+  },
+  "deleteAccountIrreversible": {
+    "message": "我理解此操作不可逆"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "永久删除"
+  },
+  "deleteAccountSuccess": {
+    "message": "您的账户已删除。"
+  },
+  "deleteAccountActiveSubError": {
+    "message": "请先取消订阅后再删除账户。"
+  },
+  "deleteAccountFailed": {
+    "message": "无法删除账户: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "portalErrorNoSubscription": {
+    "message": "您还没有有效的订阅。请先升级到付费方案，然后返回此处进行管理。"
+  },
+  "portalErrorManualPlan": {
+    "message": "您当前的套餐是手动设置的，无法通过计费门户管理。如需更改，请联系 support@getoutmass.com。"
+  },
+  "portalErrorNotConfigured": {
+    "message": "账单服务暂时不可用。请稍后重试或联系支持。"
+  },
+  "attachmentsLabel": {
+    "message": "附件"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ 添加 OneDrive 链接"
+  },
+  "btnContinue": {
+    "message": "继续"
+  },
+  "attachmentsHint": {
+    "message": "收件人看到的是链接而非附件 — 收件箱投递率更高。"
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive 访问权限"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass 需要 OneDrive 访问权限来为您选择的文件创建共享链接。我们绝不下载、存储或读取您的文件 — 仅生成您选择共享的链接。"
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "收件人看到的是您 OneDrive 的链接 — 比直接附加文件投递率更好，并且您可以随时更新文件而无需重新发送邮件。"
+  },
+  "oneDrivePickerTitle": {
+    "message": "选择文件"
+  },
+  "oneDriveError": {
+    "message": "无法添加 OneDrive 文件: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "statEngaged": {
+    "message": "互动:"
+  },
+  "statEngagedHint": {
+    "message": "打开、点击或回复邮件的收件人。比单纯的打开率更可靠 — 许多邮件客户端（Outlook、Apple Mail）会通过阻止或预加载像素来扭曲打开追踪。"
+  },
+  "statReplied": {
+    "message": "已回复:"
+  },
+  "statRepliedHint": {
+    "message": "通过每日收件箱扫描检测。最强的互动信号 — 仅统计来自您的收件人的真实回复。"
+  },
+  "resumeHint": {
+    "message": "部分收件人未收到此活动 — 通常是临时的网络或速率限制问题。继续仅会重试待发送的收件人。"
+  },
+  "btnResumeCampaign": {
+    "message": "继续发送"
+  },
+  "resumeQueued": {
+    "message": "$N$ 位收件人已排队重发。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "resumeFailed": {
+    "message": "无法继续: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "加载中…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "此文件夹为空。"
+  },
+  "oneDrivePickerError": {
+    "message": "无法加载 OneDrive 内容。请重试。"
+  },
+  "oneDriveNoDrive": {
+    "message": "此 Microsoft 账户没有 OneDrive。请使用拥有 OneDrive 的账户登录，或在此次活动中不使用 OneDrive 附件。"
+  },
+  "mergeTagUnknown": {
+    "message": "你的 CSV 中没有名为“$TAGS$”的列。你可以改用 CSV 中的这些标签：$AVAILABLE$。请使用其中一个，或者从邮件中删除该标签。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      },
+      "available": {
+        "content": "$2"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "你的邮件中有一个错误的合并标签：$TAG$。标签不能包含空格。正确的格式如下所示：{{firstName}}。",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
+  },
+  "announcementsTitle": {
+    "message": "通知"
+  },
+  "announcementsEmpty": {
+    "message": "暂无通知"
+  },
+  "announcementsView": {
+    "message": "查看"
+  },
+  "announcementsDismiss": {
+    "message": "忽略"
+  },
+  "announcementsMore": {
+    "message": "还有 $COUNT$ 条 — 打开面板",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sendingAsLabel": {
+    "message": "发送身份："
+  },
+  "sendingAsChange": {
+    "message": "更改"
+  },
+  "authErrorConsent": {
+    "message": "登录未完成。您的组织可能需要管理员先批准 OutMass — 请联系 support@getoutmass.com，或使用个人 Outlook.com 账户。"
+  },
+  "authErrorPageLoad": {
+    "message": "无法打开 Microsoft 登录页面。请检查网络连接后重试。"
+  }
+}

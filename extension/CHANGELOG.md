@@ -4,6 +4,7 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 ## v0.1.21 — 2026-06-25
 
+- Chinese-language users now see the Chinese interface on every variant (Traditional, Hong Kong, Singapore, generic zh), not only Simplified-China — previously those locales fell back to English.
 - internal: suppressed a harmless "Could not establish connection. Receiving end does not exist." console error that could appear when opening the campaign panel before an Outlook tab's content script had loaded. No user-visible change. (The v0.1.20 sign-in fixes are unchanged and already live.)
 
 ## v0.1.20 — 2026-06-25
