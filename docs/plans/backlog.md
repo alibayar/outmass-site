@@ -126,7 +126,13 @@ loaded"* drop (healthcheck + retry)? did *"did not approve"* drop after publishe
 verification lands? are the new fixes (async send, pacing, the 13 leaks) behaving?
 Watch `send_failed` / HTTP 502.
 
-### ⬜ Debounce the sign-in button (prevent stacked OAuth popups)
+### ✅ Debounce the sign-in button (prevent stacked OAuth popups) — DONE (2026-06-25)
+
+> **Resolved (`02f9b62`, ships in 0.1.19).** `startMSLogin` now single-flights:
+> while an OAuth flow is in progress, repeated Sign in / reconnect clicks join
+> the same in-flight promise instead of launching another `launchWebAuthFlow`.
+> Keyed by flow type (signin vs onedrive). `oauth_started` now fires once per
+> real flow. Also disabled the sidebar "sending-as change" link mid-flow.
 Telemetry from the first 0.1.18 organic user (2026-06-25, person `2348cf80`):
 **10 `oauth_started` / 3 `oauth_completed` / 2 `oauth_failed`** in one ~12-min
 session, six `oauth_started` within ~10s. The user rapidly re-clicked sign-in,
