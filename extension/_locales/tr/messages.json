@@ -2,6 +2,9 @@
   "appName": {
     "message": "OutMass"
   },
+  "popupConsentExplainer": {
+    "message": "Microsoft, OutMass'in kendi Outlook hesabınızdan e-posta göndermesi ve yanıtları algılaması için izin isteyecek. E-posta içeriğinizi asla saklamayız."
+  },
   "appDesc": {
     "message": "Outlook Web üzerinden toplu e-posta kampanyaları"
   },

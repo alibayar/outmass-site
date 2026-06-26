@@ -2,6 +2,9 @@
   "appName": {
     "message": "OutMass"
   },
+  "popupConsentExplainer": {
+    "message": "Microsoft pedirá permiso para que OutMass envíe correos y detecte respuestas desde tu propia cuenta de Outlook. Nunca almacenamos el contenido de tus correos."
+  },
   "appDesc": {
     "message": "Campañas de correo masivo directamente desde Outlook Web"
   },

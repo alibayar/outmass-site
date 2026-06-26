@@ -2,6 +2,9 @@
   "appName": {
     "message": "OutMass"
   },
+  "popupConsentExplainer": {
+    "message": "سيطلب Microsoft الإذن لـ OutMass بإرسال رسائل البريد واكتشاف الردود من حساب Outlook الخاص بك. لا نُخزِّن محتوى بريدك الإلكتروني أبدًا."
+  },
   "appDesc": {
     "message": "حملات بريد إلكتروني جماعية مباشرة من Outlook Web"
   },

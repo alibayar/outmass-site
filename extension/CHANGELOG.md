@@ -2,8 +2,9 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.1.21 — 2026-06-25
+## v0.1.21 — 2026-06-26
 
+- Smoother first sign-in. The sign-in screen now explains up front why Microsoft asks for mail permissions — OutMass sends from your own Outlook account and never stores your email content — so the Microsoft consent prompt isn't a surprise. (Localized in all 11 languages.)
 - Chinese-language users now see the Chinese interface on every variant (Traditional, Hong Kong, Singapore, generic zh), not only Simplified-China — previously those locales fell back to English.
 - internal: suppressed a harmless "Could not establish connection. Receiving end does not exist." console error that could appear when opening the campaign panel before an Outlook tab's content script had loaded. No user-visible change. (The v0.1.20 sign-in fixes are unchanged and already live.)
 

@@ -2,6 +2,9 @@
   "appName": {
     "message": "OutMass"
   },
+  "popupConsentExplainer": {
+    "message": "Microsoft は、OutMass がご自身の Outlook アカウントからメールを送信し、返信を検知するための許可を求めます。メールの内容を保存することはありません。"
+  },
   "appDesc": {
     "message": "Outlook Webから直接一括メールキャンペーンを送信"
   },

@@ -2,6 +2,9 @@
   "appName": {
     "message": "OutMass"
   },
+  "popupConsentExplainer": {
+    "message": "Microsoft запросит для OutMass разрешение отправлять письма и определять ответы из вашей собственной учётной записи Outlook. Мы никогда не храним содержимое ваших писем."
+  },
   "appDesc": {
     "message": "Массовые email-рассылки прямо из Outlook Web"
   },

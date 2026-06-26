@@ -2,6 +2,9 @@
   "appName": {
     "message": "OutMass"
   },
+  "popupConsentExplainer": {
+    "message": "Microsoft fragt nach der Berechtigung für OutMass, E-Mails von Ihrem eigenen Outlook-Konto zu senden und Antworten zu erkennen. Wir speichern Ihre E-Mail-Inhalte niemals."
+  },
   "appDesc": {
     "message": "Massen-E-Mail-Kampagnen direkt aus Outlook Web"
   },
