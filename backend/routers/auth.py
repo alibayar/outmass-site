@@ -14,6 +14,7 @@ from datetime import datetime, timedelta, timezone
 from typing import Annotated
 
 import httpx
+import posthog
 from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse, HTMLResponse
 from jose import jwt
@@ -32,6 +33,7 @@ from config import (
     MS_GRAPH_ONEDRIVE_SCOPES,
     MS_GRAPH_SCOPES,
     MS_TOKEN_ENDPOINT,
+    POSTHOG_API_KEY,
 )
 from models import audit
 from models import user as user_model
@@ -39,6 +41,21 @@ from models import user as user_model
 logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/auth", tags=["auth"])
+
+
+# Extension store IDs — used to tag each login's install source (chrome vs edge
+# store) WITHOUT an extension update, since every /auth/login already carries
+# ?ext=<id>. Anything else (legacy/sideload/unknown) is "other".
+_CHROME_EXT_ID = "adcfddainnkjomddlappnnbeomhlcbmm"
+_EDGE_EXT_ID = "nfgnhhdeninjmnpfbhnggknimhejbelc"
+
+
+def _install_source(ext_id: str | None) -> str:
+    if ext_id == _CHROME_EXT_ID:
+        return "chrome"
+    if ext_id == _EDGE_EXT_ID:
+        return "edge"
+    return "other"
 
 
 # ── Schemas ──
@@ -387,6 +404,26 @@ async def auth_callback(
     # validated against the allowlist; fall back to the legacy single-ID
     # env var for old clients that don't pass ?ext=.
     ext_from_state = _decode_state_ext(state)
+
+    # Tag this person's install source (chrome vs edge store) in PostHog so any
+    # metric can be broken down by store — no extension change needed, the ext id
+    # rides along with every login. Best-effort; must never block the redirect.
+    if POSTHOG_API_KEY:
+        try:
+            _src = _install_source(ext_from_state)
+            posthog.capture(
+                distinct_id=user["email"],
+                event="login",
+                properties={
+                    "install_source": _src,
+                    "ext_id": ext_from_state or "",
+                    "plan": user.get("plan", "free"),
+                    "$set": {"install_source": _src},
+                },
+            )
+        except Exception:
+            logger.warning("install_source capture failed", exc_info=True)
+
     target_ext_id = ext_from_state or AZURE_EXTENSION_ID
     ext_redirect = f"https://{target_ext_id}.chromiumapp.org/auth"
     params = {
