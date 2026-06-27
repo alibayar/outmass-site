@@ -4,6 +4,13 @@ Living doc for the Quora drip (target: one new answer every ~2 days). Internal â
 `docs/plans/` is excluded from the public Jekyll site.
 
 **Playbook (keep doing):**
+- **READ BEFORE YOU WRITE (hard rule).** Before answering a question, scrape and
+  read EVERY currently-readable existing answer on it (`firecrawl scrape <url>
+  --only-main-content --wait-for 3500`). Then ask: (1) Is there already a
+  satisfying answer? (2) Can we be clearer / more thorough? (3) Can we add
+  genuinely *different* information? If we can't beat it or add a distinct angle,
+  **SKIP the question** and pick another. Never post a weaker rehash of an answer
+  that already exists â€” it adds nothing and risks a collapse/down-rank.
 - Lead with genuine value; teach something real before mentioning OutMass.
 - One disclosure line: `(Disclosure: I work on OutMass.)`
 - **No in-body link while the account is new** (Quora links are `nofollow` = no SEO,

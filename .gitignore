@@ -45,3 +45,4 @@ outmass-v*.zip
 
 # Git worktrees (isolated dev branches)
 .worktrees/
+.firecrawl/
