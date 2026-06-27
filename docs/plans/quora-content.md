@@ -59,30 +59,38 @@ replies/bounces) IS OutMass's design. Full text:
 >
 > *(Disclosure: I work on OutMass.)*
 
+### 3. WARM-UP (no product): "How do I send a personalized mass email with attachments in Outlook?" — posted 2026-06-26
+URL: https://www.quora.com/How-do-I-send-a-personalized-mass-email-with-attachments-in-Outlook
+Angle: *no real existing answer* — the other "answers" were off-topic (PHP / Jira
+spam). The true pain — **Word mail merge CANNOT attach files** — was unanswered.
+Pure value: send a OneDrive/SharePoint **link** (best for deliverability), or the
+**Mail Merge Toolkit** add-in, or individual sends. First genuinely-helpful answer
+on the question. Full text in chat thread 2026-06-26.
+
 ---
 
 ## 🗓️ Active 1/day sequence (2 value : 1 product — warms the account, avoids promo-flag)
 
-Cadence decision (2026-06-26): 1 answer/day is fine **only** at a ~2:1 value-to-product
-ratio on a new account. Pure-value answers (NO OutMass mention) in our niche build
-topical authority so the product answers later land credibly and don't trip Quora's
-promo filter.
+Cadence (2026-06-26): 1/day is fine **only** at ~2:1 value-to-product on a new account
+AND only after applying READ-BEFORE-YOU-WRITE. The first two warm-ups we planned
+(bulk→spam, Outlook limits) turned out to be weaker rehashes of strong existing
+answers, so we **skipped** them and hunted thin-competition questions instead.
 
-- **Day 1 — WARM-UP (no product):** "Why do my bulk emails go to spam instead of the inbox?"
-  https://www.quora.com/Why-do-my-bulk-emails-go-to-spam-instead-of-the-inbox
-  Angle: prioritized deliverability fixes (SPF/DKIM/DMARC → list hygiene → sending
-  pattern → content → engagement). Pure expertise, zero product.
-- **Day 2 — WARM-UP (no product):** "What is the maximum limit of sending mails in a Day from Microsoft Outlook? Also how many maximum bcc…"
-  https://www.quora.com/What-is-the-maximum-limit-of-sending-mails-in-a-Day-from-Microsoft-Outlook-Also-how-many-maximum-bcc-can-be-sent-in-a-mail
-  Angle: exact limits (M365 10k/day, 500/msg, ~30/min; Outlook.com ~300/day, 100/msg).
-  Factual authority; closes with "BCC is bad → individual sends" (sets up Day 3, no
-  product named).
-- **Day 3 — PRODUCT:** "How do I send a mass email without showing the other recipients in Outlook?"
+- **❌ SKIPPED — bulk→spam:** existing top answer is more thorough than ours
+  (SPF/DKIM/DMARC, Postmaster/SNDS, Feb-2024 Google rules). Can't beat → skip.
+- **❌ SKIPPED — Outlook limits/BCC:** existing answer already gives 10k/500/100 and
+  is *more* precise (throttle is "adaptive, not a fixed number"). → skip.
+- **✅ POSTED 06-26 — Warm-up A:** personalized mass email **with attachments** (Posted #3 above).
+- **⬜ NEXT — Warm-up B (no product):** "What is the best way to send an email to many people without using Mail Merge?"
+  https://www.quora.com/What-is-the-best-way-to-send-an-email-to-many-people-at-once-without-using-Mail-Merge
+  Angle: existing answer is one thin BCC anecdote — we give the full picture (BCC
+  caveats + Contact Group/distribution list + when a real tool is worth it). Full
+  text in chat 2026-06-26.
+- **⬜ THEN — PRODUCT (Day 3):** "How do I send a mass email without showing the other recipients in Outlook?"
   https://www.quora.com/How-do-I-send-a-mass-email-without-showing-the-other-recipients-in-Outlook
-  Angle: BCC ok for ~20, bad beyond → individual personalized sends (mail merge) →
-  OutMass does it in one click. (Moved up from the queue below.)
-
-Full drafts for all three live in the chat thread dated 2026-06-26.
+  Angle: SHARPENED — acknowledge the existing answer covers BCC + Word merge + ESP,
+  then add the missing gap: lightweight mail merge **inside Outlook on the web**,
+  from your own mailbox (OutMass). Full text in chat 2026-06-26.
 
 ## ⬜ Queue (next targets — prioritized; pick the top unposted each cycle)
 
@@ -125,3 +133,4 @@ Full drafts for all three live in the chat thread dated 2026-06-26.
 |---|---|---|---|---|---|
 | 1 | best alternatives to GMass | 2026-06-20 | 6 | 0 | low engagement; broad Gmail-centric Q |
 | 2 | mail merge in Outlook 365 | 2026-06-26 | — | — | fresh; high-intent Outlook Q |
+| 3 | mass email **with attachments** (WARM-UP) | 2026-06-26 | — | — | thin/off-topic competition → we're the best answer |
