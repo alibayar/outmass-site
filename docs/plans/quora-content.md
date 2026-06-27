@@ -54,6 +54,29 @@ replies/bounces) IS OutMass's design. Full text:
 
 ---
 
+## 🗓️ Active 1/day sequence (2 value : 1 product — warms the account, avoids promo-flag)
+
+Cadence decision (2026-06-26): 1 answer/day is fine **only** at a ~2:1 value-to-product
+ratio on a new account. Pure-value answers (NO OutMass mention) in our niche build
+topical authority so the product answers later land credibly and don't trip Quora's
+promo filter.
+
+- **Day 1 — WARM-UP (no product):** "Why do my bulk emails go to spam instead of the inbox?"
+  https://www.quora.com/Why-do-my-bulk-emails-go-to-spam-instead-of-the-inbox
+  Angle: prioritized deliverability fixes (SPF/DKIM/DMARC → list hygiene → sending
+  pattern → content → engagement). Pure expertise, zero product.
+- **Day 2 — WARM-UP (no product):** "What is the maximum limit of sending mails in a Day from Microsoft Outlook? Also how many maximum bcc…"
+  https://www.quora.com/What-is-the-maximum-limit-of-sending-mails-in-a-Day-from-Microsoft-Outlook-Also-how-many-maximum-bcc-can-be-sent-in-a-mail
+  Angle: exact limits (M365 10k/day, 500/msg, ~30/min; Outlook.com ~300/day, 100/msg).
+  Factual authority; closes with "BCC is bad → individual sends" (sets up Day 3, no
+  product named).
+- **Day 3 — PRODUCT:** "How do I send a mass email without showing the other recipients in Outlook?"
+  https://www.quora.com/How-do-I-send-a-mass-email-without-showing-the-other-recipients-in-Outlook
+  Angle: BCC ok for ~20, bad beyond → individual personalized sends (mail merge) →
+  OutMass does it in one click. (Moved up from the queue below.)
+
+Full drafts for all three live in the chat thread dated 2026-06-26.
+
 ## ⬜ Queue (next targets — prioritized; pick the top unposted each cycle)
 
 1. **"How do I send a mass email without showing the other recipients in Outlook?"**
