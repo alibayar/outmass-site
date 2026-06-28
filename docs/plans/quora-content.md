@@ -116,6 +116,12 @@ SKIPPED: "10,000 emails to one address" (spam/bombing — reputation risk) · "m
 Gmail" (6 answers, off-target) · "organize Outlook add-ins" (not our product) · "ZeroBounce
 alternative" (verification, not our product — optional pure-value warm-up later).
 
+**2026-06-27 inbound:** ✅ QUEUED — "What is the best tool for sending multiple cold emails at once?"
+(https://www.quora.com/What-is-the-best-tool-for-sending-multiple-cold-emails-at-once ; 2 answers —
+strong product fit; read-before-write before drafting). SKIPPED: "tool that alerts a deadline hidden
+in an email" (deadline detection, not our product) · "manage email without another dashboard" (broad
+inbox-mgmt, weak fit — park). NOTE: posted 2 on 06-27 (Faye + batch) → hold further posts, resume 1/day.
+
 ## ⬜ Queue (next targets — prioritized; pick the top unposted each cycle)
 
 1. **"How do I send a mass email without showing the other recipients in Outlook?"**
