@@ -97,19 +97,21 @@ answers, so we **skipped** them and hunted thin-competition questions instead.
 Ratio now **2 product : 2 warm-up** live (attachments + without-mail-merge). Scraped &
 read existing answers on three inbound questions:
 
-- **✅ Warm-up (no product) — "tracking email conversations open but not urgent"** (DIRECT request, Faye)
+- **✅ POSTED 2026-06-27 (warm-up) — "tracking email conversations open but not urgent"** (DIRECT request, Faye)
   https://www.quora.com/What-is-the-best-system-for-tracking-email-conversations-that-are-open-but-not-urgent
   Existing answer MISREAD it (explained open-*tracking*/pixels, not open-*conversations*).
-  We answer the REAL question — inbox triage for non-urgent pending threads (Flag+due,
-  "Waiting" category, Search Folder, conversation view, snooze). Pure value. Full text chat 06-26.
-- **✅ Value-lead (soft mention) — "batch email when business depends on fast replies"**
+  We answered the REAL question — inbox triage for non-urgent pending threads (Flag+due,
+  "Waiting" category, Search Folder, conversation view, snooze). Pure value.
+- **✅ POSTED 2026-06-27 (value-lead) — "batch email when business depends on fast replies"**
   https://www.quora.com/How-can-I-batch-email-when-my-business-depends-on-fast-replies
-  Existing answers are spam (Thallu.COM, mass-Gmail-accounts) → we're easily the best:
-  small paced waves + individual sends + reply-catching workflow. Full text chat 06-26.
+  Re-checked at **8 answers** (was 1) — still all spam/boilerplate (Thallu.COM ×4,
+  mass-Gmail-accounts, an off-topic insurance rant, one generic ESP-pitch); NONE address
+  the actual "fast replies" tension. We're the only on-target answer: small paced waves +
+  individual sends + reply-catching workflow.
 - **✅ Product — "send mass email without showing recipients"** (re-checked; existing answer
   still strong) → sharpened Outlook-web-native draft. Full text chat 06-26.
 
-Order (lean value): tracking (warm-up) → batch (value-lead) → without-showing (product).
+Order (lean value): ~~tracking~~ ✅ → ~~batch~~ ✅ → **without-showing (product) ← NEXT**.
 SKIPPED: "10,000 emails to one address" (spam/bombing — reputation risk) · "mail merge in
 Gmail" (6 answers, off-target) · "organize Outlook add-ins" (not our product) · "ZeroBounce
 alternative" (verification, not our product — optional pure-value warm-up later).
@@ -157,3 +159,5 @@ alternative" (verification, not our product — optional pure-value warm-up late
 | 2 | mail merge in Outlook 365 | 2026-06-26 | — | — | fresh; high-intent Outlook Q |
 | 3 | mass email **with attachments** (WARM-UP) | 2026-06-26 | — | — | thin/off-topic competition → we're the best answer |
 | 4 | without mail merge (WARM-UP) | 2026-06-26 | — | — | improved a thin single-anecdote answer |
+| 5 | tracking open-but-not-urgent (WARM-UP) | 2026-06-27 | — | — | direct request (Faye); existing answer misread the Q |
+| 6 | batch + fast replies (value-lead) | 2026-06-27 | — | — | 8 answers but all spam/off-target; only on-target reply |
