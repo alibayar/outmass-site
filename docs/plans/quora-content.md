@@ -92,6 +92,28 @@ answers, so we **skipped** them and hunted thin-competition questions instead.
   then add the missing gap: lightweight mail merge **inside Outlook on the web**,
   from your own mailbox (OutMass). Full text in chat 2026-06-26.
 
+## 📥 2026-06-26 — inbound Quora requests/suggestions (read-before-write applied)
+
+Ratio now **2 product : 2 warm-up** live (attachments + without-mail-merge). Scraped &
+read existing answers on three inbound questions:
+
+- **✅ Warm-up (no product) — "tracking email conversations open but not urgent"** (DIRECT request, Faye)
+  https://www.quora.com/What-is-the-best-system-for-tracking-email-conversations-that-are-open-but-not-urgent
+  Existing answer MISREAD it (explained open-*tracking*/pixels, not open-*conversations*).
+  We answer the REAL question — inbox triage for non-urgent pending threads (Flag+due,
+  "Waiting" category, Search Folder, conversation view, snooze). Pure value. Full text chat 06-26.
+- **✅ Value-lead (soft mention) — "batch email when business depends on fast replies"**
+  https://www.quora.com/How-can-I-batch-email-when-my-business-depends-on-fast-replies
+  Existing answers are spam (Thallu.COM, mass-Gmail-accounts) → we're easily the best:
+  small paced waves + individual sends + reply-catching workflow. Full text chat 06-26.
+- **✅ Product — "send mass email without showing recipients"** (re-checked; existing answer
+  still strong) → sharpened Outlook-web-native draft. Full text chat 06-26.
+
+Order (lean value): tracking (warm-up) → batch (value-lead) → without-showing (product).
+SKIPPED: "10,000 emails to one address" (spam/bombing — reputation risk) · "mail merge in
+Gmail" (6 answers, off-target) · "organize Outlook add-ins" (not our product) · "ZeroBounce
+alternative" (verification, not our product — optional pure-value warm-up later).
+
 ## ⬜ Queue (next targets — prioritized; pick the top unposted each cycle)
 
 1. **"How do I send a mass email without showing the other recipients in Outlook?"**
@@ -134,3 +156,4 @@ answers, so we **skipped** them and hunted thin-competition questions instead.
 | 1 | best alternatives to GMass | 2026-06-20 | 6 | 0 | low engagement; broad Gmail-centric Q |
 | 2 | mail merge in Outlook 365 | 2026-06-26 | — | — | fresh; high-intent Outlook Q |
 | 3 | mass email **with attachments** (WARM-UP) | 2026-06-26 | — | — | thin/off-topic competition → we're the best answer |
+| 4 | without mail merge (WARM-UP) | 2026-06-26 | — | — | improved a thin single-anecdote answer |
