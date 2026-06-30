@@ -122,6 +122,13 @@ strong product fit; read-before-write before drafting). SKIPPED: "tool that aler
 in an email" (deadline detection, not our product) · "manage email without another dashboard" (broad
 inbox-mgmt, weak fit — park). NOTE: posted 2 on 06-27 (Faye + batch) → hold further posts, resume 1/day.
 
+**2026-06-29 inbound — ALL SKIPPED:** "Protect M365 from Kali365" + "access M365 from third-party
+apps to reduce scam exposure (Kali365)" → **trust-trap**: pitching OUR third-party app on a
+security/scam question reads as exploiting fear; off-target (we're not a security product), skip
+firmly. "Do spam filters make personal block lists unnecessary?" → receiver/filtering side, off our
+sender niche — skip. (Faye-tracking already answered.) Pipeline stays: without-showing (product, next)
+→ cold-emails (product, RBW).
+
 ## ⬜ Queue (next targets — prioritized; pick the top unposted each cycle)
 
 1. **"How do I send a mass email without showing the other recipients in Outlook?"**
