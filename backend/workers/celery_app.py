@@ -111,9 +111,10 @@ celery.conf.beat_schedule = {
     },
     "daily-report": {
         "task": "workers.daily_report.send_daily_report",
-        # 14:00 UTC daily — before US market open (09:30 EST), after EU lunch,
-        # morning in Americas, afternoon in Europe, evening in Asia.
-        "schedule": crontab(hour=14, minute=0),
+        # Twice daily: 05:00 + 17:00 UTC = 08:00 + 20:00 Türkiye time (morning +
+        # evening), so the operator sees the OutMass pulse at the start and end
+        # of the day.
+        "schedule": crontab(hour="5,17", minute=0),
     },
     "check-user-tokens": {
         "task": "workers.scheduled_worker.check_user_tokens",

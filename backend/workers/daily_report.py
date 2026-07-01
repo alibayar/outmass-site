@@ -5,7 +5,7 @@ Runs at 14:00 UTC (before US markets open, good global window).
 """
 
 import logging
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -29,8 +29,14 @@ def _count(query):
 def build_report() -> str:
     """Build the daily report as a Telegram-friendly plain-text message."""
     db = get_db()
-    today = datetime.now(timezone.utc).date()
+    now = datetime.now(timezone.utc)
+    today = now.date()
     today_iso = today.isoformat()
+    d7_iso = (now - timedelta(days=7)).isoformat()
+    d30_iso = (now - timedelta(days=30)).isoformat()
+    # Morning (05:00 UTC run) vs evening (17:00 UTC run); TRT = UTC+3.
+    part = "Morning" if now.hour < 12 else "Evening"
+    trt = (now + timedelta(hours=3)).strftime("%H:%M")
 
     # User counts
     total_users = _count(db.table("users").select("id"))
@@ -40,6 +46,20 @@ def build_report() -> str:
     free = _count(db.table("users").select("id").eq("plan", "free"))
     starter = _count(db.table("users").select("id").eq("plan", "starter"))
     pro = _count(db.table("users").select("id").eq("plan", "pro"))
+
+    # Engagement + conversions
+    active_7d = _count(
+        db.table("users").select("id").gte("last_activity_at", d7_iso)
+    )
+    active_30d = _count(
+        db.table("users").select("id").gte("last_activity_at", d30_iso)
+    )
+    new_paid_today = _count(
+        db.table("users")
+        .select("id")
+        .in_("plan", ["starter", "pro"])
+        .gte("plan_updated_at", today_iso)
+    )
 
     # MRR
     mrr = starter * PRICE_STARTER + pro * PRICE_PRO
@@ -74,15 +94,16 @@ def build_report() -> str:
 
     # Build message
     lines = [
-        f"📊 OutMass Daily Report — {today_iso}",
+        f"📊 OutMass {part} Report — {today_iso} · {trt} TRT",
         "",
         "👥 Users",
         f"├─ Total: {total_users} (+{new_today} today)",
+        f"├─ Active: {active_7d} (7d) · {active_30d} (30d)",
         f"├─ Free: {free}",
         f"├─ Starter: {starter}",
         f"└─ Pro: {pro}",
         "",
-        f"💰 MRR: ${mrr}/mo",
+        f"💰 MRR: ${mrr}/mo (+{new_paid_today} paid today)",
         f"├─ Starter: {starter} × ${PRICE_STARTER} = ${starter * PRICE_STARTER}",
         f"└─ Pro: {pro} × ${PRICE_PRO} = ${pro * PRICE_PRO}",
         "",
