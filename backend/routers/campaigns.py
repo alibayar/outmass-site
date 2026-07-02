@@ -562,6 +562,10 @@ async def send_campaign(
         )
 
     # ── Freemium check ──
+    # Roll the quota period over first if it elapsed — the reset otherwise
+    # only ran at login, so a long-lived session (or a user who never
+    # re-authed) could be wrongly blocked by LAST period's counter.
+    user_model.check_monthly_reset(user)
     sent_this_month = user.get("emails_sent_this_month", 0)
     plan = user.get("plan", "free")
 

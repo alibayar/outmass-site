@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from config import monthly_limit_for_plan, upload_limit_for_plan
 from database import get_db
 from models import announcement as ann
+from models import user as user_model
 from routers.auth import get_current_user
 
 router = APIRouter(prefix="/settings", tags=["settings"])
@@ -39,6 +40,11 @@ class SuppressionRequest(BaseModel):
 @router.get("")
 async def get_settings(user: dict = Depends(get_current_user)):
     """Get user settings."""
+    # Roll the quota period over if it elapsed. The sidebar polls THIS
+    # endpoint for the quota bar and its client-side pre-send guard — without
+    # the check here, a user who maxed out last period keeps seeing (and being
+    # blocked by) last period's counter until they happen to re-login.
+    user_model.check_monthly_reset(user)
     plan = user.get("plan", "free")
     # Announcements live on a hot, critical path (the sidebar polls /settings
     # for quota + reauth state). Never let an announcements-table hiccup — e.g.

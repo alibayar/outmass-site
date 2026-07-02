@@ -57,6 +57,10 @@ def process_scheduled_campaigns():
         # otherwise burn a token refresh every beat. Over-quota is transient —
         # the monthly counter resets — so we keep the campaign 'scheduled' to
         # send after the reset, never permanently 'failed'.
+        # Roll the quota period over first: the reset used to run only at
+        # login, so a user who scheduled sends and never logged back in would
+        # stay blocked on LAST period's counter forever.
+        user_model.check_monthly_reset(user)
         sent_this_month = user.get("emails_sent_this_month", 0)
         plan = user.get("plan", "free")
         if plan == "free":

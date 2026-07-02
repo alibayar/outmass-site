@@ -555,23 +555,10 @@ async def get_me(user: dict = Depends(get_current_user)):
 
 
 def _check_monthly_reset(user: dict):
-    """Reset monthly counter if we've crossed into a new month."""
-    reset_date = user.get("month_reset_date")
-    if reset_date:
-        from datetime import date, datetime, timezone
+    """Reset quota counters when the billing-anchored month rolls over.
 
-        if isinstance(reset_date, str):
-            reset_date = date.fromisoformat(reset_date)
-        today = datetime.now(timezone.utc).date()
-        if today.month != reset_date.month or today.year != reset_date.year:
-            from database import get_db
-
-            get_db().table("users").update(
-                {
-                    "emails_sent_this_month": 0,
-                    "ai_generations_this_month": 0,
-                    "month_reset_date": today.isoformat(),
-                }
-            ).eq("id", user["id"]).execute()
-            user["emails_sent_this_month"] = 0
-            user["ai_generations_this_month"] = 0
+    Delegates to user_model.check_monthly_reset — a ROLLING month from
+    month_reset_date, not the calendar month, so paid users' quota period
+    matches their Stripe billing period. Kept as a wrapper so the three
+    auth call sites stay unchanged."""
+    user_model.check_monthly_reset(user)

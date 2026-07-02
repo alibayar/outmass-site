@@ -144,6 +144,28 @@ progress (`background.js` launch path + the sidebar/popup buttons) so a flow
 can't be started twice. Also dampens false "did not approve" noise in the
 oauth funnel. Low effort, UX-only.
 
+### ⬜ Quota follow-ups (deferred from the 2026-07-03 billing-anchored quota review)
+Adversarial review of the rolling-quota change surfaced these; all bounded /
+rare, deliberately deferred:
+1. **Mid-campaign reset/increment race** — send loops increment the counter
+   ONCE at the end of a paced (possibly hours-long) run; if the period boundary
+   rolls over mid-flight, the whole campaign's count lands in the NEW period.
+   Fix: increment in small batches (~25) inside the 5 send loops. Bounded
+   (≤1 campaign), self-corrects next period; pre-existed in calendar form.
+2. **cancel_at_period_end final-day refill** — date-granularity reset fires at
+   00:00 UTC on the final anniversary while the sub dies at its creation TIME
+   that day → up to one bonus quota-month for a cancelling user. Fix: persist
+   cancel_at_period_end from subscription.updated and defer the rollover.
+3. **Month-end anchor drift** — a day-29/30/31 anchor decays to 28 after the
+   first short month (stored clamped). User-favorable, ≤3 days; fix = store
+   anchor day separately. No current user affected (anchors are the 23rd-25th).
+4. **create-checkout StripeError fallthrough** (pre-existing) — a transient
+   Stripe error during Subscription.retrieve routes an ACTIVE subscriber to a
+   brand-new full-price checkout (dual subscription); later cancelling the
+   orphan downgrades a still-paying user. Fix: 502 on retrieve failure when
+   stripe_subscription_id exists; match webhooks on subscription id, not
+   customer id.
+
 ### ⬜ Separate the polluting game events
 PostHog project 152466 also receives a game's events (`match_started`,
 `lobby_viewed`, …). Separate into its own project so OutMass analytics stay clean.

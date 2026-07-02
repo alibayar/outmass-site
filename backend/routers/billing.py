@@ -29,6 +29,7 @@ from config import (
     PRO_PLAN_MONTHLY_LIMIT,
 )
 from database import get_db
+from models import user as user_model
 from routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -185,6 +186,25 @@ async def stripe_webhook(request: Request):
         customer_id = data_object.get("customer")
         subscription_id = data_object.get("subscription")
 
+        # Replay guard: Stripe delivers webhooks at-least-once (retries on
+        # timeout/non-2xx for days, plus manual dashboard "Resend"). The plan
+        # write is idempotent, but the quota re-anchor below is NOT — a replay
+        # must never re-zero the counter (bonus quota) or shift the anchor to
+        # the redelivery date. If we already stored this subscription id, this
+        # event was processed.
+        already_processed = False
+        if subscription_id:
+            existing = (
+                db.table("users")
+                .select("stripe_subscription_id")
+                .eq("id", user_id)
+                .execute()
+            )
+            already_processed = bool(
+                existing.data
+                and existing.data[0].get("stripe_subscription_id") == subscription_id
+            )
+
         # Determine plan from the price ID in the subscription
         plan = "pro"
         if subscription_id:
@@ -196,14 +216,36 @@ async def stripe_webhook(request: Request):
             except Exception:
                 pass
 
-        db.table("users").update({
+        update_payload = {
             "plan": plan,
             "stripe_customer_id": customer_id,
             "stripe_subscription_id": subscription_id,
             "plan_updated_at": datetime.now(timezone.utc).isoformat(),
-        }).eq("id", user_id).execute()
+        }
+        if not already_processed:
+            # The paid quota period starts the day they pay: fresh counters +
+            # anchor = today, so the rolling monthly reset (check_monthly_reset)
+            # keeps quota month == billed month from here on. ALL period-scoped
+            # counters reset together (AI too — a new paid period must not
+            # inherit the old period's AI usage). Deliberately NOT done in
+            # customer.subscription.updated — that event also fires on portal
+            # edits (e.g. cancel/uncancel toggles), which must never refill
+            # quota. Renewals need no webhook: the rolling reset is time-based
+            # off this anchor.
+            update_payload.update({
+                "emails_sent_this_month": 0,
+                "ai_generations_this_month": 0,
+                "month_reset_date": datetime.now(timezone.utc).date().isoformat(),
+            })
 
-        logger.info("User %s upgraded to %s", user_id, plan)
+        db.table("users").update(update_payload).eq("id", user_id).execute()
+
+        logger.info(
+            "User %s upgraded to %s (%s)",
+            user_id,
+            plan,
+            "replay — anchor kept" if already_processed else "quota period re-anchored",
+        )
 
     # ── customer.subscription.deleted ──
     elif event_type == "customer.subscription.deleted":
@@ -499,6 +541,9 @@ async def billing_portal(user: dict = Depends(get_current_user)):
 async def billing_status(user: dict = Depends(get_current_user)):
     """Return the user's current plan and monthly usage."""
     fresh_user = _get_user_from_db(user["id"]) or user
+    # Same rollover check as /settings: this endpoint feeds quota displays,
+    # so it must never serve last period's counter after the anniversary.
+    user_model.check_monthly_reset(fresh_user)
     plan = fresh_user.get("plan", "free")
     sent = fresh_user.get("emails_sent_this_month", 0)
     limit = PLAN_LIMITS.get(plan, FREE_PLAN_MONTHLY_LIMIT)

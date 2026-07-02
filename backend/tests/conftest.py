@@ -4,6 +4,7 @@ Mocks Supabase so tests run without a real database.
 """
 
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 from unittest.mock import MagicMock, patch
 
@@ -159,7 +160,11 @@ FAKE_USER = {
     "name": "Test User",
     "plan": "free",
     "emails_sent_this_month": 5,
-    "month_reset_date": "2026-04-01",
+    "emails_sent_total": 40,
+    # First of the CURRENT month: the rolling quota reset (check_monthly_reset,
+    # now also called at the /send gate) must see an un-elapsed period, or it
+    # would zero the counters mid-test. A hardcoded past date breaks quota tests.
+    "month_reset_date": datetime.now(timezone.utc).date().replace(day=1).isoformat(),
     "track_opens": True,
     "track_clicks": True,
     "unsubscribe_text": "Unsubscribe",

@@ -2,8 +2,9 @@
 OutMass — User model helpers
 """
 
+import calendar
 import logging
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 from database import get_db
 
@@ -162,19 +163,96 @@ def maybe_touch_activity(user: dict, extension_version: str | None = None) -> No
 
 
 def increment_sent_count(user_id: str, count: int = 1):
-    """Increment the user's monthly sent count atomically."""
-    # C-05: Use RPC for atomic increment to prevent race conditions
+    """Increment the user's sent counters atomically.
+
+    Maintains TWO counters: emails_sent_this_month (the quota counter,
+    reset each billing-anchored month) and emails_sent_total (lifetime,
+    never reset — the operator's tracking metric).
+    """
+    # C-05: Use RPC for atomic increment to prevent race conditions.
+    # Migration 021 makes the RPC bump both counters.
     try:
         get_db().rpc(
             "increment_user_sent_count",
             {"user_id_input": user_id, "amount": count},
         ).execute()
     except Exception:
-        # Fallback to non-atomic if RPC doesn't exist yet
+        # Fallback to non-atomic if the RPC doesn't exist / errors. Log it —
+        # a permanently-failing RPC (e.g. a signature-mismatch overload after
+        # a migration) would otherwise silently reintroduce the C-05 race.
+        logger.warning(
+            "increment_user_sent_count RPC failed; using non-atomic fallback",
+            exc_info=True,
+        )
         user = get_by_id(user_id)
         if not user:
             return
-        new_count = user.get("emails_sent_this_month", 0) + count
-        get_db().table("users").update(
-            {"emails_sent_this_month": new_count}
-        ).eq("id", user_id).execute()
+        try:
+            get_db().table("users").update(
+                {
+                    "emails_sent_this_month": user.get("emails_sent_this_month", 0) + count,
+                    "emails_sent_total": user.get("emails_sent_total", 0) + count,
+                }
+            ).eq("id", user_id).execute()
+        except Exception:
+            # emails_sent_total may not exist yet (migration 021 not applied).
+            # NEVER lose the quota increment over the lifetime counter.
+            get_db().table("users").update(
+                {"emails_sent_this_month": user.get("emails_sent_this_month", 0) + count}
+            ).eq("id", user_id).execute()
+
+
+def _add_months(d: date, months: int) -> date:
+    """`d` plus N calendar months, clamping the day to the target month's
+    length (Jan 31 + 1mo → Feb 28/29) — mirrors how Stripe anchors monthly
+    billing. Always call with the ORIGINAL anchor date so the day doesn't
+    drift after a clamp (Jan 31 + 2mo = Mar 31, not Mar 28)."""
+    total = d.month - 1 + months
+    year = d.year + total // 12
+    month = total % 12 + 1
+    last_day = calendar.monthrange(year, month)[1]
+    return date(year, month, min(d.day, last_day))
+
+
+def check_monthly_reset(user: dict, today: date | None = None):
+    """Reset the quota counters when the user's billing-anchored month rolls
+    over.
+
+    The quota period is a ROLLING month from month_reset_date (set at signup
+    and re-anchored at each paid checkout) — NOT the calendar month. A Starter
+    who pays on the 25th gets exactly one quota-month per billed month; the
+    old calendar rule handed out a bonus reset every 1st.
+
+    Mutates the passed-in dict so callers (login, /send gate, workers) see the
+    fresh values without a re-fetch. emails_sent_total is deliberately NEVER
+    touched here. `today` is injectable for tests only.
+    """
+    reset_date = user.get("month_reset_date")
+    if not reset_date:
+        return
+    if isinstance(reset_date, str):
+        reset_date = date.fromisoformat(reset_date)
+    if today is None:
+        today = datetime.now(timezone.utc).date()
+
+    if today < _add_months(reset_date, 1):
+        return  # still inside the current quota month
+
+    # Advance in whole months FROM THE ORIGINAL anchor (day preserved even
+    # across a long absence): anchor the 25th + first login two periods later
+    # → new anchor is still a 25th, of the most recent elapsed period.
+    months = 1
+    while _add_months(reset_date, months + 1) <= today:
+        months += 1
+    new_anchor = _add_months(reset_date, months)
+
+    get_db().table("users").update(
+        {
+            "emails_sent_this_month": 0,
+            "ai_generations_this_month": 0,
+            "month_reset_date": new_anchor.isoformat(),
+        }
+    ).eq("id", user["id"]).execute()
+    user["emails_sent_this_month"] = 0
+    user["ai_generations_this_month"] = 0
+    user["month_reset_date"] = new_anchor.isoformat()

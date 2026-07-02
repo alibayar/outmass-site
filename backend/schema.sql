@@ -9,6 +9,7 @@ CREATE TABLE users (
   name TEXT,
   plan TEXT DEFAULT 'free',
   emails_sent_this_month INT DEFAULT 0,
+  emails_sent_total INT DEFAULT 0,
   month_reset_date DATE DEFAULT CURRENT_DATE,
   last_login_at TIMESTAMPTZ,
   last_activity_at TIMESTAMPTZ,
@@ -154,3 +155,16 @@ CREATE INDEX idx_followups_scheduled_for ON follow_ups(scheduled_for);
 CREATE INDEX idx_templates_user_id ON templates(user_id);
 CREATE INDEX idx_ab_tests_campaign_id ON ab_tests(campaign_id);
 CREATE INDEX idx_campaigns_scheduled_for ON campaigns(scheduled_for);
+
+-- ── Atomic sent-counter increment (canonical definition — see migration 021) ──
+-- Bumps BOTH the monthly quota counter and the lifetime total in one statement
+-- so concurrent sends can't race a read-modify-write.
+CREATE OR REPLACE FUNCTION increment_user_sent_count(user_id_input UUID, amount INT)
+RETURNS void
+LANGUAGE sql
+AS $$
+  UPDATE users
+  SET emails_sent_this_month = COALESCE(emails_sent_this_month, 0) + amount,
+      emails_sent_total      = COALESCE(emails_sent_total, 0) + amount
+  WHERE id = user_id_input;
+$$;
