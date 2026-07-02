@@ -126,6 +126,11 @@ ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
 TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN", "")
 TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 
+# Secret that enables POST /api/admin/trigger-report — a manual fire of the daily
+# report (runs on the WORKER via Celery, so it tests the worker's Telegram env),
+# for verifying the report without waiting for the cron. Disabled when empty.
+REPORT_TRIGGER_KEY = os.getenv("REPORT_TRIGGER_KEY", "")
+
 # ── MailerSend (transactional email) ──
 MAILERSEND_API_KEY = os.getenv("MAILERSEND_API_KEY", "")
 MAILERSEND_FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL", "support@getoutmass.com")

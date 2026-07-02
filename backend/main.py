@@ -4,10 +4,11 @@ OutMass — FastAPI Application
 
 import logging
 import traceback
+from typing import Annotated
 
 import httpx
 import posthog
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -20,6 +21,7 @@ from config import (
     MAILERSEND_TO_EMAIL,
     POSTHOG_API_KEY,
     POSTHOG_HOST,
+    REPORT_TRIGGER_KEY,
     TELEGRAM_BOT_TOKEN,
     TELEGRAM_CHAT_ID,
 )
@@ -298,6 +300,30 @@ async def uninstall_feedback(body: UninstallFeedback):
 
     logger.info("Uninstall feedback: reason=%s details=%s", reason, details[:200])
     return {"status": "received"}
+
+
+# ── Manual report trigger (diagnostics) ──
+@app.post("/api/admin/trigger-report")
+async def trigger_report(
+    x_report_key: Annotated[str | None, Header()] = None,
+):
+    """Manually fire the daily report, for verifying schedule/config without
+    waiting for the cron. Runs via Celery (`.delay()`) so it executes on the
+    WORKER service — i.e. it exercises the worker's Telegram env, which is
+    exactly what we need to confirm. Disabled unless REPORT_TRIGGER_KEY is set;
+    the caller must pass it in the X-Report-Key header."""
+    if not REPORT_TRIGGER_KEY:
+        raise HTTPException(status_code=404, detail="Not found")
+    if x_report_key != REPORT_TRIGGER_KEY:
+        raise HTTPException(status_code=403, detail="Forbidden")
+    try:
+        from workers.daily_report import send_daily_report
+
+        result = send_daily_report.delay()
+        return {"queued": True, "task_id": str(result.id)}
+    except Exception as e:  # noqa: BLE001
+        logger.exception("Manual report trigger failed to enqueue: %s", e)
+        raise HTTPException(status_code=500, detail=f"enqueue_failed: {e}")
 
 
 # ── Health Check ──
