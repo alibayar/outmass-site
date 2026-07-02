@@ -2,6 +2,17 @@
   "appName": {
     "message": "OutMass"
   },
+  "alertQuotaCapped": {
+    "message": "يتم الإرسال إلى $QUEUED$ مستلمًا.\n\n⚠️ لم يتم تضمين $SKIPPED$ مستلمًا لأنك وصلت إلى الحد الشهري لخطتك. سيبقون محفوظين كمعلّقين — قم بترقية خطتك أو انتظر إعادة التعيين الشهرية، ثم استخدم «استئناف» لإرسال الباقي.",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
   "popupConsentExplainer": {
     "message": "سيطلب Microsoft الإذن لـ OutMass بإرسال رسائل البريد واكتشاف الردود من حساب Outlook الخاص بك. لا نُخزِّن محتوى بريدك الإلكتروني أبدًا."
   },

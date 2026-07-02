@@ -2,6 +2,17 @@
   "appName": {
     "message": "OutMass"
   },
+  "alertQuotaCapped": {
+    "message": "Senden an $QUEUED$ Empfänger.\n\n⚠️ $SKIPPED$ Empfänger wurden NICHT einbezogen, weil Sie Ihr monatliches Planlimit erreicht haben. Sie bleiben als ausstehend gespeichert — führen Sie ein Upgrade durch oder warten Sie auf den Monatsbeginn, und senden Sie den Rest mit Fortsetzen.",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
   "popupConsentExplainer": {
     "message": "Microsoft fragt nach der Berechtigung für OutMass, E-Mails von Ihrem eigenen Outlook-Konto zu senden und Antworten zu erkennen. Wir speichern Ihre E-Mail-Inhalte niemals."
   },

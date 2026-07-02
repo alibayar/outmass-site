@@ -2,6 +2,14 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.22 — 2026-07-02
+
+- No more silent partial sends at your quota limit. If your campaign has more recipients than your remaining monthly allowance, OutMass now tells you exactly how many were sent and how many are waiting (e.g. "47 sent, 53 pending") — the rest stay saved, and Resume sends them after an upgrade or your monthly reset. Previously the send quietly stopped at the limit and looked like everything went out.
+
+### Behind the scenes (backend — affects all extension versions)
+
+- The "monthly limit reached" message is now in English (it was accidentally shown in Turkish for everyone).
+
 ## v0.1.21 — 2026-06-26
 
 - Smoother first sign-in. The sign-in screen now explains up front why Microsoft asks for mail permissions — OutMass sends from your own Outlook account and never stores your email content — so the Microsoft consent prompt isn't a surprise. (Localized in all 11 languages.)

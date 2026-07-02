@@ -1384,6 +1384,26 @@
             recipient_count: _recipientCount,
             error_code: String((sendErrors[0] && sendErrors[0].error) || "all_failed").slice(0, 64),
           });
+        } else if (data.quota_capped) {
+          // The batch was truncated to the remaining monthly quota. Never let
+          // this pass as a plain success — the user must know exactly how many
+          // recipients were left out (they stay pending; Resume sends them
+          // after an upgrade or the monthly reset).
+          var skipped = data.quota_skipped || 0;
+          var cappedMsg = t("alertQuotaCapped", [String(queued), String(skipped)]);
+          if (!cappedMsg || cappedMsg === "alertQuotaCapped") {
+            cappedMsg =
+              "Sending to " + queued + " recipients.\n\n" +
+              "⚠️ " + skipped + " recipients were NOT included because you reached your monthly plan limit. " +
+              "They stay saved as pending — upgrade your plan or wait for your monthly reset, then use Resume to send the rest.";
+          }
+          alert(cappedMsg);
+          track("send_completed", {
+            recipient_count: _recipientCount,
+            campaign_id: campaignId || null,
+            quota_capped: true,
+            quota_skipped: skipped,
+          });
         } else if (hasAbTest) {
           alert(t("alertAbSendSuccess", [String(queued)]));
           track("send_completed", {

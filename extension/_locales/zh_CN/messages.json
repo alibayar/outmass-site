@@ -2,6 +2,17 @@
   "appName": {
     "message": "OutMass"
   },
+  "alertQuotaCapped": {
+    "message": "正在向 $QUEUED$ 位收件人发送。\n\n⚠️ 由于您已达到每月套餐上限，$SKIPPED$ 位收件人未被包含。他们将保存为待发送状态 — 升级套餐或等待每月重置后，使用“继续发送”发送其余部分。",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
   "popupConsentExplainer": {
     "message": "Microsoft 会请求授权，让 OutMass 从您自己的 Outlook 账户发送邮件并检测回复。我们绝不存储您的邮件内容。"
   },

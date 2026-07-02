@@ -601,13 +601,18 @@ async def send_campaign(
             status_code=402,
             detail={
                 "error": "limit_exceeded",
-                "message": f"Aylik {limit} email limitine ulastiniz",
+                "message": f"You've reached your monthly limit of {limit} emails",
                 "emails_sent": sent_this_month,
                 "limit": limit,
             },
         )
-    # Cap to remaining quota
+    # Cap to remaining quota — and REPORT it. This cap used to be silent: the
+    # response said queued=N and nothing told the user the rest of their list
+    # was skipped for quota, so they believed the whole list went out. The
+    # skipped recipients stay 'pending' (resumable after upgrade/monthly reset).
+    total_pending = len(pending)
     pending = pending[:remaining]
+    quota_skipped = total_pending - len(pending)
 
     # ── Mark campaign as sending ──
     campaign_model.update_campaign(campaign_id, {"status": "sending"})
@@ -669,6 +674,10 @@ async def send_campaign(
         "status": "sending",
         "errors": [],
         "ab_test": bool(ab_test),
+        # Explicit quota-cap signal so the client can tell the user exactly
+        # how many recipients were left out of this batch (never silently).
+        "quota_capped": quota_skipped > 0,
+        "quota_skipped": quota_skipped,
     }
 
 

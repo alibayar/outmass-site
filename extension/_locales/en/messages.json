@@ -785,6 +785,17 @@
       }
     }
   },
+  "alertQuotaCapped": {
+    "message": "Sending to $QUEUED$ recipients.\n\n⚠️ $SKIPPED$ recipients were NOT included because you reached your monthly plan limit. They stay saved as pending — upgrade your plan or wait for your monthly reset, then use Resume to send the rest.",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
   "largeSendWarn": {
     "message": "You're about to send to $COUNT$ recipients.\n\nTo stay within Outlook's sending limits and protect your account from being flagged, OutMass automatically paces this send (about 30/min), so it will take roughly $MIN$ minutes and continues in the background.\n\nFor large cold lists, deliverability is best if you spread the send over several days (a few hundred per day) using Schedule.\n\nContinue?",
     "placeholders": {

@@ -2,6 +2,17 @@
   "appName": {
     "message": "OutMass"
   },
+  "alertQuotaCapped": {
+    "message": "$QUEUED$ 件の宛先に送信しています。\n\n⚠️ 月間プラン上限に達したため、$SKIPPED$ 件の宛先は含まれませんでした。保留として保存されています — プランをアップグレードするか月次リセットを待って、Resume で残りを送信してください。",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
   "popupConsentExplainer": {
     "message": "Microsoft は、OutMass がご自身の Outlook アカウントからメールを送信し、返信を検知するための許可を求めます。メールの内容を保存することはありません。"
   },
