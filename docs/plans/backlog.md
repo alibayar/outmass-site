@@ -166,7 +166,23 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
-### ⬜ Separate the polluting game events
+### ⬜ Fix the e2e CI suite (red on EVERY push since 2026-06-03)
+GitHub Actions CI: unit-tests green, **e2e-tests failing ~24/48 on every push
+for a month** (Ali only noticed via the 07-03 email). Last green run =
+06-03 21:35; first red = 06-03 21:49 → commit `76b6317` ("refresh announcements
+on account switch"). Mechanism: `e2e/extension.spec.ts` loads `sidebar.html`
+via **file:// with NO chrome stub** (`chrome` is undefined); 76b6317 added an
+init-time `if (chrome.storage && chrome.storage.onChanged)` block — that guard
+survives a chrome WITHOUT storage but **throws ReferenceError when `chrome`
+itself is undefined**, killing the IIFE before the tab/JS handlers bind →
+every interaction test fails (static CSS-visibility tests still pass).
+**Fix options:** (a) cleanest — add a minimal `window.chrome` stub via
+`page.addInitScript` in the spec's beforeEach (test-only, no production risk,
+lets all 48 exercise real logic); (b) also audit init-path `chrome.*` refs
+added since June (quota loadQuota etc.) if any still throw. Verify locally
+with `npx playwright test` before pushing. Not urgent (product unaffected —
+unit tests + manual verification carried the last month) but a red CI on every
+push trains us to ignore CI, which is dangerous.
 PostHog project 152466 also receives a game's events (`match_started`,
 `lobby_viewed`, …). Separate into its own project so OutMass analytics stay clean.
 
