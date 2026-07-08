@@ -6,6 +6,7 @@ POST /unsubscribe/{contact_id} → unsubscribe
 """
 
 import base64
+from datetime import datetime, timezone
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse, Response
@@ -14,6 +15,7 @@ from database import get_db
 from models import ab_test as ab_test_model
 from models import campaign as campaign_model
 from models import contact as contact_model
+from models.audit import _extract_request_context
 
 router = APIRouter(tags=["tracking"])
 
@@ -23,20 +25,57 @@ TRANSPARENT_GIF = base64.b64decode(
 )
 
 
-def _record_event(contact_id: str, campaign_id: str, event_type: str):
+def _record_event(
+    contact_id: str,
+    campaign_id: str,
+    event_type: str,
+    metadata: dict | None = None,
+):
     """Insert an event row in background."""
     get_db().table("events").insert(
         {
             "contact_id": contact_id,
             "campaign_id": campaign_id,
             "event_type": event_type,
-            "metadata": {},
+            "metadata": metadata or {},
         }
     ).execute()
 
 
+def _tracking_metadata(request: Request, contact: dict) -> dict:
+    """UA + IP + seconds-since-send for an open/click event.
+
+    Security scanners (Safe Links, Proofpoint, ...) open pixels and follow
+    links within seconds of delivery, inflating open/click stats. We don't
+    filter anything yet — this just captures the evidence (who fetched it,
+    from where, how soon after the send) so a later heuristic can be
+    calibrated on real data instead of guesses. Never raises: tracking
+    endpoints must stay unconditionally cheap and safe.
+    """
+    ctx = _extract_request_context(request)
+    secs = None
+    try:
+        sent_raw = contact.get("sent_at")
+        if sent_raw:
+            sent_at = datetime.fromisoformat(str(sent_raw).replace("Z", "+00:00"))
+            if sent_at.tzinfo is None:
+                sent_at = sent_at.replace(tzinfo=timezone.utc)
+            secs = int((datetime.now(timezone.utc) - sent_at).total_seconds())
+    except Exception:  # noqa: BLE001
+        secs = None
+    return {
+        "ua": ctx["user_agent"],
+        "ip": ctx["ip_address"],
+        "secs_since_sent": secs,
+    }
+
+
 @router.get("/t/{contact_id}")
-async def track_open(contact_id: str, background_tasks: BackgroundTasks):
+async def track_open(
+    contact_id: str,
+    background_tasks: BackgroundTasks,
+    request: Request,
+):
     """Return 1x1 transparent GIF and record open event."""
     contact = contact_model.get_contact(contact_id)
 
@@ -63,6 +102,7 @@ async def track_open(contact_id: str, background_tasks: BackgroundTasks):
             contact_id,
             contact["campaign_id"],
             "open",
+            _tracking_metadata(request, contact),
         )
 
     return Response(
@@ -79,6 +119,7 @@ async def track_open(contact_id: str, background_tasks: BackgroundTasks):
 async def track_click(
     contact_id: str,
     background_tasks: BackgroundTasks,
+    request: Request,
     url: str = Query(..., description="Original URL to redirect to"),
 ):
     """Record click event and 302 redirect to original URL."""
@@ -100,6 +141,7 @@ async def track_click(
             contact_id,
             contact["campaign_id"],
             "click",
+            _tracking_metadata(request, contact),
         )
 
     return RedirectResponse(url=url, status_code=302)

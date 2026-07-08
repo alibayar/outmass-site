@@ -72,6 +72,76 @@ def test_click_redirect_missing_url(client, fake_db):
     assert resp.status_code == 422
 
 
+# ── Bot-evidence metadata (v0: capture UA/IP/timing, no filtering yet) ──
+
+
+def test_open_pixel_records_ua_ip_and_timing(client, fake_db):
+    """/t must stamp the event with UA, client IP and seconds-since-send."""
+    from datetime import datetime, timedelta, timezone
+
+    sent_at = (datetime.now(timezone.utc) - timedelta(seconds=30)).isoformat()
+    contact = {**FAKE_CONTACT, "sent_at": sent_at}
+    events_tbl = FakeQueryBuilder([])
+    fake_db.set_table("events", events_tbl)
+
+    with patch("routers.tracking.contact_model.get_contact", return_value=contact), \
+         patch("routers.tracking.contact_model.mark_opened"), \
+         patch("routers.tracking.campaign_model.increment_stat"):
+        resp = client.get(
+            "/t/contact-001",
+            headers={
+                "user-agent": "SafeLinksScanner/1.0",
+                "x-forwarded-for": "40.94.1.2, 10.0.0.1",
+            },
+        )
+
+    assert resp.status_code == 200
+    meta = events_tbl._data[0]["metadata"]
+    assert meta["ua"] == "SafeLinksScanner/1.0"
+    assert meta["ip"] == "40.94.1.2"  # first X-Forwarded-For hop = real client
+    assert 25 <= meta["secs_since_sent"] <= 120
+
+
+def test_click_records_ua_ip_and_timing(client, fake_db):
+    """/c must stamp the click event the same way."""
+    from datetime import datetime, timedelta, timezone
+
+    sent_at = (datetime.now(timezone.utc) - timedelta(seconds=5)).isoformat()
+    contact = {**FAKE_CONTACT, "sent_at": sent_at}
+    events_tbl = FakeQueryBuilder([])
+    fake_db.set_table("events", events_tbl)
+
+    with patch("routers.tracking.contact_model.get_contact", return_value=contact), \
+         patch("routers.tracking.contact_model.mark_clicked"), \
+         patch("routers.tracking.campaign_model.increment_stat"):
+        resp = client.get(
+            "/c/contact-001?url=https://example.com",
+            headers={"user-agent": "Proofpoint URLDefense"},
+            follow_redirects=False,
+        )
+
+    assert resp.status_code == 302
+    meta = events_tbl._data[0]["metadata"]
+    assert meta["ua"] == "Proofpoint URLDefense"
+    assert meta["secs_since_sent"] is not None
+
+
+def test_open_metadata_survives_missing_sent_at(client, fake_db):
+    """No sent_at on the contact → secs None, event still recorded (never 500)."""
+    events_tbl = FakeQueryBuilder([])
+    fake_db.set_table("events", events_tbl)
+
+    with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
+         patch("routers.tracking.contact_model.mark_opened"), \
+         patch("routers.tracking.campaign_model.increment_stat"):
+        resp = client.get("/t/contact-001")
+
+    assert resp.status_code == 200
+    meta = events_tbl._data[0]["metadata"]
+    assert meta["secs_since_sent"] is None
+    assert "ua" in meta and "ip" in meta
+
+
 def test_unsubscribe_page_get(client, fake_db):
     """GET /unsubscribe/{id} should return HTML form with contact's email."""
     with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
