@@ -443,6 +443,9 @@ var VALID_OUTLOOK_ORIGINS = [
   "https://outlook.live.com",
   "https://outlook.office.com",
   "https://outlook.office365.com",
+  // Microsoft is migrating work/school Outlook Web here tenant-by-tenant
+  // (rollout started Nov 2025); office.com redirects to it for moved tenants.
+  "https://outlook.cloud.microsoft",
 ];
 
 var PERSONAL_OUTLOOK_DOMAINS = [
@@ -963,16 +966,25 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       // not a hardcoded guess — see resolveOutlookMailUrl.
       resolveOutlookMailUrl().then(function (mailUrl) {
         chrome.tabs.create({ url: mailUrl }, function (newTab) {
-          function onUpdated(tabId, changeInfo) {
-            if (tabId === newTab.id && changeInfo.status === "complete") {
-              chrome.tabs.onUpdated.removeListener(onUpdated);
-              // Wait for content script to initialize after page load
-              setTimeout(function () {
-                chrome.tabs.sendMessage(newTab.id, { type: "SHOW_SIDEBAR" });
-              }, 1500);
+          // Outlook boots slowly and may redirect across hosts mid-load
+          // (office.com → cloud.microsoft for migrated tenants), so a single
+          // post-"complete" message can fire while no content script exists
+          // and the sidebar never opens. Retry until the content script acks.
+          var attempts = 0;
+          var timer = setInterval(function () {
+            attempts++;
+            if (attempts > 16) {
+              clearInterval(timer);
+              return;
             }
-          }
-          chrome.tabs.onUpdated.addListener(onUpdated);
+            chrome.tabs.sendMessage(newTab.id, { type: "SHOW_SIDEBAR" })
+              .then(function (resp) {
+                if (resp && resp.ack) clearInterval(timer);
+              })
+              .catch(function () {
+                /* content script not ready yet (or tab closed) — keep trying */
+              });
+          }, 1500);
         });
       });
       sendResponse({ ack: true });

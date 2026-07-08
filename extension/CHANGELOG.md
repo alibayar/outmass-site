@@ -2,6 +2,12 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.23 — 2026-07-08
+
+- OutMass now works on Microsoft's **new Outlook web address** (outlook.cloud.microsoft). Microsoft has started moving business accounts there automatically — on moved accounts the OutMass panel and the corner button never appeared, and "Open Campaign Panel" just opened a plain Outlook window. Both now work on the new address.
+- Because this update teaches OutMass about the new address, **Chrome/Edge may ask you to re-approve the extension with one click** ("New permissions required"). That's expected — one click and you're back. Scheduled sends and follow-ups run on our servers and are never interrupted.
+- "Open Campaign Panel" is now more patient: when it opens a fresh Outlook tab, it keeps trying until the panel is actually ready (slow loads and Outlook's sign-in redirects no longer swallow it).
+
 ## v0.1.22 — 2026-07-02
 
 - No more silent partial sends at your quota limit. If your campaign has more recipients than your remaining monthly allowance, OutMass now tells you exactly how many were sent and how many are waiting (e.g. "47 sent, 53 pending") — the rest stay saved, and Resume sends them after an upgrade or your monthly reset. Previously the send quietly stopped at the limit and looked like everything went out.

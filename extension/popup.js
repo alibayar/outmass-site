@@ -237,7 +237,8 @@
   var outlookPatterns = [
     "https://outlook.live.com/*",
     "https://outlook.office.com/*",
-    "https://outlook.office365.com/*"
+    "https://outlook.office365.com/*",
+    "https://outlook.cloud.microsoft/*"
   ];
 
   function isOutlookUrl(url) {
@@ -245,7 +246,8 @@
     return (
       url.startsWith("https://outlook.live.com") ||
       url.startsWith("https://outlook.office.com") ||
-      url.startsWith("https://outlook.office365.com")
+      url.startsWith("https://outlook.office365.com") ||
+      url.startsWith("https://outlook.cloud.microsoft")
     );
   }
 
