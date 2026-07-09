@@ -15,7 +15,15 @@ from typing import Annotated
 
 import httpx
 import posthog
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    Header,
+    HTTPException,
+    Query,
+    Request,
+)
 from fastapi.responses import RedirectResponse, HTMLResponse
 from jose import jwt
 from pydantic import BaseModel
@@ -37,6 +45,7 @@ from config import (
 )
 from models import audit
 from models import user as user_model
+from utils import welcome_email
 
 logger = logging.getLogger(__name__)
 
@@ -226,6 +235,7 @@ async def login_redirect(
 @router.get("/callback")
 async def auth_callback(
     request: Request,
+    background_tasks: BackgroundTasks,
     code: str = Query(None),
     state: str = Query(None),
     error: str = Query(None),
@@ -310,11 +320,18 @@ async def auth_callback(
         return _error_page("Incomplete user profile from Microsoft")
 
     # Upsert user in DB
-    user = user_model.upsert_user(
+    user, created = user_model.upsert_user(
         microsoft_id=ms_id,
         email=email,
         name=name,
     )
+
+    # First-ever sign-in → one-time welcome email (best-effort, after the
+    # response; a mail hiccup must never break the OAuth redirect).
+    if created:
+        background_tasks.add_task(
+            welcome_email.send_welcome_email, user["email"], user.get("name")
+        )
 
     # Save refresh_token for server-side token refresh (worker, scheduled
     # sending). Only overwrite the stored token when Microsoft actually
@@ -454,7 +471,11 @@ h1{{color:#a4262c}}.msg{{background:#fde7e9;padding:12px;border-radius:4px;margi
 
 
 @router.post("/microsoft", response_model=AuthResponse)
-async def microsoft_auth(body: MicrosoftAuthRequest, request: Request):
+async def microsoft_auth(
+    body: MicrosoftAuthRequest,
+    request: Request,
+    background_tasks: BackgroundTasks,
+):
     """
     Verify Microsoft access token via Graph API /me,
     upsert user, return OutMass JWT.
@@ -478,11 +499,17 @@ async def microsoft_auth(body: MicrosoftAuthRequest, request: Request):
     name = ms_profile.get("displayName", body.name)
 
     # Upsert user
-    user = user_model.upsert_user(
+    user, created = user_model.upsert_user(
         microsoft_id=ms_id,
         email=email,
         name=name,
     )
+
+    # First-ever sign-in → one-time welcome email (mirrors the web callback).
+    if created:
+        background_tasks.add_task(
+            welcome_email.send_welcome_email, user["email"], user.get("name")
+        )
 
     # Save refresh token for follow-up worker (async email sending)
     if body.refresh_token:

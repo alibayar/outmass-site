@@ -31,8 +31,13 @@ def find_by_microsoft_id(microsoft_id: str) -> dict | None:
     return None
 
 
-def upsert_user(microsoft_id: str, email: str, name: str) -> dict:
-    """Create or update a user. Returns the user row."""
+def upsert_user(microsoft_id: str, email: str, name: str) -> tuple[dict, bool]:
+    """Create or update a user. Returns (user_row, created).
+
+    `created` is True only on the first-ever sign-in (row inserted), so
+    callers can trigger one-time onboarding side effects — the welcome
+    email — exactly once, never on later logins.
+    """
     existing = find_by_microsoft_id(microsoft_id)
 
     if existing:
@@ -43,7 +48,7 @@ def upsert_user(microsoft_id: str, email: str, name: str) -> dict:
             .eq("microsoft_id", microsoft_id)
             .execute()
         )
-        return result.data[0]
+        return result.data[0], False
 
     result = (
         get_db()
@@ -59,7 +64,7 @@ def upsert_user(microsoft_id: str, email: str, name: str) -> dict:
         )
         .execute()
     )
-    return result.data[0]
+    return result.data[0], True
 
 
 def get_by_id(user_id: str) -> dict | None:
