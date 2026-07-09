@@ -12,7 +12,7 @@ import logging
 from datetime import datetime, timezone
 
 import stripe
-from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
 
 from pydantic import BaseModel
@@ -30,6 +30,7 @@ from config import (
 )
 from database import get_db
 from models import user as user_model
+from utils import welcome_email
 from routers.auth import get_current_user
 
 logger = logging.getLogger(__name__)
@@ -154,7 +155,7 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
 # ─── 2. Webhook ─────────────────────────────────────────────────────────────
 
 @router.post("/webhook")
-async def stripe_webhook(request: Request):
+async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     """Verify and handle incoming Stripe webhook events."""
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
@@ -238,7 +239,22 @@ async def stripe_webhook(request: Request):
                 "month_reset_date": datetime.now(timezone.utc).date().isoformat(),
             })
 
+        # Grab email/name before the plan write (which doesn't touch them)
+        # for the one-time thank-you below.
+        upgraded = _get_user_from_db(user_id) if not already_processed else None
+
         db.table("users").update(update_payload).eq("id", user_id).execute()
+
+        # One-time upgrade thank-you email — rides the same replay guard as
+        # the quota re-anchor, so Stripe redeliveries can't send it twice.
+        # The user's only confirmation used to be Stripe's bare receipt.
+        if upgraded and upgraded.get("email"):
+            background_tasks.add_task(
+                welcome_email.send_upgrade_email,
+                upgraded["email"],
+                upgraded.get("name"),
+                plan,
+            )
 
         logger.info(
             "User %s upgraded to %s (%s)",

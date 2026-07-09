@@ -81,6 +81,92 @@ def test_first_name_fallback():
     assert _first_name("   ") == "there"
 
 
+# ── send_upgrade_email ──
+
+
+def test_upgrade_email_starter_quota_and_label():
+    from utils import welcome_email
+
+    with patch("utils.welcome_email.MAILERSEND_API_KEY", "key"), \
+         patch("utils.welcome_email.httpx.post") as post:
+        post.return_value = MagicMock(status_code=202, text="")
+        ok = welcome_email.send_upgrade_email("p@x.com", "Pay Er", "starter")
+
+    assert ok is True
+    payload = post.call_args.kwargs["json"]
+    assert "Starter" in payload["subject"]
+    assert "2,500" in payload["text"]
+
+
+def test_upgrade_email_pro_quota_and_label():
+    from utils import welcome_email
+
+    with patch("utils.welcome_email.MAILERSEND_API_KEY", "key"), \
+         patch("utils.welcome_email.httpx.post") as post:
+        post.return_value = MagicMock(status_code=202, text="")
+        welcome_email.send_upgrade_email("p@x.com", None, "pro")
+
+    payload = post.call_args.kwargs["json"]
+    assert "Pro" in payload["subject"]
+    assert "10,000" in payload["text"]
+    assert "Hi there," in payload["text"]  # missing name falls back
+
+
+# ── webhook wiring: upgrade email once, replay-guarded ──
+
+
+def _post_checkout(client, users_tbl, subscription):
+    event = {
+        "type": "checkout.session.completed",
+        "data": {
+            "object": {
+                "metadata": {"user_id": "u-42"},
+                "customer": "cus_x",
+                "subscription": subscription,
+            }
+        },
+    }
+    fake_sub = {"items": {"data": [{"price": {"id": "price_whatever"}}]}}
+    with patch("routers.billing.stripe.Webhook.construct_event", return_value=event), \
+         patch("routers.billing.stripe.Subscription.retrieve", return_value=fake_sub), \
+         patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"), \
+         patch("routers.billing.welcome_email.send_upgrade_email") as send:
+        resp = client.post(
+            "/billing/webhook",
+            content=b"{}",
+            headers={"stripe-signature": "sig"},
+        )
+    return resp, send
+
+
+def test_first_checkout_sends_upgrade_email(client, fake_db):
+    users_tbl = FakeQueryBuilder(
+        data=[{"id": "u-42", "email": "payer@x.com", "name": "Pay Er"}]
+    )  # no stored subscription id → first processing
+    fake_db.set_table("users", users_tbl)
+
+    resp, send = _post_checkout(client, users_tbl, subscription="sub_new")
+
+    assert resp.status_code == 200
+    send.assert_called_once_with("payer@x.com", "Pay Er", "pro")
+
+
+def test_checkout_replay_does_not_resend_upgrade_email(client, fake_db):
+    users_tbl = FakeQueryBuilder(
+        data=[{
+            "id": "u-42",
+            "email": "payer@x.com",
+            "stripe_subscription_id": "sub_dup",
+        }]
+    )
+    fake_db.set_table("users", users_tbl)
+
+    resp, send = _post_checkout(client, users_tbl, subscription="sub_dup")
+
+    assert resp.status_code == 200
+    send.assert_not_called()
+
+
 # ── endpoint wiring: welcome scheduled exactly once, for NEW users only ──
 
 
