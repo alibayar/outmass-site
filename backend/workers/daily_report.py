@@ -9,7 +9,14 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 
-from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
+from config import (
+    POSTHOG_API_HOST,
+    POSTHOG_PERSONAL_API_KEY,
+    POSTHOG_PROJECT_ID,
+    REPORT_HEALTH_URL,
+    TELEGRAM_BOT_TOKEN,
+    TELEGRAM_CHAT_ID,
+)
 from database import get_db
 from workers.celery_app import celery
 
@@ -18,6 +25,80 @@ logger = logging.getLogger(__name__)
 # Plan prices (must stay in sync with Stripe)
 PRICE_STARTER = 9
 PRICE_PRO = 19
+
+# Failure-class telemetry events the 12h error check scans (they live in
+# PostHog, not Supabase). HARD ones flag the section ⚠️; INFO ones are shown
+# but don't alarm — a lone oauth_failed is usually just a user closing the
+# Microsoft popup, and uninstalls are churn signal rather than breakage.
+HARD_ERROR_EVENTS = [
+    "$exception",
+    "send_failed",
+    "csv_upload_failed",
+    "test_send_failed",
+    "ai_email_generate_failed",
+]
+INFO_ERROR_EVENTS = ["oauth_failed", "extension_uninstall"]
+
+
+def _error_check_lines() -> list[str]:
+    """The "any errors in the last 12h?" section, from PostHog. Never raises —
+    the report must go out even when the check itself is broken."""
+    if not POSTHOG_PERSONAL_API_KEY:
+        return ["🩺 Errors (12h): check not configured"]
+
+    quoted = ", ".join(f"'{e}'" for e in HARD_ERROR_EVENTS + INFO_ERROR_EVENTS)
+    hogql = (
+        "SELECT event, count() AS n, count(DISTINCT distinct_id) AS users "
+        "FROM events WHERE timestamp >= now() - INTERVAL 12 HOUR "
+        f"AND event IN ({quoted}) GROUP BY event ORDER BY n DESC"
+    )
+    try:
+        resp = httpx.post(
+            f"{POSTHOG_API_HOST}/api/projects/{POSTHOG_PROJECT_ID}/query/",
+            headers={"Authorization": f"Bearer {POSTHOG_PERSONAL_API_KEY}"},
+            json={"query": {"kind": "HogQLQuery", "query": hogql}},
+            timeout=15.0,
+        )
+        if resp.status_code != 200:
+            logger.warning(
+                "PostHog error-check returned %s: %s",
+                resp.status_code,
+                resp.text[:200],
+            )
+            return ["🩺 Errors (12h): check unavailable"]
+        rows = resp.json().get("results") or []
+    except Exception as e:  # noqa: BLE001
+        logger.warning("PostHog error-check failed: %s", e)
+        return ["🩺 Errors (12h): check unavailable"]
+
+    if not rows:
+        return ["🩺 Errors (12h): ✅ none"]
+
+    has_hard = any(r[0] in HARD_ERROR_EVENTS for r in rows)
+    lines = [
+        "🩺 Errors (12h): ⚠️" if has_hard else "🩺 Errors (12h): ✅ no hard errors"
+    ]
+    for i, row in enumerate(rows):
+        event, n, users = row[0], int(row[1]), int(row[2])
+        branch = "└─" if i == len(rows) - 1 else "├─"
+        info = "" if event in HARD_ERROR_EVENTS else " (info)"
+        plural = "s" if users != 1 else ""
+        lines.append(f"{branch} {event} ×{n} ({users} user{plural}){info}")
+    return lines
+
+
+def _health_line() -> list[str]:
+    """Optional "is the API up" ping. Empty when not configured. Never raises."""
+    if not REPORT_HEALTH_URL:
+        return []
+    try:
+        resp = httpx.get(REPORT_HEALTH_URL, timeout=8.0)
+        if resp.status_code == 200:
+            return ["🌐 API: ✅ up"]
+        return [f"🌐 API: 🔴 HTTP {resp.status_code}"]
+    except Exception as e:  # noqa: BLE001
+        logger.warning("Report health ping failed: %s", e)
+        return ["🌐 API: 🔴 unreachable"]
 
 
 def _count(query):
@@ -111,7 +192,10 @@ def build_report() -> str:
         f"├─ Emails sent: {sent}",
         f"├─ Opens: {opens} ({open_rate}%)",
         f"└─ Clicks: {clicks} ({click_rate}%)",
+        "",
     ]
+    lines += _error_check_lines()
+    lines += _health_line()
     return "\n".join(lines)
 
 

@@ -218,3 +218,90 @@ def test_send_daily_report_survives_telegram_error(fake_db):
         from workers.daily_report import send_daily_report
         # Should not raise
         send_daily_report()
+
+
+# ── 12h error check (PostHog) + health line ──
+
+
+def test_report_says_error_check_not_configured_by_default(fake_db):
+    """Without a PostHog key (the test env), the report still builds and says
+    the check isn't configured — and makes no network call."""
+    _setup_fake_db(fake_db)
+
+    from workers.daily_report import build_report
+    msg = build_report()
+
+    assert "Errors (12h): check not configured" in msg
+
+
+def test_error_check_clean_window():
+    from workers import daily_report
+
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": []}
+        )
+        lines = daily_report._error_check_lines()
+
+    assert lines == ["🩺 Errors (12h): ✅ none"]
+    # The HogQL must scan the 12h window and the failure-class events
+    q = post.call_args.kwargs["json"]["query"]["query"]
+    assert "INTERVAL 12 HOUR" in q
+    assert "send_failed" in q and "$exception" in q
+
+
+def test_error_check_flags_hard_errors_and_marks_info():
+    from workers import daily_report
+
+    rows = [["send_failed", 2, 1], ["oauth_failed", 3, 2]]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": rows}
+        )
+        lines = daily_report._error_check_lines()
+
+    assert lines[0] == "🩺 Errors (12h): ⚠️"
+    assert "send_failed ×2 (1 user)" in lines[1]
+    assert "oauth_failed ×3 (2 users) (info)" in lines[2]
+
+
+def test_error_check_soft_only_is_not_alarming():
+    from workers import daily_report
+
+    rows = [["oauth_failed", 1, 1]]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": rows}
+        )
+        lines = daily_report._error_check_lines()
+
+    assert lines[0] == "🩺 Errors (12h): ✅ no hard errors"
+
+
+def test_error_check_survives_posthog_outage():
+    from workers import daily_report
+
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post", side_effect=Exception("down")):
+        lines = daily_report._error_check_lines()
+
+    assert lines == ["🩺 Errors (12h): check unavailable"]
+
+
+def test_health_line_up_and_down():
+    from workers import daily_report
+
+    with patch("workers.daily_report.REPORT_HEALTH_URL", "https://x/"), \
+         patch("workers.daily_report.httpx.get") as get:
+        get.return_value = MagicMock(status_code=200)
+        assert daily_report._health_line() == ["🌐 API: ✅ up"]
+
+    with patch("workers.daily_report.REPORT_HEALTH_URL", "https://x/"), \
+         patch("workers.daily_report.httpx.get", side_effect=Exception("net")):
+        assert daily_report._health_line() == ["🌐 API: 🔴 unreachable"]
+
+    # Not configured → omitted entirely
+    assert daily_report._health_line() == []

@@ -131,6 +131,17 @@ TELEGRAM_CHAT_ID = os.getenv("TELEGRAM_CHAT_ID", "")
 # for verifying the report without waiting for the cron. Disabled when empty.
 REPORT_TRIGGER_KEY = os.getenv("REPORT_TRIGGER_KEY", "")
 
+# ── Report error-check (PostHog Query API) + health ping ──
+# Personal API key (scope: Query Read) so the twice-daily Telegram report can
+# answer "any error events in the last 12h?" from PostHog. Set on the WORKER
+# service (env vars are per-service — the Telegram lesson). Empty → the report
+# prints "check not configured" and makes no API call (tests rely on this).
+POSTHOG_PERSONAL_API_KEY = os.getenv("POSTHOG_PERSONAL_API_KEY", "")
+POSTHOG_PROJECT_ID = os.getenv("POSTHOG_PROJECT_ID", "152466")
+POSTHOG_API_HOST = os.getenv("POSTHOG_API_HOST", "https://eu.posthog.com")
+# Optional public URL the report pings for an "API up" line. Empty → omitted.
+REPORT_HEALTH_URL = os.getenv("REPORT_HEALTH_URL", "")
+
 # ── MailerSend (transactional email) ──
 MAILERSEND_API_KEY = os.getenv("MAILERSEND_API_KEY", "")
 MAILERSEND_FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL", "support@getoutmass.com")
