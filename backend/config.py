@@ -142,6 +142,15 @@ POSTHOG_API_HOST = os.getenv("POSTHOG_API_HOST", "https://eu.posthog.com")
 # Optional public URL the report pings for an "API up" line. Empty → omitted.
 REPORT_HEALTH_URL = os.getenv("REPORT_HEALTH_URL", "")
 
+# Owner/test account emails (comma-separated) excluded from the report's
+# paying/gift counts so MRR reflects real revenue. Env, not code — this repo
+# serves the public site, so personal addresses stay out of it.
+REPORT_OWNER_EMAILS = [
+    e.strip().lower()
+    for e in os.getenv("REPORT_OWNER_EMAILS", "").split(",")
+    if e.strip()
+]
+
 # ── MailerSend (transactional email) ──
 MAILERSEND_API_KEY = os.getenv("MAILERSEND_API_KEY", "")
 MAILERSEND_FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL", "support@getoutmass.com")

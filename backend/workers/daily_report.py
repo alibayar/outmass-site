@@ -14,6 +14,7 @@ from config import (
     POSTHOG_PERSONAL_API_KEY,
     POSTHOG_PROJECT_ID,
     REPORT_HEALTH_URL,
+    REPORT_OWNER_EMAILS,
     TELEGRAM_BOT_TOKEN,
     TELEGRAM_CHAT_ID,
 )
@@ -135,15 +136,60 @@ def build_report() -> str:
     active_30d = _count(
         db.table("users").select("id").gte("last_activity_at", d30_iso)
     )
-    new_paid_today = _count(
-        db.table("users")
-        .select("id")
-        .in_("plan", ["starter", "pro"])
-        .gte("plan_updated_at", today_iso)
-    )
 
-    # MRR
-    mrr = starter * PRICE_STARTER + pro * PRICE_PRO
+    # ── PAYING vs plan-column counts ──
+    # The plan column alone lies about revenue: gift/comp rows (Miriam, Alan,
+    # Surendra — manual_promo users) and the owner's own accounts also carry
+    # 'starter'/'pro'. A real payer = paid plan + a live Stripe subscription
+    # id (gifts deliberately have it NULL). Owner emails come from the
+    # REPORT_OWNER_EMAILS env so test accounts never inflate MRR.
+    def _paid_rows(plan_name):
+        q = (
+            db.table("users")
+            .select("id, email")
+            .eq("plan", plan_name)
+            .not_.is_("stripe_subscription_id", "null")
+        )
+        rows = q.execute().data or []
+        return [
+            r for r in rows
+            if (r.get("email") or "").lower() not in REPORT_OWNER_EMAILS
+        ]
+
+    paying_starter = len(_paid_rows("starter"))
+    paying_pro = len(_paid_rows("pro"))
+
+    gift_rows = (
+        db.table("users")
+        .select("id, email")
+        .in_("plan", ["starter", "pro"])
+        .is_("stripe_subscription_id", "null")
+        .execute()
+        .data
+        or []
+    )
+    gifts_active = len([
+        r for r in gift_rows
+        if (r.get("email") or "").lower() not in REPORT_OWNER_EMAILS
+    ])
+
+    new_paid_rows = (
+        db.table("users")
+        .select("id, email")
+        .in_("plan", ["starter", "pro"])
+        .not_.is_("stripe_subscription_id", "null")
+        .gte("plan_updated_at", today_iso)
+        .execute()
+        .data
+        or []
+    )
+    new_paid_today = len([
+        r for r in new_paid_rows
+        if (r.get("email") or "").lower() not in REPORT_OWNER_EMAILS
+    ])
+
+    # MRR — paying subscribers only
+    mrr = paying_starter * PRICE_STARTER + paying_pro * PRICE_PRO
 
     # Email activity today
     sent = _count(
@@ -184,9 +230,10 @@ def build_report() -> str:
         f"├─ Starter: {starter}",
         f"└─ Pro: {pro}",
         "",
-        f"💰 MRR: ${mrr}/mo (+{new_paid_today} paid today)",
-        f"├─ Starter: {starter} × ${PRICE_STARTER} = ${starter * PRICE_STARTER}",
-        f"└─ Pro: {pro} × ${PRICE_PRO} = ${pro * PRICE_PRO}",
+        f"💰 MRR: ${mrr}/mo — paying only (+{new_paid_today} paid today)",
+        f"├─ Starter: {paying_starter} × ${PRICE_STARTER} = ${paying_starter * PRICE_STARTER}",
+        f"├─ Pro: {paying_pro} × ${PRICE_PRO} = ${paying_pro * PRICE_PRO}",
+        f"└─ Gifts/comp active: {gifts_active} (not counted)",
         "",
         "📧 Activity (today, UTC)",
         f"├─ Emails sent: {sent}",

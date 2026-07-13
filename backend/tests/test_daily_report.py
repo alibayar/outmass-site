@@ -19,20 +19,55 @@ def _setup_fake_db(
     free=210,
     starter=28,
     pro=9,
+    paying_starter=None,
+    paying_pro=None,
+    gifts=0,
+    new_paid=0,
     emails_sent=1847,
     opens=743,
     clicks=128,
 ):
-    """Wire up fake_db tables so the report queries return expected counts."""
-    # users table: we use multiple selects with .eq(plan, ...) so
-    # counts come from len(data). We set up different builders per context
-    # by using a stateful wrapper that tracks .eq() calls.
+    """Wire up fake_db tables so the report queries return expected counts.
 
+    paying_* default to the plan-column counts (everyone pays) so the older
+    tests keep their expectations; set them lower to model gift/comp rows.
+    """
+    if paying_starter is None:
+        paying_starter = starter
+    if paying_pro is None:
+        paying_pro = pro
+
+    # users table: the report runs several differently-filtered selects on the
+    # same table, so this stateful builder decodes the filter chain (.eq plan /
+    # .not_.is_ sub-id / .in_ plans / .gte dates) and returns matching counts.
     class UsersBuilder(FakeQueryBuilder):
         def __init__(self):
             super().__init__([])
+            self._reset()
+
+        def _reset(self):
             self._plan_filter = None
             self._after_filter = None
+            self._paid_after = None
+            self._plans = None
+            self._sub = None
+            self._negate = False
+
+        @property
+        def not_(self):
+            self._negate = True
+            return self
+
+        def is_(self, field, value):
+            if field == "stripe_subscription_id":
+                self._sub = "not_null" if self._negate else "null"
+            self._negate = False
+            return self
+
+        def in_(self, field, values):
+            if field == "plan":
+                self._plans = list(values)
+            return self
 
         def eq(self, field, value):
             if field == "plan":
@@ -42,22 +77,39 @@ def _setup_fake_db(
         def gte(self, field, value):
             if field == "created_at":
                 self._after_filter = value
+            if field == "plan_updated_at":
+                self._paid_after = value
             return self
 
+        def _rows(self, prefix, n):
+            return [
+                {"id": f"{prefix}-{i}", "email": f"{prefix}-{i}@x.com"}
+                for i in range(n)
+            ]
+
         def execute(self):
-            if self._plan_filter == "free":
-                data = [{"id": f"u-free-{i}"} for i in range(free)]
+            if self._sub == "not_null":
+                if self._plan_filter == "starter":
+                    data = self._rows("u-paystarter", paying_starter)
+                elif self._plan_filter == "pro":
+                    data = self._rows("u-paypro", paying_pro)
+                elif self._plans and self._paid_after:
+                    data = self._rows("u-newpaid", new_paid)
+                else:
+                    data = []
+            elif self._sub == "null" and self._plans:
+                data = self._rows("u-gift", gifts)
+            elif self._plan_filter == "free":
+                data = self._rows("u-free", free)
             elif self._plan_filter == "starter":
-                data = [{"id": f"u-starter-{i}"} for i in range(starter)]
+                data = self._rows("u-starter", starter)
             elif self._plan_filter == "pro":
-                data = [{"id": f"u-pro-{i}"} for i in range(pro)]
+                data = self._rows("u-pro", pro)
             elif self._after_filter:
-                data = [{"id": f"u-new-{i}"} for i in range(new_today)]
+                data = self._rows("u-new", new_today)
             else:
-                data = [{"id": f"u-{i}"} for i in range(total_users)]
-            # Reset so same builder can be reused
-            self._plan_filter = None
-            self._after_filter = None
+                data = self._rows("u", total_users)
+            self._reset()
             return MagicMock(data=data, count=len(data))
 
     class EventsBuilder(FakeQueryBuilder):
@@ -218,6 +270,42 @@ def test_send_daily_report_survives_telegram_error(fake_db):
         from workers.daily_report import send_daily_report
         # Should not raise
         send_daily_report()
+
+
+# ── MRR counts PAYING subscribers only (gifts/comp excluded) ──
+
+
+def test_mrr_counts_only_paying_subscribers(fake_db):
+    """THE Ali regression: plan column said 4 starter + 4 pro, but only 3
+    starters actually pay (rest = gifts/own accounts). MRR must be 3 × $9."""
+    _setup_fake_db(
+        fake_db,
+        starter=4, paying_starter=3,
+        pro=4, paying_pro=0,
+        gifts=5,
+    )
+
+    from workers.daily_report import build_report
+    msg = build_report()
+
+    assert "MRR: $27/mo" in msg
+    assert "Starter: 3 × $9 = $27" in msg
+    assert "Pro: 0 × $19 = $0" in msg
+    assert "Gifts/comp active: 5" in msg
+
+
+def test_mrr_excludes_owner_accounts(fake_db):
+    """Rows whose email is in REPORT_OWNER_EMAILS never count as paying."""
+    _setup_fake_db(fake_db, starter=3, paying_starter=3, pro=0, paying_pro=0)
+
+    with patch(
+        "workers.daily_report.REPORT_OWNER_EMAILS", ["u-paystarter-0@x.com"]
+    ):
+        from workers.daily_report import build_report
+        msg = build_report()
+
+    assert "Starter: 2 × $9 = $18" in msg
+    assert "MRR: $18/mo" in msg
 
 
 # ── 12h error check (PostHog) + health line ──
