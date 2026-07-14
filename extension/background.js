@@ -353,6 +353,13 @@ async function backendFetch(endpoint, options) {
     ...(options?.headers || {}),
   };
 
+  // A request that can't reach the server otherwise hangs at the browser's
+  // mercy (a zh-CN user watched Send spin ~8s per click against a network
+  // that blocked our host, 2026-07-14). Cap it so callers fail fast and can
+  // tell the user it's a CONNECTION problem.
+  const controller = new AbortController();
+  const timeoutTimer = setTimeout(() => controller.abort(), 20000);
+
   try {
     const resp = await fetch(OUTMASS_BACKEND_URL + endpoint, {
       method: options?.method || "GET",
@@ -363,6 +370,7 @@ async function backendFetch(endpoint, options) {
       // account's data after switching accounts in the same browser.
       cache: "no-store",
       body: options?.body ? JSON.stringify(options.body) : undefined,
+      signal: controller.signal,
     });
 
     if (!resp.ok) {
@@ -408,7 +416,19 @@ async function backendFetch(endpoint, options) {
     _lastBackendOk = Date.now();
     return { data: await resp.json(), error: null };
   } catch (err) {
-    return { error: err.message };
+    // fetch() rejecting means NO HTTP response ever arrived — offline, DNS
+    // failure, a firewall/VPN/national filter blocking our host, or the 20s
+    // timeout above. Flag it so the UI can say "connection problem, not your
+    // account/plan" — a real user misread this exact failure as a paywall,
+    // clicked Upgrade, then deleted their account.
+    const timedOut = err && err.name === "AbortError";
+    return {
+      error: timedOut ? "network_timeout" : "network_unreachable",
+      network: true,
+      detail: String((err && err.message) || err),
+    };
+  } finally {
+    clearTimeout(timeoutTimer);
   }
 }
 

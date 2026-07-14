@@ -688,7 +688,13 @@
     "message": "CSV ファイルが大きすぎます(最大 5 MB)。"
   },
   "csvErrEncoding": {
-    "message": "CSV エンコーディングを認識できません。UTF-8 で保存してください。"
+    "message": "このファイルは UTF-8 で保存されていないため、文字を正しく読み取れません。Excel で「ファイル > 名前を付けて保存 > CSV UTF-8（コンマ区切り）」を選び、そのファイルをアップロードしてください。"
+  },
+  "alertBackendUnreachable": {
+    "message": "現在 OutMass のサーバーに接続できません。これは接続の問題であり、アカウントやプランの問題ではありません。ネットワーク、VPN、ファイアウォールを確認して、しばらくしてからもう一度お試しください。"
+  },
+  "netUnreachableBanner": {
+    "message": "OutMass サーバーに接続できません。送信や保存は機能しません。接続、VPN、ファイアウォールを確認してください。"
   },
   "csvErrNoEmailColumn": {
     "message": "CSV には 'email' 列が必要です。"

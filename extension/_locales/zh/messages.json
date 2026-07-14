@@ -688,7 +688,13 @@
     "message": "CSV 文件过大(最大 5 MB)。"
   },
   "csvErrEncoding": {
-    "message": "无法识别 CSV 编码。请另存为 UTF-8。"
+    "message": "此文件未以 UTF-8 编码保存，字符无法正确读取。请在 Excel 中：文件 > 另存为 > 选择“CSV UTF-8 (逗号分隔)”，然后上传该文件。"
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass 目前无法连接到服务器。这是网络连接问题，与您的帐户或套餐无关。请检查网络、VPN 或防火墙，稍后重试。"
+  },
+  "netUnreachableBanner": {
+    "message": "无法连接 OutMass 服务器——发送和保存将无法使用。请检查网络、VPN 或防火墙。"
   },
   "csvErrNoEmailColumn": {
     "message": "CSV 必须包含 'email' 列。"

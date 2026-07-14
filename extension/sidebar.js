@@ -158,6 +158,67 @@
     return false;
   }
 
+  // ── Backend connectivity (unreachable-network detection) ──
+  // Some networks can't reach our backend host at all (offline, firewall,
+  // VPN, national filters). A zh-CN user spent 30 minutes composing, had
+  // every server call die silently, misread the generic error as a paywall
+  // and deleted their account (2026-07-14). The banner + honest alert turn
+  // that 30-minute mystery into a 5-second diagnosis.
+  var _netBannerTimer = null;
+
+  function showConnectivityBanner() {
+    var el = document.getElementById("net-banner");
+    if (!el) {
+      el = document.createElement("div");
+      el.id = "net-banner";
+      el.style.cssText =
+        "position:sticky;top:0;z-index:99999;background:#fde7e9;color:#a4262c;" +
+        "font-size:12px;line-height:1.4;padding:8px 12px;border-bottom:1px solid #f1bbbf;";
+      el.textContent = t("netUnreachableBanner");
+      document.body.insertBefore(el, document.body.firstChild);
+    }
+    el.style.display = "block";
+    // Re-check every 30s and clear the banner as soon as we're reachable.
+    if (!_netBannerTimer) {
+      _netBannerTimer = setInterval(function () {
+        try {
+          chrome.runtime.sendMessage({ type: "HEALTH_CHECK" }, function (r) {
+            if (chrome.runtime.lastError) return;
+            if (r && r.ok) {
+              clearInterval(_netBannerTimer);
+              _netBannerTimer = null;
+              var banner = document.getElementById("net-banner");
+              if (banner) banner.style.display = "none";
+            }
+          });
+        } catch (e) { /* extension context gone */ }
+      }, 30000);
+    }
+  }
+
+  // Returns true when resp is a fetch-level failure (no HTTP response at
+  // all — background tags these with network:true). Shows the honest
+  // "connection, not your plan" alert so it can never be read as a paywall.
+  function handleNetworkFailure(resp, btn) {
+    if (!resp || !resp.network) return false;
+    if (btn) {
+      btn.textContent = t("btnSend");
+      btn.disabled = false;
+    }
+    showConnectivityBanner();
+    alert(t("alertBackendUnreachable"));
+    return true;
+  }
+
+  // Boot ping: if this network can't reach us, say so BEFORE the user
+  // invests half an hour in a campaign that can never send.
+  try {
+    chrome.runtime.sendMessage({ type: "HEALTH_CHECK" }, function (r) {
+      if (chrome.runtime.lastError) return;
+      if (!r || !r.ok) showConnectivityBanner();
+    });
+  } catch (e) { /* extension context gone */ }
+
   function pollReauthState() {
     chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
       // Always read the session-expired flag — even a failed /settings
@@ -526,18 +587,45 @@
       track("csv_upload_failed", { error_code: "too_large" });
       return;
     }
+    // Excel's default "CSV" save uses the system codepage, not UTF-8 \u2014 on
+    // Chinese systems that's GBK/GB18030 (a zh-CN user hit 7 straight
+    // invalid_encoding rejections before churning, 2026-07-14). Try UTF-8
+    // first, then the CJK codepages ordered by the UI language, and accept
+    // the first decode with no replacement characters. Email addresses are
+    // ASCII and identical under every candidate, so a wrong pick can only
+    // affect display-name columns \u2014 visible in the preview before sending.
+    function decodeCsvBuffer(buf) {
+      var candidates = ["utf-8", "gb18030", "big5"];
+      var ui = "";
+      try { ui = (chrome.i18n.getUILanguage() || "").toLowerCase(); } catch (e) { /* ignore */ }
+      if (ui.indexOf("zh-tw") === 0 || ui.indexOf("zh-hk") === 0) {
+        candidates = ["utf-8", "big5", "gb18030"];
+      }
+      for (var i = 0; i < candidates.length; i++) {
+        try {
+          var text = new TextDecoder(candidates[i]).decode(buf);
+          if (text.indexOf("\uFFFD") < 0) {
+            return { text: text, encoding: candidates[i] };
+          }
+        } catch (e) { /* decoder unavailable \u2014 try the next one */ }
+      }
+      return null;
+    }
+
     var reader = new FileReader();
     reader.onload = function (e) {
-      var text = e.target.result;
-      // A.3: strip UTF-8 BOM
-      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
-      // A.3: reject botched encoding (replacement chars)
-      if (text.indexOf("\uFFFD") >= 0) {
+      var decoded = decodeCsvBuffer(e.target.result);
+      // A.3: reject files no candidate encoding can decode cleanly. The
+      // alert names the concrete fix (Excel's "CSV UTF-8" save option).
+      if (!decoded) {
         alert(t("csvErrEncoding"));
         track("csv_upload_failed", { error_code: "invalid_encoding" });
         return;
       }
-      csvRawText = text; // keep (normalized) raw CSV for backend upload
+      var text = decoded.text;
+      // A.3: strip UTF-8 BOM if the decoder left one
+      if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+      csvRawText = text; // keep (normalized, now-UTF-8) raw CSV for backend upload
       var lines = text.trim().split(/\r?\n/);
       var headers = parseCSVLine(lines[0]).map(function (h) { return h.trim(); });
       var lowerHeaders = headers.map(function (h) { return h.toLowerCase(); });
@@ -611,9 +699,10 @@
         recipient_count: rows.length,
         duplicates_removed: dupCount,
         empty_email_skipped: emptyEmailCount,
+        csv_encoding: decoded.encoding,
       });
     };
-    reader.readAsText(file, "UTF-8");
+    reader.readAsArrayBuffer(file);
   }
 
   btnClearCsv.addEventListener("click", function () {
@@ -1127,6 +1216,16 @@
       },
       function (createResp) {
         if (!createResp || createResp.error) {
+          // Network-level failure (request never reached the server): honest
+          // "connection problem, not your plan" message — never the generic
+          // error a user could misread as a paywall.
+          if (handleNetworkFailure(createResp, btnSend)) {
+            track("send_failed", {
+              recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+              error_code: "create:" + createResp.error,
+            });
+            return;
+          }
           // Detect Pro-gated feature (e.g. scheduled sending on Free plan)
           // and show a friendlier upgrade prompt instead of raw error code.
           var detail = createResp && createResp.detail;
@@ -1157,9 +1256,12 @@
             btnSend.textContent = t("btnSend");
             btnSend.disabled = false;
           }
+          // Carry the REAL error so analytics can distinguish auth vs
+          // validation vs server failures — the flat "create_failed" label
+          // made a whole incident undiagnosable from telemetry alone.
           track("send_failed", {
             recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
-            error_code: "create_failed",
+            error_code: ("create:" + String((createResp && createResp.error) || "no_response")).slice(0, 64),
           });
           return;
         }
@@ -1179,6 +1281,13 @@
           },
           function (uploadResp) {
             if (!uploadResp || uploadResp.error) {
+              if (handleNetworkFailure(uploadResp, btnSend)) {
+                track("send_failed", {
+                  recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+                  error_code: "upload:" + uploadResp.error,
+                });
+                return;
+              }
               // A 401 here would orphan the campaign we just created (duplicate
               // risk on retry). Surface the reconnect banner instead of a raw
               // error so the user re-auths and resumes cleanly.
@@ -1190,7 +1299,7 @@
               }
               track("send_failed", {
                 recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
-                error_code: "upload_failed",
+                error_code: ("upload:" + String((uploadResp && uploadResp.error) || "no_response")).slice(0, 64),
               });
               return;
             }
@@ -1312,6 +1421,13 @@
           return;
         }
         if (sendResp.error) {
+          if (handleNetworkFailure(sendResp, btnSend)) {
+            track("send_failed", {
+              recipient_count: _recipientCount,
+              error_code: "send:" + sendResp.error,
+            });
+            return;
+          }
           if (sendResp.status === 402 || sendResp.error === "limit_exceeded") {
             btnSend.textContent = t("btnSend");
             btnSend.disabled = false;

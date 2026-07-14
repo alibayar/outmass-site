@@ -2,6 +2,12 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.24 — 2026-07-14
+
+- **CSV files from Excel now work in more encodings.** Excel's default "CSV" save on Chinese (and some other) systems isn't UTF-8, which OutMass used to reject outright. OutMass now auto-detects and reads GBK/GB18030 and Big5 files too — and when a file truly can't be read, the error finally tells you the exact fix: save it as "CSV UTF-8 (Comma delimited)" in Excel. (All 11 languages.)
+- **Honest message when OutMass can't reach its servers.** If your network, VPN or firewall blocks the connection, sending used to fail with a generic error that looked like an account or plan problem. You now get a clear "this is a connection issue — not your plan" message, and the panel shows a banner as soon as it detects the servers are unreachable (it re-checks and disappears by itself once the connection is back).
+- Requests that can't get through now stop after 20 seconds instead of hanging, and failures are reported with their real cause so we can help faster if you contact support.
+
 ## v0.1.23 — 2026-07-08
 
 - OutMass now works on Microsoft's **new Outlook web address** (outlook.cloud.microsoft). Microsoft has started moving business accounts there automatically — on moved accounts the OutMass panel and the corner button never appeared, and "Open Campaign Panel" just opened a plain Outlook window. Both now work on the new address.

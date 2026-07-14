@@ -688,7 +688,13 @@
     "message": "CSV-Datei zu gross (max. 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "CSV-Kodierung nicht erkannt. Als UTF-8 speichern."
+    "message": "Diese Datei ist nicht als UTF-8 gespeichert; Zeichen koennen nicht korrekt gelesen werden. In Excel: Datei > Speichern unter > 'CSV UTF-8 (durch Trennzeichen getrennt)' waehlen und diese Datei hochladen."
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass kann seine Server derzeit nicht erreichen. Das ist ein Verbindungsproblem — kein Problem mit Ihrem Konto oder Tarif. Pruefen Sie Internetverbindung, VPN oder Firewall und versuchen Sie es gleich erneut."
+  },
+  "netUnreachableBanner": {
+    "message": "OutMass-Server nicht erreichbar — Senden und Speichern funktionieren nicht. Verbindung, VPN oder Firewall pruefen."
   },
   "csvErrNoEmailColumn": {
     "message": "CSV muss eine 'email'-Spalte enthalten."

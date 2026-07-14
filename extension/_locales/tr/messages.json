@@ -688,7 +688,13 @@
     "message": "CSV cok buyuk (maks 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "CSV kodlamasi tanimlanamadi. Dosyayi UTF-8 olarak kaydedin."
+    "message": "Bu dosya UTF-8 olarak kaydedilmemis; karakterler dogru okunamiyor. Excel'de: Dosya > Farkli Kaydet > 'CSV UTF-8 (Virgulle ayrilmis)' secin ve o dosyayi yukleyin."
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass sunucularina su anda ulasilamiyor. Bu bir baglanti sorunu — hesabiniz veya planinizla ilgili degil. Internet baglantinizi, VPN veya guvenlik duvarinizi kontrol edip birazdan tekrar deneyin."
+  },
+  "netUnreachableBanner": {
+    "message": "OutMass sunucularina ulasilamiyor — gonderme ve kaydetme calismaz. Baglantinizi, VPN veya guvenlik duvarinizi kontrol edin."
   },
   "csvErrNoEmailColumn": {
     "message": "CSV 'email' sutunu icermeli."

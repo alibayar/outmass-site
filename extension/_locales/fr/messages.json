@@ -688,7 +688,13 @@
     "message": "Fichier CSV trop volumineux (max 5 Mo)."
   },
   "csvErrEncoding": {
-    "message": "Encodage CSV non reconnu. Enregistrez en UTF-8."
+    "message": "Ce fichier n'est pas enregistre en UTF-8 ; les caracteres ne peuvent pas etre lus correctement. Dans Excel : Fichier > Enregistrer sous > choisissez 'CSV UTF-8 (delimite par des virgules)', puis importez ce fichier."
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass ne peut pas joindre ses serveurs pour le moment. C'est un probleme de connexion — pas un probleme de compte ou d'abonnement. Verifiez votre connexion, VPN ou pare-feu, puis reessayez dans un instant."
+  },
+  "netUnreachableBanner": {
+    "message": "Serveurs OutMass injoignables — l'envoi et l'enregistrement ne fonctionneront pas. Verifiez connexion, VPN ou pare-feu."
   },
   "csvErrNoEmailColumn": {
     "message": "Le CSV doit avoir une colonne 'email'."

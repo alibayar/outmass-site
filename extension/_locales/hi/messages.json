@@ -688,7 +688,13 @@
     "message": "CSV बहुत बड़ा है (अधिकतम 5 MB)।"
   },
   "csvErrEncoding": {
-    "message": "CSV एन्कोडिंग पहचानी नहीं गई। UTF-8 में सहेजें।"
+    "message": "यह फ़ाइल UTF-8 में सहेजी नहीं गई है, इसलिए अक्षर सही से पढ़े नहीं जा सकते। Excel में: File > Save As > 'CSV UTF-8 (Comma delimited)' चुनें, फिर वह फ़ाइल अपलोड करें।"
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass अभी अपने सर्वर तक नहीं पहुंच पा रहा है। यह कनेक्शन की समस्या है — आपके खाते या प्लान की नहीं। इंटरनेट, VPN या फ़ायरवॉल जांचें और थोड़ी देर में फिर प्रयास करें।"
+  },
+  "netUnreachableBanner": {
+    "message": "OutMass सर्वर तक पहुंच नहीं है — भेजना और सहेजना काम नहीं करेगा। कनेक्शन, VPN या फ़ायरवॉल जांचें।"
   },
   "csvErrNoEmailColumn": {
     "message": "CSV में 'email' कॉलम होना चाहिए।"

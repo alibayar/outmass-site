@@ -701,7 +701,13 @@
     "message": "CSV file too large (max 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "CSV encoding not recognized. Save the file as UTF-8."
+    "message": "This file isn't saved as UTF-8, so its characters can't be read correctly. In Excel: File > Save As > choose 'CSV UTF-8 (Comma delimited)', then upload that file."
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass can't reach its servers right now. This is a connection problem — not an issue with your account or plan. Check your internet connection, VPN or firewall, then try again in a moment."
+  },
+  "netUnreachableBanner": {
+    "message": "Can't reach OutMass servers — sending and saving won't work. Check your connection, VPN or firewall."
   },
   "csvErrNoEmailColumn": {
     "message": "CSV must have an 'email' column."

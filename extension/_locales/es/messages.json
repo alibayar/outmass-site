@@ -688,7 +688,13 @@
     "message": "Archivo CSV demasiado grande (max 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "Codificacion CSV no reconocida. Guarda como UTF-8."
+    "message": "Este archivo no esta guardado como UTF-8; los caracteres no se pueden leer correctamente. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y sube ese archivo."
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass no puede conectarse a sus servidores ahora mismo. Es un problema de conexion — no de tu cuenta ni de tu plan. Revisa tu conexion, VPN o firewall y vuelve a intentarlo en un momento."
+  },
+  "netUnreachableBanner": {
+    "message": "No se puede conectar con los servidores de OutMass — enviar y guardar no funcionaran. Revisa conexion, VPN o firewall."
   },
   "csvErrNoEmailColumn": {
     "message": "El CSV debe tener una columna 'email'."
