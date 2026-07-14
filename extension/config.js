@@ -4,7 +4,14 @@
 
 // Backend URL — production default, can be overridden via chrome.storage for dev
 // For local dev: chrome.storage.local.set({ backendUrl: "http://localhost:8000" })
-var OUTMASS_BACKEND_URL = "https://outmass-production.up.railway.app";
+//
+// Primary is our own domain: shared-platform hosts like *.railway.app are
+// blocked wholesale by some corporate filters and national firewalls, and
+// users on those networks could never even sign in (2026-07-14 incident).
+// The railway URL stays as an automatic fallback — if the primary is
+// unreachable at the network level, backendFetch retries there.
+var OUTMASS_BACKEND_URL = "https://api.getoutmass.com";
+var OUTMASS_BACKEND_FALLBACK_URL = "https://outmass-production.up.railway.app";
 
 // PostHog project public key (safe to ship in extension — public by design,
 // same value the backend uses in POSTHOG_API_KEY env var on Railway).

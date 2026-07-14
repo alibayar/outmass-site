@@ -12,6 +12,7 @@
     "https://outlook.cloud.microsoft/*",
     "https://graph.microsoft.com/*",
     "https://login.microsoftonline.com/*",
+    "https://api.getoutmass.com/*",
     "https://outmass-production.up.railway.app/*"
   ],
   "background": {

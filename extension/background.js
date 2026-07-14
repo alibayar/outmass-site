@@ -64,7 +64,7 @@ function isBenignError(message) {
 function reportError(message, stack, context) {
   if (isBenignError(message)) return; // harmless browser-internal noise
   try {
-    fetch(OUTMASS_BACKEND_URL + "/api/error-report", {
+    fetch(_backendBases()[0] + "/api/error-report", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -197,8 +197,10 @@ async function _startMSLoginInner(includeOneDrive) {
   // scopes are already approved from the original sign-in), and the
   // resulting token covers everything.
   const extId = chrome.runtime.id;
+  // Sticky base: if the primary host is blocked on this network, the OAuth
+  // flow must start from the base that actually answers.
   let authUrl =
-    OUTMASS_BACKEND_URL + "/auth/login?ext=" + encodeURIComponent(extId);
+    _backendBases()[0] + "/auth/login?ext=" + encodeURIComponent(extId);
   if (includeOneDrive) {
     authUrl += "&include_onedrive=true";
   }
@@ -333,7 +335,7 @@ async function warmBackend(timeoutMs) {
   try {
     const ctrl = new AbortController();
     const timer = setTimeout(function () { ctrl.abort(); }, timeoutMs || 15000);
-    await fetch(OUTMASS_BACKEND_URL + "/", { method: "GET", cache: "no-store", signal: ctrl.signal });
+    await fetch(_backendBases()[0] + "/", { method: "GET", cache: "no-store", signal: ctrl.signal });
     clearTimeout(timer);
     log("warmBackend: backend responded, retrying auth");
   } catch (e) {
@@ -348,6 +350,25 @@ async function warmBackend(timeoutMs) {
 // Track last successful backend contact for health check optimization
 var _lastBackendOk = 0;
 var HEALTH_CHECK_FRESHNESS_MS = 30000; // 30 seconds
+
+// Which backend base answered last. Primary is api.getoutmass.com; some
+// networks block one host or the other (railway.app is filtered outright in
+// places), so whichever base works becomes sticky for this service-worker
+// lifetime — users behind a blocked host pay the 20s timeout once, not on
+// every request. MV3 restarts the worker often, so stickiness self-heals.
+var _activeBackendBase = null;
+
+function _backendBases() {
+  var all = [OUTMASS_BACKEND_URL, OUTMASS_BACKEND_FALLBACK_URL].filter(
+    function (b, i, arr) { return b && arr.indexOf(b) === i; }
+  );
+  if (_activeBackendBase && all.indexOf(_activeBackendBase) > -1) {
+    return [_activeBackendBase].concat(all.filter(function (b) {
+      return b !== _activeBackendBase;
+    }));
+  }
+  return all;
+}
 
 async function backendFetch(endpoint, options) {
   let storage = await chrome.storage.local.get(["backendJwt"]);
@@ -366,6 +387,22 @@ async function backendFetch(endpoint, options) {
     ...(options?.headers || {}),
   };
 
+  // Try each base in order; fall through to the next ONLY on fetch-level
+  // (network:true) failures — an HTTP error is a real server answer and
+  // must be surfaced, not retried against the other host.
+  const bases = _backendBases();
+  let result;
+  for (const base of bases) {
+    result = await _backendFetchOnce(base, endpoint, headers, options);
+    if (!result.network) {
+      _activeBackendBase = base;
+      return result;
+    }
+  }
+  return result; // every base unreachable → last network-failure shape
+}
+
+async function _backendFetchOnce(base, endpoint, headers, options) {
   // A request that can't reach the server otherwise hangs at the browser's
   // mercy (a zh-CN user watched Send spin ~8s per click against a network
   // that blocked our host, 2026-07-14). Cap it so callers fail fast and can
@@ -374,7 +411,7 @@ async function backendFetch(endpoint, options) {
   const timeoutTimer = setTimeout(() => controller.abort(), 20000);
 
   try {
-    const resp = await fetch(OUTMASS_BACKEND_URL + endpoint, {
+    const resp = await fetch(base + endpoint, {
       method: options?.method || "GET",
       headers: headers,
       // Never serve authenticated API responses from the HTTP cache: the URL
@@ -862,7 +899,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         sendResponse(result);
       }).catch(function () {
         // Fallback: try without auth (feedback should work even if not logged in)
-        fetch(OUTMASS_BACKEND_URL + "/api/feedback", {
+        fetch(_backendBases()[0] + "/api/feedback", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(message.payload),
@@ -984,14 +1021,23 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
         sendResponse({ ok: true });
         break;
       }
-      fetch(OUTMASS_BACKEND_URL + "/", { method: "GET" })
-        .then(function (resp) {
-          if (resp.ok) _lastBackendOk = Date.now();
-          sendResponse({ ok: resp.ok });
-        })
-        .catch(function () {
-          sendResponse({ ok: false });
-        });
+      // "Reachable" means ANY base answers — the fallback host counts, and
+      // whichever responds becomes the sticky base for real API calls too.
+      (async function () {
+        var bases = _backendBases();
+        for (var i = 0; i < bases.length; i++) {
+          try {
+            var resp = await fetch(bases[i] + "/", { method: "GET" });
+            if (resp.ok) {
+              _lastBackendOk = Date.now();
+              _activeBackendBase = bases[i];
+              sendResponse({ ok: true });
+              return;
+            }
+          } catch (e) { /* try the next base */ }
+        }
+        sendResponse({ ok: false });
+      })();
       return true; // async sendResponse
 
     case "OPEN_OUTLOOK_WITH_SIDEBAR":

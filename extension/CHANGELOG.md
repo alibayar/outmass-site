@@ -6,6 +6,7 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 - **The panel now tells you when you haven't signed in yet.** Previously you could build an entire campaign without an account and only hit a cryptic English error at Send. Now a sign-in banner appears at the top of the panel from the start, and Send/Test explain in your own language that sending needs a Microsoft sign-in first (composing still works without one).
 - **New-install welcome page.** Right after installing, OutMass opens a short "your first campaign in 3 steps" page — where to find the panel in Outlook, how to sign in, and how to send — instead of leaving you to guess.
+- **OutMass now talks to its servers via our own domain (api.getoutmass.com), with the old address kept as an automatic fallback.** Some corporate and national networks block shared hosting domains outright — on those networks OutMass could never connect (or even sign in). Whichever address works on your network is used automatically. Because this adds a new permission, **Chrome/Edge may ask you to re-approve the extension with one click** — that's expected; scheduled sends and follow-ups run on our servers and are never interrupted.
 
 ## v0.1.24 — 2026-07-14
 
