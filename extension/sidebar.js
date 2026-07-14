@@ -1214,22 +1214,38 @@
   function _startSendFlowInner(campaignName, subject, body) {
     // Check schedule
     var scheduledFor = null;
+    var dailyCap = 0;
     if (scheduleCheckbox && scheduleCheckbox.checked) {
       var dtInput = document.getElementById("schedule-datetime");
       if (dtInput && dtInput.value) {
         scheduledFor = new Date(dtInput.value).toISOString();
+      }
+      var capInput = document.getElementById("daily-send-cap");
+      if (capInput && capInput.value) {
+        dailyCap = parseInt(capInput.value, 10) || 0;
+        if (dailyCap < 0) dailyCap = 0;
+      }
+      // Daily cap without an explicit start time: start in ~2 minutes —
+      // the server-side worker picks it up on its next beat and continues
+      // day by day until the list is done.
+      if (dailyCap > 0 && !scheduledFor) {
+        scheduledFor = new Date(Date.now() + 2 * 60 * 1000).toISOString();
       }
     }
 
     // Disable button, show progress
     btnSend.disabled = true;
     btnSend.textContent = scheduledFor ? t("alertScheduling") : t("alertPreparing");
-    log("Send flow started", scheduledFor ? "scheduled:" + scheduledFor : "immediate");
+    log("Send flow started", scheduledFor ? "scheduled:" + scheduledFor : "immediate",
+        dailyCap > 0 ? "cap:" + dailyCap : "");
 
     // Step 1: Create campaign
     var createPayload = { name: campaignName, subject: subject, body: body };
     if (scheduledFor) {
       createPayload.scheduled_for = scheduledFor;
+    }
+    if (dailyCap > 0 && scheduledFor) {
+      createPayload.daily_send_cap = dailyCap;
     }
     if (_attachments && _attachments.length) {
       // Each attachment is {name, url} — backend caps the list at 10
@@ -1368,8 +1384,11 @@
               return;
             }
 
-            // If A/B test enabled, create it before sending
-            var abEnabled = abTestCheckbox && abTestCheckbox.checked;
+            // If A/B test enabled, create it before sending. v1 constraint:
+            // a daily-capped multi-day campaign can't also run an A/B split
+            // (the winner evaluation assumes a single send window) — the UI
+            // locks the checkbox when a cap is set; this guard is the belt.
+            var abEnabled = dailyCap === 0 && abTestCheckbox && abTestCheckbox.checked;
             var abSubjectB = document.getElementById("ab-subject-b");
             var abTestPct = document.getElementById("ab-test-pct");
 
@@ -1903,6 +1922,26 @@
         abTestFields.classList.add("visible");
       } else {
         abTestFields.classList.remove("visible");
+      }
+    });
+  }
+
+  // Daily cap ⇄ A/B mutual exclusion (v1): a capped multi-day campaign
+  // can't also run an A/B split — the winner evaluation assumes a single
+  // send window. Typing a cap unchecks and locks the A/B toggle; clearing
+  // it unlocks again. (_startSendFlowInner has a matching guard.)
+  var dailyCapField = document.getElementById("daily-send-cap");
+  if (dailyCapField && abTestCheckbox) {
+    dailyCapField.addEventListener("input", function () {
+      var v = parseInt(dailyCapField.value, 10) || 0;
+      if (v > 0) {
+        if (abTestCheckbox.checked) {
+          abTestCheckbox.checked = false;
+          if (abTestFields) abTestFields.classList.remove("visible");
+        }
+        abTestCheckbox.disabled = true;
+      } else {
+        abTestCheckbox.disabled = false;
       }
     });
   }

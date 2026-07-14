@@ -705,6 +705,12 @@
   "signInFirstBannerText": {
     "message": "Gondermeye baslamak icin Microsoft ile giris yapin."
   },
+  "dailyCapLabel": {
+    "message": "Gunluk gonderim limiti (istege bagli)"
+  },
+  "dailyCapNote": {
+    "message": "Her gun en fazla bu kadar e-posta gonderir ve tum liste bitene kadar ertesi gun otomatik devam eder. (A/B testi ile birlikte kullanilamaz.)"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Gerekli formati gormek icin ornek CSV'yi indirin."
   },

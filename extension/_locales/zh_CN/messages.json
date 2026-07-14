@@ -705,6 +705,12 @@
   "signInFirstBannerText": {
     "message": "使用 Microsoft 登录即可开始发送。"
   },
+  "dailyCapLabel": {
+    "message": "每日发送上限（可选）"
+  },
+  "dailyCapNote": {
+    "message": "每天最多发送此数量的邮件，并自动在次日继续，直到整个名单发送完毕。（不能与 A/B 测试同时使用。）"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "下载示例 CSV 以查看所需格式。"
   },

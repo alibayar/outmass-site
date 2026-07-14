@@ -59,6 +59,11 @@ class CreateCampaignRequest(BaseModel):
     subject: str
     body: str
     scheduled_for: str | None = None  # ISO datetime string, e.g. "2026-03-30T09:00:00Z"
+    # Multi-day spread: send at most this many contacts per day; the
+    # scheduled worker rolls the schedule forward daily until done.
+    # Requires scheduled_for (the sidebar auto-schedules "now" when the
+    # user sets a cap without picking a date). 0/None = no cap.
+    daily_send_cap: int | None = None
     # OneDrive sharing links the user added in the sidebar's
     # Attachments section. Stored as JSON on the campaign row and
     # rendered as a footer block on every outgoing email by the
@@ -154,6 +159,22 @@ async def create_campaign(
         raise HTTPException(status_code=400, detail="Campaign name is required")
     body.name = body.name.strip()
 
+    # Daily cap rides the scheduled-send machinery, so it inherits the
+    # same plan gate below. Clamp to a sane range; 0/negative = no cap.
+    if body.daily_send_cap is not None:
+        if body.daily_send_cap <= 0:
+            body.daily_send_cap = None
+        else:
+            body.daily_send_cap = min(body.daily_send_cap, 5000)
+            if not body.scheduled_for:
+                raise HTTPException(
+                    status_code=400,
+                    detail={
+                        "error": "cap_requires_schedule",
+                        "message": "A daily send limit needs a scheduled start time.",
+                    },
+                )
+
     # Scheduled sending requires Starter+ plan
     if body.scheduled_for:
         plan = user.get("plan", "free")
@@ -182,6 +203,7 @@ async def create_campaign(
         body=body.body,
         scheduled_for=body.scheduled_for,
         attachments=safe_attachments,
+        daily_send_cap=body.daily_send_cap,
     )
     # Store subject+body hashes (not content) so we can later prove
     # "this campaign was created with these parameters" without the

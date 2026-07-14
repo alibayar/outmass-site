@@ -12,6 +12,7 @@ def create_campaign(
     body: str,
     scheduled_for: str | None = None,
     attachments: list[dict] | None = None,
+    daily_send_cap: int | None = None,
 ) -> dict:
     """Create a campaign row.
 
@@ -19,6 +20,10 @@ def create_campaign(
     sharing links the user added in the sidebar's Attachments section.
     The send pipeline renders these into a footer; the URLs themselves
     live in OneDrive (we don't host).
+
+    `daily_send_cap` (with scheduled_for) spreads the campaign: the
+    scheduled worker sends at most this many contacts per day and rolls
+    the schedule forward a day until the list is exhausted.
     """
     data = {
         "user_id": user_id,
@@ -34,6 +39,8 @@ def create_campaign(
     }
     if scheduled_for:
         data["scheduled_for"] = scheduled_for
+    if daily_send_cap:
+        data["daily_send_cap"] = daily_send_cap
 
     result = get_db().table("campaigns").insert(data).execute()
     return result.data[0]

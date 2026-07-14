@@ -9,6 +9,7 @@ Celery beat tasks:
 import re
 import time
 import urllib.parse
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -96,6 +97,12 @@ def process_scheduled_campaigns():
             campaign_model.update_campaign(campaign["id"], {"status": "sent"})
             continue
 
+        # Daily cap (multi-day spread): today's batch is at most
+        # daily_send_cap contacts; the leftover rolls to tomorrow below.
+        daily_cap = campaign.get("daily_send_cap") or 0
+        if daily_cap > 0:
+            pending = pending[:daily_cap]
+
         pending = pending[:remaining]
 
         # Filter suppressed
@@ -145,6 +152,25 @@ def process_scheduled_campaigns():
                 time.sleep(SEND_DELAY_SECONDS)
 
         user_model.increment_sent_count(user["id"], sent_count)
+
+        # Daily-cap campaigns: if resumable contacts remain after today's
+        # batch, advance the schedule 24h and go back to 'scheduled' — the
+        # same beat loop continues tomorrow until the list is exhausted.
+        # (Re-query rather than arithmetic: suppression/unsubscribe skips
+        # above mean len(pending) isn't a reliable "what's left" signal.)
+        if daily_cap > 0:
+            still_pending = contact_model.get_resumable_contacts(campaign["id"])
+            if still_pending:
+                next_run = (
+                    datetime.now(timezone.utc) + timedelta(days=1)
+                ).isoformat()
+                campaign_model.update_campaign(
+                    campaign["id"],
+                    {"status": "scheduled", "scheduled_for": next_run},
+                )
+                total_sent += sent_count
+                continue
+
         final_status = "sent" if not errors else "partial"
         campaign_model.update_campaign(campaign["id"], {"status": final_status})
         total_sent += sent_count

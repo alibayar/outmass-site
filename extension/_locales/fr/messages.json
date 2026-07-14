@@ -705,6 +705,12 @@
   "signInFirstBannerText": {
     "message": "Connectez-vous avec Microsoft pour commencer a envoyer."
   },
+  "dailyCapLabel": {
+    "message": "Limite d'envoi quotidienne (facultatif)"
+  },
+  "dailyCapNote": {
+    "message": "Envoie au maximum ce nombre d'e-mails par jour et continue automatiquement le lendemain jusqu'a la fin de votre liste. (Non combinable avec les tests A/B.)"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Telechargez le CSV d'exemple pour voir le format requis."
   },

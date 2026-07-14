@@ -705,6 +705,12 @@
   "signInFirstBannerText": {
     "message": "Mit Microsoft anmelden, um mit dem Senden zu beginnen."
   },
+  "dailyCapLabel": {
+    "message": "Tageslimit fuer den Versand (optional)"
+  },
+  "dailyCapNote": {
+    "message": "Sendet pro Tag hoechstens so viele E-Mails und macht am naechsten Tag automatisch weiter, bis die ganze Liste fertig ist. (Nicht mit A/B-Tests kombinierbar.)"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Laden Sie die Beispiel-CSV herunter, um das erforderliche Format zu sehen."
   },

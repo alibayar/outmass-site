@@ -705,6 +705,12 @@
   "signInFirstBannerText": {
     "message": "سجّل الدخول عبر Microsoft لبدء الإرسال."
   },
+  "dailyCapLabel": {
+    "message": "حد الإرسال اليومي (اختياري)"
+  },
+  "dailyCapNote": {
+    "message": "يرسل حتى هذا العدد من الرسائل يومياً ويتابع تلقائياً في اليوم التالي حتى تكتمل قائمتك بالكامل. (لا يمكن دمجه مع اختبار A/B.)"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "نزّل ملف CSV النموذجي لمعرفة التنسيق المطلوب."
   },

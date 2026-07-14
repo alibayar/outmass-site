@@ -705,6 +705,12 @@
   "signInFirstBannerText": {
     "message": "送信を開始するには Microsoft でサインインしてください。"
   },
+  "dailyCapLabel": {
+    "message": "1日の送信上限（任意）"
+  },
+  "dailyCapNote": {
+    "message": "1日にこの件数まで送信し、リスト全体が完了するまで翌日も自動的に続行します。（A/B テストとは併用できません。）"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "必要な形式を確認するには、サンプル CSV をダウンロードしてください。"
   },
