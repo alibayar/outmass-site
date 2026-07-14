@@ -166,6 +166,25 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
+### ⬜ Move the API to api.getoutmass.com (custom domain — unblocks filtered networks)
+The 2026-07-14 zh-CN churn exposed a structural reach problem: our API lives on
+`outmass-production.up.railway.app`, and shared-platform domains like
+railway.app are blocked wholesale by some corporate filters and national
+firewalls (GFW) — users on those networks can NEVER sign in, and we only see
+it as silence. 0.1.24 makes the failure honest (connectivity banner); this fix
+removes the failure class. Steps:
+1. **Ali:** Railway → web service → Settings → Networking → Custom Domain →
+   `api.getoutmass.com` (Railway shows a CNAME target) → add that CNAME at the
+   DNS provider → wait for the auto-provisioned cert → verify
+   `https://api.getoutmass.com/` returns `{"status":"ok"}`.
+2. **Code (next meaty extension release, to amortize the host-permission
+   re-approval prompt):** extension `OUTMASS_BACKEND_URL` + manifest
+   `host_permissions` → api.getoutmass.com (optionally keep the railway URL as
+   a runtime fallback for resilience); backend `BACKEND_URL` env → new domain
+   (Stripe redirect URLs + future tracking/unsubscribe links; old railway
+   links keep working as long as both domains stay attached).
+Bonus: branded tracking/unsub links also help deliverability.
+
 ### ⬜ Fix the e2e CI suite (red on EVERY push since 2026-06-03)
 GitHub Actions CI: unit-tests green, **e2e-tests failing ~24/48 on every push
 for a month** (Ali only noticed via the 07-03 email). Last green run =
