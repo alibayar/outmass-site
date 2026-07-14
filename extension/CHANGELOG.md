@@ -2,6 +2,11 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.25 — 2026-07-15
+
+- **The panel now tells you when you haven't signed in yet.** Previously you could build an entire campaign without an account and only hit a cryptic English error at Send. Now a sign-in banner appears at the top of the panel from the start, and Send/Test explain in your own language that sending needs a Microsoft sign-in first (composing still works without one).
+- **New-install welcome page.** Right after installing, OutMass opens a short "your first campaign in 3 steps" page — where to find the panel in Outlook, how to sign in, and how to send — instead of leaving you to guess.
+
 ## v0.1.24 — 2026-07-14
 
 - **CSV files from Excel now work in more encodings.** Excel's default "CSV" save on Chinese (and some other) systems isn't UTF-8, which OutMass used to reject outright. OutMass now auto-detects and reads GBK/GB18030 and Big5 files too — and when a file truly can't be read, the error finally tells you the exact fix: save it as "CSV UTF-8 (Comma delimited)" in Excel. (All 11 languages.)

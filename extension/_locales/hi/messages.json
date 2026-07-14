@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV में 'email' कॉलम होना चाहिए।"
   },
+  "alertSignInFirst": {
+    "message": "पहले Microsoft से साइन इन करें — पैनल के ऊपर साइन इन बटन का उपयोग करें। बिना खाते के लिख सकते हैं, लेकिन भेजने के लिए साइन इन ज़रूरी है।"
+  },
+  "signInFirstBannerText": {
+    "message": "भेजना शुरू करने के लिए Microsoft से साइन इन करें।"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "आवश्यक फ़ॉर्मेट देखने के लिए उदाहरण CSV डाउनलोड करें।"
   },

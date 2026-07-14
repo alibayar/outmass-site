@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "El CSV debe tener una columna 'email'."
   },
+  "alertSignInFirst": {
+    "message": "Primero inicia sesion con Microsoft — usa el boton de inicio de sesion en la parte superior del panel. Puedes redactar sin cuenta, pero enviar requiere una."
+  },
+  "signInFirstBannerText": {
+    "message": "Inicia sesion con Microsoft para empezar a enviar."
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Descarga el CSV de ejemplo para ver el formato requerido."
   },

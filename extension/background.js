@@ -102,6 +102,16 @@ chrome.runtime.onInstalled.addListener(function (details) {
       refreshToken: null,
       expiresAt: null,
     });
+    // First-run welcome tab: without it a fresh install is pure silence —
+    // the user must guess to open Outlook Web and find the round button.
+    // One prospect reinstalled 9 times without ever finding sign-in
+    // (2026-07-08), and a paying customer emailed support to ask where
+    // the panel was. The page walks the 3 steps to a first campaign.
+    try {
+      chrome.tabs.create({ url: "https://getoutmass.com/welcome.html" });
+    } catch (e) {
+      log("Welcome tab failed:", e);
+    }
   }
   log("Extension installed/updated:", details.reason);
   log("Redirect URI:", AZURE_REDIRECT_URI);
@@ -343,7 +353,10 @@ async function backendFetch(endpoint, options) {
   let storage = await chrome.storage.local.get(["backendJwt"]);
 
   if (!storage.backendJwt) {
-    return { error: "Not authenticated. Please login." };
+    // auth_required routes this to the sidebar's sign-in banner + a
+    // localized "sign in first" alert. The raw English fallback string
+    // cost us a zh-CN user who couldn't read it for two days (2026-07-14).
+    return { error: "Not authenticated. Please login.", auth_required: true };
   }
 
   const headers = {

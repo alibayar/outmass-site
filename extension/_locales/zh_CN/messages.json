@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV 必须包含 'email' 列。"
   },
+  "alertSignInFirst": {
+    "message": "请先使用 Microsoft 登录 — 点击面板顶部的登录按钮。您可以在未登录时撰写邮件，但发送需要登录。"
+  },
+  "signInFirstBannerText": {
+    "message": "使用 Microsoft 登录即可开始发送。"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "下载示例 CSV 以查看所需格式。"
   },

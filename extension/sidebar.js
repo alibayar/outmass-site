@@ -92,24 +92,30 @@
   // We call GET_SETTINGS periodically anyway; pipe the requires_reauth
   // field into a banner + sign-in button so scheduled sends don't die
   // silently.
-  // Banner shows for two distinct situations, both fixed by signing in:
+  // Banner shows for three distinct situations, all fixed by signing in:
   //  - requires_reauth: MS refresh_token died (backend flag)
   //  - sessionExpired: our own JWT expired (backendFetch 401)
+  //  - neverSignedIn: no JWT was EVER stored — the user is composing
+  //    without an account. Previously invisible: the sidebar let them
+  //    build a whole campaign and only failed at Send with a raw English
+  //    "Not authenticated" (a zh-CN user fought that for two days).
   // The CTA is identical (MS_LOGIN) but the explanatory text differs so
   // the user isn't confused about what broke.
-  function updateReauthBanner(requiresMsReauth, sessionExpired) {
+  function updateReauthBanner(requiresMsReauth, sessionExpired, neverSignedIn) {
     var banner = document.getElementById("reauth-banner");
     if (!banner) return;
-    var show = !!(requiresMsReauth || sessionExpired);
+    var show = !!(requiresMsReauth || sessionExpired || neverSignedIn);
     banner.style.display = show ? "flex" : "none";
     if (!show) return;
     var textEl = banner.querySelector(".reauth-banner-text");
     if (textEl) {
-      // Session-expired takes precedence if both true — it's the more
-      // immediate, always-recoverable case.
+      // Session-expired takes precedence if several are true — it's the
+      // more immediate, always-recoverable case.
       textEl.textContent = sessionExpired
         ? t("sessionExpiredBannerText")
-        : t("reauthBannerText");
+        : requiresMsReauth
+          ? t("reauthBannerText")
+          : t("signInFirstBannerText");
     }
   }
 
@@ -210,6 +216,20 @@
     return true;
   }
 
+  // Never-signed-in guard: background tags no-JWT responses with
+  // auth_required (the request never leaves the machine). Route it to the
+  // sign-in banner + a localized alert instead of the raw English string.
+  function handleAuthRequired(resp, btn) {
+    if (!resp || !resp.auth_required) return false;
+    if (btn) {
+      btn.textContent = t("btnSend");
+      btn.disabled = false;
+    }
+    pollReauthState(); // detects the missing JWT → shows the sign-in banner
+    alert(t("alertSignInFirst"));
+    return true;
+  }
+
   // Boot ping: if this network can't reach us, say so BEFORE the user
   // invests half an hour in a campaign that can never send.
   try {
@@ -223,8 +243,12 @@
     chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (resp) {
       // Always read the session-expired flag — even a failed /settings
       // call (e.g. when JWT has just expired) should surface the banner.
-      chrome.storage.local.get(["sessionExpired"], function (s) {
+      chrome.storage.local.get(["sessionExpired", "backendJwt"], function (s) {
         var sessionExpired = !!(s && s.sessionExpired);
+        // No JWT ever stored and no expiry in play → the user has simply
+        // never signed in. Show the sign-in banner instead of letting them
+        // compose into a wall.
+        var neverSignedIn = !(s && s.backendJwt) && !sessionExpired;
         var requiresReauth = false;
         var summary = null;
         if (resp && !resp.error) {
@@ -235,7 +259,7 @@
         // Apply the reauth banner FIRST, then the announcement signal, so the
         // strip's precedence check (reauth > offline > announcement) reads the
         // freshly-applied banner state rather than the previous poll's.
-        updateReauthBanner(requiresReauth, sessionExpired);
+        updateReauthBanner(requiresReauth, sessionExpired, neverSignedIn);
         // Piggyback the announcement signal on the existing settings poll.
         updateAnnouncementSignal(summary);
       });
@@ -840,6 +864,10 @@
           btnTestSend.disabled = false;
           btnTestSend.textContent = original;
           if (!resp || resp.error) {
+            if (handleAuthRequired(resp, null)) {
+              track("test_send_failed", { error_code: "not_authenticated" });
+              return;
+            }
             if (!handleSessionExpired(resp)) {
               if (resp && resp.error === "unknown_merge_tags") {
                 track("test_send_failed", { error_code: "unknown_merge_tags" });
@@ -1226,6 +1254,13 @@
             });
             return;
           }
+          if (handleAuthRequired(createResp, btnSend)) {
+            track("send_failed", {
+              recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+              error_code: "create:not_authenticated",
+            });
+            return;
+          }
           // Detect Pro-gated feature (e.g. scheduled sending on Free plan)
           // and show a friendlier upgrade prompt instead of raw error code.
           var detail = createResp && createResp.detail;
@@ -1285,6 +1320,13 @@
                 track("send_failed", {
                   recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
                   error_code: "upload:" + uploadResp.error,
+                });
+                return;
+              }
+              if (handleAuthRequired(uploadResp, btnSend)) {
+                track("send_failed", {
+                  recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
+                  error_code: "upload:not_authenticated",
                 });
                 return;
               }
@@ -1425,6 +1467,13 @@
             track("send_failed", {
               recipient_count: _recipientCount,
               error_code: "send:" + sendResp.error,
+            });
+            return;
+          }
+          if (handleAuthRequired(sendResp, btnSend)) {
+            track("send_failed", {
+              recipient_count: _recipientCount,
+              error_code: "send:not_authenticated",
             });
             return;
           }

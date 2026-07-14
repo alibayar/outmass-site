@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV muss eine 'email'-Spalte enthalten."
   },
+  "alertSignInFirst": {
+    "message": "Bitte melden Sie sich zuerst mit Microsoft an — nutzen Sie die Anmelde-Schaltflaeche oben im Panel. Entwerfen geht ohne Konto, Senden nicht."
+  },
+  "signInFirstBannerText": {
+    "message": "Mit Microsoft anmelden, um mit dem Senden zu beginnen."
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Laden Sie die Beispiel-CSV herunter, um das erforderliche Format zu sehen."
   },

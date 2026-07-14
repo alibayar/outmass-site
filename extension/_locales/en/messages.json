@@ -712,6 +712,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV must have an 'email' column."
   },
+  "alertSignInFirst": {
+    "message": "Please sign in with Microsoft first — use the Sign in button at the top of the panel. You can compose without an account, but sending needs one."
+  },
+  "signInFirstBannerText": {
+    "message": "Sign in with Microsoft to start sending."
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Download the example CSV to see the required format."
   },

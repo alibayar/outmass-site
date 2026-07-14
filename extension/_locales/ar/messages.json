@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "يجب أن يحتوي CSV على عمود 'email'."
   },
+  "alertSignInFirst": {
+    "message": "يرجى تسجيل الدخول عبر Microsoft أولاً — استخدم زر تسجيل الدخول أعلى اللوحة. يمكنك الكتابة بدون حساب، لكن الإرسال يتطلب حساباً."
+  },
+  "signInFirstBannerText": {
+    "message": "سجّل الدخول عبر Microsoft لبدء الإرسال."
+  },
   "csvErrNoEmailColumnHint": {
     "message": "نزّل ملف CSV النموذجي لمعرفة التنسيق المطلوب."
   },

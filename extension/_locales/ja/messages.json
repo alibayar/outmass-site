@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV には 'email' 列が必要です。"
   },
+  "alertSignInFirst": {
+    "message": "まず Microsoft でサインインしてください。パネル上部のサインインボタンをご利用ください。作成はアカウントなしでもできますが、送信にはサインインが必要です。"
+  },
+  "signInFirstBannerText": {
+    "message": "送信を開始するには Microsoft でサインインしてください。"
+  },
   "csvErrNoEmailColumnHint": {
     "message": "必要な形式を確認するには、サンプル CSV をダウンロードしてください。"
   },

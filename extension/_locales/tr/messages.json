@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV 'email' sutunu icermeli."
   },
+  "alertSignInFirst": {
+    "message": "Once Microsoft ile giris yapin — panelin ustundeki Giris yap butonunu kullanin. Hesapsiz taslak hazirlayabilirsiniz ama gondermek icin giris gerekir."
+  },
+  "signInFirstBannerText": {
+    "message": "Gondermeye baslamak icin Microsoft ile giris yapin."
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Gerekli formati gormek icin ornek CSV'yi indirin."
   },

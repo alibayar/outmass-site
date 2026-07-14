@@ -699,6 +699,12 @@
   "csvErrNoEmailColumn": {
     "message": "CSV должен содержать столбец 'email'."
   },
+  "alertSignInFirst": {
+    "message": "Сначала войдите через Microsoft — используйте кнопку входа вверху панели. Составлять письмо можно без аккаунта, но для отправки он нужен."
+  },
+  "signInFirstBannerText": {
+    "message": "Войдите через Microsoft, чтобы начать отправку."
+  },
   "csvErrNoEmailColumnHint": {
     "message": "Скачайте пример CSV, чтобы увидеть нужный формат."
   },
