@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "يجب أن يحتوي CSV على عمود 'email'."
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "نزّل ملف CSV النموذجي لمعرفة التنسيق المطلوب."
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "تم التخطي (بدون بريد)"
+  },
+  "largeSendWarn": {
+    "message": "أنت على وشك الإرسال إلى $COUNT$ مستلماً.\n\nللبقاء ضمن حدود Outlook وحماية حسابك، يقوم OutMass تلقائياً بإبطاء هذا الإرسال (حوالي 30/دقيقة)؛ سيستغرق نحو $MIN$ دقيقة ويستمر في الخلفية.\n\nللقوائم الباردة الكبيرة، يُفضّل توزيع الإرسال على عدة أيام (بضع مئات يومياً) عبر الجدولة.\n\nهل تريد المتابعة؟",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "تمت إزالة التكرارات"
   },

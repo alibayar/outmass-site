@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "CSV 'email' sutunu icermeli."
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "Gerekli formati gormek icin ornek CSV'yi indirin."
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "atlandi (email yok)"
+  },
+  "largeSendWarn": {
+    "message": "$COUNT$ aliciya gondermek uzeresiniz.\n\nOutlook'un gonderim limitleri icinde kalmak ve hesabinizin isaretlenmesini onlemek icin OutMass bu gonderimi otomatik olarak yavaslatir (yaklasik 30/dk); islem yaklasik $MIN$ dakika surer ve arka planda devam eder.\n\nBuyuk soguk listelerde en iyi teslimat icin gonderimi Zamanlama ile birkac gune yaymak (gunde birkac yuz) en iyisidir.\n\nDevam edilsin mi?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "tekrar kaldirildi"
   },

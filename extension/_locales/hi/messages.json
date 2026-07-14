@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "CSV में 'email' कॉलम होना चाहिए।"
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "आवश्यक फ़ॉर्मेट देखने के लिए उदाहरण CSV डाउनलोड करें।"
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "छोड़े गए (ईमेल नहीं)"
+  },
+  "largeSendWarn": {
+    "message": "आप $COUNT$ प्राप्तकर्ताओं को भेजने वाले हैं।\n\nOutlook की सीमाओं में रहने और आपके खाते की सुरक्षा के लिए, OutMass इस भेजाई को स्वतः धीमा करता है (लगभग 30/मिनट); इसमें लगभग $MIN$ मिनट लगेंगे और यह बैकग्राउंड में जारी रहेगा।\n\nबड़ी कोल्ड सूचियों के लिए बेहतर डिलीवरी हेतु Schedule से भेजाई को कई दिनों में बाँटें (प्रतिदिन कुछ सौ)।\n\nजारी रखें?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "डुप्लिकेट हटाए गए"
   },

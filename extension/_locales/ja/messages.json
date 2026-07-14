@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "CSV には 'email' 列が必要です。"
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "必要な形式を確認するには、サンプル CSV をダウンロードしてください。"
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "スキップ (メールなし)"
+  },
+  "largeSendWarn": {
+    "message": "$COUNT$ 件の宛先に送信しようとしています。\n\nOutlook の送信制限内に収め、アカウントを保護するため、OutMass はこの送信を自動的に調整します（約 30 件/分）。約 $MIN$ 分かかり、バックグラウンドで継続します。\n\n大きなコールドリストでは、スケジュール機能で数日に分けて送信する（1 日数百件）と到達率が最も高くなります。\n\n続行しますか？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "重複を削除"
   },

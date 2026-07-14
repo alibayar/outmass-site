@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "El CSV debe tener una columna 'email'."
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "Descarga el CSV de ejemplo para ver el formato requerido."
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "omitidos (sin email)"
+  },
+  "largeSendWarn": {
+    "message": "Estas a punto de enviar a $COUNT$ destinatarios.\n\nPara respetar los limites de Outlook y proteger tu cuenta, OutMass espacia automaticamente este envio (unos 30/min); tardara aproximadamente $MIN$ minutos y continua en segundo plano.\n\nPara listas frias grandes, la entregabilidad es mejor si repartes el envio en varios dias (unos cientos al dia) usando Programar.\n\nContinuar?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "duplicados eliminados"
   },

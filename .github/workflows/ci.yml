@@ -37,6 +37,24 @@ jobs:
       - name: Run unit tests
         run: python -m pytest tests/ -v --ignore=tests/integration
 
+  extension-checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # csv-decode (10 encoding fixtures vs the real decodeCsvBuffer),
+      # locale-consistency (11 locales: key parity + placeholders),
+      # i18n-usage (every literal t()/data-i18n key exists in en).
+      # No npm deps — plain Node.
+      - name: Run extension checks
+        run: node extension/tests/run-all.js
+
   e2e-tests:
     runs-on: ubuntu-latest
 

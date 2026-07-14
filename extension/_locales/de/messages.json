@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "CSV muss eine 'email'-Spalte enthalten."
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "Laden Sie die Beispiel-CSV herunter, um das erforderliche Format zu sehen."
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "uebersprungen (keine E-Mail)"
+  },
+  "largeSendWarn": {
+    "message": "Sie sind dabei, an $COUNT$ Empfaenger zu senden.\n\nUm innerhalb der Outlook-Limits zu bleiben und Ihr Konto zu schuetzen, sendet OutMass automatisch gedrosselt (ca. 30/Min.); das dauert etwa $MIN$ Minuten und laeuft im Hintergrund weiter.\n\nBei grossen Cold-Listen ist die Zustellbarkeit am besten, wenn Sie den Versand per Zeitplan ueber mehrere Tage verteilen (einige Hundert pro Tag).\n\nFortfahren?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "Duplikate entfernt"
   },

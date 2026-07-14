@@ -699,6 +699,23 @@
   "csvErrNoEmailColumn": {
     "message": "CSV 必须包含 'email' 列。"
   },
+  "csvErrNoEmailColumnHint": {
+    "message": "下载示例 CSV 以查看所需格式。"
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "已跳过 (无邮箱)"
+  },
+  "largeSendWarn": {
+    "message": "您即将向 $COUNT$ 位收件人发送。\n\n为遵守 Outlook 的发送限制并保护您的帐户，OutMass 会自动控制发送速度（约 30 封/分钟）；大约需要 $MIN$ 分钟，并在后台继续进行。\n\n对于较大的陌生名单，最好使用定时发送将其分散到几天内（每天几百封），送达率最佳。\n\n是否继续？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
   "csvDupRemoved": {
     "message": "已删除重复项"
   },
