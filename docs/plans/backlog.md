@@ -166,6 +166,18 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
+### ⬜ Claims-audit leftovers (from the 2026-07-15 site audit)
+1. **popupConsentExplainer says "We never store your email content"** — the same
+   overstatement the audit killed on the site lives in the EXTENSION consent
+   explainer (11 locales). Soften in 0.1.26 to the honest framing (sends via
+   your own account, never reads your inbox, campaign drafts stored to power
+   scheduling — mirroring the corrected pricing FAQ).
+2. **Reply should cancel pending follow-ups** — the site used to CLAIM it,
+   users expect it, and the data exists (reply_detector stamps replied_at)
+   but followup_worker never reads it. Small real feature: exclude
+   contacts with replied_at from follow-up sends. Turns the corrected copy
+   back into a truthful selling point.
+
 ### ⬜ Move the API to api.getoutmass.com (custom domain — unblocks filtered networks)
 The 2026-07-14 zh-CN churn exposed a structural reach problem: our API lives on
 `outmass-production.up.railway.app`, and shared-platform domains like
