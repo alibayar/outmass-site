@@ -1012,6 +1012,9 @@
   "oneDriveNoDrive": {
     "message": "Bu Microsoft hesabında OneDrive yok. OneDrive'ı olan bir hesapla giriş yap, veya bu kampanya için OneDrive eki kullanma."
   },
+  "oneDriveAuthStuck": {
+    "message": "Oturum açmanıza rağmen OneDrive erişimi sağlanamadı. Microsoft hesabınızda OneDrive olmayabilir veya kuruluşunuz engelliyor olabilir. Bu kampanyayı OneDrive eki olmadan gönderebilirsiniz — ya da support@getoutmass.com adresine yazın, yardımcı olalım."
+  },
   "mergeTagUnknown": {
     "message": "CSV'nizde \"$TAGS$\" adında bir sütun yok. Bunun yerine CSV'nizdeki şu etiketleri kullanabilirsiniz: $AVAILABLE$. Birini kullanın ya da etiketi e-postadan kaldırın.",
     "placeholders": {

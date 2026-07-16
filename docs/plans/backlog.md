@@ -167,6 +167,12 @@ rare, deliberately deferred:
    customer id.
 
 ### ⬜ Claims-audit leftovers (from the 2026-07-15 site audit)
+0. **[READY, in master] OneDrive picker consent-loop guard** — one-shot
+   `_oneDriveAuthAttempted` guard + `oneDriveAuthStuck` message (11 locales) +
+   `onedrive_auth_stuck` telemetry, from the 2026-07-16 lucia incident (paying
+   Starter hit an endless consent-window loop). Backend half (persist scoped
+   access token without refresh_token; license-403 → no_onedrive) ships with
+   the next backend deploy; the sidebar guard rides 0.1.26.
 1. **popupConsentExplainer says "We never store your email content"** — the same
    overstatement the audit killed on the site lives in the EXTENSION consent
    explainer (11 locales). Soften in 0.1.26 to the honest framing (sends via

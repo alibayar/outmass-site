@@ -37,6 +37,39 @@ logger = logging.getLogger(__name__)
 
 router = APIRouter(prefix="/api/onedrive", tags=["onedrive"])
 
+# Body-text markers that mean "this Microsoft account has no OneDrive at
+# all" (old Outlook.com accounts, work accounts without an SPO license).
+# Microsoft signals this inconsistently — 400, 404, and sometimes 403 —
+# so we match on the error text rather than the status code alone.
+# Matching a 403 matters: mapping a license-403 to needs_files_scope
+# would tell the extension to re-run the consent flow, which can never
+# succeed → endless consent windows (seen live 2026-07-16).
+_NO_DRIVE_MARKERS = (
+    "tenant does not have",
+    "spo license",
+    "user has no drives",
+    "not provisioned",
+    "mysite",
+    "drive not found",
+    "doesn't exist",
+    "doesn't have a onedrive",
+)
+
+
+def _looks_like_no_drive(body_text: str) -> bool:
+    lowered = (body_text or "").lower()
+    return any(m in lowered for m in _NO_DRIVE_MARKERS)
+
+
+_NO_ONEDRIVE_DETAIL = {
+    "error": "no_onedrive",
+    "message": (
+        "This Microsoft account doesn't have OneDrive. "
+        "Sign in with an account that has OneDrive enabled, "
+        "or skip OneDrive attachments for this campaign."
+    ),
+}
+
 
 class ShareLinkRequest(BaseModel):
     item_id: str = Field(..., min_length=1, max_length=200)
@@ -106,11 +139,26 @@ async def browse_drive(
         )
 
     if list_resp.status_code in (401, 403):
+        # A 403 whose body mentions tenant/license markers means the
+        # account has NO OneDrive — consent can never fix that, so it
+        # must NOT map to the incremental-consent path below.
+        if list_resp.status_code == 403 and _looks_like_no_drive(list_resp.text):
+            logger.info(
+                "OneDrive browse: 403 with no-drive markers (body=%s)",
+                (list_resp.text or "")[:200],
+            )
+            raise HTTPException(status_code=404, detail=_NO_ONEDRIVE_DETAIL)
         # Microsoft Graph returns 401 (InvalidAuthenticationToken) or
         # 403 (insufficient_scope) when the access token is valid but
         # missing the OneDrive scopes. Both map to the same recovery
         # path on the frontend — launch incremental consent — so we
-        # collapse them into a single error code here.
+        # collapse them into a single error code here. Log the body so
+        # a user stuck in this state is diagnosable from Railway logs.
+        logger.info(
+            "OneDrive browse auth-blocked: status=%s body=%s",
+            list_resp.status_code,
+            (list_resp.text or "")[:300],
+        )
         raise HTTPException(
             status_code=403,
             detail={
@@ -131,35 +179,13 @@ async def browse_drive(
         #      whose error text mentions tenant/license/provisioned.
         #   b) For a non-root browse, 404 just means that subfolder
         #      no longer exists.
-        body_text = (list_resp.text or "").lower()
-        no_drive_markers = (
-            "tenant does not have",
-            "spo license",
-            "user has no drives",
-            "not provisioned",
-            "mysite",
-            "drive not found",
-            "doesn't exist",
-            "doesn't have a onedrive",
-        )
-        looks_like_no_drive = any(m in body_text for m in no_drive_markers)
-        if folder_id == "root" or looks_like_no_drive:
+        if folder_id == "root" or _looks_like_no_drive(list_resp.text):
             logger.info(
                 "OneDrive browse: account has no OneDrive (status=%s body=%s)",
                 list_resp.status_code,
                 list_resp.text[:200],
             )
-            raise HTTPException(
-                status_code=404,
-                detail={
-                    "error": "no_onedrive",
-                    "message": (
-                        "This Microsoft account doesn't have OneDrive. "
-                        "Sign in with an account that has OneDrive enabled, "
-                        "or skip OneDrive attachments for this campaign."
-                    ),
-                },
-            )
+            raise HTTPException(status_code=404, detail=_NO_ONEDRIVE_DETAIL)
         # Genuine "subfolder gone" case — keep the prior error code
         # so the frontend can still render a meaningful message.
         raise HTTPException(
@@ -288,7 +314,20 @@ async def create_share_link(
     # is valid for some scopes but not the OneDrive ones. We collapse
     # both into needs_files_scope so the frontend can launch the
     # incremental consent flow regardless of which one Microsoft picked.
+    # Exception: a 403 carrying no-drive markers means the account has
+    # no OneDrive — consent can't fix that (see browse above).
     if resp.status_code in (401, 403):
+        if resp.status_code == 403 and _looks_like_no_drive(resp.text):
+            logger.info(
+                "OneDrive share-link: 403 with no-drive markers (body=%s)",
+                (resp.text or "")[:200],
+            )
+            raise HTTPException(status_code=404, detail=_NO_ONEDRIVE_DETAIL)
+        logger.info(
+            "OneDrive share-link auth-blocked: status=%s body=%s",
+            resp.status_code,
+            (resp.text or "")[:300],
+        )
         raise HTTPException(
             status_code=403,
             detail={

@@ -2717,6 +2717,15 @@
   // shipped as part of the CREATE_CAMPAIGN payload at send time.
   var _attachments = [];
 
+  // One-shot guard for the picker's incremental-consent path. Without
+  // it, "OAuth completed but Files access still blocked" (token not
+  // refreshed server-side, or a work account whose OneDrive is
+  // disabled) relaunched the consent window in an endless loop — a
+  // paying user hit exactly that on 2026-07-16 and had to decline the
+  // window 3 times to escape. One OAuth attempt per user-initiated
+  // picker open; after that, show a terminal message instead.
+  var _oneDriveAuthAttempted = false;
+
   function renderAttachmentChips() {
     var list = document.getElementById("attachments-list");
     if (!list) return;
@@ -2819,6 +2828,16 @@
         // when they have Mail-only token and we hit a Files endpoint.
         // Same recovery: launch the incremental consent flow.
         if (code === "needs_files_scope" || code === "needs_reauth") {
+          // Already ran one incremental OAuth for this picker session
+          // and Files access is STILL blocked — relaunching can only
+          // loop. Stop with an explanation instead (the share-link
+          // path has the same guard via its `retried` flag).
+          if (_oneDriveAuthAttempted) {
+            track("onedrive_auth_stuck");
+            _renderPickerStatus(t("oneDriveAuthStuck"), true);
+            return;
+          }
+          _oneDriveAuthAttempted = true;
           _closeOneDrivePicker();
           chrome.runtime.sendMessage(
             { type: "MS_LOGIN_ONEDRIVE" },
@@ -2975,6 +2994,8 @@
 
   if (btnAddOneDrive) {
     btnAddOneDrive.addEventListener("click", function () {
+      // Fresh user-initiated attempt → they get one new OAuth try.
+      _oneDriveAuthAttempted = false;
       _hasAcknowledgedOneDriveConsent(function (acked) {
         if (!acked) {
           if (oneDriveConsentOverlay) {

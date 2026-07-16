@@ -1012,6 +1012,9 @@
   "oneDriveNoDrive": {
     "message": "حساب Microsoft هذا لا يحتوي على OneDrive. سجّل الدخول بحساب فيه OneDrive، أو تخطَّ مرفقات OneDrive في هذه الحملة."
   },
+  "oneDriveAuthStuck": {
+    "message": "لا يزال الوصول إلى OneDrive لا يعمل حتى بعد تسجيل الدخول. قد لا يتضمن حساب Microsoft الخاص بك OneDrive، أو قد تحظره مؤسستك. يمكنك إرسال هذه الحملة بدون مرفقات OneDrive — أو راسلنا على support@getoutmass.com وسنساعدك."
+  },
   "mergeTagUnknown": {
     "message": "ملف CSV الخاص بك لا يحتوي على عمود باسم \"$TAGS$\". يمكنك بدلاً من ذلك استخدام هذه الوسوم من ملف CSV: $AVAILABLE$. استخدم أحدها، أو أزِل الوسم من بريدك الإلكتروني.",
     "placeholders": {

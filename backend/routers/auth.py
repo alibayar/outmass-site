@@ -186,6 +186,63 @@ def _state_includes_onedrive(state: str | None) -> bool:
     return bool(data and data.get("od"))
 
 
+def _persist_ms_tokens(
+    user_id: str,
+    access_token: str,
+    refresh_token: str | None,
+    wants_onedrive: bool,
+) -> None:
+    """Store the freshest Microsoft tokens for the user.
+
+    Microsoft omits the refresh_token on some repeat consents — notably
+    the incremental OneDrive flow. Gating the whole write on refresh_token
+    (the pre-2026-07-16 behaviour) also threw away the NEW wider-scope
+    access token and the has_onedrive_scope flag, so /api/onedrive/*
+    kept being served the stale Mail-only token and the sidebar
+    re-launched consent in a loop.
+
+    Rules:
+      - access_token: always overwrite — it's the freshest, widest-scope one.
+      - refresh_token: only overwrite when Microsoft returned one; never
+        clobber a still-good stored token with nothing.
+      - has_onedrive_scope: sticky True once any OneDrive consent
+        completes (the consent record outlives individual tokens).
+    """
+    from database import get_db
+
+    db = get_db()
+    existing = (
+        db.table("user_tokens")
+        .select("id, has_onedrive_scope")
+        .eq("user_id", user_id)
+        .execute()
+    )
+    previously_had_onedrive = bool(
+        existing.data and existing.data[0].get("has_onedrive_scope")
+    )
+    token_row = {
+        "access_token": access_token,
+        "has_onedrive_scope": previously_had_onedrive or wants_onedrive,
+    }
+    if refresh_token:
+        token_row["refresh_token"] = refresh_token
+
+    if existing.data:
+        db.table("user_tokens").update(token_row).eq("user_id", user_id).execute()
+    elif refresh_token:
+        token_row["user_id"] = user_id
+        db.table("user_tokens").insert(token_row).execute()
+    else:
+        # No stored row AND no refresh_token: shouldn't happen on a first
+        # consent (offline_access always yields one), and a row that can
+        # never refresh is useless — log loudly instead of half-inserting.
+        logger.warning(
+            "Token exchange for user %s returned no refresh_token on first "
+            "sign-in; tokens not persisted",
+            user_id,
+        )
+
+
 @router.get("/login")
 async def login_redirect(
     ext: str | None = Query(None),
@@ -333,42 +390,17 @@ async def auth_callback(
             welcome_email.send_welcome_email, user["email"], user.get("name")
         )
 
-    # Save refresh_token for server-side token refresh (worker, scheduled
-    # sending). Only overwrite the stored token when Microsoft actually
-    # returned one — a repeat consent can omit the refresh_token, and we must
-    # not clobber a still-good stored token with nothing.
-    if refresh_token:
-        from database import get_db
-
-        db = get_db()
-        existing = (
-            db.table("user_tokens")
-            .select("id, has_onedrive_scope")
-            .eq("user_id", user["id"])
-            .execute()
-        )
-        # If THIS callback ran the OneDrive consent flow, lock in the
-        # flag so future refreshes ask for OneDrive scopes too. Once
-        # the user has granted OneDrive once, the refresh_token retains
-        # that grant indefinitely — no reason to clear the flag on a
-        # later Mail-only sign-in.
-        previously_had_onedrive = bool(
-            existing.data and existing.data[0].get("has_onedrive_scope")
-        )
-        has_onedrive_scope = previously_had_onedrive or wants_onedrive
-
-        token_row = {
-            "access_token": access_token,
-            "refresh_token": refresh_token,
-            "has_onedrive_scope": has_onedrive_scope,
-        }
-        if existing.data:
-            db.table("user_tokens").update(token_row).eq(
-                "user_id", user["id"]
-            ).execute()
-        else:
-            token_row["user_id"] = user["id"]
-            db.table("user_tokens").insert(token_row).execute()
+    # Persist tokens for server-side refresh (worker, scheduled sending).
+    # The access_token is ALWAYS updated (repeat consents can omit the
+    # refresh_token, but the access token they return carries the newly
+    # consented scopes — discarding it trapped OneDrive users in a
+    # consent loop, 2026-07-16). See _persist_ms_tokens for the rules.
+    _persist_ms_tokens(
+        user_id=user["id"],
+        access_token=access_token,
+        refresh_token=refresh_token,
+        wants_onedrive=wants_onedrive,
+    )
 
     # Clear any prior requires_reauth flag on ANY successful interactive
     # sign-in — not only when a refresh_token came back. Nesting this inside

@@ -1012,6 +1012,9 @@
   "oneDriveNoDrive": {
     "message": "इस Microsoft खाते में OneDrive नहीं है। OneDrive वाले खाते से साइन इन करें, या इस अभियान में OneDrive अनुलग्नक न जोड़ें।"
   },
+  "oneDriveAuthStuck": {
+    "message": "साइन इन करने के बाद भी OneDrive एक्सेस काम नहीं कर रहा है। हो सकता है आपके Microsoft खाते में OneDrive न हो, या आपका संगठन इसे ब्लॉक करता हो। आप यह कैंपेन OneDrive अटैचमेंट के बिना भेज सकते हैं — या support@getoutmass.com पर ईमेल करें, हम मदद करेंगे।"
+  },
   "mergeTagUnknown": {
     "message": "आपके CSV में \"$TAGS$\" नाम का कोई कॉलम नहीं है। इसके बजाय आप अपने CSV के ये टैग इस्तेमाल कर सकते हैं: $AVAILABLE$. इनमें से किसी एक का उपयोग करें, या टैग को अपने ईमेल से हटा दें।",
     "placeholders": {

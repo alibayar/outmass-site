@@ -2,6 +2,10 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## Unreleased (0.1.26)
+
+- **No more repeated sign-in windows when adding a OneDrive attachment.** If OneDrive access couldn't be enabled, the picker used to open the Microsoft sign-in window again and again. Now it asks at most once per attempt and then explains what's going on (e.g. your Microsoft account may not include OneDrive) and how to proceed. The underlying authorization bug was fixed on our servers, so for most people OneDrive attachments simply work now — no extension update needed.
+
 ## v0.1.25 — 2026-07-15
 
 - **NEW: Daily send limit — spread one campaign over multiple days.** In the Schedule section, set an optional "Daily send limit" (e.g. 30): OutMass sends up to that many emails per day, server-side, and automatically continues the next day until your whole list is done. Great for careful cold outreach and gradual warm-up. (Not combinable with A/B testing in this first version. Requires Starter or Pro, like scheduled sending.)

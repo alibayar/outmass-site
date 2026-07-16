@@ -311,6 +311,51 @@ def test_browse_403_returns_needs_files_scope(client, fake_db, auth_bypass):
     assert resp.json()["detail"]["error"] == "needs_files_scope"
 
 
+def test_browse_403_with_license_markers_returns_no_onedrive(
+    client, fake_db, auth_bypass
+):
+    """Work accounts without an SPO license can get 403 (not 400/404)
+    from Graph. Mapping that to needs_files_scope would tell the
+    extension to re-run consent — which can never succeed → endless
+    consent-window loop (live incident 2026-07-16). It must map to
+    no_onedrive instead."""
+    body = '{"error":{"code":"accessDenied","message":"Tenant does not have a SPO license."}}'
+    mock_client = _async_client_returning(
+        _ms_response(403, text=body),
+        _ms_response(403, text=body),
+    )
+
+    with patch("routers.onedrive.get_fresh_access_token", return_value="tok"), \
+         patch("httpx.AsyncClient", return_value=mock_client):
+        resp = client.get("/api/onedrive/browse")
+
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"] == "no_onedrive"
+
+
+def test_share_link_403_with_license_markers_returns_no_onedrive(
+    client, fake_db, auth_bypass
+):
+    """Same license-403 guard on the share-link endpoint."""
+    graph_resp = MagicMock(status_code=403)
+    graph_resp.text = "The user doesn't have a OneDrive provisioned."
+
+    mock_client = AsyncMock()
+    mock_client.__aenter__.return_value = mock_client
+    mock_client.__aexit__.return_value = None
+    mock_client.post.return_value = graph_resp
+
+    with patch("routers.onedrive.get_fresh_access_token", return_value="tok"), \
+         patch("httpx.AsyncClient", return_value=mock_client):
+        resp = client.post(
+            "/api/onedrive/share-link",
+            json={"item_id": "01XYZ"},
+        )
+
+    assert resp.status_code == 404
+    assert resp.json()["detail"]["error"] == "no_onedrive"
+
+
 def test_browse_401_also_returns_needs_files_scope(client, fake_db, auth_bypass):
     """Microsoft Graph occasionally returns 401 InvalidAuthenticationToken
     instead of 403 when the access_token is valid but missing the right

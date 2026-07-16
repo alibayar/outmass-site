@@ -1012,6 +1012,9 @@
   "oneDriveNoDrive": {
     "message": "此 Microsoft 账户没有 OneDrive。请使用拥有 OneDrive 的账户登录，或在此次活动中不使用 OneDrive 附件。"
   },
+  "oneDriveAuthStuck": {
+    "message": "登录后仍无法访问 OneDrive。您的 Microsoft 帐户可能不包含 OneDrive，或您的组织禁用了它。您可以在不使用 OneDrive 附件的情况下发送此邮件系列，也可以发邮件至 support@getoutmass.com，我们会帮您解决。"
+  },
   "mergeTagUnknown": {
     "message": "你的 CSV 中没有名为“$TAGS$”的列。你可以改用 CSV 中的这些标签：$AVAILABLE$。请使用其中一个，或者从邮件中删除该标签。",
     "placeholders": {

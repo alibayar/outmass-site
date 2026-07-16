@@ -1012,6 +1012,9 @@
   "oneDriveNoDrive": {
     "message": "This Microsoft account doesn't have OneDrive. Sign in with an account that has OneDrive, or skip OneDrive attachments for this campaign."
   },
+  "oneDriveAuthStuck": {
+    "message": "OneDrive access still isn't working even after you signed in. Your Microsoft account may not include OneDrive, or your organization may block it. You can send this campaign without OneDrive attachments — or email support@getoutmass.com and we'll help."
+  },
   "mergeTagUnknown": {
     "message": "Your CSV has no column named \"$TAGS$\". You can use these tags from your CSV instead: $AVAILABLE$. Use one of them, or remove the tag from your email.",
     "placeholders": {

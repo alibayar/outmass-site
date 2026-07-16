@@ -1012,6 +1012,9 @@
   "oneDriveNoDrive": {
     "message": "この Microsoft アカウントには OneDrive がありません。OneDrive のあるアカウントでサインインするか、このキャンペーンでは OneDrive 添付を使わないでください。"
   },
+  "oneDriveAuthStuck": {
+    "message": "サインイン後も OneDrive へのアクセスができません。お使いの Microsoft アカウントに OneDrive が含まれていないか、組織によってブロックされている可能性があります。OneDrive の添付なしでこのキャンペーンを送信できます。または support@getoutmass.com までご連絡ください。"
+  },
   "mergeTagUnknown": {
     "message": "CSV に「$TAGS$」という名前の列がありません。代わりに CSV にあるこれらのタグを使用できます：$AVAILABLE$。いずれかを使用するか、メールからそのタグを削除してください。",
     "placeholders": {
