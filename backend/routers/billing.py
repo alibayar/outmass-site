@@ -11,6 +11,7 @@ GET  /billing/cancel            → Payment cancelled page
 import logging
 from datetime import datetime, timezone
 
+import posthog
 import stripe
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import HTMLResponse, Response
@@ -19,6 +20,7 @@ from pydantic import BaseModel
 
 from config import (
     BACKEND_URL,
+    POSTHOG_API_KEY,
     STRIPE_PORTAL_CONFIG_ID,
     STRIPE_STARTER_PRICE_ID,
     STRIPE_PRO_PRICE_ID,
@@ -60,6 +62,22 @@ def _get_user_from_db(user_id: str) -> dict | None:
     if result.data and len(result.data) > 0:
         return result.data[0]
     return None
+
+
+def _capture_billing_event(distinct_id: str, event: str, properties: dict) -> None:
+    """Best-effort PostHog capture for checkout-funnel telemetry.
+
+    Closes the gap between upgrade_button_clicked (extension) and the
+    Stripe outcome: before this, an abandoned checkout was invisible in
+    PostHog and only discoverable by digging through Stripe's API logs.
+    Must never raise — billing flows don't depend on analytics.
+    """
+    if not POSTHOG_API_KEY or not distinct_id:
+        return
+    try:
+        posthog.capture(distinct_id=distinct_id, event=event, properties=properties)
+    except Exception:  # noqa: BLE001
+        logger.warning("Billing PostHog capture failed (%s)", event, exc_info=True)
 
 
 # ─── 1. Create Checkout / Upgrade ──────────────────────────────────────────
@@ -143,11 +161,21 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
             success_url=f"{BACKEND_URL}/billing/success?session_id={{CHECKOUT_SESSION_ID}}",
             cancel_url=f"{BACKEND_URL}/billing/cancel",
             customer_email=user.get("email"),
-            metadata={"user_id": user["id"]},
+            # `plan` rides along so checkout.session.expired can report
+            # which plan the user walked away from.
+            metadata={"user_id": user["id"], "plan": body.plan},
         )
     except stripe.StripeError as e:
         logger.error("Stripe checkout error: %s", e)
         raise HTTPException(status_code=502, detail=f"Checkout error: {str(e)}")
+
+    # Funnel: upgrade_button_clicked → checkout_session_created →
+    # checkout.session.completed | checkout_abandoned (webhook).
+    _capture_billing_event(
+        user.get("email") or user["id"],
+        "checkout_session_created",
+        {"plan": body.plan, "session_id": session.id},
+    )
 
     return {"checkout_url": session.url}
 
@@ -261,6 +289,46 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             user_id,
             plan,
             "replay — anchor kept" if already_processed else "quota period re-anchored",
+        )
+
+    # ── checkout.session.expired ──
+    # Fires ~24h after an uncompleted Checkout Session was created — i.e.
+    # the user clicked Upgrade, the checkout page opened, and they never
+    # paid. Surfaced as PostHog `checkout_abandoned` (and via the daily
+    # report's info list) so abandonment is visible without digging
+    # through Stripe API logs. Telemetry only — no state changes.
+    elif event_type == "checkout.session.expired":
+        meta = data_object.get("metadata") or {}
+        user_id = meta.get("user_id")
+        email = data_object.get("customer_email")
+        current_plan = None
+        already_subscribed = False
+        if user_id:
+            row = _get_user_from_db(user_id)
+            if row:
+                email = email or row.get("email")
+                current_plan = row.get("plan")
+                # They may have paid via a NEWER session while this one
+                # aged out — don't report that as a real abandonment.
+                already_subscribed = bool(row.get("stripe_subscription_id"))
+
+        _capture_billing_event(
+            email or user_id or "unknown",
+            "checkout_abandoned",
+            {
+                "plan": meta.get("plan"),
+                "current_plan": current_plan,
+                "already_subscribed": already_subscribed,
+                "amount_total": data_object.get("amount_total"),
+                "currency": data_object.get("currency"),
+                "session_id": data_object.get("id"),
+            },
+        )
+        logger.info(
+            "Checkout abandoned: %s (plan=%s, already_subscribed=%s)",
+            email or user_id,
+            meta.get("plan"),
+            already_subscribed,
         )
 
     # ── customer.subscription.deleted ──

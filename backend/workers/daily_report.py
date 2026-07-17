@@ -38,7 +38,7 @@ HARD_ERROR_EVENTS = [
     "test_send_failed",
     "ai_email_generate_failed",
 ]
-INFO_ERROR_EVENTS = ["oauth_failed", "extension_uninstall"]
+INFO_ERROR_EVENTS = ["oauth_failed", "extension_uninstall", "checkout_abandoned"]
 
 
 def _error_check_lines() -> list[str]:
