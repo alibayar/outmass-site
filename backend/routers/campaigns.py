@@ -423,8 +423,14 @@ async def upload_contacts(
                 detail="CSV encoding not recognized. Please save as UTF-8.",
             )
         reader = csv.DictReader(io.StringIO(text))
+        # Header names are stripped: hand-made CSVs often have spaces after
+        # commas ("email, Company"), which used to key custom_fields by
+        # " Company" — a column the {{tag}} syntax (\w+) could never
+        # reference, and a padded " email" even failed the mandatory-column
+        # check. The sidebar's merge-tag chips are built from trimmed
+        # headers, so storage must agree with them (0.1.26 review finding).
         # A.2: Mandatory 'email' column (case-insensitive)
-        headers = [h.lower() for h in (reader.fieldnames or [])]
+        headers = [(h or "").strip().lower() for h in (reader.fieldnames or [])]
         if "email" not in headers:
             raise HTTPException(
                 status_code=400,
@@ -433,10 +439,13 @@ async def upload_contacts(
         for row in reader:
             normalized: dict = {}
             for k, v in row.items():
-                if k and k.lower() == "email":
+                key = (k or "").strip()
+                if not key:
+                    continue
+                if key.lower() == "email":
                     normalized["email"] = v
                 else:
-                    normalized[k] = v
+                    normalized[key] = v
             contacts.append(normalized)
 
     elif body.contacts:

@@ -787,6 +787,9 @@
     var pos = start + text.length;
     field.focus();
     try { field.setSelectionRange(pos, pos); } catch (e) { /* ignore */ }
+    // Programmatic .value writes don't fire 'input', so the Send button's
+    // enabled-state check would go stale for chip-only edits.
+    updateSendButton();
   }
 
   // ── CSV template download (example file with 3 locale-specific sample rows) ──

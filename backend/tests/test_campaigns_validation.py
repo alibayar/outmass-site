@@ -229,6 +229,42 @@ def test_upload_rejects_missing_email_column(client, fake_db, auth_bypass):
     assert "email" in resp.json()["detail"].lower()
 
 
+def test_upload_strips_whitespace_padded_headers(client, fake_db, auth_bypass):
+    """Hand-made CSVs often have spaces after commas ('email, Company').
+    Headers must be stripped at parse time: ' Company' as a custom_fields
+    key could never be referenced by a {{tag}} (\\w+ can't express the
+    space), and a padded ' email' even failed the mandatory-column check.
+    The sidebar's merge-tag chips insert TRIMMED names, so storage must
+    agree (0.1.26 release-review finding)."""
+    from unittest.mock import patch
+
+    campaign = {
+        "id": "cW1", "user_id": FAKE_USER["id"], "status": "draft",
+        "subject": "s", "body": "b", "name": "n",
+        "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
+    }
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
+
+    csv_text = " email, Company\nalice@example.com, Acme\n"
+    with patch(
+        "routers.campaigns.contact_model.bulk_insert",
+        return_value={
+            "inserted": 1,
+            "skipped_duplicate": 0,
+            "skipped_suppressed": 0,
+            "skipped_invalid": 0,
+        },
+    ) as bi:
+        resp = client.post("/campaigns/cW1/contacts", json={"csv_string": csv_text})
+
+    assert resp.status_code == 200
+    contacts = bi.call_args.args[1]
+    assert contacts[0]["email"] == "alice@example.com"
+    # Custom field keyed by the TRIMMED header, matching the chip's {{Company}}
+    assert "Company" in contacts[0]
+    assert " Company" not in contacts[0]
+
+
 def test_upload_rejects_oversized_csv(client, fake_db, auth_bypass):
     """Over 5 MB CSV string rejected."""
     campaign = {

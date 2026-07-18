@@ -428,9 +428,18 @@ async function _backendFetchOnce(base, endpoint, headers, options) {
     // including 4xx like quota/merge-tag errors). Storing it means active
     // users never hit the daily "sign in again" wall (a GB user lost a
     // send to exactly that on 2026-07-17). Absent on old backends.
+    // Guard: only overwrite if the token this request was sent with is
+    // STILL the stored one — a slow response landing after a logout (or
+    // a re-login) must not resurrect/clobber auth state.
     const refreshedJwt = resp.headers.get("X-Refresh-JWT");
     if (refreshedJwt) {
-      await chrome.storage.local.set({ backendJwt: refreshedJwt });
+      const current = await chrome.storage.local.get(["backendJwt"]);
+      if (
+        current.backendJwt &&
+        "Bearer " + current.backendJwt === headers.Authorization
+      ) {
+        await chrome.storage.local.set({ backendJwt: refreshedJwt });
+      }
     }
 
     if (!resp.ok) {

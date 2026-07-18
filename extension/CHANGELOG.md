@@ -2,7 +2,7 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## Unreleased (0.1.26)
+## v0.1.26 — 2026-07-18
 
 - **Your CSV columns now appear as clickable tag chips under the editor.** Upload a CSV and every column shows up as a {{tag}} you can click to insert at the cursor — no more typing a tag from memory and finding out at Send time that your file has no such column.
 - **Stay signed in while you're active.** Your OutMass session now renews itself in the background as you use it. Previously it quietly expired every 24 hours, and the first Send of the day could fail with a sign-in prompt. (Signing in again after a long break is still required — that part is a security feature.)

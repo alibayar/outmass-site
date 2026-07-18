@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "Microsoft 將要求授權，讓 OutMass 能透過您自己的 Outlook 帳戶傳送郵件並偵測回覆。OutMass 絕不會讀取您的其他郵件；您的郵件活動會被安全儲存，以支援排程傳送與自動跟進。"
+    "message": "Microsoft 将请求授权，以便 OutMass 通过您自己的 Outlook 帐户发送邮件并检测回复。OutMass 绝不会读取您的其他邮件；您的邮件系列会被安全保存，以支持定时发送和自动跟进。"
   },
   "appDesc": {
     "message": "直接从 Outlook Web 发送批量邮件营销活动"
@@ -1013,7 +1013,7 @@
     "message": "此 Microsoft 账户没有 OneDrive。请使用拥有 OneDrive 的账户登录，或在此次活动中不使用 OneDrive 附件。"
   },
   "oneDriveAuthStuck": {
-    "message": "登入後仍無法存取 OneDrive。您的 Microsoft 帳戶可能不包含 OneDrive，或您的組織已封鎖它。您可以在不使用 OneDrive 附件的情況下傳送此郵件活動，也可以來信 support@getoutmass.com，我們會協助您。"
+    "message": "登录后仍无法访问 OneDrive。您的 Microsoft 帐户可能不包含 OneDrive，或您的组织禁用了它。您可以在不使用 OneDrive 附件的情况下发送此邮件系列，也可以发邮件至 support@getoutmass.com，我们会帮您解决。"
   },
   "mergeTagUnknown": {
     "message": "你的 CSV 中没有名为“$TAGS$”的列。你可以改用 CSV 中的这些标签：$AVAILABLE$。请使用其中一个，或者从邮件中删除该标签。",
@@ -1035,7 +1035,7 @@
     }
   },
   "availableTagsLabel": {
-    "message": "來自您 CSV 的標籤（點擊插入）："
+    "message": "来自您 CSV 的标签（点击插入）："
   },
   "announcementsTitle": {
     "message": "通知"
