@@ -3,6 +3,7 @@ OutMass — Test Configuration & Fixtures
 Mocks Supabase so tests run without a real database.
 """
 
+import os
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -13,6 +14,21 @@ from fastapi.testclient import TestClient
 
 # Ensure backend/ is importable
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+
+# Local test runs must NEVER emit telemetry to production PostHog.
+# config.py reads POSTHOG_API_KEY at import time and load_dotenv does not
+# override pre-existing env vars, so blanking it HERE (before any project
+# import) defuses every `if POSTHOG_API_KEY:` capture guard — including
+# main.py's global exception handler, which otherwise reports test-triggered
+# exceptions as production $exception events (three failing-test KeyErrors
+# leaked into the live error report during the 0.1.26 cut, 2026-07-18).
+os.environ["POSTHOG_API_KEY"] = ""
+try:  # belt & braces: hard-disable the client too
+    import posthog
+
+    posthog.disabled = True
+except ImportError:
+    pass
 
 
 # ── Supabase Mock ──
