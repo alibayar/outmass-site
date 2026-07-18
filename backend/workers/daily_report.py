@@ -48,10 +48,16 @@ def _error_check_lines() -> list[str]:
         return ["🩺 Errors (12h): check not configured"]
 
     quoted = ", ".join(f"'{e}'" for e in HARD_ERROR_EVENTS + INFO_ERROR_EVENTS)
+    # `paywall` splits feature-gate touches (error_code starting with
+    # feature_locked…) from real failures: a free user tapping a locked
+    # feature is working-as-designed and must not raise the ⚠️ flag
+    # (bellmed 07-14, hrcargo 07-17 both false-alarmed as hard errors).
     hogql = (
-        "SELECT event, count() AS n, count(DISTINCT distinct_id) AS users "
+        "SELECT event, "
+        "startsWith(coalesce(properties.error_code, ''), 'feature_locked') AS paywall, "
+        "count() AS n, count(DISTINCT distinct_id) AS users "
         "FROM events WHERE timestamp >= now() - INTERVAL 12 HOUR "
-        f"AND event IN ({quoted}) GROUP BY event ORDER BY n DESC"
+        f"AND event IN ({quoted}) GROUP BY event, paywall ORDER BY n DESC"
     )
     try:
         resp = httpx.post(
@@ -75,14 +81,19 @@ def _error_check_lines() -> list[str]:
     if not rows:
         return ["🩺 Errors (12h): ✅ none"]
 
-    has_hard = any(r[0] in HARD_ERROR_EVENTS for r in rows)
+    has_hard = any(r[0] in HARD_ERROR_EVENTS and not bool(r[1]) for r in rows)
     lines = [
         "🩺 Errors (12h): ⚠️" if has_hard else "🩺 Errors (12h): ✅ no hard errors"
     ]
     for i, row in enumerate(rows):
-        event, n, users = row[0], int(row[1]), int(row[2])
+        event, paywall, n, users = row[0], bool(row[1]), int(row[2]), int(row[3])
         branch = "└─" if i == len(rows) - 1 else "├─"
-        info = "" if event in HARD_ERROR_EVENTS else " (info)"
+        if paywall:
+            info = " (info · paywall)"
+        elif event in HARD_ERROR_EVENTS:
+            info = ""
+        else:
+            info = " (info)"
         plural = "s" if users != 1 else ""
         lines.append(f"{branch} {event} ×{n} ({users} user{plural}){info}")
     return lines

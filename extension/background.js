@@ -423,6 +423,16 @@ async function _backendFetchOnce(base, endpoint, headers, options) {
       signal: controller.signal,
     });
 
+    // Sliding session: past half its 24h life, a valid JWT comes back
+    // refreshed in this header (any response the auth dependency ran for,
+    // including 4xx like quota/merge-tag errors). Storing it means active
+    // users never hit the daily "sign in again" wall (a GB user lost a
+    // send to exactly that on 2026-07-17). Absent on old backends.
+    const refreshedJwt = resp.headers.get("X-Refresh-JWT");
+    if (refreshedJwt) {
+      await chrome.storage.local.set({ backendJwt: refreshedJwt });
+    }
+
     if (!resp.ok) {
       const errData = await resp.json().catch(() => ({}));
       // FastAPI puts our structured errors under errData.detail. For 402 we

@@ -342,7 +342,7 @@ def test_error_check_clean_window():
 def test_error_check_flags_hard_errors_and_marks_info():
     from workers import daily_report
 
-    rows = [["send_failed", 2, 1], ["oauth_failed", 3, 2]]
+    rows = [["send_failed", 0, 2, 1], ["oauth_failed", 0, 3, 2]]
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
          patch("workers.daily_report.httpx.post") as post:
         post.return_value = MagicMock(
@@ -358,7 +358,7 @@ def test_error_check_flags_hard_errors_and_marks_info():
 def test_error_check_soft_only_is_not_alarming():
     from workers import daily_report
 
-    rows = [["oauth_failed", 1, 1]]
+    rows = [["oauth_failed", 1, 1, 1]]
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
          patch("workers.daily_report.httpx.post") as post:
         post.return_value = MagicMock(
@@ -367,6 +367,51 @@ def test_error_check_soft_only_is_not_alarming():
         lines = daily_report._error_check_lines()
 
     assert lines[0] == "🩺 Errors (12h): ✅ no hard errors"
+
+
+def test_error_check_paywall_codes_are_info_not_hard():
+    """A free user tapping a locked feature emits e.g. send_failed with
+    error_code=feature_locked_scheduled_sending. That's working-as-
+    designed — it must render as info·paywall and must NOT flip the ⚠️
+    flag (bellmed 07-14 / hrcargo 07-17 false alarms)."""
+    from workers import daily_report
+
+    rows = [
+        ["send_failed", 1, 1, 1],              # paywall touch
+        ["ai_email_generate_failed", 1, 1, 1], # paywall touch
+    ]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": rows}
+        )
+        lines = daily_report._error_check_lines()
+
+    assert lines[0] == "🩺 Errors (12h): ✅ no hard errors"
+    assert "(info · paywall)" in lines[1]
+    assert "(info · paywall)" in lines[2]
+
+
+def test_error_check_mixed_paywall_and_real_failures():
+    """The same event name can carry both paywall and real rows — the
+    real one must still raise ⚠️ and render without the info suffix."""
+    from workers import daily_report
+
+    rows = [
+        ["send_failed", 0, 2, 1],  # real failures
+        ["send_failed", 1, 1, 1],  # paywall touch
+    ]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": rows}
+        )
+        lines = daily_report._error_check_lines()
+
+    assert lines[0] == "🩺 Errors (12h): ⚠️"
+    assert "send_failed ×2 (1 user)" in lines[1]
+    assert lines[1].endswith("(1 user)")
+    assert "(info · paywall)" in lines[2]
 
 
 def test_error_check_survives_posthog_outage():

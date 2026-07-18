@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "Microsoft pedirá permiso para que OutMass envíe correos y detecte respuestas desde tu propia cuenta de Outlook. Nunca almacenamos el contenido de tus correos."
+    "message": "Microsoft pedirá permiso para que OutMass envíe correos y detecte respuestas desde tu propia cuenta de Outlook. OutMass nunca lee tus demás correos; tus campañas se guardan de forma segura para que funcionen la programación y los seguimientos."
   },
   "appDesc": {
     "message": "Campañas de correo masivo directamente desde Outlook Web"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "Etiquetas de tu CSV (haz clic para insertar):"
   },
   "announcementsTitle": {
     "message": "Notificaciones"

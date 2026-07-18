@@ -716,6 +716,7 @@
       if (notes.length) msg += " (" + notes.join(", ") + ")";
       csvCount.textContent = msg;
 
+      renderMergeTagHint(headers);
       updateSendButton();
       log("CSV loaded:", file.name, rows.length, "rows,", dupCount,
           "duplicates removed,", emptyEmailCount, "skipped (no email)");
@@ -735,9 +736,58 @@
     csvDropzone.style.display = "block";
     csvInfo.style.display = "none";
     csvInput.value = "";
+    renderMergeTagHint(null);
     updateSendButton();
     log("CSV cleared");
   });
+
+  // ── Merge-tag hint: clickable {{column}} chips under the editor ──
+  //
+  // Users kept typing tags that didn't match their CSV columns and only
+  // found out at Send/Test time (a GB user hit unknown_merge_tags six
+  // times across two days, 2026-07-16/17). The reactive error already
+  // lists valid tags; this makes them visible BEFORE the first mistake.
+  // At chip-click time document.activeElement is the chip itself, so we
+  // remember which editor field last had focus; body is the default.
+  var _lastMergeTarget = null;
+  [subjectInput, bodyInput].forEach(function (field) {
+    if (!field) return;
+    field.addEventListener("focus", function () { _lastMergeTarget = field; });
+  });
+
+  function renderMergeTagHint(headers) {
+    var hint = document.getElementById("merge-tags-hint");
+    var list = document.getElementById("merge-tags-list");
+    if (!hint || !list) return;
+    list.innerHTML = "";
+    if (!headers || !headers.length) {
+      hint.style.display = "none";
+      return;
+    }
+    // Cap the row for absurdly wide CSVs — 20 chips covers real usage.
+    headers.slice(0, 20).forEach(function (h) {
+      if (!h) return;
+      var chip = document.createElement("button");
+      chip.type = "button";
+      chip.className = "merge-tag-chip";
+      chip.textContent = "{{" + h + "}}";
+      chip.addEventListener("click", function () {
+        insertAtCursor(_lastMergeTarget || bodyInput, "{{" + h + "}}");
+        track("merge_tag_chip_inserted");
+      });
+      list.appendChild(chip);
+    });
+    hint.style.display = "block";
+  }
+
+  function insertAtCursor(field, text) {
+    var start = typeof field.selectionStart === "number" ? field.selectionStart : field.value.length;
+    var end = typeof field.selectionEnd === "number" ? field.selectionEnd : start;
+    field.value = field.value.slice(0, start) + text + field.value.slice(end);
+    var pos = start + text.length;
+    field.focus();
+    try { field.setSelectionRange(pos, pos); } catch (e) { /* ignore */ }
+  }
 
   // ── CSV template download (example file with 3 locale-specific sample rows) ──
   var csvTemplateLink = document.getElementById("csv-template-link");

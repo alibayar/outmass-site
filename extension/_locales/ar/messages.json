@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "سيطلب Microsoft الإذن لـ OutMass بإرسال رسائل البريد واكتشاف الردود من حساب Outlook الخاص بك. لا نُخزِّن محتوى بريدك الإلكتروني أبدًا."
+    "message": "سيطلب Microsoft الإذن لكي يتمكن OutMass من إرسال رسائل البريد واكتشاف الردود من حساب Outlook الخاص بك. لا يقرأ OutMass رسائلك الأخرى أبدًا؛ ويتم حفظ حملاتك بأمان لكي تعمل الجدولة ورسائل المتابعة."
   },
   "appDesc": {
     "message": "حملات بريد إلكتروني جماعية مباشرة من Outlook Web"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "وسوم من ملف CSV الخاص بك (انقر للإدراج):"
   },
   "announcementsTitle": {
     "message": "الإشعارات"

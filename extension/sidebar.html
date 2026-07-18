@@ -104,6 +104,12 @@
     <div class="form-group">
       <label for="body" data-i18n="labelBody">Email Content</label>
       <textarea id="body" rows="8" data-i18n-placeholder="placeholderBody" placeholder="Hello {{firstName}},&#10;&#10;We have a great offer for {{company}}..."></textarea>
+      <!-- Populated from the uploaded CSV's columns; hidden until a CSV
+           is loaded. Clicking a chip inserts the tag at the cursor. -->
+      <div id="merge-tags-hint" class="merge-tags-hint" style="display:none;">
+        <span class="merge-tags-label" data-i18n="availableTagsLabel">Tags from your CSV (click to insert):</span>
+        <span id="merge-tags-list"></span>
+      </div>
     </div>
 
     <!-- Attachments (OneDrive sharing links) -->

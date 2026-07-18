@@ -238,6 +238,35 @@ body {
   font-size: 13px;
 }
 
+.merge-tags-hint {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #605e5c;
+  line-height: 1.8;
+}
+
+.merge-tags-label {
+  margin-right: 4px;
+}
+
+.merge-tag-chip {
+  display: inline-block;
+  margin: 0 4px 2px 0;
+  padding: 1px 7px;
+  background: #f3f2f1;
+  border: 1px solid #d2d0ce;
+  border-radius: 10px;
+  font-family: Consolas, Menlo, monospace;
+  font-size: 11px;
+  color: #323130;
+  cursor: pointer;
+}
+
+.merge-tag-chip:hover {
+  background: #e1dfdd;
+  border-color: #0078d4;
+}
+
 .csv-info #csv-filename {
   font-weight: 600;
 }

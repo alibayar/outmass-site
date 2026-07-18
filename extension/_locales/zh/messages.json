@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "Microsoft 会请求授权，让 OutMass 从您自己的 Outlook 账户发送邮件并检测回复。我们绝不存储您的邮件内容。"
+    "message": "Microsoft 將要求授權，讓 OutMass 能透過您自己的 Outlook 帳戶傳送郵件並偵測回覆。OutMass 絕不會讀取您的其他郵件；您的郵件活動會被安全儲存，以支援排程傳送與自動跟進。"
   },
   "appDesc": {
     "message": "直接从 Outlook Web 发送批量邮件营销活动"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "來自您 CSV 的標籤（點擊插入）："
   },
   "announcementsTitle": {
     "message": "通知"

@@ -23,6 +23,7 @@ from fastapi import (
     HTTPException,
     Query,
     Request,
+    Response,
 )
 from fastapi.responses import RedirectResponse, HTMLResponse
 from jose import jwt
@@ -87,11 +88,14 @@ class AuthResponse(BaseModel):
 
 
 def create_jwt(user_id: str, email: str) -> str:
+    now = datetime.now(timezone.utc)
     payload = {
         "sub": user_id,
         "email": email,
-        "exp": datetime.now(timezone.utc)
-        + timedelta(hours=JWT_EXPIRATION_HOURS),
+        # iat powers the sliding refresh in get_current_user: tokens past
+        # half their life get silently reissued via X-Refresh-JWT.
+        "iat": now,
+        "exp": now + timedelta(hours=JWT_EXPIRATION_HOURS),
     }
     return jwt.encode(payload, JWT_SECRET, algorithm=JWT_ALGORITHM)
 
@@ -104,6 +108,7 @@ def decode_jwt(token: str) -> dict:
 
 
 async def get_current_user(
+    response: Response,
     authorization: str = Header(...),
     x_extension_version: Annotated[str | None, Header()] = None,
 ) -> dict:
@@ -112,6 +117,13 @@ async def get_current_user(
     Also records the calling extension's version (sent via X-Extension-Version
     header). Both the activity timestamp and the version write are gated by
     a 15-minute rate-limiter inside maybe_touch_activity, so this is cheap.
+
+    Sliding refresh: a VALID token past half its 24h life gets a fresh
+    replacement in the X-Refresh-JWT response header. Active users
+    therefore never hit the daily "sign in again" wall (hrcargo lost a
+    send to it on 2026-07-17); a client idle past the full TTL still
+    expires normally, so the security posture is unchanged. Old
+    extensions simply ignore the header.
     """
     if not authorization.startswith("Bearer "):
         raise HTTPException(status_code=401, detail="Invalid auth header")
@@ -122,6 +134,16 @@ async def get_current_user(
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
     user_model.maybe_touch_activity(user, extension_version=x_extension_version)
+
+    iat = payload.get("iat")
+    half_life_seconds = JWT_EXPIRATION_HOURS * 3600 / 2
+    now_ts = datetime.now(timezone.utc).timestamp()
+    # Tokens minted before the iat claim existed refresh unconditionally —
+    # they're at most one TTL old anyway.
+    if iat is None or (now_ts - float(iat)) > half_life_seconds:
+        response.headers["X-Refresh-JWT"] = create_jwt(
+            user_id, payload.get("email") or user.get("email") or ""
+        )
     return user
 
 

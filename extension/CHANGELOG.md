@@ -4,7 +4,14 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 ## Unreleased (0.1.26)
 
+- **Your CSV columns now appear as clickable tag chips under the editor.** Upload a CSV and every column shows up as a {{tag}} you can click to insert at the cursor — no more typing a tag from memory and finding out at Send time that your file has no such column.
+- **Stay signed in while you're active.** Your OutMass session now renews itself in the background as you use it. Previously it quietly expired every 24 hours, and the first Send of the day could fail with a sign-in prompt. (Signing in again after a long break is still required — that part is a security feature.)
 - **No more repeated sign-in windows when adding a OneDrive attachment.** If OneDrive access couldn't be enabled, the picker used to open the Microsoft sign-in window again and again. Now it asks at most once per attempt and then explains what's going on (e.g. your Microsoft account may not include OneDrive) and how to proceed. The underlying authorization bug was fixed on our servers, so for most people OneDrive attachments simply work now — no extension update needed.
+- Clearer wording on the Microsoft-permissions notice about what OutMass stores: OutMass never reads your other emails, and your campaigns are stored securely to power scheduling and follow-ups.
+
+### Behind the scenes (backend — affects all extension versions)
+
+- **Follow-ups now skip anyone who has replied.** If a recipient answers your campaign, scheduled follow-ups ("didn't open" / "didn't click") will no longer be sent to them. Nobody gets an automated bump mid-conversation.
 
 ## v0.1.25 — 2026-07-15
 

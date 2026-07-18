@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "Microsoft は、OutMass がご自身の Outlook アカウントからメールを送信し、返信を検知するための許可を求めます。メールの内容を保存することはありません。"
+    "message": "OutMass がお客様自身の Outlook アカウントからメールを送信し、返信を検出できるよう、Microsoft が許可を求めます。OutMass が他のメールを読むことはありません。キャンペーンは、予約送信とフォローアップのために安全に保存されます。"
   },
   "appDesc": {
     "message": "Outlook Webから直接一括メールキャンペーンを送信"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "CSV のタグ（クリックで挿入）:"
   },
   "announcementsTitle": {
     "message": "お知らせ"

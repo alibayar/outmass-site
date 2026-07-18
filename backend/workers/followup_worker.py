@@ -122,13 +122,21 @@ def process_followups():
 
 
 def _get_filtered_contacts(db, campaign_id: str, condition: str) -> list[dict]:
-    """Get contacts matching the follow-up condition."""
+    """Get contacts matching the follow-up condition.
+
+    A recipient who REPLIED is always excluded, regardless of condition:
+    bumping someone mid-conversation reads as spam and is the #1 thing
+    users expect follow-ups to never do (the site briefly promised it
+    before the feature existed — 2026-07-15 claims audit, backlog item
+    shipped 2026-07-18). reply_detector stamps contacts.replied_at.
+    """
     query = (
         db.table("contacts")
         .select("*")
         .eq("campaign_id", campaign_id)
         .eq("status", "sent")
         .eq("unsubscribed", False)
+        .is_("replied_at", "null")
     )
 
     if condition == "not_opened":

@@ -173,13 +173,13 @@ rare, deliberately deferred:
    Starter hit an endless consent-window loop). Backend half (persist scoped
    access token without refresh_token; license-403 → no_onedrive) ships with
    the next backend deploy; the sidebar guard rides 0.1.26.
-1. **popupConsentExplainer says "We never store your email content"** — the same
-   overstatement the audit killed on the site lives in the EXTENSION consent
-   explainer (11 locales). Soften in 0.1.26 to the honest framing (sends via
-   your own account, never reads your inbox, campaign drafts stored to power
-   scheduling — mirroring the corrected pricing FAQ).
-2. **Reply should cancel pending follow-ups** — the site used to CLAIM it,
-   users expect it, and the data exists (reply_detector stamps replied_at)
+1. ✅ **popupConsentExplainer softened (2026-07-18, in master for 0.1.26)** —
+   honest framing in all 11 locales: never reads your other emails; campaigns
+   stored securely to power scheduling and follow-ups.
+2. ✅ **Reply cancels pending follow-ups (2026-07-18, backend — live on next
+   deploy)** — followup_worker excludes contacts with replied_at for every
+   condition; tests in test_followup_reply_cancel.py. (Site copy can now
+   truthfully claim it again — add to Pro feature bullets AFTER deploy.)
    but followup_worker never reads it. Small real feature: exclude
    contacts with replied_at from follow-up sends. Turns the corrected copy
    back into a truthful selling point.

@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "Microsoft fragt nach der Berechtigung für OutMass, E-Mails von Ihrem eigenen Outlook-Konto zu senden und Antworten zu erkennen. Wir speichern Ihre E-Mail-Inhalte niemals."
+    "message": "Microsoft fragt nach der Berechtigung, damit OutMass E-Mails über Ihr eigenes Outlook-Konto senden und Antworten erkennen kann. OutMass liest niemals Ihre anderen E-Mails; Ihre Kampagnen werden sicher gespeichert, damit geplante Sendungen und Follow-ups funktionieren."
   },
   "appDesc": {
     "message": "Massen-E-Mail-Kampagnen direkt aus Outlook Web"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "Tags aus Ihrer CSV (zum Einfügen klicken):"
   },
   "announcementsTitle": {
     "message": "Benachrichtigungen"

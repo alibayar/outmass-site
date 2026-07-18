@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "Microsoft will ask permission for OutMass to send emails and detect replies from your own Outlook account. We never store your email content."
+    "message": "Microsoft will ask permission for OutMass to send emails and detect replies from your own Outlook account. OutMass never reads your other emails; your campaigns are stored securely so scheduling and follow-ups can work."
   },
   "appDesc": {
     "message": "Mass email campaigns directly from Outlook Web"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "Tags from your CSV (click to insert):"
   },
   "announcementsTitle": {
     "message": "Notifications"

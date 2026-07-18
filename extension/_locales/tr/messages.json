@@ -14,7 +14,7 @@
     }
   },
   "popupConsentExplainer": {
-    "message": "Microsoft, OutMass'in kendi Outlook hesabınızdan e-posta göndermesi ve yanıtları algılaması için izin isteyecek. E-posta içeriğinizi asla saklamayız."
+    "message": "Microsoft, OutMass'in kendi Outlook hesabınızdan e-posta göndermesi ve yanıtları algılaması için izin isteyecek. OutMass diğer e-postalarınızı asla okumaz; kampanyalarınız, zamanlama ve takip gönderimlerinin çalışabilmesi için güvenle saklanır."
   },
   "appDesc": {
     "message": "Outlook Web üzerinden toplu e-posta kampanyaları"
@@ -1033,6 +1033,9 @@
         "content": "$1"
       }
     }
+  },
+  "availableTagsLabel": {
+    "message": "CSV'nizdeki etiketler (eklemek için tıklayın):"
   },
   "announcementsTitle": {
     "message": "Bildirimler"
