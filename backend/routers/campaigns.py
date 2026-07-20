@@ -40,6 +40,7 @@ from models import contact as contact_model
 from models import followup as followup_model
 from models import user as user_model
 from routers.auth import get_current_user
+from utils import welcome_email
 from utils.merge_tags import CONTACT_TAGS, find_malformed_tags, find_unknown_tags
 from utils.send_classify import _classify_failure  # re-exported for the send loop
 
@@ -702,6 +703,22 @@ async def send_campaign(
         user,
         suppressed_emails,
     )
+
+    # Quota-capped: the skipped recipients stay 'pending' and the
+    # auto_resume_partial_campaigns beat sends them automatically once the
+    # rolling reset (or an upgrade) restores headroom. Tell the user by
+    # email so nobody has to remember a Resume click (2026-07-20: a
+    # Starter capped at exactly 2,500 with 250 recipients parked).
+    if quota_skipped > 0:
+        next_reset = user_model.next_reset_date(user)
+        background_tasks.add_task(
+            welcome_email.send_quota_capped_email,
+            user.get("email"),
+            user.get("name"),
+            quota_skipped,
+            limit,
+            next_reset.isoformat() if next_reset else None,
+        )
 
     return {
         "queued": len(send_list),

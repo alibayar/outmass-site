@@ -219,6 +219,21 @@ def _add_months(d: date, months: int) -> date:
     return date(year, month, min(d.day, last_day))
 
 
+def next_reset_date(user: dict) -> date | None:
+    """First day of the NEXT quota period (rolling anchor + 1 month).
+
+    Callers should run check_monthly_reset first so the anchor is
+    current. Used by the quota-cap email to tell the user when their
+    pending recipients will auto-resume.
+    """
+    reset_date = user.get("month_reset_date")
+    if not reset_date:
+        return None
+    if isinstance(reset_date, str):
+        reset_date = date.fromisoformat(reset_date)
+    return _add_months(reset_date, 1)
+
+
 def check_monthly_reset(user: dict, today: date | None = None):
     """Reset the quota counters when the user's billing-anchored month rolls
     over.

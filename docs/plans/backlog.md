@@ -166,6 +166,14 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
+### ⬜ 0.1.27 queue
+1. **Partial-send quota message text update ×11** — the in-app alert still says
+   "Resume sends them after an upgrade or your monthly reset"; since 2026-07-20
+   the backend auto-resumes capped recipients (auto_resume_partial_campaigns
+   beat + quota-cap email). Update wording to "they'll be sent automatically
+   after your reset — or upgrade to send them now". Harmless meanwhile (user
+   goes to click Resume, finds the campaign already completed).
+
 ### ⬜ Claims-audit leftovers (from the 2026-07-15 site audit)
 0. **[READY, in master] OneDrive picker consent-loop guard** — one-shot
    `_oneDriveAuthAttempted` guard + `oneDriveAuthStuck` message (11 locales) +

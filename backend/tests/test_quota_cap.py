@@ -94,6 +94,48 @@ def test_send_within_quota_reports_no_cap(client, fake_db, auth_bypass):
     assert body["quota_skipped"] == 0
 
 
+def test_capped_send_queues_quota_email(client, fake_db):
+    """quota_skipped > 0 → the 'recipients saved, auto-resume' email is
+    dispatched with the right numbers and the next rolling reset date."""
+    from models import user as user_model
+
+    user = {**FAKE_USER, "emails_sent_this_month": FREE_PLAN_MONTHLY_LIMIT - 2}
+    app = _override_user(user)
+    try:
+        camp = _campaign("cq4")
+        _install(fake_db, camp, _contacts(5), user)
+        with patch("models.ms_token.get_fresh_access_token", return_value="tok"), \
+             patch("routers.campaigns._send_single_email",
+                   new=AsyncMock(return_value={"success": True})), \
+             patch("routers.campaigns.welcome_email.send_quota_capped_email") as mail:
+            resp = client.post("/campaigns/cq4/send",
+                               headers={"Authorization": "Bearer t"})
+    finally:
+        from routers.auth import get_current_user
+        app.dependency_overrides.pop(get_current_user, None)
+
+    assert resp.status_code == 200
+    mail.assert_called_once()
+    args = mail.call_args.args
+    assert args[0] == user["email"]
+    assert args[2] == 3  # skipped
+    assert args[3] == FREE_PLAN_MONTHLY_LIMIT
+    assert args[4] == user_model.next_reset_date(user).isoformat()
+
+
+def test_uncapped_send_queues_no_quota_email(client, fake_db, auth_bypass):
+    camp = _campaign("cq5")
+    _install(fake_db, camp, _contacts(3), FAKE_USER)
+    with patch("models.ms_token.get_fresh_access_token", return_value="tok"), \
+         patch("routers.campaigns._send_single_email",
+               new=AsyncMock(return_value={"success": True})), \
+         patch("routers.campaigns.welcome_email.send_quota_capped_email") as mail:
+        resp = client.post("/campaigns/cq5/send",
+                           headers={"Authorization": "Bearer t"})
+    assert resp.status_code == 200
+    mail.assert_not_called()
+
+
 def test_limit_exceeded_message_is_english(client, fake_db):
     """Quota fully used → 402 limit_exceeded with an ENGLISH message."""
     user = {**FAKE_USER, "emails_sent_this_month": FREE_PLAN_MONTHLY_LIMIT}

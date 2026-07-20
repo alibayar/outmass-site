@@ -156,6 +156,14 @@ celery.conf.beat_schedule = {
         # (reverting clears manual_promo_until) so re-runs are safe no-ops.
         "schedule": crontab(hour=4, minute=45),
     },
+    "auto-resume-partial-campaigns": {
+        "task": "workers.scheduled_worker.auto_resume_partial_campaigns",
+        # 06:00 UTC daily — after the maintenance window. Flips quota-capped
+        # 'partial' campaigns back to 'scheduled' once the owner's rolling
+        # reset (or an upgrade) restored headroom; the regular send beat then
+        # finishes them. Removes the manual Resume click after a quota cap.
+        "schedule": crontab(hour=6, minute=0),
+    },
     "detect-replies": {
         "task": "workers.reply_detector.detect_replies",
         # Daily at 05:00 UTC — after the morning send-window close

@@ -2,7 +2,32 @@
 OutMass — Campaign model helpers
 """
 
+from datetime import datetime, timedelta, timezone
+
 from database import get_db
+
+
+def get_recent_partial_campaigns(max_age_days: int = 14) -> list[dict]:
+    """Partial campaigns young enough to auto-resume.
+
+    Used by the auto_resume_partial_campaigns beat: 'partial' campaigns
+    (quota-capped or transiently failed sends) get flipped back to
+    'scheduled' once the owner has quota headroom again. The age window
+    exists so a months-old abandoned partial can never resurrect itself
+    and surprise-send — only recent work-in-progress qualifies.
+    """
+    cutoff = (
+        datetime.now(timezone.utc) - timedelta(days=max_age_days)
+    ).isoformat()
+    result = (
+        get_db()
+        .table("campaigns")
+        .select("*")
+        .eq("status", "partial")
+        .gte("created_at", cutoff)
+        .execute()
+    )
+    return result.data or []
 
 
 def create_campaign(

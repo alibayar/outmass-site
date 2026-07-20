@@ -741,3 +741,88 @@ def expire_manual_promos():
         reverted += 1
 
     return {"reverted": reverted, "considered": len(rows)}
+
+
+# ── Auto-resume quota-capped partial campaigns ──
+#
+# A send that hits the monthly quota leaves the rest of the list 'pending'
+# and the campaign 'partial'. Until 2026-07-20 the ONLY way those went out
+# was the user remembering to click Resume after their reset — a Starter
+# hit 2,500 exactly with 250 recipients parked behind that click. This
+# beat removes the click: once the owner has headroom again (rolling reset
+# or an upgrade), the campaign flips back to 'scheduled' and the regular
+# process_scheduled_campaigns beat finishes it with ALL its existing
+# guards (quota slice, daily cap, token refresh, suppression). No new send
+# path is introduced here — this task only changes campaign status.
+
+AUTO_RESUME_MAX_AGE_DAYS = 14
+
+
+@celery.task
+def auto_resume_partial_campaigns():
+    """Flip recent 'partial' campaigns to 'scheduled' when the owner has
+    quota headroom again.
+
+    Guards:
+      - only campaigns created in the last AUTO_RESUME_MAX_AGE_DAYS days —
+        an old abandoned partial must never resurrect itself and
+        surprise-send
+      - check_monthly_reset runs first, so the reset happens even if the
+        user never logs in on their anniversary day
+      - requires_reauth owners are skipped (retried on later runs once
+        they reconnect)
+      - campaigns with nothing resumable left are closed out as 'sent'
+        (mirrors the manual Resume endpoint)
+      - quota is NOT consumed here; the send beat re-enforces it and
+        keeps over-quota campaigns scheduled for the next window
+    """
+    from models import campaign as campaign_model
+    from models import contact as contact_model
+    from models import user as user_model
+
+    campaigns = campaign_model.get_recent_partial_campaigns(
+        AUTO_RESUME_MAX_AGE_DAYS
+    )
+    resumed = 0
+    closed = 0
+    users_cache: dict = {}
+
+    for campaign in campaigns:
+        uid = campaign.get("user_id")
+        if uid not in users_cache:
+            users_cache[uid] = user_model.get_by_id(uid)
+        user = users_cache[uid]
+        if not user or user.get("requires_reauth"):
+            continue
+
+        user_model.check_monthly_reset(user)
+        plan = user.get("plan", "free")
+        if plan == "free":
+            limit = FREE_PLAN_MONTHLY_LIMIT
+        elif plan == "starter":
+            limit = STARTER_PLAN_MONTHLY_LIMIT
+        else:
+            limit = PRO_PLAN_MONTHLY_LIMIT
+        if limit - user.get("emails_sent_this_month", 0) <= 0:
+            continue
+
+        pending = contact_model.get_resumable_contacts(campaign["id"])
+        if not pending:
+            campaign_model.update_campaign(campaign["id"], {"status": "sent"})
+            closed += 1
+            continue
+
+        campaign_model.update_campaign(
+            campaign["id"],
+            {
+                "status": "scheduled",
+                "scheduled_for": datetime.now(timezone.utc).isoformat(),
+            },
+        )
+        resumed += 1
+
+    return {
+        "checked": len(campaigns),
+        "resumed": resumed,
+        "closed_as_sent": closed,
+    }

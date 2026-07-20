@@ -143,6 +143,83 @@ def send_welcome_email(email: str, name: str | None = None) -> bool:
     return _dispatch(email, subject, text, html)
 
 
+def send_quota_capped_email(
+    email: str,
+    name: str | None,
+    skipped: int,
+    limit: int,
+    next_reset_iso: str | None,
+) -> bool:
+    """Best-effort 'your remaining recipients are saved' email. Never raises.
+
+    Fired when a send gets quota-capped (quota_skipped > 0): the capped
+    recipients stay pending and the auto_resume_partial_campaigns beat
+    sends them automatically once the quota resets — this email tells the
+    user exactly that, so nobody has to remember a Resume button
+    (2026-07-20: a Starter capped at exactly 2,500 with 250 parked).
+    """
+    first = _first_name(name)
+
+    reset_phrase = "when your monthly quota resets"
+    if next_reset_iso:
+        try:
+            from datetime import date
+
+            d = date.fromisoformat(next_reset_iso)
+            reset_phrase = f"on {d.strftime('%B %d')}, when your monthly quota resets"
+        except ValueError:
+            pass
+
+    subject = (
+        f"{skipped} recipients saved — they'll be sent automatically"
+    )
+
+    text = (
+        "Hi " + first + ",\n"
+        "\n"
+        f"Your campaign just reached your monthly limit of {limit:,} emails.\n"
+        f"The remaining {skipped} recipients are safely saved — nothing was\n"
+        "lost, and there's nothing you need to do.\n"
+        "\n"
+        f"OutMass will send them automatically {reset_phrase}.\n"
+        "\n"
+        "Want them out sooner? Upgrading raises your limit immediately and\n"
+        "the saved recipients go out on the next sending run — open the\n"
+        "OutMass panel and click Upgrade.\n"
+        "\n"
+        "Questions? Just reply — it comes straight to me.\n"
+        "\n"
+        "Ali\n"
+        "Founder, OutMass\n"
+        "https://getoutmass.com\n"
+    )
+
+    html = (
+        '<div style="font-family:-apple-system,BlinkMacSystemFont,Segoe UI,Roboto,'
+        'sans-serif;max-width:560px;margin:0 auto;color:#323130;">'
+        f'<h2 style="font-size:20px;margin:0 0 14px;">{skipped} recipients saved 📬</h2>'
+        '<p style="font-size:14px;line-height:1.6;">Hi ' + first + ",</p>"
+        '<p style="font-size:14px;line-height:1.6;">Your campaign just reached '
+        f"your monthly limit of <strong>{limit:,} emails</strong>. The remaining "
+        f"<strong>{skipped} recipients are safely saved</strong> — nothing was "
+        "lost, and there's nothing you need to do.</p>"
+        '<p style="font-size:14px;line-height:1.6;">OutMass will send them '
+        f"<strong>automatically</strong> {reset_phrase}.</p>"
+        '<p style="font-size:14px;line-height:1.6;">Want them out sooner? '
+        "Upgrading raises your limit immediately and the saved recipients go "
+        "out on the next sending run — open the OutMass panel and click "
+        "<strong>Upgrade</strong>.</p>"
+        '<p style="font-size:14px;line-height:1.6;">Questions? Just reply — it '
+        "comes straight to me.</p>"
+        '<p style="font-size:14px;line-height:1.6;">Ali<br>'
+        "Founder, OutMass<br>"
+        '<a href="https://getoutmass.com" style="color:#0078d4;">getoutmass.com</a></p>'
+        "</div>"
+    )
+
+    return _dispatch(email, subject, text, html)
+
+
 def send_upgrade_email(email: str, name: str | None, plan: str) -> bool:
     """Best-effort upgrade thank-you. Never raises. True = accepted.
 

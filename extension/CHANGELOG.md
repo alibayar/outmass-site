@@ -2,6 +2,12 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## Unreleased (0.1.27)
+
+### Behind the scenes (backend — affects all extension versions)
+
+- **Recipients skipped at your monthly limit now send themselves.** When a campaign hits your monthly quota, the remaining recipients used to wait for you to remember the Resume button after your reset. Now OutMass resumes them automatically as soon as your quota resets (or right after an upgrade) — and emails you at the moment of the cap so you know exactly how many are saved and when they'll go out.
+
 ## v0.1.26 — 2026-07-18
 
 - **Your CSV columns now appear as clickable tag chips under the editor.** Upload a CSV and every column shows up as a {{tag}} you can click to insert at the cursor — no more typing a tag from memory and finding out at Send time that your file has no such column.

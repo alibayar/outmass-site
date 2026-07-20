@@ -112,6 +112,38 @@ def test_upgrade_email_pro_quota_and_label():
     assert "Hi there," in payload["text"]  # missing name falls back
 
 
+def test_quota_capped_email_content():
+    from utils import welcome_email
+
+    with patch("utils.welcome_email.MAILERSEND_API_KEY", "key"), \
+         patch("utils.welcome_email.httpx.post") as post:
+        post.return_value = MagicMock(status_code=202, text="")
+        welcome_email.send_quota_capped_email(
+            "f@x.com", "Faisal K", 250, 2500, "2026-07-25"
+        )
+
+    payload = post.call_args.kwargs["json"]
+    assert "250 recipients saved" in payload["subject"]
+    assert "automatically" in payload["text"]
+    assert "July 25" in payload["text"]      # human-readable reset date
+    assert "2,500" in payload["text"]        # formatted limit
+    assert "Hi Faisal," in payload["text"]
+    assert "nothing you need to do" in payload["text"]
+
+
+def test_quota_capped_email_survives_missing_reset_date():
+    from utils import welcome_email
+
+    with patch("utils.welcome_email.MAILERSEND_API_KEY", "key"), \
+         patch("utils.welcome_email.httpx.post") as post:
+        post.return_value = MagicMock(status_code=202, text="")
+        welcome_email.send_quota_capped_email("f@x.com", None, 10, 250, None)
+
+    payload = post.call_args.kwargs["json"]
+    assert "when your monthly quota resets" in payload["text"]
+    assert "Hi there," in payload["text"]
+
+
 # ── webhook wiring: upgrade email once, replay-guarded ──
 
 
