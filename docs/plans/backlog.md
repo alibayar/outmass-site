@@ -166,6 +166,26 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
+### ⬜ Store-listing refresh — TRIGGER: Edge publishes 0.1.26 (Ali, 2026-07-21)
+Ali spotted stale text in the (TR) listing; audit the EN master + ALL listing
+languages in one pass, then regenerate translations (+ add pt-BR listing).
+Confirmed corrections from the TR screenshot:
+1. "Free — 50 emails/mo" → **250/mo** (ancient pre-launch number; underselling).
+2. "Starter — 2,000/mo" → **2,500/mo** (underselling).
+3. "10 interface languages" → 11 today, **13 once 0.1.27 ships** — sync the
+   number with whatever is LIVE at edit time (claims discipline).
+4. "send across timezones" → REMOVE — this exact claim was killed in the
+   2026-07-15 site audit but survives in listing translations.
+5. Follow-ups bullet: mark **Pro-only** (align with site decision b) and may
+   now truthfully add "stops automatically when someone replies".
+6. ADD: **Daily send limit** (live since 0.1.25 — the bellmed feature).
+7. ADD (optional): quota-capped recipients auto-resume after reset (live
+   2026-07-20).
+8. Verify the AI-writer "(Pro, 50/mo)" quota against config before keeping the
+   number; reconsider naming the model ("Claude destekli") in store copy.
+9. "30-day money-back guarantee" ✓ verified real (refund.html + pricing FAQ) —
+   keep.
+
 ### ⬜ 0.1.27 queue
 1. **Partial-send quota message text update ×11** — the in-app alert still says
    "Resume sends them after an upgrade or your monthly reset"; since 2026-07-20
