@@ -173,6 +173,21 @@ rare, deliberately deferred:
    beat + quota-cap email). Update wording to "they'll be sent automatically
    after your reset — or upgrade to send them now". Harmless meanwhile (user
    goes to click Resume, finds the campaign already completed).
+2. **New locales: pt_BR + pt_PT (11 → 13)** — approved by Ali 2026-07-21,
+   data-driven: 2 observed pt-BR users in 90 days (the only uncovered locale in
+   telemetry); pt_PT rides along nearly free. No generic "pt" code in Chrome —
+   both folders required (pt-PT does NOT fall back to pt_BR). At cut: translate
+   full messages.json ×2 in the correct variants, locale-consistency suite
+   enforces parity automatically. Mind script/variant consistency (zh lesson,
+   see memory release_adversarial_review). ALSO update item 1's new strings in
+   13 files, not 11.
+   - **Parallel, no release needed:** add pt-BR store-listing translation in
+     Chrome/Edge dashboards (discovery lever; roadmap draft's NL+CN item —
+     pt-BR now takes priority in that list).
+   - **NL: deliberately NOT added** — both observed NL users run en-US browser
+     UIs (self-selected English; NL = top English-proficiency market). Policy
+     stays demand-triggered: first real request/nl-locale telemetry → add same
+     week.
 
 ### ⬜ Claims-audit leftovers (from the 2026-07-15 site audit)
 0. **[READY, in master] OneDrive picker consent-loop guard** — one-shot
