@@ -387,6 +387,34 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
 
             logger.warning("Payment failed for customer %s", customer_id)
 
+            # Operator alert: a renewal failure used to be invisible —
+            # only a log line nobody reads. Faisal's 07-25 renewal was
+            # soft-declined ("Try again later") and we only learned from
+            # the Stripe dashboard a day later (2026-07-26). Same channel
+            # as chargeback alerts; best-effort, never raises.
+            user_email = "unresolved"
+            try:
+                r = (
+                    db.table("users")
+                    .select("email, plan")
+                    .eq("stripe_customer_id", customer_id)
+                    .execute()
+                )
+                if r.data:
+                    user_email = r.data[0].get("email") or "unresolved"
+            except Exception:  # noqa: BLE001
+                pass
+            amount = data_object.get("amount_due")
+            _telegram_alert(
+                "⚠️ OutMass renewal payment FAILED\n\n"
+                f"User: {user_email}\n"
+                f"Amount: ${(amount or 0) / 100:.2f}\n"
+                f"Customer: {customer_id}\n"
+                "Stripe will auto-retry (Smart Retries). If the retry "
+                "succeeds, the plan restores automatically via "
+                "customer.subscription.updated."
+            )
+
     # ── charge.dispute.created (chargeback filed) ──
     #
     # A chargeback is the customer's bank side-stepping us entirely to

@@ -127,6 +127,46 @@ def test_expired_session_without_posthog_key_still_returns_200(client, fake_db):
     capture.assert_not_called()
 
 
+def test_payment_failed_fires_telegram_alert(client, fake_db):
+    """A failed renewal must ping the operator (it used to be a silent
+    log line — Faisal's 07-25 soft-decline went unnoticed for a day)."""
+    from unittest.mock import patch as _patch
+
+    class _StableUsers(FakeQueryBuilder):
+        """update() must not clobber the stored row — the handler runs a
+        plan_updated_at update BEFORE the email lookup."""
+
+        def update(self, vals):
+            return self
+
+    fake_db.set_table(
+        "users",
+        _StableUsers(data=[{
+            "id": "u-f", "email": "payer@x.com", "plan": "starter",
+            "stripe_customer_id": "cus_f",
+        }]),
+    )
+    event = {
+        "type": "invoice.payment_failed",
+        "data": {"object": {"customer": "cus_f", "amount_due": 900}},
+    }
+    with _patch("routers.billing.stripe.Webhook.construct_event", return_value=event), \
+         _patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"), \
+         _patch("routers.billing._telegram_alert") as alert:
+        resp = client.post(
+            "/billing/webhook",
+            content=b"{}",
+            headers={"stripe-signature": "sig"},
+        )
+
+    assert resp.status_code == 200
+    alert.assert_called_once()
+    msg = alert.call_args.args[0]
+    assert "payment FAILED" in msg
+    assert "payer@x.com" in msg
+    assert "$9.00" in msg
+
+
 def test_create_checkout_emits_session_created_and_plan_metadata(
     client, fake_db, auth_bypass
 ):
