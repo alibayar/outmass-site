@@ -166,6 +166,27 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
+### ⬜ Microsoft-consent funnel leak (promoted from watch, Ali 2026-07-26)
+~5 anonymous users lost AT the Microsoft consent screen in 10 days (AU 07-17,
+BR 07-21, TR ×3 07-23, PH 07-25 — the PH one had a NEAR-PERFECT activation:
+29-recipient CSV + 6 chip insertions in 5 minutes, then bailed at consent).
+The 0.1.25 sign-in gate works — users now FIND and attempt OAuth (pre-gate
+they never did) — the drop is now at Microsoft's permissions screen itself.
+Ideas to explore: pre-OAuth trust panel (plain-language per-permission
+explainer with the honest popupConsentExplainer framing + "we can never read
+your inbox" + refund/privacy links), consent-decline follow-up UX (after
+oauth_failed=declined, show "what Microsoft asked and why" instead of a dead
+end), measure per-step funnel (oauth_started → completed rate) weekly.
+
+### ⬜ Suppressed-skip contacts stay 'pending' forever (found 2026-07-26)
+Both send loops (routers/campaigns._run_campaign_send and scheduled_worker)
+`continue` past suppressed/unsubscribed contacts WITHOUT marking them, so
+they sit in the resumable set indefinitely: inflate pending counts, and an
+auto-resumed campaign whose only "pending" are suppressed does one harmless
+scheduled→sent churn cycle. Fix: mark them (status or failure_reason
+'suppressed') at skip time in both loops + exclude from resumable. Touches
+Reports counts → decide display semantics before shipping.
+
 ### ⬜ Store-listing refresh — TRIGGER: Edge publishes 0.1.26 (Ali, 2026-07-21)
 Ali spotted stale text in the (TR) listing; audit the EN master + ALL listing
 languages in one pass, then regenerate translations (+ add pt-BR listing).

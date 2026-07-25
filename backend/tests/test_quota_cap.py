@@ -136,6 +136,53 @@ def test_uncapped_send_queues_no_quota_email(client, fake_db, auth_bypass):
     mail.assert_not_called()
 
 
+def test_capped_clean_send_lands_on_partial_status(client, fake_db):
+    """THE Faisal strand bug (2026-07-25): a quota-capped batch that sends
+    with zero errors used to close the campaign as 'sent' — leaving the
+    quota-skipped recipients 'pending' inside a campaign that neither the
+    Resume endpoint (409s on non-partial) nor the auto-resume beat
+    (queries status='partial') can ever see. Capped sends must land on
+    'partial' so the pending recipients stay reachable."""
+    user = {**FAKE_USER, "emails_sent_this_month": FREE_PLAN_MONTHLY_LIMIT - 2}
+    app = _override_user(user)
+    try:
+        camp = _campaign("cq6")
+        _install(fake_db, camp, _contacts(5), user)
+        with patch("models.ms_token.get_fresh_access_token", return_value="tok"), \
+             patch("routers.campaigns._send_single_email",
+                   new=AsyncMock(return_value={"success": True})), \
+             patch("routers.campaigns.welcome_email.send_quota_capped_email"), \
+             patch("models.campaign.update_campaign") as update:
+            resp = client.post("/campaigns/cq6/send",
+                               headers={"Authorization": "Bearer t"})
+    finally:
+        from routers.auth import get_current_user
+        app.dependency_overrides.pop(get_current_user, None)
+
+    assert resp.status_code == 200
+    assert resp.json()["quota_capped"] is True
+    final = update.call_args_list[-1]
+    assert final.args[0] == "cq6"
+    assert final.args[1] == {"status": "partial"}
+
+
+def test_uncapped_clean_send_still_lands_on_sent(client, fake_db, auth_bypass):
+    """No quota cap + no errors → 'sent' exactly as before."""
+    camp = _campaign("cq7")
+    _install(fake_db, camp, _contacts(3), FAKE_USER)
+    with patch("models.ms_token.get_fresh_access_token", return_value="tok"), \
+         patch("routers.campaigns._send_single_email",
+               new=AsyncMock(return_value={"success": True})), \
+         patch("models.campaign.update_campaign") as update:
+        resp = client.post("/campaigns/cq7/send",
+                           headers={"Authorization": "Bearer t"})
+
+    assert resp.status_code == 200
+    assert resp.json()["quota_capped"] is False
+    final = update.call_args_list[-1]
+    assert final.args[1] == {"status": "sent"}
+
+
 def test_limit_exceeded_message_is_english(client, fake_db):
     """Quota fully used → 402 limit_exceeded with an ENGLISH message."""
     user = {**FAKE_USER, "emails_sent_this_month": FREE_PLAN_MONTHLY_LIMIT}

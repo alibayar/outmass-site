@@ -702,6 +702,7 @@ async def send_campaign(
         x_ms_token,
         user,
         suppressed_emails,
+        quota_skipped > 0,
     )
 
     # Quota-capped: the skipped recipients stay 'pending' and the
@@ -743,6 +744,7 @@ async def _run_campaign_send(
     access_token: str,
     user: dict,
     suppressed_emails: set,
+    quota_capped: bool = False,
 ):
     """Send a campaign's recipients off the request path (FastAPI BackgroundTask).
 
@@ -819,8 +821,20 @@ async def _run_campaign_send(
             ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})
             campaign_model.update_campaign(campaign_id, {"status": "ab_testing"})
         else:
+            # A quota-capped batch that itself sends cleanly must still land
+            # on 'partial': the recipients skipped for quota stay 'pending',
+            # and BOTH resume paths (the Resume endpoint and the auto-resume
+            # beat) only look at 'partial' campaigns. Closing as 'sent' here
+            # stranded a Starter's 250 capped recipients invisibly —
+            # discovered 2026-07-25 when their promised auto-resume never
+            # fired (the campaign had closed as 'sent' on 07-20).
             campaign_model.update_campaign(
-                campaign_id, {"status": "sent" if not errors else "partial"}
+                campaign_id,
+                {
+                    "status": "sent"
+                    if not errors and not quota_capped
+                    else "partial"
+                },
             )
     except Exception:  # noqa: BLE001
         import logging
