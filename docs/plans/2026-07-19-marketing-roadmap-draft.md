@@ -177,3 +177,28 @@ Gerçekçi hedef: **haftada ~4–6 saat pazarlama**, bloklanmış, geri kalan za
 5. **Haftalık aktif gönderen / gönderilen kampanya** (ürün nabzı) — pazarlamanın getirdiği kullanıcı gerçekten değer alıyor ve tutunuyor mu.
 
 > Küçük N uyarısı: düzinelerce kurulumda haftalık conversion sayıları gürültülü. Çoğu deney için 2–4 hafta pencere kullan, günlük dalgalanmayla karar verme.
+
+---
+
+## Ek (2026-07-26): HeyReach analizi ve türetilen fikirler
+
+HeyReach = ajanslar için LinkedIn otomasyonu ("unlimited senders, flat fee",
+6.500+ şirket). Rakip DEĞİL — aynı alıcı (ajans/SDR/recruiter), farklı kanal.
+E-posta bacağını Instantly/Smartlead/EmailBison'a entegre ediyorlar; ekosistemde
+Outlook-native e-posta seçeneği YOK. LinkedIn otomasyonuna girmiyoruz (ToS/ban
+riski, kimliğimizle çelişir, ikinci ürün).
+
+1. **Agency/Team planı fikri (fiyatlandırma):** HeyReach'in kazanma nedeni
+   "hesap ekledikçe ceza yok" modeli. Bizde de sinyal var: skylineprp 2 koltuk,
+   aeezo takım değerlendirmesi. PMF sonrası aday: "Team — X koltuk, sabit fiyat".
+2. **"LinkedIn + Outlook outreach stack" içeriği (şimdi yapılabilir, $0):**
+   HeyReach verified-email bulur + CSV export eder → OutMass Outlook'tan
+   gönderir. SIFIR kod ile bugün çalışan gerçek workflow. How-to yazısı
+   Microsoft-ekosistemli ajansları yakalar; comparison sayfalarına iç link.
+3. **HeyReach'e ortaklık teması — SIRALI:** önce (2)'deki içerik yayında olsun
+   ve claims disiplini gereği yalnız gerçek akışı anlatsın; SONRA kısa outreach
+   maili ("Outlook bacağınız yok; işte çalışan workflow + yazı, entegrasyon
+   sayfanıza değer katarız"). İçeriksiz cold-pitch, 6 ödeyen müşterili bir
+   üründen 6.500-şirketli ürüne gidince yok sayılır; elde somut değer varken
+   gidilir. Ölçek eşitsizliği riski: yok denecek kadar az — en kötü ihtimal
+   cevapsızlık.
