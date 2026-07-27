@@ -191,14 +191,19 @@ riski, kimliğimizle çelişir, ikinci ürün).
 1. **Agency/Team planı fikri (fiyatlandırma):** HeyReach'in kazanma nedeni
    "hesap ekledikçe ceza yok" modeli. Bizde de sinyal var: skylineprp 2 koltuk,
    aeezo takım değerlendirmesi. PMF sonrası aday: "Team — X koltuk, sabit fiyat".
-2. **"LinkedIn + Outlook outreach stack" içeriği (şimdi yapılabilir, $0):**
-   HeyReach verified-email bulur + CSV export eder → OutMass Outlook'tan
-   gönderir. SIFIR kod ile bugün çalışan gerçek workflow. How-to yazısı
-   Microsoft-ekosistemli ajansları yakalar; comparison sayfalarına iç link.
-3. **HeyReach'e ortaklık teması — SIRALI:** önce (2)'deki içerik yayında olsun
-   ve claims disiplini gereği yalnız gerçek akışı anlatsın; SONRA kısa outreach
-   maili ("Outlook bacağınız yok; işte çalışan workflow + yazı, entegrasyon
-   sayfanıza değer katarız"). İçeriksiz cold-pitch, 6 ödeyen müşterili bir
-   üründen 6.500-şirketli ürüne gidince yok sayılır; elde somut değer varken
-   gidilir. Ölçek eşitsizliği riski: yok denecek kadar az — en kötü ihtimal
-   cevapsızlık.
+2. **✅ ONAYLANDI (Ali, 2026-07-26) — resmi roadmap maddesi:**
+   **"LinkedIn + Outlook outreach stack" yazısı.** Yerleşim: İçerik Motoru
+   katmanının İLK sırası (comparison'ların "alternatif" açısına karşı
+   "tamamlayıcı" açı; İçerik + Ortaklık katmanlarını birden besleyen tek
+   varlık). Mekanik: HeyReach verified-email bulur + CSV export eder →
+   OutMass Outlook'tan gönderir — SIFIR kod ile bugün çalışan gerçek
+   workflow. Claims disiplini: yalnız bu gerçek akış anlatılır. Comparison
+   sayfaları + yakalama sayfasına iç link.
+3. **✅ ONAYLANDI (Ali, 2026-07-26) — resmi roadmap maddesi:**
+   **HeyReach'e outreach.** Yerleşim: Ortaklıklar katmanı. TETİK: (2)'deki
+   yazı yayında (+ varsa ilk trafik verisi). Kısa, somut mail: "Outlook
+   bacağınızda native seçenek yok; işte çalışan workflow + yazısı;
+   entegrasyon sayfanıza değer katarız." İçeriksiz cold-pitch 6-müşterili
+   üründen 6.500-şirketli ürüne gidince yok sayılır; somut değerle gidilir.
+   Risk: en kötü ihtimal cevapsızlık.
+   **Uygulama sırası (Ali: "sırayla gidelim"): önce yazı → sonra outreach.**
