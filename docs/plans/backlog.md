@@ -187,10 +187,33 @@ scheduled→sent churn cycle. Fix: mark them (status or failure_reason
 'suppressed') at skip time in both loops + exclude from resumable. Touches
 Reports counts → decide display semantics before shipping.
 
-### ⬜ Store-listing refresh — TRIGGER: Edge publishes 0.1.26 (Ali, 2026-07-21)
-Ali spotted stale text in the (TR) listing; audit the EN master + ALL listing
-languages in one pass, then regenerate translations (+ add pt-BR listing).
-Confirmed corrections from the TR screenshot:
+### ✅ Store-listing refresh — DONE 2026-07-29 (content ready; Ali pastes to dashboards)
+Trigger fired: Edge published 0.1.26 on 07-29. All 9 points applied to
+`docs/store-listing/listings.json` (10 languages edited + NEW pt_BR entry) via
+a 15-agent translate+verify workflow; `check-limits.js` guards limits + banned
+claims (timezone phrases, "Claude"). Outcomes vs the audit:
+- Point 1-2 (250/2500): repo copy was already correct — the DASHBOARDS are
+  staler than the repo; every language must be re-pasted, not just TR.
+- Point 3 (language count): stays **10** — the 11th `_locales` folder is `zh`,
+  a zh-TW/HK fallback with the same Simplified content, not a new language.
+  Becomes 11 at 0.1.27 (Portuguese counted once). Policy note in README.
+- Point 4 (timezone claim): removed in all languages; check-limits.js has
+  per-language tripwire regexes so it can never return.
+- Point 5: follow-ups marked (Pro) + "stops when someone replies" added.
+- Point 6-7: 🚦 daily-limit and ♻️ auto-resume bullets added ×11.
+- Point 8: AI quota 50/mo verified in config.py; "Claude-powered" genericized
+  (model-name maintenance liability) — one-word revert if Ali disagrees.
+- Point 9: 30-day guarantee kept.
+- **BONUS fix found during the code claims-check: the old Pro pricing line
+  claimed templates — templates are Starter+ in code (templates.py). Starter
+  line now lists scheduled sending + templates + CSV export; Pro line lists
+  AI + A/B + follow-ups. Plan labels added to feature bullets to match gates.**
+- Verify pass caught an **ar bidi bug**: "(Starter+)" renders "(+Starter)" in
+  RTL — replaced with "(Starter فأعلى)". (zh-lesson class of defect.)
+Remaining: Ali pastes all 11 languages into BOTH dashboards (Edge listing edit
+= new metadata-only submission; batch it, don't trickle).
+
+Original audit (for history):
 1. "Free — 50 emails/mo" → **250/mo** (ancient pre-launch number; underselling).
 2. "Starter — 2,000/mo" → **2,500/mo** (underselling).
 3. "10 interface languages" → 11 today, **13 once 0.1.27 ships** — sync the
@@ -222,9 +245,10 @@ Confirmed corrections from the TR screenshot:
    enforces parity automatically. Mind script/variant consistency (zh lesson,
    see memory release_adversarial_review). ALSO update item 1's new strings in
    13 files, not 11.
-   - **Parallel, no release needed:** add pt-BR store-listing translation in
-     Chrome/Edge dashboards (discovery lever; roadmap draft's NL+CN item —
-     pt-BR now takes priority in that list).
+   - **Parallel, no release needed:** ✅ pt-BR store-listing translation is
+     READY in listings.json (2026-07-29, verified pt-BR-not-pt-PT); Ali pastes
+     it into Chrome/Edge dashboards with the listing refresh. Conscious call:
+     it markets to users who get an English UI until 0.1.27 ships pt locales.
    - **NL: deliberately NOT added** — both observed NL users run en-US browser
      UIs (self-selected English; NL = top English-proficiency market). Policy
      stays demand-triggered: first real request/nl-locale telemetry → add same
