@@ -4,8 +4,9 @@
  *
  * Suites:
  *   csv-decode          — real decodeCsvBuffer vs 10 encoding fixtures
- *   locale-consistency  — 11 locales: key parity + placeholder tokens
+ *   locale-consistency  — all locales: key parity + placeholder tokens
  *   i18n-usage          — every literal t()/data-i18n key exists in en
+ *   locale-variants     — script/regional purity (zh Simplified, pt_BR vs pt_PT)
  *
  * Part of the release procedure (see CLAUDE.md → Test) and the CI
  * extension-checks job. Exit code 1 on any failure.
@@ -15,6 +16,7 @@ const suites = [
   require("./csv-decode.test.js"),
   require("./locale-consistency.test.js"),
   require("./i18n-usage.test.js"),
+  require("./locale-variants.test.js"),
 ];
 
 let failed = 0;

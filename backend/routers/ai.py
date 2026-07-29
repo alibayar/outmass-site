@@ -23,7 +23,7 @@ router = APIRouter(prefix="/ai", tags=["ai"])
 class GenerateEmailRequest(BaseModel):
     prompt: str  # e.g. "Write a cold outreach email for a SaaS product"
     tone: str = "professional"  # professional, friendly, formal, casual
-    language: str = "en"  # en, tr, de, fr, es, ru, ar, hi, zh, ja
+    language: str = "en"  # en, tr, de, fr, es, ru, ar, hi, zh, ja, pt
     sender_name: str = ""
     sender_position: str = ""
     sender_company: str = ""
@@ -40,6 +40,10 @@ _LANG_NAMES = {
     "hi": "Hindi",
     "zh": "Chinese (Simplified)",
     "ja": "Japanese",
+    # Single entry for both Portuguese UI locales (pt_BR/pt_PT): the sidebar
+    # sends the bare "pt" code. Unknown codes silently fall back to English,
+    # so this map must gain an entry whenever the picker gains an option.
+    "pt": "Portuguese",
 }
 
 

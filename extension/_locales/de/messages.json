@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "alertQuotaCapped": {
-    "message": "Senden an $QUEUED$ Empfänger.\n\n⚠️ $SKIPPED$ Empfänger wurden NICHT einbezogen, weil Sie Ihr monatliches Planlimit erreicht haben. Sie bleiben als ausstehend gespeichert — führen Sie ein Upgrade durch oder warten Sie auf den Monatsbeginn, und senden Sie den Rest mit Fortsetzen.",
+    "message": "Senden an $QUEUED$ Empfänger.\n\n⚠️ $SKIPPED$ Empfänger wurden nicht einbezogen — Sie haben Ihr monatliches Planlimit erreicht. Sie bleiben gespeichert und werden nach der monatlichen Zurücksetzung Ihres Kontingents automatisch gesendet. Um sie früher zu senden, upgraden Sie Ihren Plan.",
     "placeholders": {
       "queued": {
         "content": "$1"
@@ -459,6 +459,9 @@
   },
   "aiLangJa": {
     "message": "Japanisch"
+  },
+  "aiLangPt": {
+    "message": "Portugiesisch"
   },
   "btnAiGenerate": {
     "message": "Generieren"
@@ -976,7 +979,7 @@
     "message": "Über tägliche Posteingangs-Prüfung erkannt. Das stärkste Engagement-Signal — zählt nur echte Antworten Ihrer Empfänger."
   },
   "resumeHint": {
-    "message": "Einige Empfänger haben diese Kampagne nicht erhalten — meist ein vorübergehendes Netzwerk- oder Rate-Limit-Problem. Wiederaufnehmen versucht den Versand nur an die ausstehenden Empfänger erneut."
+    "message": "Einige Empfänger haben diese Kampagne noch nicht erhalten — meist ein vorübergehendes Netzwerkproblem, oder Sie haben Ihr monatliches Limit erreicht. Fortsetzen versucht den Versand nur an die ausstehenden Empfänger erneut. War es Ihr monatliches Limit, werden sie nach der Zurücksetzung Ihres Kontingents ebenfalls automatisch gesendet."
   },
   "btnResumeCampaign": {
     "message": "Versand fortsetzen"

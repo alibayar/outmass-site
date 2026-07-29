@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "alertQuotaCapped": {
-    "message": "$QUEUED$ alıcıya gönderiliyor.\n\n⚠️ $SKIPPED$ alıcı, aylık plan limitinize ulaştığınız için dahil EDİLMEDİ. Beklemede olarak kayıtlı kalırlar — planınızı yükseltin veya aylık sıfırlanmayı bekleyin, sonra kalanları Devam Et ile gönderin.",
+    "message": "$QUEUED$ alıcıya gönderiliyor.\n\n⚠️ $SKIPPED$ alıcı dahil edilmedi — aylık plan limitinize ulaştınız. Kayıtlı kalırlar ve aylık sıfırlanmanın ardından otomatik olarak gönderilir. Daha erken göndermek için planınızı yükseltin.",
     "placeholders": {
       "queued": {
         "content": "$1"
@@ -459,6 +459,9 @@
   },
   "aiLangJa": {
     "message": "Japonca"
+  },
+  "aiLangPt": {
+    "message": "Portekizce"
   },
   "btnAiGenerate": {
     "message": "Oluştur"
@@ -976,7 +979,7 @@
     "message": "Günlük Inbox taraması ile tespit edilir. En güçlü etkileşim sinyali — yalnızca alıcılarından gelen gerçek cevapları sayar."
   },
   "resumeHint": {
-    "message": "Bazı alıcılara bu kampanya ulaşmadı — genelde geçici bir ağ ya da hız limiti sorunu olur. Devam et tıklayarak yalnızca bekleyen alıcılara yeniden gönderebilirsin."
+    "message": "Bazı alıcılara bu kampanya henüz ulaşmadı — genelde geçici bir ağ sorunu olur ya da aylık limitine ulaşmışsındır. Devam et, yalnızca bekleyen alıcılara yeniden gönderir. Sebep aylık limitse, sıfırlanmanın ardından bunlar zaten otomatik olarak da gönderilir."
   },
   "btnResumeCampaign": {
     "message": "Göndermeye devam et"

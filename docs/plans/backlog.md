@@ -178,6 +178,31 @@ your inbox" + refund/privacy links), consent-decline follow-up UX (after
 oauth_failed=declined, show "what Microsoft asked and why" instead of a dead
 end), measure per-step funnel (oauth_started → completed rate) weekly.
 
+### ✅ Scheduled-send early-close strand — FIXED 2026-07-29 (0.1.27 cut)
+The twin of the router-path strand bug (c1705f2). `scheduled_worker` sliced the
+list to the remaining quota (`pending[:remaining]`) but still closed the
+campaign `"sent" if not errors` — so a scheduled campaign longer than the
+remaining quota reported COMPLETE with contacts still 'pending', unreachable by
+the Resume endpoint (409s on non-partial) and by the auto-resume beat (queries
+`status='partial'`). Worse than the router case: the truncation is server-side,
+so the user never even saw the quota alert. Now tracks `quota_capped` and lands
+'partial'. Tests: `test_scheduled_quota_cap.py`.
+
+### ✅ Auto-resume window vs rolling quota cycle — FIXED 2026-07-29 (0.1.27 cut)
+`AUTO_RESUME_MAX_AGE_DAYS = 14` was compared against `created_at`, but the quota
+period is a rolling month on the user's own `month_reset_date`, so the gap
+between hitting the cap and the next reset is 0-31 days. Anyone who burned their
+quota early in their cycle was ALREADY outside the 14-day window on reset day
+and stayed outside it forever — while the in-app text promised an automatic
+send. (Faisal's cap landed 5 days before his reset, which is why it worked.)
+Now: query bound widened to 70 days, real rule is per-user
+`_capped_in_last_quota_cycle()` = created within the current or previous cycle.
+Tests: 4 new cases in `test_auto_resume.py`.
+**Remaining limitation (accepted):** a campaign so large it needs 3+ cycles to
+drain falls out after two. Reports still offers Resume. Proper fix needs a
+`campaigns.updated_at`/last-activity column (migration) — revisit if a real
+user hits it.
+
 ### ⬜ Suppressed-skip contacts stay 'pending' forever (found 2026-07-26)
 Both send loops (routers/campaigns._run_campaign_send and scheduled_worker)
 `continue` past suppressed/unsubscribed contacts WITHOUT marking them, so
@@ -230,14 +255,41 @@ Original audit (for history):
 9. "30-day money-back guarantee" ✓ verified real (refund.html + pricing FAQ) —
    keep.
 
-### ⬜ 0.1.27 queue
-1. **Partial-send quota message text update ×11** — the in-app alert still says
+### ✅ 0.1.27 queue — CUT 2026-07-29 (zip built + verified, awaiting Ali's upload)
+Both queue items shipped, plus what the mandated adversarial review turned up.
+**Shipped:** pt_BR + pt_PT locales (323 keys each, translated separately — not
+one file copied; verified BR/PT vocabulary split) · reworded `alertQuotaCapped`
+AND `resumeHint` ×13 · `aiLangPt` + AI-writer `pt` option + `pt_BR`/`pt_PT` in
+Settings → Interface Language · backend `_LANG_NAMES["pt"]` · Portuguese
+unsubscribe page · the two backend strand/window fixes above · new suites
+`locale-variants` (script + regional purity) and `test_ai_language_contract`.
+Package: `outmass-0.1.27.zip`, 29 entries, 13 locales, no leakage.
+
+**Findings raised by the review that are NOT fixed (deliberate, documented):**
+- **AI writer has one generic "pt" option** — a pt_PT user asking for a
+  Portuguese draft may get Brazilian-leaning text. Accepted for now: Pro-only
+  feature, output lands in the editor for review before sending, and both
+  variants are mutually intelligible. Proper fix = send `pt_BR`/`pt_PT` from
+  `getActiveLocale()` and add both to `_LANG_NAMES` (keep bare `pt` for
+  already-shipped clients). Do it when a Portuguese Pro user actually appears.
+- **AI-language preselect reads the browser language, never the Settings
+  override** (`sidebar.js` ~1739 `chrome.i18n.getUILanguage()`): someone whose
+  browser is English but who set the panel to Turkish gets English preselected.
+  Pre-existing for all 13 languages, cosmetic (dropdown is one click). Fix =
+  read `uiLanguage` from storage / expose the resolved locale, and normalise
+  `pt_BR`/`zh_CN` → base code before the `supported` lookup.
+
+**DEPLOY ORDER MATTERS:** backend first (`_LANG_NAMES` + unsubscribe strings +
+the two worker fixes), extension after. New extension against an un-updated
+backend = Portuguese requested, English email delivered, no error anywhere.
+
+1. ✅ **Partial-send quota message text update ×13** — the in-app alert said
    "Resume sends them after an upgrade or your monthly reset"; since 2026-07-20
    the backend auto-resumes capped recipients (auto_resume_partial_campaigns
    beat + quota-cap email). Update wording to "they'll be sent automatically
    after your reset — or upgrade to send them now". Harmless meanwhile (user
    goes to click Resume, finds the campaign already completed).
-2. **New locales: pt_BR + pt_PT (11 → 13)** — approved by Ali 2026-07-21,
+2. ✅ **New locales: pt_BR + pt_PT (11 → 13 folders, 11 languages)** — approved by Ali 2026-07-21,
    data-driven: 2 observed pt-BR users in 90 days (the only uncovered locale in
    telemetry); pt_PT rides along nearly free. No generic "pt" code in Chrome —
    both folders required (pt-PT does NOT fall back to pt_BR). At cut: translate
@@ -253,6 +305,28 @@ Original audit (for history):
      UIs (self-selected English; NL = top English-proficiency market). Policy
      stays demand-triggered: first real request/nl-locale telemetry → add same
      week.
+
+### ⬜ FALSE CLAIM on the live pricing page: "Traditional Chinese" (found 2026-07-29)
+`docs/pricing.html:230` tells visitors the UI supports **11 languages** and lists
+"Simplified Chinese, **Traditional Chinese**", with a story attached: "Traditional
+Chinese joined exactly that way, at a user's request." **It did not.** The `zh`
+folder was created as a GENERIC Chinese fallback (`bf58ab7` — "generic zh locale
+so all Chinese variants get Chinese, not English") and its content is
+**321/323 keys byte-identical to `zh_CN`**, i.e. Simplified. A zh-TW/HK visitor
+gets Simplified text, not Traditional. Same page also says "11 languages" at
+line 77 while line 129 says the AI Writer has "10 languages" — internally
+inconsistent too.
+**Needs Ali's OK (live pricing copy).** Proposed wording once 0.1.27 is
+published (claims-follow-product: only after the store shows it):
+- honest count = **11 languages** (en, tr, de, fr, es, ru, ar, hi, zh-Hans, ja,
+  pt) — Portuguese counted once, `zh` is a fallback not a language
+- list: "…Simplified Chinese, Japanese, and Portuguese (Brazil & Portugal)"
+- drop the Traditional-Chinese anecdote; if worth keeping, say the true thing:
+  "browsers set to Traditional Chinese get the Simplified translation rather
+  than English"
+- line 129 AI-writer count → 11
+- also `docs/store-listing/descriptions/*.txt` + `edge-description-en.txt` still
+  say "10 UI languages" (they feed the same dashboards as listings.json).
 
 ### ⬜ Claims-audit leftovers (from the 2026-07-15 site audit)
 0. **[READY, in master] OneDrive picker consent-loop guard** — one-shot

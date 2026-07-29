@@ -1625,15 +1625,15 @@
         } else if (data.quota_capped) {
           // The batch was truncated to the remaining monthly quota. Never let
           // this pass as a plain success — the user must know exactly how many
-          // recipients were left out (they stay pending; Resume sends them
-          // after an upgrade or the monthly reset).
+          // recipients were left out (they stay pending; the auto-resume beat
+          // sends them once the monthly reset lands, no user action needed).
           var skipped = data.quota_skipped || 0;
           var cappedMsg = t("alertQuotaCapped", [String(queued), String(skipped)]);
           if (!cappedMsg || cappedMsg === "alertQuotaCapped") {
             cappedMsg =
               "Sending to " + queued + " recipients.\n\n" +
-              "⚠️ " + skipped + " recipients were NOT included because you reached your monthly plan limit. " +
-              "They stay saved as pending — upgrade your plan or wait for your monthly reset, then use Resume to send the rest.";
+              "⚠️ " + skipped + " recipients were not included — you've reached your monthly plan limit. " +
+              "They stay saved and will be sent automatically after your monthly reset. To send them sooner, upgrade your plan.";
           }
           alert(cappedMsg);
           track("send_completed", {
@@ -1724,6 +1724,7 @@
           '<option value="hi">' + t("aiLangHi") + '</option>' +
           '<option value="zh">' + t("aiLangZh") + '</option>' +
           '<option value="ja">' + t("aiLangJa") + '</option>' +
+          '<option value="pt">' + t("aiLangPt") + '</option>' +
         '</select>' +
       '</div>' +
       '<div style="display:flex;gap:8px;margin-top:12px;">' +
@@ -1740,7 +1741,7 @@
       if (uiLang === "zh_cn" || uiLang === "zh_tw") uiLang = "zh";
       var langSelectEl = document.getElementById("ai-lang");
       if (langSelectEl) {
-        var supported = ["en", "tr", "de", "fr", "es", "ru", "ar", "hi", "zh", "ja"];
+        var supported = ["en", "tr", "de", "fr", "es", "ru", "ar", "hi", "zh", "ja", "pt"];
         if (supported.indexOf(uiLang) !== -1) {
           langSelectEl.value = uiLang;
         }

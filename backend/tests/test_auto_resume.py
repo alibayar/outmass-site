@@ -7,14 +7,24 @@ campaigns back to 'scheduled' once the owner has headroom again
 Shipped 2026-07-20 after a Starter capped at exactly 2,500 with 250
 recipients parked behind a manual Resume click.
 """
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 from config import FREE_PLAN_MONTHLY_LIMIT
 from tests.conftest import FAKE_USER
 
 
-def _campaign(cid="c1"):
-    return {"id": cid, "user_id": FAKE_USER["id"], "status": "partial"}
+def _iso(days_ago: int) -> str:
+    return (datetime.now(timezone.utc) - timedelta(days=days_ago)).isoformat()
+
+
+def _campaign(cid="c1", created_days_ago=1):
+    return {
+        "id": cid,
+        "user_id": FAKE_USER["id"],
+        "status": "partial",
+        "created_at": _iso(created_days_ago),
+    }
 
 
 def _run(campaigns, user, resumable, reset_side_effect=None):
@@ -96,3 +106,74 @@ def test_rolling_reset_runs_before_headroom_check():
 
     assert result["resumed"] == 1
     assert update.call_args.args[1]["status"] == "scheduled"
+
+
+# ── Age rule: rolling cycle, not a fixed day count ──
+#
+# The original guard was `created_at >= now - 14 days`. Because the quota
+# period is a rolling month anchored on the user's own month_reset_date, the
+# gap between hitting the cap and the next reset is 0-31 days. A user who
+# burned their quota early in their cycle was already outside the 14-day
+# window on reset day — and stayed outside it forever, while the in-app text
+# promised the leftovers would send themselves. These tests pin the fix.
+
+
+def _user_with_anchor(anchor_days_ago: int, sent: int = 0) -> dict:
+    """User whose current cycle started `anchor_days_ago` days ago."""
+    anchor = (datetime.now(timezone.utc) - timedelta(days=anchor_days_ago)).date()
+    return {
+        **FAKE_USER,
+        "emails_sent_this_month": sent,
+        "month_reset_date": anchor.isoformat(),
+    }
+
+
+def test_resumes_campaign_capped_early_in_the_previous_cycle():
+    """THE REGRESSION. Cap on day 1 of a cycle, reset 30 days later: the
+    campaign is 30 days old on reset day and a 14-day window missed it."""
+    user = _user_with_anchor(anchor_days_ago=1)  # reset just happened
+    result, update = _run(
+        [_campaign(created_days_ago=29)], user, resumable=[{"id": "k1"}]
+    )
+
+    assert result["resumed"] == 1, "29-day-old capped campaign must still resume"
+    assert update.call_args.args[1]["status"] == "scheduled"
+
+
+def test_skips_campaign_older_than_the_previous_cycle():
+    """Anti-resurrection intent preserved: a partial from two cycles back is
+    left alone (Reports still offers Resume) rather than surprise-sending a
+    stale list."""
+    user = _user_with_anchor(anchor_days_ago=1)
+    result, update = _run(
+        [_campaign(created_days_ago=75)], user, resumable=[{"id": "k1"}]
+    )
+
+    assert result["resumed"] == 0
+    update.assert_not_called()
+
+
+def test_resumes_campaign_capped_late_in_the_cycle():
+    """The case that happened to work under the old rule — must keep working."""
+    user = _user_with_anchor(anchor_days_ago=2)
+    result, update = _run(
+        [_campaign(created_days_ago=6)], user, resumable=[{"id": "k1"}]
+    )
+
+    assert result["resumed"] == 1
+
+
+def test_missing_anchor_falls_back_to_a_bounded_window():
+    """Legacy row with no month_reset_date: still bounded, never unbounded."""
+    user = {**FAKE_USER, "emails_sent_this_month": 0, "month_reset_date": None}
+
+    recent, update_recent = _run(
+        [_campaign(created_days_ago=5)], user, resumable=[{"id": "k1"}]
+    )
+    assert recent["resumed"] == 1
+
+    old, update_old = _run(
+        [_campaign(created_days_ago=40)], user, resumable=[{"id": "k1"}]
+    )
+    assert old["resumed"] == 0
+    update_old.assert_not_called()

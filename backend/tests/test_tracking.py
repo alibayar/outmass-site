@@ -217,17 +217,40 @@ def test_unsubscribe_page_accept_language_arabic_sets_rtl(client, fake_db):
 
 
 def test_unsubscribe_page_unsupported_language_falls_back_to_english(client, fake_db):
-    """Accept-Language for unsupported locale should fall back to English."""
+    """Accept-Language for unsupported locale should fall back to English.
+
+    (This test used to use pt-BR as its example of "unsupported" — Portuguese
+    was added in 0.1.27, so it now uses Korean.)
+    """
     with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
          patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
         resp = client.get(
             "/unsubscribe/contact-001",
-            headers={"Accept-Language": "pt-BR"},  # not in our 10 supported
+            headers={"Accept-Language": "ko-KR,ko;q=0.9"},
         )
     assert resp.status_code == 200
     # Falls back to English
     assert "Unsubscribe" in resp.text
     assert 'dir="rtl"' not in resp.text
+
+
+def test_unsubscribe_page_portuguese_for_both_variants(client, fake_db):
+    """Recipients of a Portuguese campaign get a Portuguese unsubscribe page.
+
+    _detect_lang strips the region, so pt-BR and pt-PT both resolve to the
+    single "pt" entry — we cannot know the RECIPIENT's variant, only the
+    sender's UI language, so the page wording avoids BR/PT-divergent terms.
+    """
+    for header in ("pt-BR,pt;q=0.9", "pt-PT,pt;q=0.9", "pt"):
+        with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
+             patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
+            resp = client.get(
+                "/unsubscribe/contact-001",
+                headers={"Accept-Language": header},
+            )
+        assert resp.status_code == 200, header
+        assert "subscrição" in resp.text, f"{header} did not render Portuguese"
+        assert 'lang="pt"' in resp.text, header
 
 
 # ── Sender fallback chain tests ──

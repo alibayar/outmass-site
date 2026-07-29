@@ -281,6 +281,22 @@ _UNSUB_STRINGS = {
         "undoMsg": "<b>{email}</b> は <b>{sender}</b> のメーリングリストに復元されました。",
         "notFound": "このリンクは無効または期限切れです。",
     },
+    # One entry for both Portuguese variants: _detect_lang() strips the
+    # region ("pt-BR" -> "pt"), and this page is read by the RECIPIENT, whose
+    # variant we cannot know. Wording avoids BR/PT-divergent vocabulary.
+    "pt": {
+        "title": "Cancelar subscrição",
+        "confirmQ": "Tem a certeza de que deseja cancelar a subscrição de <b>{email}</b>?",
+        "fromSender": "Não voltará a receber e-mails de <b>{sender}</b>.",
+        "yesBtn": "Sim, cancelar subscrição",
+        "cancelBtn": "Cancelar",
+        "successTitle": "Subscrição cancelada",
+        "successMsg": "<b>{email}</b> foi removido da lista de <b>{sender}</b>.",
+        "undoBtn": "Desfazer",
+        "undoTitle": "Subscrição restaurada",
+        "undoMsg": "O e-mail <b>{email}</b> foi restaurado na lista de <b>{sender}</b>.",
+        "notFound": "Este link é inválido ou expirou.",
+    },
 }
 
 

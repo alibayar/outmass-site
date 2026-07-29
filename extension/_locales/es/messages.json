@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "alertQuotaCapped": {
-    "message": "Enviando a $QUEUED$ destinatarios.\n\n⚠️ $SKIPPED$ destinatarios NO se incluyeron porque alcanzaste el límite mensual de tu plan. Quedan guardados como pendientes: mejora tu plan o espera al reinicio mensual y usa Reanudar para enviar el resto.",
+    "message": "Enviando a $QUEUED$ destinatarios.\n\n⚠️ $SKIPPED$ destinatarios no se incluyeron — alcanzaste el límite mensual de tu plan. Quedan guardados y se enviarán automáticamente después del reinicio mensual. Para enviarlos antes, mejora tu plan.",
     "placeholders": {
       "queued": {
         "content": "$1"
@@ -459,6 +459,9 @@
   },
   "aiLangJa": {
     "message": "Japones"
+  },
+  "aiLangPt": {
+    "message": "Portugués"
   },
   "btnAiGenerate": {
     "message": "Generar"
@@ -976,7 +979,7 @@
     "message": "Detectado mediante análisis diario de la bandeja de entrada. La señal más fuerte de interacción — solo cuenta respuestas reales de tus destinatarios."
   },
   "resumeHint": {
-    "message": "Algunos destinatarios no recibieron esta campaña — normalmente un problema temporal de red o límite de tasa. Reanudar reintenta solo los destinatarios pendientes."
+    "message": "Algunos destinatarios aún no han recibido esta campaña — normalmente por un problema temporal de red, o porque alcanzaste tu límite mensual. Reanudar reintenta solo los destinatarios pendientes. Si fue tu límite mensual, también se enviarán automáticamente después de tu reinicio."
   },
   "btnResumeCampaign": {
     "message": "Reanudar envío"

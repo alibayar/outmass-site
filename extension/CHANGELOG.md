@@ -2,11 +2,17 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## Unreleased (0.1.27)
+## v0.1.27 — 2026-07-29
+
+- **OutMass now speaks Portuguese.** The whole panel is available in Português (Brasil) and Português (Portugal) — two separate translations, not one shared approximation, so each reads the way you actually write. Pick either in Settings → Interface Language, or let OutMass follow your browser. The AI Email Writer can now draft in Portuguese too.
+- **Clearer message when a campaign hits your monthly limit.** OutMass used to tell you to come back and press Resume after your reset. It now says what actually happens: the remaining recipients are saved and go out automatically after your monthly reset — upgrading is only if you want them sooner. The Resume hint in Reports was reworded for the same reason.
 
 ### Behind the scenes (backend — affects all extension versions)
 
 - **Recipients skipped at your monthly limit now send themselves.** When a campaign hits your monthly quota, the remaining recipients used to wait for you to remember the Resume button after your reset. Now OutMass resumes them automatically as soon as your quota resets (or right after an upgrade) — and emails you at the moment of the cap so you know exactly how many are saved and when they'll go out.
+- **Automatic resume now covers your whole billing month.** It only looked at campaigns from the past two weeks, so recipients parked early in your month could sit there past your reset. It now follows your own monthly cycle instead of a fixed two weeks.
+- **Scheduled campaigns that run into your monthly limit no longer report as finished.** A scheduled send whose list was longer than your remaining quota sent what it could and then marked itself complete, leaving the rest waiting with nothing to pick them up. Those campaigns are now correctly marked as partially sent, so the automatic resume finishes them after your reset.
+- Unsubscribe pages are now available in Portuguese for your recipients (11 languages total).
 
 ## v0.1.26 — 2026-07-18
 

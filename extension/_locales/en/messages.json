@@ -449,6 +449,9 @@
   "aiLangJa": {
     "message": "Japanese"
   },
+  "aiLangPt": {
+    "message": "Portuguese"
+  },
   "btnAiGenerate": {
     "message": "Generate"
   },
@@ -804,7 +807,7 @@
     }
   },
   "alertQuotaCapped": {
-    "message": "Sending to $QUEUED$ recipients.\n\n⚠️ $SKIPPED$ recipients were NOT included because you reached your monthly plan limit. They stay saved as pending — upgrade your plan or wait for your monthly reset, then use Resume to send the rest.",
+    "message": "Sending to $QUEUED$ recipients.\n\n⚠️ $SKIPPED$ recipients were not included — you've reached your monthly plan limit. They stay saved and will be sent automatically after your monthly reset. To send them sooner, upgrade your plan.",
     "placeholders": {
       "queued": {
         "content": "$1"
@@ -976,7 +979,7 @@
     "message": "Detected via daily Inbox scan. The strongest engagement signal — only counts genuine replies from your recipients."
   },
   "resumeHint": {
-    "message": "Some recipients didn't receive this campaign — usually a temporary network or rate-limit issue. Resume to retry only the pending recipients."
+    "message": "Some recipients haven't received this campaign yet — usually a temporary network issue, or you reached your monthly limit. Resume retries only the pending recipients. If it was your monthly limit, they'll also be sent automatically after your reset."
   },
   "btnResumeCampaign": {
     "message": "Resume sending"

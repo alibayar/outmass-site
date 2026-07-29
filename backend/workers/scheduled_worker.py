@@ -9,7 +9,7 @@ Celery beat tasks:
 import re
 import time
 import urllib.parse
-from datetime import datetime, timedelta, timezone
+from datetime import date, datetime, timedelta, timezone
 
 import httpx
 
@@ -103,6 +103,15 @@ def process_scheduled_campaigns():
         if daily_cap > 0:
             pending = pending[:daily_cap]
 
+        # Quota slice. Remember whether it actually truncated the list: a
+        # clean quota-capped batch must NOT close as 'sent' below, or the
+        # leftover contacts stay 'pending' inside a campaign that looks
+        # finished — invisible to the Resume endpoint AND to the
+        # auto-resume beat (which only queries status='partial'). The
+        # send-now path had exactly this bug (c1705f2, the 2026-07-20
+        # incident); the scheduled path kept it, and here it is worse
+        # because no alert is shown at all.
+        quota_capped = len(pending) > remaining
         pending = pending[:remaining]
 
         # Filter suppressed
@@ -171,7 +180,7 @@ def process_scheduled_campaigns():
                 total_sent += sent_count
                 continue
 
-        final_status = "sent" if not errors else "partial"
+        final_status = "sent" if not errors and not quota_capped else "partial"
         campaign_model.update_campaign(campaign["id"], {"status": final_status})
         total_sent += sent_count
 
@@ -755,7 +764,59 @@ def expire_manual_promos():
 # guards (quota slice, daily cap, token refresh, suppression). No new send
 # path is introduced here — this task only changes campaign status.
 
-AUTO_RESUME_MAX_AGE_DAYS = 14
+# Outer bound for the candidate QUERY only — the real age rule is per-user
+# and lives in _capped_in_last_quota_cycle() below. A fixed 14-day window was
+# wrong: the quota period is a rolling month anchored on the user's own
+# month_reset_date, so the gap between hitting the cap and the next reset is
+# anywhere from 0 to 31 days. Anyone who burned their quota early in their
+# cycle was already outside a 14-day window on reset day — and stayed
+# outside it forever, while the in-app text promised an automatic send.
+AUTO_RESUME_MAX_AGE_DAYS = 70
+
+
+def _capped_in_last_quota_cycle(created_at, user) -> bool:
+    """Was this campaign created within the user's current or previous quota
+    cycle?
+
+    Call AFTER check_monthly_reset, so month_reset_date is the current
+    anchor. "Previous cycle" is what makes the promise true: a campaign
+    capped anywhere inside the cycle that just ended gets resumed at the
+    reset that follows it, whether that was 2 days later or 30.
+
+    Anything older is left alone on purpose — that is the original guard's
+    intent (a months-old abandoned partial must never resurrect itself and
+    surprise-send a stale list). Those campaigns still show the Resume
+    button in Reports.
+    """
+    from models import user as user_model
+
+    if not created_at:
+        return False
+    anchor = user.get("month_reset_date")
+    if not anchor:
+        # No anchor to reason about (legacy row): fall back to a plain
+        # 31-day window rather than resuming something arbitrarily old.
+        cutoff = datetime.now(timezone.utc) - timedelta(days=31)
+    else:
+        if isinstance(anchor, str):
+            anchor = date.fromisoformat(anchor)
+        prev_cycle_start = user_model._add_months(anchor, -1)
+        cutoff = datetime(
+            prev_cycle_start.year,
+            prev_cycle_start.month,
+            prev_cycle_start.day,
+            tzinfo=timezone.utc,
+        )
+    if isinstance(created_at, str):
+        try:
+            created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
+        except ValueError:
+            return False
+    else:
+        created = created_at
+    if created.tzinfo is None:
+        created = created.replace(tzinfo=timezone.utc)
+    return created >= cutoff
 
 
 @celery.task
@@ -796,6 +857,12 @@ def auto_resume_partial_campaigns():
             continue
 
         user_model.check_monthly_reset(user)
+
+        # Age rule runs AFTER the reset so it compares against the fresh
+        # anchor (see _capped_in_last_quota_cycle).
+        if not _capped_in_last_quota_cycle(campaign.get("created_at"), user):
+            continue
+
         plan = user.get("plan", "free")
         if plan == "free":
             limit = FREE_PLAN_MONTHLY_LIMIT

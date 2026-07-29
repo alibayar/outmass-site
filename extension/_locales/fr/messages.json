@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "alertQuotaCapped": {
-    "message": "Envoi à $QUEUED$ destinataires.\n\n⚠️ $SKIPPED$ destinataires n'ont PAS été inclus car vous avez atteint la limite mensuelle de votre forfait. Ils restent enregistrés comme en attente — passez à un forfait supérieur ou attendez la réinitialisation mensuelle, puis utilisez Reprendre pour envoyer le reste.",
+    "message": "Envoi à $QUEUED$ destinataires.\n\n⚠️ $SKIPPED$ destinataires n'ont pas été inclus — vous avez atteint la limite mensuelle de votre forfait. Ils restent enregistrés et seront envoyés automatiquement après votre réinitialisation mensuelle. Pour les envoyer plus tôt, passez à un forfait supérieur.",
     "placeholders": {
       "queued": {
         "content": "$1"
@@ -459,6 +459,9 @@
   },
   "aiLangJa": {
     "message": "Japonais"
+  },
+  "aiLangPt": {
+    "message": "Portugais"
   },
   "btnAiGenerate": {
     "message": "Générer"
@@ -976,7 +979,7 @@
     "message": "Détecté via une analyse quotidienne de la boîte de réception. Le signal d'engagement le plus fort — ne compte que les véritables réponses de vos destinataires."
   },
   "resumeHint": {
-    "message": "Certains destinataires n'ont pas reçu cette campagne — généralement un problème temporaire de réseau ou de limite de débit. Reprendre réessaie uniquement les destinataires en attente."
+    "message": "Certains destinataires n'ont pas encore reçu cette campagne — généralement un problème temporaire de réseau, ou vous avez atteint votre limite mensuelle. Reprendre réessaie uniquement les destinataires en attente. S'il s'agissait de votre limite mensuelle, ils seront aussi envoyés automatiquement après votre réinitialisation."
   },
   "btnResumeCampaign": {
     "message": "Reprendre l'envoi"

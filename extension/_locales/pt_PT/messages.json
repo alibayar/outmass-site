@@ -1,0 +1,1075 @@
+{
+  "appName": {
+    "message": "OutMass"
+  },
+  "popupConsentExplainer": {
+    "message": "A Microsoft vai pedir permissão para o OutMass enviar e-mails e detetar respostas na sua própria conta do Outlook. O OutMass nunca lê os seus outros e-mails; as suas campanhas são guardadas em segurança para que o agendamento e os follow-ups funcionem."
+  },
+  "appDesc": {
+    "message": "Campanhas de e-mail em massa diretamente a partir do Outlook Web"
+  },
+  "tabCampaign": {
+    "message": "Campanha"
+  },
+  "tabReports": {
+    "message": "Relatórios"
+  },
+  "tabSettings": {
+    "message": "Definições"
+  },
+  "tabAccount": {
+    "message": "Conta"
+  },
+  "connChecking": {
+    "message": "A verificar a ligação..."
+  },
+  "connOnline": {
+    "message": "Ligado ao servidor"
+  },
+  "connOffline": {
+    "message": "Não foi possível ligar ao servidor"
+  },
+  "offlineBanner": {
+    "message": "Não foi possível ligar ao servidor. Verifique a sua ligação à Internet."
+  },
+  "extUpdatedReload": {
+    "message": "Extensão atualizada. Volte a carregar a página."
+  },
+  "btnClose": {
+    "message": "Fechar"
+  },
+  "csvLabel": {
+    "message": "Lista de destinatários (CSV)"
+  },
+  "csvDropHint": {
+    "message": "Arraste e largue um ficheiro CSV"
+  },
+  "csvDropHintAlt": {
+    "message": "ou clique para selecionar"
+  },
+  "csvCountSuffix": {
+    "message": "destinatários"
+  },
+  "btnAiWriter": {
+    "message": "Escrever com IA"
+  },
+  "templateDefault": {
+    "message": "-- Selecionar modelo --"
+  },
+  "btnSaveTemplate": {
+    "message": "Guardar"
+  },
+  "btnDeleteTemplate": {
+    "message": "Eliminar"
+  },
+  "templateDeleteTitle": {
+    "message": "Eliminar o modelo selecionado"
+  },
+  "templateSaveTitle": {
+    "message": "Guardar o conteúdo atual como modelo"
+  },
+  "labelSubject": {
+    "message": "Assunto"
+  },
+  "placeholderSubject": {
+    "message": "Olá {{firstName}}, temos uma oferta para si"
+  },
+  "labelBody": {
+    "message": "Conteúdo do e-mail"
+  },
+  "placeholderBody": {
+    "message": "Olá {{firstName}},\n\nTemos uma ótima oferta para {{company}}..."
+  },
+  "placeholdersHint": {
+    "message": "Destinatário: <code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>Remetente: <code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "Pré-visualizar"
+  },
+  "btnSend": {
+    "message": "Enviar"
+  },
+  "abTestLabel": {
+    "message": "Teste A/B (testar 2 assuntos)"
+  },
+  "abSubjectBLabel": {
+    "message": "Assunto alternativo (B)"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "Segundo assunto..."
+  },
+  "abTestPctLabel": {
+    "message": "Percentagem de teste (%)"
+  },
+  "abTestNote": {
+    "message": "Serão enviados dois assuntos diferentes a uma parte dos destinatários. O vencedor será enviado aos restantes."
+  },
+  "scheduleLabel": {
+    "message": "Envio agendado"
+  },
+  "scheduleDateLabel": {
+    "message": "Hora de envio"
+  },
+  "scheduleNote": {
+    "message": "Será enviado automaticamente à hora indicada."
+  },
+  "followupLabel": {
+    "message": "Follow-up automático para quem não abriu"
+  },
+  "followupDelayLabel": {
+    "message": "Ao fim de quantos dias?"
+  },
+  "followupSubjectLabel": {
+    "message": "Assunto do follow-up"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}, viu a nossa oferta?"
+  },
+  "followupBodyLabel": {
+    "message": "Conteúdo do follow-up"
+  },
+  "followupBodyPlaceholder": {
+    "message": "Olá {{firstName}},\n\nViu o nosso e-mail anterior?"
+  },
+  "followupNote": {
+    "message": "Além do e-mail principal, será enviado a quem não abriu."
+  },
+  "quotaDefault": {
+    "message": "$1/$2 e-mails restantes (Plano $3)"
+  },
+  "reportsLoading": {
+    "message": "A carregar..."
+  },
+  "btnBack": {
+    "message": "Voltar"
+  },
+  "statSent": {
+    "message": "Enviados"
+  },
+  "statOpened": {
+    "message": "Abertos"
+  },
+  "statClicked": {
+    "message": "Clicados"
+  },
+  "statOpenRate": {
+    "message": "Taxa de abertura:"
+  },
+  "statClickRate": {
+    "message": "Taxa de cliques:"
+  },
+  "btnExportCsv": {
+    "message": "Transferir CSV"
+  },
+  "noCampaignsFound": {
+    "message": "Nenhuma campanha encontrada."
+  },
+  "noCampaignsYet": {
+    "message": "Ainda não há campanhas."
+  },
+  "chartSent": {
+    "message": "Enviados"
+  },
+  "chartOpened": {
+    "message": "Abertos"
+  },
+  "chartClicked": {
+    "message": "Clicados"
+  },
+  "settingsAccount": {
+    "message": "Conta"
+  },
+  "settingsEmail": {
+    "message": "E-mail"
+  },
+  "settingsPlan": {
+    "message": "Plano"
+  },
+  "settingsSentThisMonth": {
+    "message": "Enviados este mês"
+  },
+  "btnUpgrade": {
+    "message": "Fazer upgrade"
+  },
+  "btnManageSub": {
+    "message": "Gerir subscrição"
+  },
+  "settingsTracking": {
+    "message": "Rastreio"
+  },
+  "settingsTrackOpens": {
+    "message": "Rastreio de aberturas"
+  },
+  "settingsTrackClicks": {
+    "message": "Rastreio de cliques"
+  },
+  "settingsUnsub": {
+    "message": "Ligação para anular subscrição"
+  },
+  "settingsUnsubHint": {
+    "message": "Texto da ligação apresentado no rodapé dos e-mails"
+  },
+  "settingsTimezone": {
+    "message": "Fuso horário"
+  },
+  "tzTurkey": {
+    "message": "Turquia (UTC+3)"
+  },
+  "tzLondon": {
+    "message": "Londres (UTC+0/+1)"
+  },
+  "tzBerlin": {
+    "message": "Berlim (UTC+1/+2)"
+  },
+  "tzNewYork": {
+    "message": "Nova Iorque (UTC-5/-4)"
+  },
+  "tzLosAngeles": {
+    "message": "Los Angeles (UTC-8/-7)"
+  },
+  "tzDubai": {
+    "message": "Dubai (UTC+4)"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "Informações do remetente"
+  },
+  "settingsSenderHint": {
+    "message": "Utilizadas na sua assinatura de e-mail e nos e-mails gerados por IA."
+  },
+  "settingsSenderName": {
+    "message": "O seu nome"
+  },
+  "settingsSenderPosition": {
+    "message": "O seu cargo"
+  },
+  "settingsSenderCompany": {
+    "message": "A sua empresa"
+  },
+  "settingsSenderPhone": {
+    "message": "Telefone (opcional)"
+  },
+  "btnSaveSettings": {
+    "message": "Guardar definições"
+  },
+  "settingsSaving": {
+    "message": "A guardar..."
+  },
+  "settingsSaved": {
+    "message": "Guardado!"
+  },
+  "settingsSuppression": {
+    "message": "E-mails bloqueados"
+  },
+  "settingsSuppressionHint": {
+    "message": "Os e-mails desta lista não receberão nenhuma campanha."
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "email@exemplo.com"
+  },
+  "btnAdd": {
+    "message": "Adicionar"
+  },
+  "suppressionSearch": {
+    "message": "Pesquisar..."
+  },
+  "suppressionEmpty": {
+    "message": "Ainda não há e-mails bloqueados."
+  },
+  "suppressionReasonUnsub": {
+    "message": "Subscrição anulada"
+  },
+  "suppressionReasonManual": {
+    "message": "Manual"
+  },
+  "suppressionEmailSuffix": {
+    "message": "e-mail"
+  },
+  "settingsSupport": {
+    "message": "Suporte"
+  },
+  "feedbackPlaceholder": {
+    "message": "Descreva o seu problema ou sugestão..."
+  },
+  "btnSendFeedback": {
+    "message": "Enviar"
+  },
+  "feedbackEmpty": {
+    "message": "Escreva uma mensagem."
+  },
+  "feedbackSent": {
+    "message": "Obrigado — recebemos a sua mensagem e responderemos ao seu e-mail em breve."
+  },
+  "feedbackFailed": {
+    "message": "Não foi possível enviar. Pode escrever-nos por e-mail."
+  },
+  "popupSubtitle": {
+    "message": "Campanhas de e-mail em massa"
+  },
+  "popupLoginHint": {
+    "message": "Ligue a sua conta do Outlook para começar a criar campanhas."
+  },
+  "btnMicrosoftLogin": {
+    "message": "Iniciar sessão com a Microsoft"
+  },
+  "popupLoading": {
+    "message": "A ligar à sua conta Microsoft..."
+  },
+  "popupErrorDefault": {
+    "message": "Ocorreu um erro."
+  },
+  "btnRetry": {
+    "message": "Tentar novamente"
+  },
+  "btnDashboard": {
+    "message": "Abrir painel de campanhas"
+  },
+  "btnLogout": {
+    "message": "Terminar sessão"
+  },
+  "popupConnected": {
+    "message": "Ligado"
+  },
+  "popupNoResponse": {
+    "message": "Não foi recebida qualquer resposta."
+  },
+  "popupUserInfoFailed": {
+    "message": "Não foi possível obter as informações do utilizador."
+  },
+  "popupUnknownError": {
+    "message": "Ocorreu um erro desconhecido."
+  },
+  "popupUpgradePro": {
+    "message": "Fazer upgrade → Pro ($$19/mês)"
+  },
+  "popupCheckoutFailed": {
+    "message": "Não foi possível criar a página de pagamento: "
+  },
+  "popupPortalFailed": {
+    "message": "Não foi possível abrir o portal."
+  },
+  "alertUploadCsvFirst": {
+    "message": "Carregue primeiro um ficheiro CSV."
+  },
+  "alertFillSubjectBody": {
+    "message": "Preencha o assunto e o conteúdo do e-mail."
+  },
+  "alertPreviewTitle": {
+    "message": "--- PRÉ-VISUALIZAÇÃO ---\nAssunto: "
+  },
+  "alertScheduling": {
+    "message": "A agendar..."
+  },
+  "alertPreparing": {
+    "message": "A preparar..."
+  },
+  "alertCampaignCreateFailed": {
+    "message": "Não foi possível criar a campanha"
+  },
+  "alertContactsUploading": {
+    "message": "A carregar contactos..."
+  },
+  "alertContactsUploadFailed": {
+    "message": "Não foi possível carregar os contactos"
+  },
+  "alertAbTestProOnly": {
+    "message": "O teste A/B está disponível apenas no plano Pro."
+  },
+  "alertScheduledSuccess": {
+    "message": "Pronto! Será enviado para $1 destinatários em $2."
+  },
+  "alertSending": {
+    "message": "A enviar... 0/"
+  },
+  "alertSendFailed": {
+    "message": "Falha no envio"
+  },
+  "alertSendError": {
+    "message": "Falha no envio!\n\nErro: "
+  },
+  "alertAbSendSuccess": {
+    "message": "Pronto! $1 e-mails enviados (teste A/B).\nO assunto vencedor será enviado automaticamente."
+  },
+  "alertPartialSend": {
+    "message": "$1 e-mails enviados, $2 erros.\n\nPrimeiro erro: "
+  },
+  "alertSendSuccess": {
+    "message": "Pronto! $1 e-mails enviados."
+  },
+  "alertLimitReached": {
+    "message": "Atingiu o limite do seu plano ($1 e-mails/mês).\nFaça upgrade do plano para continuar."
+  },
+  "aiModalTitle": {
+    "message": "Redator de e-mails com IA"
+  },
+  "aiPromptPlaceholder": {
+    "message": "Sobre o que deve ser o e-mail?\n\nExemplo: e-mail de prospeção para o nosso produto SaaS"
+  },
+  "aiToneProfessional": {
+    "message": "Profissional"
+  },
+  "aiToneFriendly": {
+    "message": "Amigável"
+  },
+  "aiToneFormal": {
+    "message": "Formal"
+  },
+  "aiToneCasual": {
+    "message": "Informal"
+  },
+  "aiLangTr": {
+    "message": "Turco"
+  },
+  "aiLangEn": {
+    "message": "Inglês"
+  },
+  "aiLangDe": {
+    "message": "Alemão"
+  },
+  "aiLangFr": {
+    "message": "Francês"
+  },
+  "aiLangEs": {
+    "message": "Espanhol"
+  },
+  "aiLangRu": {
+    "message": "Russo"
+  },
+  "aiLangAr": {
+    "message": "Árabe"
+  },
+  "aiLangHi": {
+    "message": "Hindi"
+  },
+  "aiLangZh": {
+    "message": "Chinês"
+  },
+  "aiLangJa": {
+    "message": "Japonês"
+  },
+  "aiLangPt": {
+    "message": "Português"
+  },
+  "btnAiGenerate": {
+    "message": "Gerar"
+  },
+  "btnCancel": {
+    "message": "Cancelar"
+  },
+  "alertAiPromptEmpty": {
+    "message": "Descreva que tipo de e-mail pretende."
+  },
+  "aiGenerating": {
+    "message": "A gerar..."
+  },
+  "alertAiProOnly": {
+    "message": "O redator de e-mails com IA está disponível apenas no plano Pro."
+  },
+  "alertAiFailed": {
+    "message": "Falha na geração com IA: "
+  },
+  "templatePromptName": {
+    "message": "Nome do modelo:"
+  },
+  "templateDefaultName": {
+    "message": "O meu modelo"
+  },
+  "templateConfirmDelete": {
+    "message": "Eliminar o modelo \"$1\"?"
+  },
+  "alertTemplateFillFirst": {
+    "message": "Preencha primeiro o assunto e o conteúdo."
+  },
+  "alertTemplateStandardOnly": {
+    "message": "Os modelos de e-mail estão disponíveis nos planos Standard e Pro."
+  },
+  "alertTemplateSaveFailed": {
+    "message": "Não foi possível guardar o modelo: "
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "Não foi possível eliminar o modelo: "
+  },
+  "csvExportDownloading": {
+    "message": "A transferir..."
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "A exportação CSV está disponível nos planos Standard e Pro."
+  },
+  "alertCsvExportFailed": {
+    "message": "Falha na exportação: "
+  },
+  "alertCsvExportEmpty": {
+    "message": "Exportação CSV concluída, mas os dados estão vazios."
+  },
+  "reportsSentSuffix": {
+    "message": " enviados"
+  },
+  "reportsOpenRate": {
+    "message": "Aberturas: "
+  },
+  "reportsClickRate": {
+    "message": "Cliques: "
+  },
+  "reportsError": {
+    "message": "Erro"
+  },
+  "reportsFollowupPending": {
+    "message": " follow-ups pendentes"
+  },
+  "upgradeModalTitle": {
+    "message": "Fazer upgrade do plano"
+  },
+  "upgradeModalText": {
+    "message": "Atingiu o seu limite de e-mails.<br/>Faça upgrade para enviar mais e-mails."
+  },
+  "upgradeModalStandard": {
+    "message": "Starter: 2.500 e-mails/mês — $$9/mês"
+  },
+  "upgradeModalPro": {
+    "message": "Pro: 10.000 e-mails/mês — $$19/mês"
+  },
+  "upgradeModalFeatures": {
+    "message": "Relatórios detalhados + suporte prioritário"
+  },
+  "upgradeModalBtn": {
+    "message": "Fazer upgrade agora — Starter $$9/mês"
+  },
+  "upgradeModalLater": {
+    "message": "Talvez mais tarde"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "Não foi possível criar a página de pagamento. Tente novamente."
+  },
+  "settingsSaveFailed": {
+    "message": "Não foi possível guardar as definições: "
+  },
+  "settingsCheckoutFailed": {
+    "message": "Não foi possível criar a página de pagamento."
+  },
+  "quotaInfoTitle": {
+    "message": "Sobre os limites de e-mail"
+  },
+  "quotaDisclaimer": {
+    "message": "O Microsoft Outlook também aplica limites diários de envio (~300/dia em contas pessoais, ~10.000/dia Business). A nossa quota é adicional a esses limites."
+  },
+  "quotaInfoBody1": {
+    "message": "A Microsoft aplica limites de envio nas contas Outlook para além da quota do seu plano. Aplica-se sempre o mais restritivo dos dois:"
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com (pessoal): ~300 e-mails/dia"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 Business: ~10.000 e-mails/dia"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online: limite de 30 mensagens/minuto"
+  },
+  "quotaInfoBody2": {
+    "message": "Distribuir campanhas grandes ao longo de vários dias ajuda a evitar limitações de envio e protege a sua reputação de remetente. O OutMass não pode ignorar os limites da plataforma Microsoft."
+  },
+  "tzMoscow": {
+    "message": "Moscovo (UTC+3)"
+  },
+  "tzKolkata": {
+    "message": "Índia (UTC+5:30)"
+  },
+  "tzShanghai": {
+    "message": "China (UTC+8)"
+  },
+  "tzTokyo": {
+    "message": "Tóquio (UTC+9)"
+  },
+  "tzChicago": {
+    "message": "Chicago (UTC-6/-5)"
+  },
+  "tzDenver": {
+    "message": "Denver (UTC-7/-6)"
+  },
+  "tzSaoPaulo": {
+    "message": "São Paulo (UTC-3)"
+  },
+  "alertPartialCsvQuota": {
+    "message": "$1 e-mails restantes na sua quota.\nO CSV tem $2 destinatários.\nApenas os primeiros $1 serão enviados."
+  },
+  "settingsLanguage": {
+    "message": "Idioma da interface"
+  },
+  "settingsLanguageHint": {
+    "message": "Aplicado imediatamente. Substitui o idioma do navegador apenas nesta extensão."
+  },
+  "langAuto": {
+    "message": "Automático (idioma do navegador)"
+  },
+  "popupUpgradeStarter": {
+    "message": "Upgrade → Starter ($$9/mês)"
+  },
+  "upgradeSuccessProrated": {
+    "message": "Upgrade concluído! A Stripe cobrará automaticamente a diferença proporcional."
+  },
+  "labelCampaignName": {
+    "message": "Nome da campanha (opcional)"
+  },
+  "placeholderCampaignName": {
+    "message": "ex.: Prospeção T2 Onda 1"
+  },
+  "csvTemplateDownload": {
+    "message": "Transferir CSV de exemplo"
+  },
+  "csvTemplateRow1": {
+    "message": "joao@example.com,João,Silva,Acme Lda,CEO"
+  },
+  "csvTemplateRow2": {
+    "message": "maria@example.com,Maria,Sousa,TechFlow Lda,Diretora de Marketing"
+  },
+  "csvTemplateRow3": {
+    "message": "carlos@example.com,Carlos,Oliveira,Pioneer Labs,VP de Vendas"
+  },
+  "btnTestSend": {
+    "message": "Envio de teste"
+  },
+  "testSendPrompt": {
+    "message": "Será enviado um e-mail de teste para o seu próprio endereço. Continuar?"
+  },
+  "testSendSuccess": {
+    "message": "E-mail de teste enviado para $EMAIL$. Verifique a sua caixa de entrada.",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "Falha no envio de teste: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "Preencha o assunto e o conteúdo antes de enviar um teste."
+  },
+  "warnSubjectLong": {
+    "message": "Assunto com mais de 78 caracteres — pode ser cortado no telemóvel."
+  },
+  "warnAllCaps": {
+    "message": "Assunto com demasiadas letras maiúsculas — parece spam."
+  },
+  "warnSpamWords": {
+    "message": "Possíveis palavras de spam detetadas: $LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "$N$ ligações no conteúdo — pode acionar filtros de spam.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnHtmlInvalid": {
+    "message": "O HTML parece desequilibrado (tags não fechadas: $TAGS$). Verifique antes de enviar.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "$N$ imagens no conteúdo — excesso de imagens parece spam.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "Ligações encurtadas detetadas ($LIST$) — a entregabilidade pode diminuir.",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "Enviar mesmo assim?"
+  },
+  "csvErrTooLarge": {
+    "message": "Ficheiro CSV demasiado grande (máx. 5 MB)."
+  },
+  "csvErrEncoding": {
+    "message": "Este ficheiro não está guardado como UTF-8, pelo que os caracteres não podem ser lidos corretamente. No Excel: Ficheiro > Guardar Como > escolha 'CSV UTF-8 (delimitado por vírgulas)' e carregue esse ficheiro."
+  },
+  "alertBackendUnreachable": {
+    "message": "O OutMass não consegue aceder aos próprios servidores neste momento. É um problema de ligação — não da sua conta nem do seu plano. Verifique a sua ligação à Internet, VPN ou firewall e tente novamente dentro de momentos."
+  },
+  "netUnreachableBanner": {
+    "message": "Não é possível aceder aos servidores do OutMass — enviar e guardar não vão funcionar. Verifique a sua ligação, VPN ou firewall."
+  },
+  "csvErrNoEmailColumn": {
+    "message": "O CSV tem de ter uma coluna 'email'."
+  },
+  "alertSignInFirst": {
+    "message": "Inicie sessão com a Microsoft primeiro — use o botão Iniciar sessão no topo do painel. Pode redigir sem conta, mas para enviar é necessária uma."
+  },
+  "signInFirstBannerText": {
+    "message": "Inicie sessão com a Microsoft para começar a enviar."
+  },
+  "dailyCapLabel": {
+    "message": "Limite diário de envio (opcional)"
+  },
+  "dailyCapNote": {
+    "message": "Envia no máximo esta quantidade de e-mails por dia e continua automaticamente no dia seguinte até concluir toda a sua lista. (Não pode ser combinado com teste A/B.)"
+  },
+  "csvErrNoEmailColumnHint": {
+    "message": "Transfira o CSV de exemplo para ver o formato exigido."
+  },
+  "csvDupRemoved": {
+    "message": "duplicados removidos"
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "ignorados (sem e-mail)"
+  },
+  "campaignNameDuplicate": {
+    "message": "Já existe uma campanha com o nome \"$NAME$\". Continuar?",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "Pré-visualização"
+  },
+  "reportsTabActive": {
+    "message": "Ativas"
+  },
+  "reportsTabArchived": {
+    "message": "Arquivadas"
+  },
+  "btnArchive": {
+    "message": "Arquivar"
+  },
+  "btnUnarchive": {
+    "message": "Desarquivar"
+  },
+  "archiveConfirm": {
+    "message": "Arquivar esta campanha? Pode restaurá-la mais tarde no separador Arquivadas."
+  },
+  "onbTitle": {
+    "message": "Bem-vindo ao OutMass"
+  },
+  "onbStep1": {
+    "message": "Passo 1 — Carregue um CSV de destinatários. A primeira coluna tem de ser 'email'."
+  },
+  "onbStep2": {
+    "message": "Passo 2 — Escreva o assunto e o conteúdo. Use {{firstName}} para personalizar cada e-mail."
+  },
+  "onbStep3": {
+    "message": "Passo 3 — Clique em Pré-visualizar ou Envio de teste para confirmar e depois em Enviar."
+  },
+  "onbNext": {
+    "message": "Seguinte"
+  },
+  "onbBack": {
+    "message": "Anterior"
+  },
+  "onbFinish": {
+    "message": "Concluir"
+  },
+  "btnExportList": {
+    "message": "Exportar tudo"
+  },
+  "settingsDedupTitle": {
+    "message": "Ignorar destinatários repetidos"
+  },
+  "settingsDedupHint": {
+    "message": "Não enviar e-mail para a mesma pessoa em campanhas diferentes dentro de um período."
+  },
+  "settingsDedupEnabled": {
+    "message": "Ativado (funcionalidade Pro)"
+  },
+  "settingsDedupDays": {
+    "message": "Período de verificação (dias)"
+  },
+  "uploadSkippedPrevious": {
+    "message": "$N$ destinatário(s) ignorado(s) — já contactado(s) numa campanha recente.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertQuotaCapped": {
+    "message": "A enviar para $QUEUED$ destinatários.\n\n⚠️ $SKIPPED$ destinatários não foram incluídos — atingiu o limite mensal do seu plano. Ficam guardados e serão enviados automaticamente após a reposição mensal da sua quota. Para os enviar mais cedo, faça upgrade do seu plano.",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "largeSendWarn": {
+    "message": "Está prestes a enviar para $COUNT$ destinatários.\n\nPara respeitar os limites de envio do Outlook e proteger a sua conta contra bloqueios, o OutMass espaça este envio automaticamente (cerca de 30/min), pelo que demorará aproximadamente $MIN$ minutos e continua em segundo plano.\n\nEm listas frias grandes, a entregabilidade é melhor se distribuir o envio por vários dias (algumas centenas por dia) através de Agendar.\n\nContinuar?",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
+  "placeholderSenderName": {
+    "message": "João Silva"
+  },
+  "placeholderSenderPosition": {
+    "message": "Fundador"
+  },
+  "placeholderSenderCompany": {
+    "message": "Acme Lda."
+  },
+  "placeholderSenderPhone": {
+    "message": "+351 910 000 000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "Escolha uma data e uma hora para ver no seu formato local."
+  },
+  "scheduleParsedPrefix": {
+    "message": "Será enviado em "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "O envio agendado é uma funcionalidade Starter/Pro. Quer fazer upgrade agora?"
+  },
+  "errFeatureLocked": {
+    "message": "Esta funcionalidade está disponível apenas nos planos pagos. Quer fazer upgrade?"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "Não restou nenhum destinatário — todas as linhas foram filtradas pela sua lista de bloqueio, pelas regras de duplicados ou por e-mails inválidos."
+  },
+  "reauthBannerText": {
+    "message": "Volte a ligar-se ao Outlook — a sua autorização expirou. Inicie sessão novamente para que os envios agendados continuem a funcionar."
+  },
+  "sessionExpiredBannerText": {
+    "message": "A sua sessão expirou. Inicie sessão novamente para continuar a utilizar o OutMass."
+  },
+  "reauthBannerCta": {
+    "message": "Iniciar sessão"
+  },
+  "reauthFailed": {
+    "message": "Falha ao iniciar sessão: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "dangerZone": {
+    "message": "Zona de perigo"
+  },
+  "deleteAccountDesc": {
+    "message": "Remova permanentemente a sua conta OutMass e todos os dados."
+  },
+  "deleteAccountButton": {
+    "message": "Eliminar a minha conta"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "Isto não pode ser desfeito"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "Eliminar a sua conta removerá permanentemente:"
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "Todas as campanhas e modelos"
+  },
+  "deleteAccountDataContacts": {
+    "message": "Todos os contactos e dados de rastreio"
+  },
+  "deleteAccountDataAuth": {
+    "message": "A sua autorização da Microsoft"
+  },
+  "deleteAccountDataSettings": {
+    "message": "Todas as definições e preferências"
+  },
+  "deleteAccountSubCheck": {
+    "message": "Subscrição ativa? Cancele-a primeiro em Gerir subscrição."
+  },
+  "deleteAccountTypePrompt": {
+    "message": "Escreva DELETE para confirmar:"
+  },
+  "deleteAccountIrreversible": {
+    "message": "Compreendo que isto é irreversível"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "Eliminar permanentemente"
+  },
+  "deleteAccountSuccess": {
+    "message": "A sua conta foi eliminada."
+  },
+  "deleteAccountActiveSubError": {
+    "message": "Cancele a sua subscrição antes de eliminar a sua conta."
+  },
+  "deleteAccountFailed": {
+    "message": "Não foi possível eliminar a conta: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "portalErrorNoSubscription": {
+    "message": "Ainda não tem uma subscrição ativa. Faça upgrade para um plano pago primeiro e depois volte aqui para a gerir."
+  },
+  "portalErrorManualPlan": {
+    "message": "O seu plano atual foi configurado manualmente e não é gerido através do portal de faturação. Contacte support@getoutmass.com para o alterar."
+  },
+  "portalErrorNotConfigured": {
+    "message": "A faturação está temporariamente indisponível. Tente novamente daqui a instantes ou contacte o suporte."
+  },
+  "attachmentsLabel": {
+    "message": "Anexos"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ Adicionar ligação do OneDrive"
+  },
+  "btnContinue": {
+    "message": "Continuar"
+  },
+  "attachmentsHint": {
+    "message": "Os destinatários veem uma ligação, não um anexo — melhor entrega na caixa de entrada."
+  },
+  "oneDriveConsentTitle": {
+    "message": "Acesso ao OneDrive"
+  },
+  "oneDriveConsentBody": {
+    "message": "O OutMass precisa de acesso ao OneDrive para criar ligações de partilha dos ficheiros que selecionar. Nunca transferimos, armazenamos nem lemos os seus ficheiros — geramos apenas a ligação que escolher partilhar."
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "Os destinatários veem uma ligação para o seu OneDrive — melhor entregabilidade do que anexar ficheiros diretamente, e pode atualizar o ficheiro a qualquer momento sem reenviar o e-mail."
+  },
+  "oneDrivePickerTitle": {
+    "message": "Escolher um ficheiro"
+  },
+  "oneDriveError": {
+    "message": "Não foi possível adicionar o ficheiro do OneDrive: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "statEngaged": {
+    "message": "Interagiram:"
+  },
+  "statEngagedHint": {
+    "message": "Destinatários que abriram, clicaram OU responderam. Mais fiável do que a taxa de abertura pura — muitos clientes de e-mail (Outlook, Apple Mail) distorcem o rastreio de aberturas ao bloquear ou pré-carregar píxeis."
+  },
+  "statReplied": {
+    "message": "Responderam:"
+  },
+  "statRepliedHint": {
+    "message": "Detetado através de uma análise diária da Caixa de Entrada. O sinal de interação mais forte — conta apenas respostas genuínas dos seus destinatários."
+  },
+  "resumeHint": {
+    "message": "Alguns destinatários ainda não receberam esta campanha — normalmente um problema temporário de rede, ou atingiu o seu limite mensal. Retomar tenta novamente apenas os destinatários pendentes. Se foi o limite mensal, serão também enviados automaticamente após a reposição mensal da sua quota."
+  },
+  "btnResumeCampaign": {
+    "message": "Retomar envio"
+  },
+  "resumeQueued": {
+    "message": "$N$ destinatário(s) em fila para reenvio.",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "resumeFailed": {
+    "message": "Não foi possível retomar: $ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "A carregar…"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "Esta pasta está vazia."
+  },
+  "oneDrivePickerError": {
+    "message": "Não foi possível carregar o conteúdo do OneDrive. Tente novamente."
+  },
+  "oneDriveNoDrive": {
+    "message": "Esta conta Microsoft não tem OneDrive. Inicie sessão com uma conta que tenha OneDrive ou envie esta campanha sem anexos do OneDrive."
+  },
+  "oneDriveAuthStuck": {
+    "message": "O acesso ao OneDrive continua a não funcionar mesmo depois de ter iniciado sessão. A sua conta Microsoft pode não incluir o OneDrive, ou a sua organização pode estar a bloqueá-lo. Pode enviar esta campanha sem anexos do OneDrive — ou escreva para support@getoutmass.com que nós ajudamos."
+  },
+  "mergeTagUnknown": {
+    "message": "O seu CSV não tem nenhuma coluna com o nome \"$TAGS$\". Em vez disso, pode usar estas tags do seu CSV: $AVAILABLE$. Use uma delas ou remova a tag do seu e-mail.",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      },
+      "available": {
+        "content": "$2"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "O seu e-mail tem uma merge tag inválida: $TAG$. As tags não podem conter espaços. A forma correta é esta: {{firstName}}.",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
+  },
+  "availableTagsLabel": {
+    "message": "Tags do seu CSV (clique para inserir):"
+  },
+  "announcementsTitle": {
+    "message": "Notificações"
+  },
+  "announcementsEmpty": {
+    "message": "Sem notificações"
+  },
+  "announcementsView": {
+    "message": "Ver"
+  },
+  "announcementsDismiss": {
+    "message": "Dispensar"
+  },
+  "announcementsMore": {
+    "message": "+$COUNT$ mais — abrir painel",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sendingAsLabel": {
+    "message": "A enviar como:"
+  },
+  "sendingAsChange": {
+    "message": "Alterar"
+  },
+  "authErrorConsent": {
+    "message": "O início de sessão não foi concluído. A sua organização pode precisar que um administrador aprove primeiro o OutMass — contacte support@getoutmass.com ou use uma conta pessoal do Outlook.com."
+  },
+  "authErrorPageLoad": {
+    "message": "Não foi possível abrir a página de início de sessão da Microsoft. Verifique a sua ligação à Internet e tente novamente."
+  }
+}
