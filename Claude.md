@@ -208,3 +208,20 @@ Herhangi biri \*\*hayır\*\* ise \*\*push atma\*\*, kullanıcıya geri dön.
 
 \- Graph API: Microsoft Graph Explorer ile test et
 
+\### Extension release öncesi ZORUNLU kontroller (her sürümde)
+
+`node extension/tests/run-all.js` — üç suite, hepsi yeşil olmadan zip paketleme:
+
+1. **csv-decode** — gerçek `decodeCsvBuffer` kodunu 10 encoding fikstürüne
+   (UTF-8/BOM, GBK, Big5, Shift_JIS, cp1251/1254/1256, garbage) karşı çalıştırır.
+   Neden: zh-CN kullanıcısı GBK CSV'si 7 kez reddedilince churn oldu (2026-07-14).
+2. **locale-consistency** — 11 locale'de anahtar eşitliği + $PLACEHOLDER$
+   tutarlılığı. Neden: 3 anahtar 10 dilde eksik çıktı (sessiz İngilizce fallback).
+3. **i18n-usage** — kodda kullanılan her literal t()/data-i18n anahtarı en'de var mı.
+
+Kurallar: yeni bir locale anahtarı HER ZAMAN 11 dosyaya birden eklenir (test
+zorlar). Kullanıcı-görünür yeni hata mesajı eklerken sor: "kullanıcı bunu
+okuyunca ne YAPACAĞINI biliyor mu?" (çözüm adımı yoksa mesaj eksiktir) ve
+"ağ hatası mı sunucu cevabı mı ayırt ediliyor mu?" (network:true deseni).
+CI'daki `extension-checks` job'ı da aynı script'i koşar.
+
