@@ -62,6 +62,27 @@ the release that makes it true. Chrome and Edge publish a listing edit and a
 package submission together, so pasting the new count alongside the 0.1.27
 upload is correct — pasting it while 0.1.26 is the live version is not.
 
+## Copying text into the dashboards
+
+**Do not copy out of `listings.json`.** It is JSON, so its line breaks are
+stored as the two characters `\n` — pasting from it puts literal `\n` into the
+dashboard instead of real line breaks.
+
+Copy from `descriptions/<lang>.txt` instead. Each file has the three fields as
+separate blocks with real line breaks and a character count:
+
+```bash
+node docs/store-listing/render.js
+```
+
+Those files are **generated** — edit `listings.json` and re-run the command.
+`check-limits.js` fails if they fall out of sync, because they drifted once
+before and spent three months advertising claims we had already removed
+(timezone delivery, "Claude-powered", free = 50/mo, Starter = 2,000/mo).
+
+Open them in an editor that reads UTF-8 (VS Code, or Notepad on Windows 11) so
+the emoji and non-Latin text survive the copy.
+
 ## How to use
 
 When submitting to the Chrome Web Store Developer Dashboard:

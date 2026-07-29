@@ -78,8 +78,32 @@ if (distinct.length > 1) {
   );
 }
 
+// The paste-ready .txt files are generated from listings.json. They drifted
+// three months once and still advertised claims we had removed, so treat any
+// divergence as a failure rather than a nuisance.
+const { render } = require("./render.js");
+const descDir = path.join(__dirname, "descriptions");
+if (fs.existsSync(descDir)) {
+  for (const [lang, entry] of Object.entries(listings)) {
+    const file = path.join(descDir, `${lang}.txt`);
+    if (!fs.existsSync(file)) {
+      err(lang, `descriptions/${lang}.txt missing — run: node docs/store-listing/render.js`);
+      continue;
+    }
+    if (fs.readFileSync(file, "utf8") !== render(lang, entry)) {
+      err(lang, `descriptions/${lang}.txt is out of sync — run: node docs/store-listing/render.js`);
+    }
+  }
+  const extra = fs
+    .readdirSync(descDir)
+    .filter((f) => f.endsWith(".txt") && !listings[f.replace(/\.txt$/, "")]);
+  for (const f of extra) {
+    err("descriptions", `${f} has no entry in listings.json (stale copy — delete it)`);
+  }
+}
+
 if (fail) {
   console.error(`\n${fail} problem(s).`);
   process.exit(1);
 }
-console.log(`\nAll ${Object.keys(listings).length} entries OK.`);
+console.log(`\nAll ${Object.keys(listings).length} entries OK, paste files in sync.`);
