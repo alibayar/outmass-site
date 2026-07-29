@@ -234,6 +234,38 @@ def test_unsubscribe_page_unsupported_language_falls_back_to_english(client, fak
     assert 'dir="rtl"' not in resp.text
 
 
+def test_unsubscribe_page_traditional_chinese_for_tw_hk(client, fake_db):
+    """Chinese is the one language where the region decides the SCRIPT.
+
+    Serving Simplified text to a zh-TW/zh-HK reader shows them a foreign
+    writing system, so those tags get the Traditional page; zh-CN, zh-SG and a
+    bare "zh" stay Simplified.
+    """
+    traditional_marker = "取消訂閱"  # 訂閱 is Traditional
+    simplified_marker = "取消订阅"  # 订阅 is Simplified
+
+    for header in ("zh-TW", "zh-HK,zh;q=0.9", "zh-Hant-TW", "zh-MO"):
+        with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
+             patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
+            resp = client.get(
+                "/unsubscribe/contact-001",
+                headers={"Accept-Language": header},
+            )
+        assert resp.status_code == 200, header
+        assert traditional_marker in resp.text, f"{header} did not get Traditional"
+        assert simplified_marker not in resp.text, f"{header} leaked Simplified"
+
+    for header in ("zh-CN,zh;q=0.9", "zh", "zh-SG"):
+        with patch("routers.tracking.contact_model.get_contact", return_value=FAKE_CONTACT), \
+             patch("routers.tracking.campaign_model.get_campaign", return_value=FAKE_CAMPAIGN):
+            resp = client.get(
+                "/unsubscribe/contact-001",
+                headers={"Accept-Language": header},
+            )
+        assert resp.status_code == 200, header
+        assert simplified_marker in resp.text, f"{header} did not get Simplified"
+
+
 def test_unsubscribe_page_portuguese_for_both_variants(client, fake_db):
     """Recipients of a Portuguese campaign get a Portuguese unsubscribe page.
 

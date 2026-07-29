@@ -32,6 +32,17 @@ const err = (lang, msg) => {
   fail++;
 };
 
+// The language count appears in ~24 places (a summary and a bullet per entry)
+// and has drifted before — pricing.html once said 11 and 10 on the same page.
+// Whatever the number is, every entry must agree on it.
+const counts = new Map();
+const countOf = (text) => {
+  const m = String(text).match(
+    /(\d{1,2})\s*(?:UI\s+)?(?:languages|language|dil|dilde|arayüz dili|Sprachen|langues|idiomas|языков|языка|लंगुएज|भाषा|भाषाएँ|种界面语言|種介面語言|种语言|種語言|言語|idioma|لغات|لغة)/i
+  );
+  return m ? m[1] : null;
+};
+
 for (const [lang, entry] of Object.entries(listings)) {
   for (const key of ["title", "summary", "description"]) {
     if (!entry[key] || typeof entry[key] !== "string") err(lang, `missing ${key}`);
@@ -46,7 +57,25 @@ for (const [lang, entry] of Object.entries(listings)) {
   for (const re of BANNED) {
     if (re.test(all)) err(lang, `banned claim matches ${re}`);
   }
-  console.log(`  ✓ ${lang}: title ${t}/${TITLE_MAX}, summary ${s}/${SUMMARY_MAX}, desc ${d}`);
+  const n = countOf(entry.summary) || countOf(entry.description);
+  if (n) counts.set(lang, n);
+  console.log(
+    `  ✓ ${lang}: title ${t}/${TITLE_MAX}, summary ${s}/${SUMMARY_MAX}, ` +
+    `desc ${d}${n ? `, languages: ${n}` : ""}`
+  );
+}
+
+const distinct = [...new Set(counts.values())];
+if (distinct.length > 1) {
+  const byCount = {};
+  for (const [lang, n] of counts) (byCount[n] = byCount[n] || []).push(lang);
+  err(
+    "all",
+    "entries disagree on the language count: " +
+      Object.entries(byCount)
+        .map(([n, langs]) => `${n} (${langs.join(",")})`)
+        .join(" vs ")
+  );
 }
 
 if (fail) {

@@ -1693,6 +1693,33 @@
     });
   }
 
+  /**
+   * Map a BCP-47 locale to an AI-writer output-language option value.
+   *
+   * Chinese is the one language where the region matters: a Traditional
+   * reader finds Simplified output jarring (and vice versa), so Traditional
+   * gets its own option instead of sharing "zh". Hong Kong and Macau read
+   * Traditional; Singapore reads Simplified. Portuguese shares one option —
+   * the two variants are mutually comfortable.
+   *
+   * Returns null when we have no option for the locale, so the caller leaves
+   * the picker on its default rather than setting a value that isn't there.
+   */
+  function aiLangForLocale(locale) {
+    var l = String(locale || "").toLowerCase().replace(/_/g, "-");
+    if (l.indexOf("zh") === 0) {
+      var traditional =
+        l.indexOf("hant") !== -1 ||
+        l.indexOf("-tw") !== -1 ||
+        l.indexOf("-hk") !== -1 ||
+        l.indexOf("-mo") !== -1;
+      return traditional ? "zh_TW" : "zh";
+    }
+    var base = l.split("-")[0];
+    var supported = ["en", "tr", "de", "fr", "es", "ru", "ar", "hi", "ja", "pt"];
+    return supported.indexOf(base) !== -1 ? base : null;
+  }
+
   function showAiWriterModal() {
     var existing = document.getElementById("ai-modal");
     if (existing) existing.remove();
@@ -1723,6 +1750,7 @@
           '<option value="ar">' + t("aiLangAr") + '</option>' +
           '<option value="hi">' + t("aiLangHi") + '</option>' +
           '<option value="zh">' + t("aiLangZh") + '</option>' +
+          '<option value="zh_TW">' + t("aiLangZhTw") + '</option>' +
           '<option value="ja">' + t("aiLangJa") + '</option>' +
           '<option value="pt">' + t("aiLangPt") + '</option>' +
         '</select>' +
@@ -1735,17 +1763,19 @@
     overlay.appendChild(modal);
     document.body.appendChild(overlay);
 
-    // Pre-select language matching the user's browser UI language
+    // Pre-select the output language from the panel's ACTIVE locale — the
+    // Settings → Interface Language override when the user set one, browser
+    // language otherwise. Reading getUILanguage() directly ignored the
+    // override, so someone running an English browser with the panel in
+    // Turkish still got English preselected.
     try {
-      var uiLang = (chrome.i18n.getUILanguage() || "en").split("-")[0].toLowerCase();
-      if (uiLang === "zh_cn" || uiLang === "zh_tw") uiLang = "zh";
       var langSelectEl = document.getElementById("ai-lang");
-      if (langSelectEl) {
-        var supported = ["en", "tr", "de", "fr", "es", "ru", "ar", "hi", "zh", "ja", "pt"];
-        if (supported.indexOf(uiLang) !== -1) {
-          langSelectEl.value = uiLang;
-        }
-      }
+      var picked = aiLangForLocale(
+        typeof getActiveLocale === "function"
+          ? getActiveLocale()
+          : chrome.i18n.getUILanguage()
+      );
+      if (langSelectEl && picked) langSelectEl.value = picked;
     } catch (e) { /* fallback to English */ }
 
     document.getElementById("ai-generate-btn").addEventListener("click", function () {

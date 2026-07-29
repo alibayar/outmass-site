@@ -455,7 +455,10 @@
     "message": "印地语"
   },
   "aiLangZh": {
-    "message": "中文"
+    "message": "简体中文"
+  },
+  "aiLangZhTw": {
+    "message": "繁体中文"
   },
   "aiLangJa": {
     "message": "日语"

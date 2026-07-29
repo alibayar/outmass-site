@@ -33,11 +33,34 @@ All content verified under limits (`node docs/store-listing/check-limits.js`).
 
 ## Language-count policy (claims discipline)
 
-The description claims "10 UI languages". Count = distinct languages, not
-locale folders: the extension ships 11 folders but `zh` is only a fallback for
-zh-TW/HK browsers carrying the same Simplified content as `zh_CN`, so it does
-NOT add a language. After 0.1.27 (pt_BR + pt_PT) the honest count becomes 11
-(Portuguese counted once). Update the number in ALL entries at that cut.
+**The number to use is 13**, from 0.1.27 onward. Three different counts exist
+and it matters which one the copy claims:
+
+| Count | What it measures | 0.1.27 value |
+|---|---|---|
+| Locale folders | files in `extension/_locales/` | **14** |
+| User-selectable translations | entries in Settings → Interface Language | **13** |
+| Distinct languages (linguistic) | Chinese once, Portuguese once | **11** |
+
+We claim **13** — the number a user can verify by opening the dropdown. Each of
+the 13 is a separate translation with genuinely different text: `zh_CN` and
+`zh_TW` are Simplified vs Taiwan-Traditional (different vocabulary, not a
+character conversion), `pt_BR` and `pt_PT` likewise. Counting them once each
+would undersell two translations, and "supported languages" universally means
+locales in software localization.
+
+Do NOT count the 14th folder: `zh` is a fallback duplicate of `zh_CN` for any
+`zh-*` tag Chrome doesn't match (bare `zh`, zh-SG), and is never offered as a
+choice.
+
+Earlier this section said 10, then 11 — the count drifted across files and even
+within one page (pricing.html said 11 and 10 in two places). `check-limits.js`
+now fails if the entries disagree with each other.
+
+**Timing (claims-follow-product):** the number may only go live together with
+the release that makes it true. Chrome and Edge publish a listing edit and a
+package submission together, so pasting the new count alongside the 0.1.27
+upload is correct — pasting it while 0.1.26 is the live version is not.
 
 ## How to use
 

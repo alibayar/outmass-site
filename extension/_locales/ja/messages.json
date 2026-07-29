@@ -455,7 +455,10 @@
     "message": "ヒンディー語"
   },
   "aiLangZh": {
-    "message": "中国語"
+    "message": "中国語（簡体字）"
+  },
+  "aiLangZhTw": {
+    "message": "中国語（繁体字）"
   },
   "aiLangJa": {
     "message": "日本語"

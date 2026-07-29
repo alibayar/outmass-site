@@ -5,6 +5,8 @@ All notable user-facing changes to the OutMass Chrome Extension.
 ## v0.1.27 — 2026-07-29
 
 - **OutMass now speaks Portuguese.** The whole panel is available in Português (Brasil) and Português (Portugal) — two separate translations, not one shared approximation, so each reads the way you actually write. Pick either in Settings → Interface Language, or let OutMass follow your browser. The AI Email Writer can now draft in Portuguese too.
+- **繁體中文 is now a real translation.** Browsers set to Traditional Chinese used to fall back to the Simplified text. There is now a proper Traditional translation written in Taiwan terminology (軟體, 檔案, 資訊, 範本 — not converted Simplified wording), selectable as 繁體中文 in Settings, and the AI Email Writer can draft in Traditional Chinese. Your recipients' unsubscribe pages follow the same rule: someone reading Traditional Chinese no longer gets a Simplified page.
+- Both Chinese options are now labelled explicitly in the AI writer (Simplified / Traditional) instead of one ambiguous "Chinese".
 - **Clearer message when a campaign hits your monthly limit.** OutMass used to tell you to come back and press Resume after your reset. It now says what actually happens: the remaining recipients are saved and go out automatically after your monthly reset — upgrading is only if you want them sooner. The Resume hint in Reports was reworded for the same reason.
 
 ### Behind the scenes (backend — affects all extension versions)

@@ -455,7 +455,10 @@
     "message": "الهندية"
   },
   "aiLangZh": {
-    "message": "الصينية"
+    "message": "الصينية (المبسطة)"
+  },
+  "aiLangZhTw": {
+    "message": "الصينية (التقليدية)"
   },
   "aiLangJa": {
     "message": "اليابانية"

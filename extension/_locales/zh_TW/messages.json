@@ -1,0 +1,1078 @@
+{
+  "appName": {
+    "message": "OutMass"
+  },
+  "popupConsentExplainer": {
+    "message": "Microsoft 會請您授權 OutMass 使用您自己的 Outlook 帳戶寄送郵件並偵測回覆。OutMass 絕不會讀取您的其他郵件；您的行銷活動會安全地儲存，讓排程與後續追蹤郵件得以運作。"
+  },
+  "appDesc": {
+    "message": "直接從 Outlook Web 執行大量郵件行銷活動"
+  },
+  "tabCampaign": {
+    "message": "行銷活動"
+  },
+  "tabReports": {
+    "message": "報表"
+  },
+  "tabSettings": {
+    "message": "設定"
+  },
+  "tabAccount": {
+    "message": "帳戶"
+  },
+  "connChecking": {
+    "message": "正在檢查連線……"
+  },
+  "connOnline": {
+    "message": "已連線至伺服器"
+  },
+  "connOffline": {
+    "message": "無法連線至伺服器"
+  },
+  "offlineBanner": {
+    "message": "無法連線至伺服器。請檢查您的網路連線。"
+  },
+  "extUpdatedReload": {
+    "message": "擴充功能已更新。請重新載入頁面。"
+  },
+  "btnClose": {
+    "message": "關閉"
+  },
+  "csvLabel": {
+    "message": "收件者名單（CSV）"
+  },
+  "csvDropHint": {
+    "message": "將 CSV 檔案拖放至此"
+  },
+  "csvDropHintAlt": {
+    "message": "或點選以選擇檔案"
+  },
+  "csvCountSuffix": {
+    "message": "位收件者"
+  },
+  "btnAiWriter": {
+    "message": "用 AI 撰寫"
+  },
+  "templateDefault": {
+    "message": "-- 選擇範本 --"
+  },
+  "btnSaveTemplate": {
+    "message": "儲存"
+  },
+  "btnDeleteTemplate": {
+    "message": "刪除"
+  },
+  "templateDeleteTitle": {
+    "message": "刪除所選範本"
+  },
+  "templateSaveTitle": {
+    "message": "將目前內容儲存為範本"
+  },
+  "labelSubject": {
+    "message": "主旨"
+  },
+  "placeholderSubject": {
+    "message": "{{firstName}} 您好，我們有個方案想與您分享"
+  },
+  "labelBody": {
+    "message": "郵件內容"
+  },
+  "placeholderBody": {
+    "message": "{{firstName}} 您好，\n\n我們為 {{company}} 準備了一個很棒的方案……"
+  },
+  "placeholdersHint": {
+    "message": "收件者：<code>{{firstName}}</code> <code>{{lastName}}</code> <code>{{email}}</code> <code>{{company}}</code><br>寄件者：<code>{{senderName}}</code> <code>{{senderPosition}}</code> <code>{{senderCompany}}</code> <code>{{senderPhone}}</code>"
+  },
+  "btnPreview": {
+    "message": "預覽"
+  },
+  "btnSend": {
+    "message": "傳送"
+  },
+  "abTestLabel": {
+    "message": "A/B 測試（測試 2 組主旨）"
+  },
+  "abSubjectBLabel": {
+    "message": "替代主旨（B）"
+  },
+  "abSubjectBPlaceholder": {
+    "message": "第二組主旨……"
+  },
+  "abTestPctLabel": {
+    "message": "測試比例（%）"
+  },
+  "abTestNote": {
+    "message": "系統會將兩組不同的主旨寄給部分收件者，勝出的主旨則寄給其餘收件者。"
+  },
+  "scheduleLabel": {
+    "message": "排程傳送"
+  },
+  "scheduleDateLabel": {
+    "message": "傳送時間"
+  },
+  "scheduleNote": {
+    "message": "將於指定時間自動傳送。"
+  },
+  "followupLabel": {
+    "message": "自動追蹤未開啟的收件者"
+  },
+  "followupDelayLabel": {
+    "message": "幾天後寄出？"
+  },
+  "followupSubjectLabel": {
+    "message": "追蹤郵件主旨"
+  },
+  "followupSubjectPlaceholder": {
+    "message": "Re: {{firstName}}，您看過我們的方案了嗎？"
+  },
+  "followupBodyLabel": {
+    "message": "追蹤郵件內容"
+  },
+  "followupBodyPlaceholder": {
+    "message": "{{firstName}} 您好，\n\n您看過我們上一封郵件了嗎？"
+  },
+  "followupNote": {
+    "message": "除了主要郵件之外，也會寄給未開啟郵件的收件者。"
+  },
+  "quotaDefault": {
+    "message": "剩餘 $1/$2 封郵件（$3 方案）"
+  },
+  "reportsLoading": {
+    "message": "正在載入……"
+  },
+  "btnBack": {
+    "message": "返回"
+  },
+  "statSent": {
+    "message": "已傳送"
+  },
+  "statOpened": {
+    "message": "已開啟"
+  },
+  "statClicked": {
+    "message": "已點選"
+  },
+  "statOpenRate": {
+    "message": "開啟率："
+  },
+  "statClickRate": {
+    "message": "點選率："
+  },
+  "btnExportCsv": {
+    "message": "下載 CSV"
+  },
+  "noCampaignsFound": {
+    "message": "找不到行銷活動。"
+  },
+  "noCampaignsYet": {
+    "message": "尚無行銷活動。"
+  },
+  "chartSent": {
+    "message": "已傳送"
+  },
+  "chartOpened": {
+    "message": "已開啟"
+  },
+  "chartClicked": {
+    "message": "已點選"
+  },
+  "settingsAccount": {
+    "message": "帳戶"
+  },
+  "settingsEmail": {
+    "message": "電子郵件"
+  },
+  "settingsPlan": {
+    "message": "方案"
+  },
+  "settingsSentThisMonth": {
+    "message": "本月已傳送"
+  },
+  "btnUpgrade": {
+    "message": "升級方案"
+  },
+  "btnManageSub": {
+    "message": "管理訂閱"
+  },
+  "settingsTracking": {
+    "message": "追蹤"
+  },
+  "settingsTrackOpens": {
+    "message": "開啟追蹤"
+  },
+  "settingsTrackClicks": {
+    "message": "點選追蹤"
+  },
+  "settingsUnsub": {
+    "message": "取消訂閱連結"
+  },
+  "settingsUnsubHint": {
+    "message": "顯示在郵件底部的連結文字"
+  },
+  "settingsTimezone": {
+    "message": "時區"
+  },
+  "tzTurkey": {
+    "message": "土耳其（UTC+3）"
+  },
+  "tzLondon": {
+    "message": "倫敦（UTC+0/+1）"
+  },
+  "tzBerlin": {
+    "message": "柏林（UTC+1/+2）"
+  },
+  "tzNewYork": {
+    "message": "紐約（UTC-5/-4）"
+  },
+  "tzLosAngeles": {
+    "message": "洛杉磯（UTC-8/-7）"
+  },
+  "tzDubai": {
+    "message": "杜拜（UTC+4）"
+  },
+  "tzUtc": {
+    "message": "UTC"
+  },
+  "settingsSender": {
+    "message": "寄件者資訊"
+  },
+  "settingsSenderHint": {
+    "message": "用於您的郵件簽名檔以及 AI 產生的郵件。"
+  },
+  "settingsSenderName": {
+    "message": "您的姓名"
+  },
+  "settingsSenderPosition": {
+    "message": "您的職稱"
+  },
+  "settingsSenderCompany": {
+    "message": "您的公司"
+  },
+  "settingsSenderPhone": {
+    "message": "電話（選填）"
+  },
+  "btnSaveSettings": {
+    "message": "儲存設定"
+  },
+  "settingsSaving": {
+    "message": "正在儲存……"
+  },
+  "settingsSaved": {
+    "message": "已儲存！"
+  },
+  "settingsSuppression": {
+    "message": "已封鎖的信箱"
+  },
+  "settingsSuppressionHint": {
+    "message": "此名單中的信箱不會收到任何行銷活動。"
+  },
+  "settingsSuppressionPlaceholder": {
+    "message": "email@example.com"
+  },
+  "btnAdd": {
+    "message": "新增"
+  },
+  "suppressionSearch": {
+    "message": "搜尋……"
+  },
+  "suppressionEmpty": {
+    "message": "尚未封鎖任何信箱。"
+  },
+  "suppressionReasonUnsub": {
+    "message": "已取消訂閱"
+  },
+  "suppressionReasonManual": {
+    "message": "手動新增"
+  },
+  "suppressionEmailSuffix": {
+    "message": "個信箱"
+  },
+  "settingsSupport": {
+    "message": "支援"
+  },
+  "feedbackPlaceholder": {
+    "message": "請描述您遇到的問題或建議……"
+  },
+  "btnSendFeedback": {
+    "message": "傳送"
+  },
+  "feedbackEmpty": {
+    "message": "請輸入訊息內容。"
+  },
+  "feedbackSent": {
+    "message": "感謝您——我們已收到您的訊息，並會盡快回覆到您的信箱。"
+  },
+  "feedbackFailed": {
+    "message": "無法傳送。您也可以直接寄信給我們。"
+  },
+  "popupSubtitle": {
+    "message": "大量郵件行銷活動"
+  },
+  "popupLoginHint": {
+    "message": "連結您的 Outlook 帳戶，即可開始建立行銷活動。"
+  },
+  "btnMicrosoftLogin": {
+    "message": "使用 Microsoft 登入"
+  },
+  "popupLoading": {
+    "message": "正在連線至您的 Microsoft 帳戶……"
+  },
+  "popupErrorDefault": {
+    "message": "發生錯誤。"
+  },
+  "btnRetry": {
+    "message": "重試"
+  },
+  "btnDashboard": {
+    "message": "開啟行銷活動面板"
+  },
+  "btnLogout": {
+    "message": "登出"
+  },
+  "popupConnected": {
+    "message": "已連線"
+  },
+  "popupNoResponse": {
+    "message": "未收到回應。"
+  },
+  "popupUserInfoFailed": {
+    "message": "無法取得使用者資訊。"
+  },
+  "popupUnknownError": {
+    "message": "發生未知的錯誤。"
+  },
+  "popupUpgradePro": {
+    "message": "升級 → Pro（每月 $$19）"
+  },
+  "popupCheckoutFailed": {
+    "message": "無法建立付款頁面："
+  },
+  "popupPortalFailed": {
+    "message": "無法開啟管理入口。"
+  },
+  "alertUploadCsvFirst": {
+    "message": "請先上傳 CSV 檔案。"
+  },
+  "alertFillSubjectBody": {
+    "message": "請填寫主旨與郵件內容。"
+  },
+  "alertPreviewTitle": {
+    "message": "--- 預覽 ---\n主旨："
+  },
+  "alertScheduling": {
+    "message": "正在排程……"
+  },
+  "alertPreparing": {
+    "message": "正在準備……"
+  },
+  "alertCampaignCreateFailed": {
+    "message": "無法建立行銷活動"
+  },
+  "alertContactsUploading": {
+    "message": "正在上傳聯絡人……"
+  },
+  "alertContactsUploadFailed": {
+    "message": "無法上傳聯絡人"
+  },
+  "alertAbTestProOnly": {
+    "message": "A/B 測試僅限 Pro 方案使用。"
+  },
+  "alertScheduledSuccess": {
+    "message": "已完成！將於 $2 傳送給 $1 位收件者。"
+  },
+  "alertSending": {
+    "message": "正在傳送…… 0/"
+  },
+  "alertSendFailed": {
+    "message": "傳送失敗"
+  },
+  "alertSendError": {
+    "message": "傳送失敗！\n\n錯誤："
+  },
+  "alertAbSendSuccess": {
+    "message": "已完成！已傳送 $1 封郵件（A/B 測試）。\n勝出的主旨將會自動傳送。"
+  },
+  "alertPartialSend": {
+    "message": "已傳送 $1 封郵件，發生 $2 個錯誤。\n\n第一個錯誤："
+  },
+  "alertSendSuccess": {
+    "message": "已完成！已傳送 $1 封郵件。"
+  },
+  "alertLimitReached": {
+    "message": "您已達方案上限（每月 $1 封郵件）。\n請升級您的方案。"
+  },
+  "aiModalTitle": {
+    "message": "AI 郵件撰寫助手"
+  },
+  "aiPromptPlaceholder": {
+    "message": "這封郵件要談什麼？\n\n例如：為我們的 SaaS 產品撰寫開發信"
+  },
+  "aiToneProfessional": {
+    "message": "專業"
+  },
+  "aiToneFriendly": {
+    "message": "親切"
+  },
+  "aiToneFormal": {
+    "message": "正式"
+  },
+  "aiToneCasual": {
+    "message": "輕鬆"
+  },
+  "aiLangTr": {
+    "message": "土耳其文"
+  },
+  "aiLangEn": {
+    "message": "英文"
+  },
+  "aiLangDe": {
+    "message": "德文"
+  },
+  "aiLangFr": {
+    "message": "法文"
+  },
+  "aiLangEs": {
+    "message": "西班牙文"
+  },
+  "aiLangRu": {
+    "message": "俄文"
+  },
+  "aiLangAr": {
+    "message": "阿拉伯文"
+  },
+  "aiLangHi": {
+    "message": "印地文"
+  },
+  "aiLangZh": {
+    "message": "簡體中文"
+  },
+  "aiLangZhTw": {
+    "message": "繁體中文"
+  },
+  "aiLangJa": {
+    "message": "日文"
+  },
+  "aiLangPt": {
+    "message": "葡萄牙文"
+  },
+  "btnAiGenerate": {
+    "message": "產生"
+  },
+  "btnCancel": {
+    "message": "取消"
+  },
+  "alertAiPromptEmpty": {
+    "message": "請描述您想要什麼樣的郵件。"
+  },
+  "aiGenerating": {
+    "message": "正在產生……"
+  },
+  "alertAiProOnly": {
+    "message": "AI 郵件撰寫助手僅限 Pro 方案使用。"
+  },
+  "alertAiFailed": {
+    "message": "AI 產生失敗："
+  },
+  "templatePromptName": {
+    "message": "範本名稱："
+  },
+  "templateDefaultName": {
+    "message": "我的範本"
+  },
+  "templateConfirmDelete": {
+    "message": "要刪除範本「$1」嗎？"
+  },
+  "alertTemplateFillFirst": {
+    "message": "請先填寫主旨與內容。"
+  },
+  "alertTemplateStandardOnly": {
+    "message": "郵件範本可在 Standard 與 Pro 方案使用。"
+  },
+  "alertTemplateSaveFailed": {
+    "message": "無法儲存範本："
+  },
+  "alertTemplateDeleteFailed": {
+    "message": "無法刪除範本："
+  },
+  "csvExportDownloading": {
+    "message": "正在下載……"
+  },
+  "alertCsvExportStandardOnly": {
+    "message": "CSV 匯出可在 Standard 與 Pro 方案使用。"
+  },
+  "alertCsvExportFailed": {
+    "message": "匯出失敗："
+  },
+  "alertCsvExportEmpty": {
+    "message": "CSV 匯出成功，但資料是空的。"
+  },
+  "reportsSentSuffix": {
+    "message": " 已傳送"
+  },
+  "reportsOpenRate": {
+    "message": "開啟："
+  },
+  "reportsClickRate": {
+    "message": "點選："
+  },
+  "reportsError": {
+    "message": "錯誤"
+  },
+  "reportsFollowupPending": {
+    "message": " 封追蹤郵件待寄出"
+  },
+  "upgradeModalTitle": {
+    "message": "升級您的方案"
+  },
+  "upgradeModalText": {
+    "message": "您已達郵件數量上限。<br/>升級後即可傳送更多郵件。"
+  },
+  "upgradeModalStandard": {
+    "message": "Starter：每月 2,500 封郵件 — 每月 $$9"
+  },
+  "upgradeModalPro": {
+    "message": "Pro：每月 10,000 封郵件 — 每月 $$19"
+  },
+  "upgradeModalFeatures": {
+    "message": "詳細報表 + 優先支援"
+  },
+  "upgradeModalBtn": {
+    "message": "立即升級 — Starter 每月 $$9"
+  },
+  "upgradeModalLater": {
+    "message": "稍後再說"
+  },
+  "alertUpgradeCheckoutFailed": {
+    "message": "無法建立付款頁面。請再試一次。"
+  },
+  "settingsSaveFailed": {
+    "message": "無法儲存設定："
+  },
+  "settingsCheckoutFailed": {
+    "message": "無法建立付款頁面。"
+  },
+  "quotaInfoTitle": {
+    "message": "關於郵件數量上限"
+  },
+  "quotaDisclaimer": {
+    "message": "Microsoft Outlook 本身也有每日傳送上限（個人帳戶約 300 封/天，商務帳戶約 10,000 封/天）。我們的額度是在這些限制之外另行計算。"
+  },
+  "quotaInfoBody1": {
+    "message": "除了我們的方案額度之外，Microsoft 也會對 Outlook 帳戶施加傳送上限。兩者中較嚴格的那個會生效："
+  },
+  "quotaInfoOutlookCom": {
+    "message": "Outlook.com（個人）：約每天 300 封郵件"
+  },
+  "quotaInfoMs365": {
+    "message": "Microsoft 365 商務版：約每天 10,000 封郵件"
+  },
+  "quotaInfoExchange": {
+    "message": "Exchange Online：每分鐘 30 封的流量限制"
+  },
+  "quotaInfoBody2": {
+    "message": "將大型行銷活動分散到數天寄出，有助於避免觸發流量限制，並保護您的寄件者信譽。OutMass 無法覆寫 Microsoft 平台本身的限制。"
+  },
+  "tzMoscow": {
+    "message": "莫斯科（UTC+3）"
+  },
+  "tzKolkata": {
+    "message": "印度（UTC+5:30）"
+  },
+  "tzShanghai": {
+    "message": "中國（UTC+8）"
+  },
+  "tzTokyo": {
+    "message": "東京（UTC+9）"
+  },
+  "tzChicago": {
+    "message": "芝加哥（UTC-6/-5）"
+  },
+  "tzDenver": {
+    "message": "丹佛（UTC-7/-6）"
+  },
+  "tzSaoPaulo": {
+    "message": "聖保羅（UTC-3）"
+  },
+  "alertPartialCsvQuota": {
+    "message": "您的額度剩餘 $1 封郵件。\nCSV 共有 $2 位收件者。\n只會傳送前 $1 位。"
+  },
+  "settingsLanguage": {
+    "message": "介面語言"
+  },
+  "settingsLanguageHint": {
+    "message": "立即生效。僅覆寫此擴充功能的語言，不影響瀏覽器。"
+  },
+  "langAuto": {
+    "message": "自動（瀏覽器預設）"
+  },
+  "popupUpgradeStarter": {
+    "message": "升級 → Starter（每月 $$9）"
+  },
+  "upgradeSuccessProrated": {
+    "message": "升級成功！Stripe 會自動按比例收取差額。"
+  },
+  "labelCampaignName": {
+    "message": "行銷活動名稱（選填）"
+  },
+  "placeholderCampaignName": {
+    "message": "例如：第二季開發信第 1 波"
+  },
+  "csvTemplateDownload": {
+    "message": "下載 CSV 範例檔"
+  },
+  "csvTemplateRow1": {
+    "message": "john@example.com,John,Smith,Acme Corp,CEO"
+  },
+  "csvTemplateRow2": {
+    "message": "jane@example.com,Jane,Doe,TechFlow Inc,Marketing Director"
+  },
+  "csvTemplateRow3": {
+    "message": "mike@example.com,Michael,Johnson,Pioneer Labs,VP of Sales"
+  },
+  "btnTestSend": {
+    "message": "測試傳送"
+  },
+  "testSendPrompt": {
+    "message": "測試郵件將寄到您自己的信箱。要繼續嗎？"
+  },
+  "testSendSuccess": {
+    "message": "測試郵件已寄至 $EMAIL$。請查看您的收件匣。",
+    "placeholders": {
+      "email": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendFailed": {
+    "message": "測試傳送失敗：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "testSendNeedsContent": {
+    "message": "請先輸入主旨與內容，再進行測試傳送。"
+  },
+  "warnSubjectLong": {
+    "message": "主旨超過 78 個字元——在行動裝置上可能會被截斷。"
+  },
+  "warnAllCaps": {
+    "message": "主旨使用了大量大寫字母——看起來像垃圾郵件。"
+  },
+  "warnSpamWords": {
+    "message": "偵測到可能的垃圾郵件字詞：$LIST$",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyLinks": {
+    "message": "內容中有 $N$ 個連結——可能觸發垃圾郵件過濾。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnHtmlInvalid": {
+    "message": "HTML 標籤似乎不完整（未關閉的標籤：$TAGS$）。請在傳送前確認。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnTooManyImages": {
+    "message": "內容中有 $N$ 張圖片——大量使用圖片容易被視為垃圾郵件。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnShortenedLinks": {
+    "message": "偵測到短網址（$LIST$）——可能降低送達率。",
+    "placeholders": {
+      "list": {
+        "content": "$1"
+      }
+    }
+  },
+  "warnContinueAnyway": {
+    "message": "仍要繼續傳送嗎？"
+  },
+  "csvErrTooLarge": {
+    "message": "CSV 檔案太大（上限 5 MB）。"
+  },
+  "csvErrEncoding": {
+    "message": "此檔案並非以 UTF-8 儲存，因此無法正確讀取其中的文字。在 Excel 中：檔案 > 另存新檔 > 選擇「CSV UTF-8（逗號分隔）」，然後上傳該檔案。"
+  },
+  "alertBackendUnreachable": {
+    "message": "OutMass 目前無法連線到自己的伺服器。這是連線問題——與您的帳戶或方案無關。請檢查您的網路連線、VPN 或防火牆，稍後再試一次。"
+  },
+  "netUnreachableBanner": {
+    "message": "無法連線到 OutMass 伺服器——傳送與儲存都無法運作。請檢查您的連線、VPN 或防火牆。"
+  },
+  "csvErrNoEmailColumn": {
+    "message": "CSV 必須包含「email」欄位。"
+  },
+  "alertSignInFirst": {
+    "message": "請先使用 Microsoft 登入——點選面板上方的登入按鈕。沒有帳戶也可以撰寫內容，但傳送需要登入。"
+  },
+  "signInFirstBannerText": {
+    "message": "請使用 Microsoft 登入以開始傳送。"
+  },
+  "dailyCapLabel": {
+    "message": "每日傳送上限（選填）"
+  },
+  "dailyCapNote": {
+    "message": "每天最多傳送這個數量的郵件，並自動於隔天繼續，直到整份名單寄完為止。（無法與 A/B 測試併用。）"
+  },
+  "csvErrNoEmailColumnHint": {
+    "message": "請下載 CSV 範例檔查看必要的格式。"
+  },
+  "csvDupRemoved": {
+    "message": "已移除重複項目"
+  },
+  "csvEmptyEmailSkipped": {
+    "message": "已略過（沒有 email）"
+  },
+  "campaignNameDuplicate": {
+    "message": "已經有名為「$NAME$」的行銷活動。要繼續嗎？",
+    "placeholders": {
+      "name": {
+        "content": "$1"
+      }
+    }
+  },
+  "previewSubjectLabel": {
+    "message": "預覽"
+  },
+  "reportsTabActive": {
+    "message": "進行中"
+  },
+  "reportsTabArchived": {
+    "message": "已封存"
+  },
+  "btnArchive": {
+    "message": "封存"
+  },
+  "btnUnarchive": {
+    "message": "取消封存"
+  },
+  "archiveConfirm": {
+    "message": "要封存這個行銷活動嗎？之後可以從「已封存」分頁還原。"
+  },
+  "onbTitle": {
+    "message": "歡迎使用 OutMass"
+  },
+  "onbStep1": {
+    "message": "步驟 1 — 上傳收件者的 CSV 檔案。第一欄必須是「email」。"
+  },
+  "onbStep2": {
+    "message": "步驟 2 — 撰寫主旨與內容。使用 {{firstName}} 可為每封郵件加入個人化內容。"
+  },
+  "onbStep3": {
+    "message": "步驟 3 — 點選「預覽」或「測試傳送」再確認一次，然後按「傳送」。"
+  },
+  "onbNext": {
+    "message": "下一步"
+  },
+  "onbBack": {
+    "message": "上一步"
+  },
+  "onbFinish": {
+    "message": "完成"
+  },
+  "btnExportList": {
+    "message": "全部匯出"
+  },
+  "settingsDedupTitle": {
+    "message": "略過重複的收件者"
+  },
+  "settingsDedupHint": {
+    "message": "在一段期間內，不對同一個人重複寄送不同的行銷活動。"
+  },
+  "settingsDedupEnabled": {
+    "message": "已啟用（Pro 功能）"
+  },
+  "settingsDedupDays": {
+    "message": "回溯期間（天）"
+  },
+  "uploadSkippedPrevious": {
+    "message": "已略過 $N$ 位收件者——最近的行銷活動已經聯絡過他們。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "alertQuotaCapped": {
+    "message": "正在傳送給 $QUEUED$ 位收件者。\n\n⚠️ 有 $SKIPPED$ 位收件者未包含在內——您已達每月方案上限。他們會保留下來，並在您每月額度重置後自動寄出。若想提早寄出，請升級您的方案。",
+    "placeholders": {
+      "queued": {
+        "content": "$1"
+      },
+      "skipped": {
+        "content": "$2"
+      }
+    }
+  },
+  "largeSendWarn": {
+    "message": "您即將傳送給 $COUNT$ 位收件者。\n\n為了不超出 Outlook 的傳送上限、避免您的帳戶被標記，OutMass 會自動控制傳送速度（約每分鐘 30 封），因此大約需要 $MIN$ 分鐘，並會在背景繼續執行。\n\n若是大量的陌生名單，透過「排程傳送」把郵件分散到數天寄出（每天數百封）送達率最佳。\n\n要繼續嗎？",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      },
+      "min": {
+        "content": "$2"
+      }
+    }
+  },
+  "placeholderSenderName": {
+    "message": "Jane Doe"
+  },
+  "placeholderSenderPosition": {
+    "message": "創辦人"
+  },
+  "placeholderSenderCompany": {
+    "message": "Acme Inc."
+  },
+  "placeholderSenderPhone": {
+    "message": "+1 (555) 000-0000"
+  },
+  "scheduleParsedEmpty": {
+    "message": "請選擇日期與時間，即可看到您當地格式的顯示結果。"
+  },
+  "scheduleParsedPrefix": {
+    "message": "將於 "
+  },
+  "errScheduledFeatureLocked": {
+    "message": "排程傳送是 Starter/Pro 方案的功能。您想現在升級嗎？"
+  },
+  "errFeatureLocked": {
+    "message": "此功能僅限付費方案使用。您想升級嗎？"
+  },
+  "alertNoContactsAfterUpload": {
+    "message": "沒有可傳送的收件者了——所有列都被您的封鎖名單、重複略過設定或無效的 email 過濾掉了。"
+  },
+  "reauthBannerText": {
+    "message": "請重新連結 Outlook——您的授權已過期。請再次登入，讓排程傳送能繼續運作。"
+  },
+  "sessionExpiredBannerText": {
+    "message": "您的工作階段已過期。請重新登入以繼續使用 OutMass。"
+  },
+  "reauthBannerCta": {
+    "message": "登入"
+  },
+  "reauthFailed": {
+    "message": "登入失敗：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "dangerZone": {
+    "message": "危險操作區"
+  },
+  "deleteAccountDesc": {
+    "message": "永久移除您的 OutMass 帳戶與所有資料。"
+  },
+  "deleteAccountButton": {
+    "message": "刪除我的帳戶"
+  },
+  "deleteAccountConfirmTitle": {
+    "message": "此操作無法復原"
+  },
+  "deleteAccountConfirmBody1": {
+    "message": "刪除帳戶將會永久移除："
+  },
+  "deleteAccountDataCampaigns": {
+    "message": "所有行銷活動與範本"
+  },
+  "deleteAccountDataContacts": {
+    "message": "所有聯絡人與追蹤資料"
+  },
+  "deleteAccountDataAuth": {
+    "message": "您的 Microsoft 授權"
+  },
+  "deleteAccountDataSettings": {
+    "message": "所有設定與偏好"
+  },
+  "deleteAccountSubCheck": {
+    "message": "還有訂閱中的方案嗎？請先透過「管理訂閱」取消。"
+  },
+  "deleteAccountTypePrompt": {
+    "message": "請輸入 DELETE 以確認："
+  },
+  "deleteAccountIrreversible": {
+    "message": "我了解此操作無法復原"
+  },
+  "deleteAccountFinalBtn": {
+    "message": "永久刪除"
+  },
+  "deleteAccountSuccess": {
+    "message": "您的帳戶已刪除。"
+  },
+  "deleteAccountActiveSubError": {
+    "message": "請先取消您的訂閱，再刪除帳戶。"
+  },
+  "deleteAccountFailed": {
+    "message": "無法刪除帳戶：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "portalErrorNoSubscription": {
+    "message": "您目前還沒有訂閱中的方案。請先升級到付費方案，再回到這裡管理。"
+  },
+  "portalErrorManualPlan": {
+    "message": "您目前的方案是手動設定的，不透過帳務入口管理。如需變更，請聯絡 support@getoutmass.com。"
+  },
+  "portalErrorNotConfigured": {
+    "message": "帳務功能暫時無法使用。請稍後再試，或聯絡客服支援。"
+  },
+  "attachmentsLabel": {
+    "message": "附件"
+  },
+  "btnAddOneDriveFile": {
+    "message": "+ 新增 OneDrive 連結"
+  },
+  "btnContinue": {
+    "message": "繼續"
+  },
+  "attachmentsHint": {
+    "message": "收件者看到的是連結，而不是附件——更容易送達收件匣。"
+  },
+  "oneDriveConsentTitle": {
+    "message": "OneDrive 存取權"
+  },
+  "oneDriveConsentBody": {
+    "message": "OutMass 需要 OneDrive 存取權，才能為您選擇的檔案建立分享連結。我們絕不會下載、儲存或讀取您的檔案——只會產生您選擇分享的那個連結。"
+  },
+  "oneDriveConsentSpamHint": {
+    "message": "收件者會看到指向您 OneDrive 的連結——比直接夾帶檔案的送達率更好，而且您可以隨時更新檔案，不必重新寄一次郵件。"
+  },
+  "oneDrivePickerTitle": {
+    "message": "選擇檔案"
+  },
+  "oneDriveError": {
+    "message": "無法新增 OneDrive 檔案：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "statEngaged": {
+    "message": "已互動："
+  },
+  "statEngagedHint": {
+    "message": "開啟、點選或回覆過的收件者。比單純的開啟率更可靠——許多郵件軟體（Outlook、Apple Mail）會封鎖或預先載入追蹤像素，使開啟率失真。"
+  },
+  "statReplied": {
+    "message": "已回覆："
+  },
+  "statRepliedHint": {
+    "message": "透過每日收件匣掃描偵測。這是最強的互動訊號——只計算收件者真正的回覆。"
+  },
+  "resumeHint": {
+    "message": "部分收件者還沒收到這個行銷活動——通常是暫時的網路問題，或您已達每月上限。「繼續傳送」只會重試待寄出的收件者。如果原因是每月上限，這些收件者也會在您的額度重置後自動寄出。"
+  },
+  "btnResumeCampaign": {
+    "message": "繼續傳送"
+  },
+  "resumeQueued": {
+    "message": "已將 $N$ 位收件者排入重新傳送佇列。",
+    "placeholders": {
+      "n": {
+        "content": "$1"
+      }
+    }
+  },
+  "resumeFailed": {
+    "message": "無法繼續傳送：$ERROR$",
+    "placeholders": {
+      "error": {
+        "content": "$1"
+      }
+    }
+  },
+  "oneDriveRootLabel": {
+    "message": "OneDrive"
+  },
+  "oneDrivePickerLoading": {
+    "message": "正在載入……"
+  },
+  "oneDrivePickerEmpty": {
+    "message": "這個資料夾是空的。"
+  },
+  "oneDrivePickerError": {
+    "message": "無法載入 OneDrive 內容。請再試一次。"
+  },
+  "oneDriveNoDrive": {
+    "message": "這個 Microsoft 帳戶沒有 OneDrive。請改用有 OneDrive 的帳戶登入，或這次行銷活動先不要使用 OneDrive 附件。"
+  },
+  "oneDriveAuthStuck": {
+    "message": "即使您已登入，OneDrive 存取權仍然無法運作。可能是您的 Microsoft 帳戶未包含 OneDrive，或貴組織封鎖了這項功能。您可以不使用 OneDrive 附件來傳送這個行銷活動——或寄信到 support@getoutmass.com，我們會協助您。"
+  },
+  "mergeTagUnknown": {
+    "message": "您的 CSV 沒有名為「$TAGS$」的欄位。您可以改用 CSV 中的這些標籤：$AVAILABLE$。請選擇其中一個，或從郵件中移除該標籤。",
+    "placeholders": {
+      "tags": {
+        "content": "$1"
+      },
+      "available": {
+        "content": "$2"
+      }
+    }
+  },
+  "mergeTagMalformed": {
+    "message": "您的郵件中有格式錯誤的合併標籤：$TAG$。標籤中不能有空格。正確的寫法像這樣：{{firstName}}。",
+    "placeholders": {
+      "tag": {
+        "content": "$1"
+      }
+    }
+  },
+  "availableTagsLabel": {
+    "message": "來自您 CSV 的標籤（點選即可插入）："
+  },
+  "announcementsTitle": {
+    "message": "通知"
+  },
+  "announcementsEmpty": {
+    "message": "沒有通知"
+  },
+  "announcementsView": {
+    "message": "查看"
+  },
+  "announcementsDismiss": {
+    "message": "關閉"
+  },
+  "announcementsMore": {
+    "message": "還有 $COUNT$ 則——開啟面板",
+    "placeholders": {
+      "count": {
+        "content": "$1"
+      }
+    }
+  },
+  "sendingAsLabel": {
+    "message": "寄件身分："
+  },
+  "sendingAsChange": {
+    "message": "變更"
+  },
+  "authErrorConsent": {
+    "message": "登入未完成。貴組織可能需要管理員先核准 OutMass——請聯絡 support@getoutmass.com，或改用個人的 Outlook.com 帳戶。"
+  },
+  "authErrorPageLoad": {
+    "message": "無法開啟 Microsoft 登入頁面。請檢查您的網路連線後再試一次。"
+  }
+}

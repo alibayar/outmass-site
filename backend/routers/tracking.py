@@ -281,6 +281,22 @@ _UNSUB_STRINGS = {
         "undoMsg": "<b>{email}</b> は <b>{sender}</b> のメーリングリストに復元されました。",
         "notFound": "このリンクは無効または期限切れです。",
     },
+    # Traditional Chinese (Taiwan/HK/Macau). Not a character conversion of
+    # "zh" above: Taiwan software vocabulary differs (郵件/收件者/取消訂閱),
+    # and a Traditional reader spots converted mainland wording immediately.
+    "zh_TW": {
+        "title": "取消訂閱",
+        "confirmQ": "您確定要取消訂閱 <b>{email}</b> 嗎？",
+        "fromSender": "您將不會再收到 <b>{sender}</b> 寄來的郵件。",
+        "yesBtn": "是，取消訂閱",
+        "cancelBtn": "取消",
+        "successTitle": "已成功取消訂閱",
+        "successMsg": "<b>{email}</b> 已從 <b>{sender}</b> 的郵件名單中移除。",
+        "undoBtn": "復原",
+        "undoTitle": "已恢復訂閱",
+        "undoMsg": "您的信箱 <b>{email}</b> 已恢復至 <b>{sender}</b> 的郵件名單。",
+        "notFound": "此連結無效或已過期。",
+    },
     # One entry for both Portuguese variants: _detect_lang() strips the
     # region ("pt-BR" -> "pt"), and this page is read by the RECIPIENT, whose
     # variant we cannot know. Wording avoids BR/PT-divergent vocabulary.
@@ -301,11 +317,22 @@ _UNSUB_STRINGS = {
 
 
 def _detect_lang(accept_language: str | None) -> str:
-    """Detect language from Accept-Language header, fallback to en."""
+    """Detect language from Accept-Language header, fallback to en.
+
+    Region is discarded for every language EXCEPT Chinese, where it decides
+    the writing system: a zh-TW/zh-HK reader served Simplified text sees a
+    foreign script, so those tags get their own entry. zh-CN/zh-SG and a bare
+    "zh" stay Simplified.
+    """
     if not accept_language:
         return "en"
-    # Parse primary language (e.g. "tr-TR,tr;q=0.9,en;q=0.8" -> "tr")
-    first = accept_language.split(",")[0].strip().split("-")[0].lower()
+    tag = accept_language.split(",")[0].strip().lower()
+    if tag.startswith("zh"):
+        if any(m in tag for m in ("hant", "-tw", "-hk", "-mo")):
+            return "zh_TW" if "zh_TW" in _UNSUB_STRINGS else "zh"
+        return "zh"
+    # Everything else: primary subtag only ("tr-TR,tr;q=0.9,en;q=0.8" -> "tr")
+    first = tag.split("-")[0]
     if first in _UNSUB_STRINGS:
         return first
     return "en"

@@ -455,7 +455,10 @@
     "message": "Hintce"
   },
   "aiLangZh": {
-    "message": "Cince"
+    "message": "Çince (Basitleştirilmiş)"
+  },
+  "aiLangZhTw": {
+    "message": "Çince (Geleneksel)"
   },
   "aiLangJa": {
     "message": "Japonca"

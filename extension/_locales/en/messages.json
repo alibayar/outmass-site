@@ -444,7 +444,10 @@
     "message": "Hindi"
   },
   "aiLangZh": {
-    "message": "Chinese"
+    "message": "Chinese (Simplified)"
+  },
+  "aiLangZhTw": {
+    "message": "Chinese (Traditional)"
   },
   "aiLangJa": {
     "message": "Japanese"

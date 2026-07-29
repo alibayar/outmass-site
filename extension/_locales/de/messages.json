@@ -455,7 +455,10 @@
     "message": "Hindi"
   },
   "aiLangZh": {
-    "message": "Chinesisch"
+    "message": "Chinesisch (Vereinfacht)"
+  },
+  "aiLangZhTw": {
+    "message": "Chinesisch (Traditionell)"
   },
   "aiLangJa": {
     "message": "Japanisch"

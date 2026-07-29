@@ -306,7 +306,40 @@ backend = Portuguese requested, English email delivered, no error anywhere.
      stays demand-triggered: first real request/nl-locale telemetry → add same
      week.
 
-### ⬜ FALSE CLAIM on the live pricing page: "Traditional Chinese" (found 2026-07-29)
+### ✅ Traditional Chinese is now REAL — shipped in 0.1.27 (2026-07-30)
+Ali's call after the count discussion: rather than keep explaining that `zh` was
+a Simplified fallback, make Traditional genuine. `extension/_locales/zh_TW/`
+(324 keys) written from English in TAIWAN terminology — 軟體/檔案/資訊/資料/
+範本/伺服器/設定/收件者/儲存/登入/排程/主旨/預設/行銷/支援/點選 — deliberately
+NOT a character conversion of zh_CN (only 14/324 strings coincide, all of them
+short labels that are identical in both scripts anyway).
+Also: AI writer gained a Traditional option (and the Simplified one is now
+labelled explicitly); `_LANG_NAMES["zh_TW"]`; recipient-facing unsubscribe page
+in Traditional with `_detect_lang` preserving the region FOR CHINESE ONLY;
+`zh` stays Simplified as the fallback for bare `zh`/zh-SG.
+The `locale-variants` suite gained the sharper half of the check: correct
+characters are the easy part (any converter does that), so it also greps for
+**mainland vocabulary in Traditional dress** (軟件/信息/數據/模板/服務器/網絡/
+設置/視頻/收件人/登錄/註銷/郵箱/回复/技術支持/應用程序…). Character lists were
+vetted against the real file — 回/系/准/台/里/西 are standard Traditional and
+were excluded after producing only false alarms.
+NOTE: the pt/zh_TW work was done by hand — the subagent API returned 529 twice
+with zero output, so the usual multi-lens review could not run on this half.
+Verification was: 4 extension suites + a wide one-off character/vocabulary
+audit + structural parity check against en.
+
+### ⬜ FALSE CLAIM on the live pricing page: "Traditional Chinese" — now fixable (2026-07-29)
+**Update 2026-07-30: the claim is about to become TRUE** — 0.1.27 ships a real
+Traditional translation. So the page no longer needs the claim removed, only
+corrected: the count and the list. Honest post-publish wording: **13 interface
+languages** (see `docs/store-listing/README.md` for why 13 and not 11/14), list
+"…Simplified Chinese, Traditional Chinese, Japanese, and Portuguese (Brazil &
+Portugal)", drop the "joined at a user's request" anecdote (it was never true
+of the old `zh` fallback), and fix line 129's AI-writer count to match.
+Still needs Ali's OK (live pricing copy) and must wait for the store to show
+0.1.27.
+
+Original finding (for history):
 `docs/pricing.html:230` tells visitors the UI supports **11 languages** and lists
 "Simplified Chinese, **Traditional Chinese**", with a story attached: "Traditional
 Chinese joined exactly that way, at a user's request." **It did not.** The `zh`
