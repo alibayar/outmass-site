@@ -168,6 +168,32 @@ chrome.runtime.onInstalled.addListener(function (details) {
 // deliberate sign-in always starts fresh.
 var _authFlightByKey = {};
 
+// How many sign-in attempts this service-worker life has seen, so a report
+// can tell one abandoned attempt apart from someone fighting the flow. A
+// real user managed five failures in twenty minutes on 2026-06-23.
+var _authAttemptCount = 0;
+
+/**
+ * Opaque per-attempt id. Travels to the backend on /auth/login and comes
+ * back inside the OAuth `state`, so a sign-in that dies on Microsoft's side
+ * (where the extension sees nothing but a closed window) can be tied to the
+ * `oauth_started` this attempt began with.
+ *
+ * Random, not derived from the user: the id ends up in a URL and therefore
+ * in server access logs, so it must never carry an email or account id.
+ */
+function _newAuthAttemptId() {
+  try {
+    var bytes = new Uint8Array(12);
+    crypto.getRandomValues(bytes);
+    return Array.from(bytes)
+      .map(function (b) { return b.toString(16).padStart(2, "0"); })
+      .join("");
+  } catch (e) {
+    return "a" + Math.floor(Math.random() * 1e15).toString(16);
+  }
+}
+
 function startMSLogin(includeOneDrive) {
   var key = includeOneDrive ? "onedrive" : "signin";
   if (_authFlightByKey[key]) {
@@ -183,7 +209,31 @@ function startMSLogin(includeOneDrive) {
 
 async function _startMSLoginInner(includeOneDrive) {
   log("Starting MS OAuth flow (Web)...", includeOneDrive ? "with OneDrive scope" : "");
-  track("oauth_started", { with_onedrive: !!includeOneDrive });
+
+  const attemptId = _newAuthAttemptId();
+  const startedAt = Date.now();
+  _authAttemptCount += 1;
+  const attemptNo = _authAttemptCount;
+
+  // Seconds the auth window stayed open. Successful sign-ins take 6-30s;
+  // the failures cluster far higher and run to 18 minutes, which is the
+  // signature of someone stuck (wrong account, admin-approval wall), not
+  // of someone reading the permission list and declining.
+  const elapsed = function () {
+    return Math.round((Date.now() - startedAt) / 1000);
+  };
+  const failureContext = function (extra) {
+    return Object.assign(
+      { attempt_id: attemptId, attempt_no: attemptNo, seconds: elapsed() },
+      extra
+    );
+  };
+
+  track("oauth_started", {
+    with_onedrive: !!includeOneDrive,
+    attempt_id: attemptId,
+    attempt_no: attemptNo,
+  });
 
   // Extension tells backend where to redirect at the end (passed via state)
   const extRedirectUri = chrome.identity.getRedirectURL("auth");
@@ -200,7 +250,11 @@ async function _startMSLoginInner(includeOneDrive) {
   // Sticky base: if the primary host is blocked on this network, the OAuth
   // flow must start from the base that actually answers.
   let authUrl =
-    _backendBases()[0] + "/auth/login?ext=" + encodeURIComponent(extId);
+    _backendBases()[0] +
+    "/auth/login?ext=" +
+    encodeURIComponent(extId) +
+    "&aid=" +
+    encodeURIComponent(attemptId);
   if (includeOneDrive) {
     authUrl += "&include_onedrive=true";
   }
@@ -242,19 +296,32 @@ async function _startMSLoginInner(includeOneDrive) {
         if (errorCode === "auth_page_failed" && !retried) {
           retried = true;
           log("Auth page failed to load — warming backend, retrying once");
-          track("oauth_retry", { after: "auth_page_failed" });
+          track("oauth_retry", failureContext({ after: "auth_page_failed" }));
           warmBackend(20000).then(launch);
           return;
         }
 
         resolve({ error: m, errorCode: errorCode });
-        track("oauth_failed", { reason: "chrome_error", message: m.slice(0, 256), code: errorCode });
+        // NOTE on reading this event: `consent_declined` is Chrome's label for
+        // "auth window closed without a successful redirect" — it does NOT
+        // mean the user pressed No. A tenant block (AADSTS90094) leaves the
+        // user on our error page until they close the window, and lands here
+        // wearing the same label. The backend's ms_auth_failed event carries
+        // the real reason; join on attempt_id.
+        track(
+          "oauth_failed",
+          failureContext({
+            reason: "chrome_error",
+            message: m.slice(0, 256),
+            code: errorCode,
+          })
+        );
         return;
       }
 
       if (!redirectUrl) {
         resolve({ error: "No redirect URL received" });
-        track("oauth_failed", { reason: "no_redirect" });
+        track("oauth_failed", failureContext({ reason: "no_redirect" }));
         return;
       }
 
@@ -267,7 +334,7 @@ async function _startMSLoginInner(includeOneDrive) {
         fragment = u.hash.startsWith("#") ? u.hash.substring(1) : u.hash;
       } catch (e) {
         resolve({ error: "Invalid redirect URL" });
-        track("oauth_failed", { reason: "invalid_redirect" });
+        track("oauth_failed", failureContext({ reason: "invalid_redirect" }));
         return;
       }
 
@@ -280,13 +347,19 @@ async function _startMSLoginInner(includeOneDrive) {
 
       if (errorMsg) {
         resolve({ error: errorMsg });
-        track("oauth_failed", { reason: "backend_error", code: String(errorMsg).slice(0, 64) });
+        track(
+          "oauth_failed",
+          failureContext({
+            reason: "backend_error",
+            code: String(errorMsg).slice(0, 64),
+          })
+        );
         return;
       }
 
       if (!jwtToken || !email) {
         resolve({ error: "Incomplete auth response from backend" });
-        track("oauth_failed", { reason: "incomplete_response" });
+        track("oauth_failed", failureContext({ reason: "incomplete_response" }));
         return;
       }
 

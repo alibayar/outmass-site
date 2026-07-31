@@ -38,7 +38,17 @@ HARD_ERROR_EVENTS = [
     "test_send_failed",
     "ai_email_generate_failed",
 ]
-INFO_ERROR_EVENTS = ["oauth_failed", "extension_uninstall", "checkout_abandoned"]
+INFO_ERROR_EVENTS = [
+    "oauth_failed",
+    "extension_uninstall",
+    "checkout_abandoned",
+    # Microsoft's own reason for a dead sign-in. Informational per event —
+    # most are the user's or their tenant's decision and there is nobody to
+    # email (no account exists yet) — but the BREAKDOWN is the point: a run
+    # of admin_consent_required means orgs are blocking us, which is a
+    # product problem, while a run of user_declined_consent is a trust one.
+    "ms_auth_failed",
+]
 
 
 def _error_check_lines() -> list[str]:

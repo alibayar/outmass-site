@@ -8,6 +8,7 @@ GET  /auth/me          → current user info
 import base64
 import json
 import logging
+import re
 import secrets
 import urllib.parse
 from datetime import datetime, timedelta, timezone
@@ -150,7 +151,11 @@ async def get_current_user(
 # ── Endpoints ──
 
 
-def _encode_state(ext_id: str, include_onedrive: bool = False) -> str:
+def _encode_state(
+    ext_id: str,
+    include_onedrive: bool = False,
+    attempt_id: str | None = None,
+) -> str:
     """Pack extension_id + CSRF nonce + onedrive flag into an opaque
     OAuth `state` param.
 
@@ -159,6 +164,12 @@ def _encode_state(ext_id: str, include_onedrive: bool = False) -> str:
     whether OneDrive scopes were requested at the authorize step (so we
     can match them in the token-exchange step), and have an unguessable
     nonce for CSRF protection.
+
+    `attempt_id` is an opaque random id minted by the extension. It rides
+    along so a sign-in that dies at Microsoft can be tied back to the
+    `oauth_started` event that began it. Deliberately NOT the user's
+    identity: nothing here may carry an email, because state travels
+    through URLs and lands in access logs.
     """
     payload = {
         "ext": ext_id,
@@ -166,8 +177,79 @@ def _encode_state(ext_id: str, include_onedrive: bool = False) -> str:
     }
     if include_onedrive:
         payload["od"] = True
+    if attempt_id:
+        payload["aid"] = attempt_id[:40]
     payload_str = json.dumps(payload, separators=(",", ":"))
     return base64.urlsafe_b64encode(payload_str.encode("utf-8")).decode("ascii").rstrip("=")
+
+
+# AADSTS codes worth naming in a report. Everything else is reported by
+# its raw code — the point is to stop guessing, not to pre-judge.
+_AADSTS_MEANINGS = {
+    "AADSTS65004": "user_declined_consent",
+    "AADSTS65001": "consent_required",
+    "AADSTS90094": "admin_consent_required",
+    "AADSTS50105": "user_not_assigned_to_app",
+    "AADSTS50020": "account_from_other_tenant",
+    "AADSTS53003": "blocked_by_conditional_access",
+    "AADSTS50076": "mfa_required",
+    "AADSTS700016": "app_not_found_in_tenant",
+    "AADSTS900561": "bad_request_method",
+    "AADSTS7000218": "client_secret_missing",
+}
+
+_AADSTS_RE = re.compile(r"AADSTS\d+")
+
+
+def _classify_ms_error(error: str | None, description: str | None) -> dict:
+    """Turn Microsoft's error redirect into reportable, PII-free fields.
+
+    `error_description` is free text that can name the user, their tenant
+    and their app registration, so it is never forwarded as-is — only the
+    AADSTS code is extracted.
+    """
+    desc = description or ""
+    match = _AADSTS_RE.search(desc)
+    code = match.group(0) if match else None
+    return {
+        "error": (error or "unknown")[:64],
+        "aadsts": code,
+        "meaning": _AADSTS_MEANINGS.get(code or "", "unclassified"),
+    }
+
+
+def _track_ms_auth_failed(state: str | None, stage: str, fields: dict) -> None:
+    """Report a sign-in that died on Microsoft's side.
+
+    This used to be invisible. The callback rendered an error page and
+    returned, so a tenant that blocks unverified apps (AADSTS90094) looked
+    exactly like a user who changed their mind: the window sat on our
+    error page until the user closed it, and Chrome then reported "the
+    user did not approve access". 24 of 26 sign-in failures in the 30 days
+    to 2026-07-31 carried that one label, with in-window times up to 18
+    minutes — nobody deliberates that long over a consent screen.
+    """
+    if not POSTHOG_API_KEY:
+        return
+    try:
+        data = _decode_state(state) or {}
+        attempt_id = data.get("aid")
+        posthog.capture(
+            # No identity exists at this point — the user never got a token.
+            # The attempt id (when the client sent one) stitches this back to
+            # the extension's own oauth_started event.
+            distinct_id=attempt_id or "anonymous_auth_failure",
+            event="ms_auth_failed",
+            properties={
+                "stage": stage,
+                "attempt_id": attempt_id,
+                "install_source": _install_source(data.get("ext")),
+                "wants_onedrive": bool(data.get("od")),
+                **fields,
+            },
+        )
+    except Exception:
+        logger.warning("ms_auth_failed capture failed", exc_info=True)
 
 
 def _decode_state(state: str | None) -> dict | None:
@@ -269,6 +351,7 @@ def _persist_ms_tokens(
 async def login_redirect(
     ext: str | None = Query(None),
     include_onedrive: bool = Query(False),
+    aid: str | None = Query(None),
 ):
     """Redirect user to Microsoft login. Used by extension launchWebAuthFlow.
 
@@ -288,7 +371,13 @@ async def login_redirect(
     refresh_token usable for both Mail and OneDrive operations.
     """
     chosen_ext = ext if ext in ALLOWED_EXTENSION_IDS else AZURE_EXTENSION_ID
-    state = _encode_state(chosen_ext, include_onedrive=include_onedrive)
+    # `aid` is the extension's opaque attempt id (0.1.27+). Older clients
+    # simply don't send one — the failure is still reported, just without
+    # the link back to their oauth_started event.
+    safe_aid = aid if aid and re.fullmatch(r"[A-Za-z0-9_-]{6,40}", aid) else None
+    state = _encode_state(
+        chosen_ext, include_onedrive=include_onedrive, attempt_id=safe_aid
+    )
 
     scope = MS_GRAPH_SCOPES
     if include_onedrive:
@@ -326,9 +415,13 @@ async def auth_callback(
     then redirects to extension with OutMass JWT in URL fragment.
     """
     if error:
+        _track_ms_auth_failed(
+            state, "authorize", _classify_ms_error(error, error_description)
+        )
         return _error_page(error_description or error)
 
     if not code:
+        _track_ms_auth_failed(state, "authorize", {"error": "no_code"})
         return _error_page("No authorization code received")
 
     if not AZURE_CLIENT_SECRET:
@@ -370,6 +463,16 @@ async def auth_callback(
     if token_resp.status_code != 200:
         err = token_resp.json() if token_resp.content else {}
         logger.error("Token exchange failed: %s %s", token_resp.status_code, err)
+        _track_ms_auth_failed(
+            state,
+            "token_exchange",
+            {
+                "status": token_resp.status_code,
+                **_classify_ms_error(
+                    err.get("error"), err.get("error_description")
+                ),
+            },
+        )
         return _error_page(err.get("error_description", "Token exchange failed"))
 
     tokens = token_resp.json()
