@@ -167,6 +167,103 @@ def test_payment_failed_fires_telegram_alert(client, fake_db):
     assert "$9.00" in msg
 
 
+def _fire_payment_failed(client, invoice_obj, users_table=None):
+    from unittest.mock import patch as _patch
+
+    with _patch("routers.billing.stripe.Webhook.construct_event", return_value={
+        "type": "invoice.payment_failed",
+        "data": {"object": invoice_obj},
+    }), \
+         _patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"), \
+         _patch("routers.billing._telegram_alert") as alert:
+        resp = client.post(
+            "/billing/webhook", content=b"{}", headers={"stripe-signature": "sig"}
+        )
+    assert resp.status_code == 200
+    return alert.call_args.args[0]
+
+
+def test_first_payment_failure_is_flagged_as_urgent_not_self_healing(client, fake_db):
+    """A new customer's FIRST payment gets no Smart Retries.
+
+    Stripe voids the invoice and expires the subscription ~24h later, so the
+    operator has a same-day window. On 2026-07-29 a new customer entered
+    three different cards in 90 seconds, all refused, and the alert told the
+    operator Stripe would retry — the sale died 24h later (07-30 15:47:
+    invoice.voided + payment_intent.canceled + session expired).
+    """
+    class _NoRows(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _NoRows(data=[]))
+
+    msg = _fire_payment_failed(client, {
+        "customer": "cus_new",
+        "amount_due": 900,
+        "billing_reason": "subscription_create",
+        "customer_email": "buyer@newco.com",
+        "attempt_count": 1,
+    })
+
+    assert "FIRST payment FAILED" in msg
+    assert "No auto-retry" in msg
+    assert "TODAY" in msg
+    assert "Smart Retries" not in msg, "must not tell the operator to wait"
+    # A first-time buyer has no stripe_customer_id in our DB yet; the invoice
+    # carries the address, so the alert must still name them.
+    assert "buyer@newco.com" in msg
+    assert "unresolved" not in msg
+
+
+def test_renewal_with_no_further_retry_says_so(client, fake_db):
+    """next_payment_attempt=None means Stripe is done trying."""
+    class _StableUsers(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _StableUsers(data=[{
+        "id": "u-1", "email": "payer@x.com", "plan": "starter",
+        "stripe_customer_id": "cus_f",
+    }]))
+
+    msg = _fire_payment_failed(client, {
+        "customer": "cus_f",
+        "amount_due": 900,
+        "billing_reason": "subscription_cycle",
+        "attempt_count": 4,
+        "next_payment_attempt": None,
+    })
+
+    assert "renewal payment FAILED" in msg
+    assert "last attempt" in msg
+    assert "must update the card" in msg
+
+
+def test_renewal_with_a_retry_pending_keeps_the_hard_decline_caveat(client, fake_db):
+    class _StableUsers(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _StableUsers(data=[{
+        "id": "u-1", "email": "payer@x.com", "plan": "starter",
+        "stripe_customer_id": "cus_f",
+    }]))
+
+    msg = _fire_payment_failed(client, {
+        "customer": "cus_f",
+        "amount_due": 900,
+        "billing_reason": "subscription_cycle",
+        "attempt_count": 1,
+        "next_payment_attempt": 1790000000,
+    })
+
+    assert "Smart Retries" in msg
+    # Faisal's card was a hard decline ("Incorrect number"); retries could
+    # never have fixed it, and the old text implied they would.
+    assert "hard decline" in msg
+
+
 def test_create_checkout_emits_session_created_and_plan_metadata(
     client, fake_db, auth_bypass
 ):
