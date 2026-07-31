@@ -610,11 +610,25 @@ def _handle_dispute_closed(db, dispute: dict) -> None:
 
 def _telegram_alert(text: str) -> None:
     """Best-effort operator ping. Imports lazily to keep the module
-    loadable without Telegram env vars."""
+    loadable without Telegram env vars.
+
+    A missing token used to `return` in silence. That is how three real
+    payment-failure alerts (07-29 ×2, 07-30 ×1) vanished while the daily
+    reports kept arriving: the reports are sent by the WORKER service and
+    these alerts by the WEB service, and on Railway the two do not share
+    environment variables. Nothing anywhere said an alert had been dropped.
+    Now the alert text goes to the error log, so it is at least recoverable
+    from Railway and the misconfiguration is visible.
+    """
     from config import TELEGRAM_BOT_TOKEN, TELEGRAM_CHAT_ID
     import httpx
 
     if not TELEGRAM_BOT_TOKEN or not TELEGRAM_CHAT_ID:
+        logger.error(
+            "OPERATOR ALERT DROPPED — TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID "
+            "missing on this service. Undelivered alert:\n%s",
+            text,
+        )
         return
     try:
         httpx.post(

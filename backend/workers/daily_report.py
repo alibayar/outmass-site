@@ -110,14 +110,35 @@ def _error_check_lines() -> list[str]:
 
 
 def _health_line() -> list[str]:
-    """Optional "is the API up" ping. Empty when not configured. Never raises."""
+    """Optional "is the API up" ping. Empty when not configured. Never raises.
+
+    Also reports whether the WEB service can send operator alerts. This
+    report is sent by the worker, so its own arrival proves nothing about
+    the web service: on 2026-07-29/30 three payment-failure alerts were
+    dropped for a missing TELEGRAM_* on web while these reports kept
+    arriving on time from the worker. Railway environments are per-service,
+    so the only way to notice is to ask the other service.
+    """
     if not REPORT_HEALTH_URL:
         return []
     try:
         resp = httpx.get(REPORT_HEALTH_URL, timeout=8.0)
-        if resp.status_code == 200:
-            return ["🌐 API: ✅ up"]
-        return [f"🌐 API: 🔴 HTTP {resp.status_code}"]
+        if resp.status_code != 200:
+            return [f"🌐 API: 🔴 HTTP {resp.status_code}"]
+
+        lines = ["🌐 API: ✅ up"]
+        try:
+            # Older deploys don't return the field — absence is not a fault.
+            alerts = resp.json().get("alerts")
+        except Exception:  # noqa: BLE001
+            alerts = None
+        if alerts is False:
+            lines.append(
+                "🔕 ALERTS OFF on web — payment/dispute alerts are being "
+                "dropped (set TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID on the "
+                "web service)"
+            )
+        return lines
     except Exception as e:  # noqa: BLE001
         logger.warning("Report health ping failed: %s", e)
         return ["🌐 API: 🔴 unreachable"]

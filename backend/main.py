@@ -329,4 +329,15 @@ async def trigger_report(
 # ── Health Check ──
 @app.get("/")
 async def health_check():
-    return {"status": "ok", "version": "0.1.0", "service": "outmass-api"}
+    # `alerts` reports whether THIS service can reach the operator channel.
+    # Railway gives each service its own environment, so the web service can
+    # be missing TELEGRAM_* while the worker sends daily reports perfectly —
+    # which is exactly what hid three payment-failure alerts on 07-29/07-30.
+    # The daily report reads this endpoint so the gap shows up in the report
+    # instead of being discovered by comparing Stripe to Telegram by hand.
+    return {
+        "status": "ok",
+        "version": "0.1.0",
+        "service": "outmass-api",
+        "alerts": bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID),
+    }
