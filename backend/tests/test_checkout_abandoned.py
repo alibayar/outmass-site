@@ -321,6 +321,48 @@ def test_ordinary_renewal_success_stays_silent(client, fake_db):
     alert.assert_not_called()
 
 
+def test_alert_survives_a_database_failure(client, fake_db):
+    """The bookkeeping write must not be able to swallow the notification.
+
+    It used to sit unguarded ahead of the alert, so a Supabase hiccup would
+    raise, return 500 to Stripe, and lose the one thing in this branch a
+    human depends on.
+    """
+    class _Exploding(FakeQueryBuilder):
+        def update(self, vals):
+            raise RuntimeError("supabase is having a day")
+
+    fake_db.set_table("users", _Exploding(data=[]))
+
+    alert = _fire_invoice_event(client, "invoice.payment_failed", {
+        "customer": "cus_x",
+        "amount_due": 900,
+        "billing_reason": "subscription_cycle",
+        "customer_email": "payer@x.com",
+        "next_payment_attempt": 1790000000,
+    })
+
+    alert.assert_called_once()
+    assert "payer@x.com" in alert.call_args.args[0]
+
+
+def test_alert_fires_even_without_a_customer_id(client, fake_db):
+    """No customer on the invoice is odd, but silence is worse."""
+    class _Users(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _Users(data=[]))
+
+    alert = _fire_invoice_event(client, "invoice.payment_failed", {
+        "amount_due": 900,
+        "customer_email": "orphan@x.com",
+    })
+
+    alert.assert_called_once()
+    assert "orphan@x.com" in alert.call_args.args[0]
+
+
 def test_unhandled_event_type_is_accepted_quietly(client, fake_db):
     """Subscribing to extra Stripe events must never break the endpoint —
     a non-200 makes Stripe retry and eventually disable the webhook."""

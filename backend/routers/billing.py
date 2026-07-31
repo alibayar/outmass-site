@@ -379,67 +379,76 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     # ── invoice.payment_failed ──
     elif event_type == "invoice.payment_failed":
         customer_id = data_object.get("customer")
+        logger.warning("Payment failed for customer %s", customer_id)
+
+        # The bookkeeping write must not be able to swallow the alert.
+        # It used to sit unguarded ahead of it, so a Supabase hiccup would
+        # raise, return 500, and lose the notification — the one thing in
+        # this branch that a human depends on. It is also the marker an
+        # operator reads to tell "handler ran" from "event never arrived"
+        # (that check is what proved, on 07-31, that Stripe was not
+        # delivering invoice.payment_failed at all: three events fired and
+        # plan_updated_at never moved off 07-25).
         if customer_id:
-            # Don't immediately downgrade — mark as past_due
-            db.table("users").update({
-                "plan_updated_at": datetime.now(timezone.utc).isoformat(),
-            }).eq("stripe_customer_id", customer_id).execute()
+            try:
+                db.table("users").update({
+                    # Don't immediately downgrade — mark as past_due
+                    "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+                }).eq("stripe_customer_id", customer_id).execute()
+            except Exception:  # noqa: BLE001
+                logger.exception("plan_updated_at write failed for %s", customer_id)
 
-            logger.warning("Payment failed for customer %s", customer_id)
+        # Operator alert. Runs even when the invoice carries no customer id:
+        # a payment failure nobody hears about is the failure mode we are
+        # fixing, so nothing above may gate it.
+        #
+        # A FIRST payment and a RENEWAL need opposite responses, and saying
+        # "Stripe will retry" for both cost us a sale on 07-29: a new
+        # customer entered three different cards in 90 seconds, every one
+        # refused by the issuer, and the alert said to sit back and wait.
+        # Stripe does not Smart-Retry an initial subscription payment — the
+        # invoice is voided and the subscription expires ~24h later (07-30
+        # 15:47, exactly that). A first-payment failure is a same-day
+        # outreach window, not something that heals itself.
+        billing_reason = data_object.get("billing_reason") or ""
+        is_first_payment = billing_reason == "subscription_create"
 
-            # Operator alert: a payment failure used to be invisible — only
-            # a log line nobody reads. Faisal's 07-25 renewal was soft-
-            # declined and we only learned from the Stripe dashboard a day
-            # later (2026-07-26). Best-effort, never raises.
-            #
-            # A FIRST payment and a RENEWAL need opposite responses, and
-            # saying "Stripe will retry" for both cost us a sale on 07-29:
-            # a new customer entered three different cards in 90 seconds,
-            # every one refused by the issuer, and the alert said to sit
-            # back and wait. Stripe does not Smart-Retry an initial
-            # subscription payment — the invoice is voided and the
-            # subscription expires ~24h later (07-30 15:47, exactly that).
-            # So a first-payment failure is a same-day outreach window,
-            # not something that heals itself.
-            billing_reason = data_object.get("billing_reason") or ""
-            is_first_payment = billing_reason == "subscription_create"
+        user_email, _plan = _resolve_invoice_user(db, data_object, customer_id or "")
 
-            user_email, _plan = _resolve_invoice_user(db, data_object, customer_id)
+        amount = data_object.get("amount_due")
+        attempts = data_object.get("attempt_count")
+        next_attempt = data_object.get("next_payment_attempt")
 
-            amount = data_object.get("amount_due")
-            attempts = data_object.get("attempt_count")
-            next_attempt = data_object.get("next_payment_attempt")
-
-            if is_first_payment:
-                headline = "🔴 OutMass FIRST payment FAILED (new customer)"
-                guidance = (
-                    "No auto-retry: Stripe voids the invoice and the "
-                    "subscription expires ~24h after the attempt. If this "
-                    "is worth recovering, reach out TODAY."
-                )
-            else:
-                headline = "⚠️ OutMass renewal payment FAILED"
-                guidance = (
-                    "Stripe will auto-retry (Smart Retries) and the plan "
-                    "restores via customer.subscription.updated — but only "
-                    "if the card CAN succeed. A hard decline (wrong number, "
-                    "expired, blocked) never recovers on its own; the "
-                    "customer has to update the card."
-                    if next_attempt
-                    else "No further retry is scheduled — this is the last "
-                    "attempt. The customer must update the card or the "
-                    "subscription ends."
-                )
-
-            _telegram_alert(
-                f"{headline}\n\n"
-                f"User: {user_email}\n"
-                f"Amount: ${(amount or 0) / 100:.2f}\n"
-                f"Customer: {customer_id}\n"
-                f"Attempt: {attempts if attempts is not None else '?'}"
-                f" · reason: {billing_reason or 'unknown'}\n\n"
-                f"{guidance}"
+        if is_first_payment:
+            headline = "🔴 OutMass FIRST payment FAILED (new customer)"
+            guidance = (
+                "No auto-retry: Stripe voids the invoice and the "
+                "subscription expires ~24h after the attempt. If this "
+                "is worth recovering, reach out TODAY."
             )
+        else:
+            headline = "⚠️ OutMass renewal payment FAILED"
+            guidance = (
+                "Stripe will auto-retry (Smart Retries) and the plan "
+                "restores via customer.subscription.updated — but only "
+                "if the card CAN succeed. A hard decline (wrong number, "
+                "expired, blocked) never recovers on its own; the "
+                "customer has to update the card."
+                if next_attempt
+                else "No further retry is scheduled — this is the last "
+                "attempt. The customer must update the card or the "
+                "subscription ends."
+            )
+
+        _telegram_alert(
+            f"{headline}\n\n"
+            f"User: {user_email}\n"
+            f"Amount: ${(amount or 0) / 100:.2f}\n"
+            f"Customer: {customer_id}\n"
+            f"Attempt: {attempts if attempts is not None else '?'}"
+            f" · reason: {billing_reason or 'unknown'}\n\n"
+            f"{guidance}"
+        )
 
     # ── invoice.payment_action_required (3-D Secure / SCA) ──
     #
