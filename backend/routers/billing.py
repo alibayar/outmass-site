@@ -404,26 +404,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             billing_reason = data_object.get("billing_reason") or ""
             is_first_payment = billing_reason == "subscription_create"
 
-            # The DB lookup is by stripe_customer_id, which we only learn at
-            # checkout.session.completed — a first-time buyer whose payment
-            # fails has no such row yet, so this used to alert with
-            # "User: unresolved". The invoice carries the address itself.
-            user_email = (
-                data_object.get("customer_email")
-                or data_object.get("customer_name")
-                or "unresolved"
-            )
-            try:
-                r = (
-                    db.table("users")
-                    .select("email, plan")
-                    .eq("stripe_customer_id", customer_id)
-                    .execute()
-                )
-                if r.data and r.data[0].get("email"):
-                    user_email = r.data[0]["email"]
-            except Exception:  # noqa: BLE001
-                pass
+            user_email, _plan = _resolve_invoice_user(db, data_object, customer_id)
 
             amount = data_object.get("amount_due")
             attempts = data_object.get("attempt_count")
@@ -459,6 +440,54 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                 f" · reason: {billing_reason or 'unknown'}\n\n"
                 f"{guidance}"
             )
+
+    # ── invoice.payment_action_required (3-D Secure / SCA) ──
+    #
+    # The bank wants the cardholder to authenticate. This is NOT a decline:
+    # the card is fine, the charge simply waits until the customer taps the
+    # link Stripe emails them. It matters because it looks like a failure in
+    # the dashboard and would otherwise be chased as one — and because the
+    # customer, not us, has to act. If nobody acts, the subscription drifts
+    # to past_due on its own and the existing path downgrades it.
+    elif event_type == "invoice.payment_action_required":
+        customer_id = data_object.get("customer")
+        user_email, plan = _resolve_invoice_user(db, data_object, customer_id or "")
+        _telegram_alert(
+            "🔐 OutMass payment needs the customer to authenticate (3-D Secure)\n\n"
+            f"User: {user_email}\n"
+            f"Plan: {plan}\n"
+            f"Amount: ${(data_object.get('amount_due') or 0) / 100:.2f}\n"
+            f"Customer: {customer_id}\n\n"
+            "Not a decline — the card is fine. Stripe emails them a link to "
+            "confirm. Nothing to do unless it is still unpaid in a few days."
+        )
+        logger.info("Payment action required for customer %s", customer_id)
+
+    # ── invoice.payment_succeeded ──
+    #
+    # Deliberately quiet for ordinary renewals: one alert per customer per
+    # month is noise that trains you to ignore the channel. The case worth
+    # hearing about is the CLOSE of a failure we already alerted on —
+    # attempt_count > 1 means an earlier attempt failed and this one didn't,
+    # so the money we were chasing has landed.
+    elif event_type == "invoice.payment_succeeded":
+        attempts = data_object.get("attempt_count") or 0
+        if attempts > 1:
+            customer_id = data_object.get("customer")
+            user_email, plan = _resolve_invoice_user(db, data_object, customer_id or "")
+            _telegram_alert(
+                "✅ OutMass payment RECOVERED\n\n"
+                f"User: {user_email}\n"
+                f"Amount: ${(data_object.get('amount_paid') or data_object.get('amount_due') or 0) / 100:.2f}\n"
+                f"Succeeded on attempt {attempts}\n\n"
+                "The plan restores automatically via "
+                "customer.subscription.updated — no action needed."
+            )
+        logger.info(
+            "Invoice paid for customer %s (attempt %s)",
+            data_object.get("customer"),
+            attempts,
+        )
 
     # ── charge.dispute.created (chargeback filed) ──
     #
@@ -606,6 +635,35 @@ def _handle_dispute_closed(db, dispute: dict) -> None:
         f"Status: {status}\n"
         f"User: {user_email or 'unresolved'}"
     )
+
+
+def _resolve_invoice_user(db, invoice: dict, customer_id: str) -> tuple[str, str]:
+    """Best identity we can get for an invoice event: (email, plan).
+
+    The DB lookup is by stripe_customer_id, which we only learn at
+    checkout.session.completed — a first-time buyer whose payment fails has
+    no such row yet, and this used to report "User: unresolved", leaving the
+    operator to dig through Stripe to find out who to contact. The invoice
+    itself carries the address, so start there and let our own row win when
+    it exists.
+    """
+    email = (
+        invoice.get("customer_email") or invoice.get("customer_name") or "unresolved"
+    )
+    plan = "unknown"
+    try:
+        r = (
+            db.table("users")
+            .select("email, plan")
+            .eq("stripe_customer_id", customer_id)
+            .execute()
+        )
+        if r.data:
+            email = r.data[0].get("email") or email
+            plan = r.data[0].get("plan") or plan
+    except Exception:  # noqa: BLE001
+        pass
+    return email, plan
 
 
 def _telegram_alert(text: str) -> None:

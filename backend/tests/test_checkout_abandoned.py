@@ -240,6 +240,97 @@ def test_renewal_with_no_further_retry_says_so(client, fake_db):
     assert "must update the card" in msg
 
 
+def _fire_invoice_event(client, event_type, invoice_obj):
+    from unittest.mock import patch as _patch
+
+    with _patch("routers.billing.stripe.Webhook.construct_event", return_value={
+        "type": event_type,
+        "data": {"object": invoice_obj},
+    }), \
+         _patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"), \
+         _patch("routers.billing._telegram_alert") as alert:
+        resp = client.post(
+            "/billing/webhook", content=b"{}", headers={"stripe-signature": "sig"}
+        )
+    assert resp.status_code == 200
+    return alert
+
+
+def test_sca_authentication_is_not_reported_as_a_decline(client, fake_db):
+    """3-D Secure means the customer must tap a link, not that the card failed."""
+    class _Users(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _Users(data=[{
+        "id": "u-1", "email": "eu@customer.eu", "plan": "starter",
+        "stripe_customer_id": "cus_eu",
+    }]))
+
+    alert = _fire_invoice_event(client, "invoice.payment_action_required", {
+        "customer": "cus_eu",
+        "amount_due": 900,
+    })
+
+    msg = alert.call_args.args[0]
+    assert "authenticate" in msg
+    assert "Not a decline" in msg
+    assert "eu@customer.eu" in msg
+    assert "FAILED" not in msg
+
+
+def test_recovered_payment_is_announced(client, fake_db):
+    """A success after a failed attempt closes a loop we already alerted on."""
+    class _Users(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _Users(data=[{
+        "id": "u-1", "email": "payer@x.com", "plan": "starter",
+        "stripe_customer_id": "cus_f",
+    }]))
+
+    alert = _fire_invoice_event(client, "invoice.payment_succeeded", {
+        "customer": "cus_f",
+        "amount_paid": 900,
+        "attempt_count": 3,
+    })
+
+    msg = alert.call_args.args[0]
+    assert "RECOVERED" in msg
+    assert "attempt 3" in msg
+
+
+def test_ordinary_renewal_success_stays_silent(client, fake_db):
+    """One alert per customer per month would train us to ignore the channel."""
+    class _Users(FakeQueryBuilder):
+        def update(self, vals):
+            return self
+
+    fake_db.set_table("users", _Users(data=[{
+        "id": "u-1", "email": "payer@x.com", "plan": "starter",
+        "stripe_customer_id": "cus_f",
+    }]))
+
+    alert = _fire_invoice_event(client, "invoice.payment_succeeded", {
+        "customer": "cus_f",
+        "amount_paid": 900,
+        "attempt_count": 1,
+    })
+
+    alert.assert_not_called()
+
+
+def test_unhandled_event_type_is_accepted_quietly(client, fake_db):
+    """Subscribing to extra Stripe events must never break the endpoint —
+    a non-200 makes Stripe retry and eventually disable the webhook."""
+    alert = _fire_invoice_event(client, "invoice.payment_attempt_required", {
+        "customer": "cus_x",
+        "amount_due": 900,
+    })
+    alert.assert_not_called()
+
+
 def test_renewal_with_a_retry_pending_keeps_the_hard_decline_caveat(client, fake_db):
     class _StableUsers(FakeQueryBuilder):
         def update(self, vals):
