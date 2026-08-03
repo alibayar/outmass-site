@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "Die Microsoft-Anmeldeseite konnte nicht geöffnet werden. Überprüfen Sie Ihre Internetverbindung und versuchen Sie es erneut."
+  },
+  "authWindowAlreadyOpen": {
+    "message": "Ein Microsoft-Anmeldefenster ist bereits geöffnet. Prüfen Sie Ihre anderen Fenster oder die Taskleiste — es könnte hinter Outlook liegen."
   }
 }

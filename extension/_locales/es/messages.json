@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "No se pudo abrir la página de inicio de sesión de Microsoft. Comprueba tu conexión a Internet e inténtalo de nuevo."
+  },
+  "authWindowAlreadyOpen": {
+    "message": "Ya hay una ventana de inicio de sesión de Microsoft abierta. Revisa tus otras ventanas o la barra de tareas — puede estar oculta detrás de Outlook."
   }
 }

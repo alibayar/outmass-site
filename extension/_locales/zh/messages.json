@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "无法打开 Microsoft 登录页面。请检查网络连接后重试。"
+  },
+  "authWindowAlreadyOpen": {
+    "message": "已有一个 Microsoft 登录窗口处于打开状态。请检查其他窗口或任务栏——它可能被 Outlook 窗口挡住了。"
   }
 }

@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "無法開啟 Microsoft 登入頁面。請檢查您的網路連線後再試一次。"
+  },
+  "authWindowAlreadyOpen": {
+    "message": "已經有一個 Microsoft 登入視窗開啟中。請檢查其他視窗或工作列——它可能被 Outlook 視窗擋住了。"
   }
 }

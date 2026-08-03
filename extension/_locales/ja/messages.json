@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "Microsoft のサインインページを開けませんでした。インターネット接続を確認して、もう一度お試しください。"
+  },
+  "authWindowAlreadyOpen": {
+    "message": "Microsoft のサインインウィンドウは既に開いています。他のウィンドウやタスクバーを確認してください — Outlook の後ろに隠れている可能性があります。"
   }
 }

@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "Não foi possível abrir a página de login da Microsoft. Verifique sua conexão com a internet e tente novamente."
+  },
+  "authWindowAlreadyOpen": {
+    "message": "Uma janela de login da Microsoft já está aberta. Verifique suas outras janelas ou a barra de tarefas — ela pode estar atrás do Outlook."
   }
 }

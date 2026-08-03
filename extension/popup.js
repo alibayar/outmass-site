@@ -190,6 +190,7 @@
     var code = resp && resp.errorCode;
     if (code === "consent_declined") return t("authErrorConsent");
     if (code === "auth_page_failed") return t("authErrorPageLoad");
+    if (code === "auth_window_already_open") return t("authWindowAlreadyOpen");
     return (resp && resp.error) || t("popupUnknownError");
   }
 

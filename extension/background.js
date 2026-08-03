@@ -190,6 +190,11 @@ var _authFlightStartedAt = {};
 // still at the keyboard gets a working button on their next click.
 var AUTH_FLIGHT_STALE_MS = 2 * 60 * 1000;
 var AUTH_FLIGHT_TIMEOUT_MS = 5 * 60 * 1000;
+// Below this age a re-click joins silently — that's the accidental
+// double-click the single-flight guard was built for. Above it, the user is
+// deliberately clicking again because they can't SEE the window, so telling
+// them where to look beats doing nothing.
+var AUTH_FLIGHT_SILENT_JOIN_MS = 10 * 1000;
 
 // How many sign-in attempts this service-worker life has seen, so a report
 // can tell one abandoned attempt apart from someone fighting the flow. A
@@ -222,9 +227,22 @@ function startMSLogin(includeOneDrive) {
   var existing = _authFlightByKey[key];
   if (existing) {
     var age = Date.now() - (_authFlightStartedAt[key] || 0);
-    if (age < AUTH_FLIGHT_STALE_MS) {
+    if (age < AUTH_FLIGHT_SILENT_JOIN_MS) {
       log("MS OAuth already in progress (" + key + ") — joining existing flow");
       return existing;
+    }
+    if (age < AUTH_FLIGHT_STALE_MS) {
+      // The window is open but the user clearly can't see it, or they
+      // wouldn't be clicking Sign in again. Point them at it instead of
+      // silently joining — the 2026-08-03 uninstall was six of these dead
+      // clicks in a row. The original flight keeps running; if they find
+      // and finish the window, storage.onChanged delivers the sign-in.
+      log("MS OAuth window already open (" + Math.round(age / 1000) + "s) — telling the user where to look");
+      track("oauth_already_open_hint", { flow: key, age_seconds: Math.round(age / 1000) });
+      return Promise.resolve({
+        error: "A Microsoft sign-in window is already open. Check your other windows or taskbar.",
+        errorCode: "auth_window_already_open",
+      });
     }
     // Zombie flight: abandon the key and open a fresh window. The old
     // window (wherever it is) stays functional — if the user completes it

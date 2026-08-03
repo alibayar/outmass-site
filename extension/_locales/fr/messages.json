@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "Impossible d'ouvrir la page de connexion Microsoft. Vérifiez votre connexion Internet et réessayez."
+  },
+  "authWindowAlreadyOpen": {
+    "message": "Une fenêtre de connexion Microsoft est déjà ouverte. Vérifiez vos autres fenêtres ou la barre des tâches — elle est peut-être cachée derrière Outlook."
   }
 }

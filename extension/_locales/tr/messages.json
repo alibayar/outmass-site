@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "Microsoft giriş sayfası açılamadı. İnternet bağlantınızı kontrol edip tekrar deneyin."
+  },
+  "authWindowAlreadyOpen": {
+    "message": "Bir Microsoft oturum açma penceresi zaten açık. Diğer pencerelerinizi veya görev çubuğunu kontrol edin — Outlook'un arkasında kalmış olabilir."
   }
 }

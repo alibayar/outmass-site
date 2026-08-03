@@ -134,6 +134,7 @@
           var ac = resp.errorCode;
           alert(ac === "consent_declined" ? t("authErrorConsent")
               : ac === "auth_page_failed" ? t("authErrorPageLoad")
+              : ac === "auth_window_already_open" ? t("authWindowAlreadyOpen")
               : t("reauthFailed", [resp.error]));
           return;
         }
@@ -474,6 +475,13 @@
       chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
         btn.disabled = false;
         btn.textContent = prevLabel;
+        // A sign-in window from an earlier click is still open somewhere —
+        // point the user at it. Other errors stay silent here as before
+        // (this path is an optional identity switch, not a blocked action).
+        if (resp && resp.errorCode === "auth_window_already_open") {
+          alert(t("authWindowAlreadyOpen"));
+          return;
+        }
         // On success the new user/JWT are stored; the storage.onChanged
         // listener below refreshes identity + announcements. We also refresh
         // here for immediacy.

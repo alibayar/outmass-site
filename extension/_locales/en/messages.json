@@ -1074,5 +1074,8 @@
   },
   "authErrorPageLoad": {
     "message": "Couldn't open the Microsoft sign-in page. Check your internet connection and try again."
+  },
+  "authWindowAlreadyOpen": {
+    "message": "A Microsoft sign-in window is already open. Check your other windows or taskbar — it may be hiding behind Outlook."
   }
 }
