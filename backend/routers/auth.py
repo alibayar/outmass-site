@@ -397,6 +397,28 @@ async def login_redirect(
         "state": state,
     }
     auth_url = f"https://login.microsoftonline.com/common/oauth2/v2.0/authorize?{urllib.parse.urlencode(params)}"
+
+    # Funnel midpoint. oauth_started (client) proves the flow was REQUESTED;
+    # this proves the auth window actually loaded and left for Microsoft.
+    # A sign-in that has this event but neither ms_auth_failed nor a login
+    # is a user parked ON Microsoft's own pages (password/MFA/account
+    # picker) — the window most likely lost behind another window. That is
+    # the one state we previously could not distinguish from "window never
+    # opened", and it is what the 2026-08-03 rage-uninstall came down to.
+    if POSTHOG_API_KEY:
+        try:
+            posthog.capture(
+                distinct_id=safe_aid or "anonymous_auth_window",
+                event="ms_auth_window_opened",
+                properties={
+                    "attempt_id": safe_aid,
+                    "install_source": _install_source(chosen_ext),
+                    "wants_onedrive": include_onedrive,
+                },
+            )
+        except Exception:
+            logger.warning("ms_auth_window_opened capture failed", exc_info=True)
+
     return RedirectResponse(url=auth_url)
 
 

@@ -171,6 +171,41 @@ def test_callback_error_redirect_is_reported(client, fake_db):
     assert props["stage"] == "authorize"
 
 
+def test_login_redirect_reports_the_window_opening(client, fake_db):
+    """The funnel midpoint: oauth_started proves the flow was requested,
+    ms_auth_window_opened proves the auth window loaded and left for
+    Microsoft. An attempt with the midpoint but no ending is a user parked
+    on Microsoft's own pages — the state behind the 2026-08-03 uninstall,
+    previously indistinguishable from 'window never opened'."""
+    with patch("routers.auth.POSTHOG_API_KEY", "phc_test"), \
+         patch("routers.auth.posthog.capture") as cap:
+        resp = client.get(
+            "/auth/login",
+            params={"ext": EXT, "aid": "abc123DEF456"},
+            follow_redirects=False,
+        )
+
+    assert resp.status_code in (302, 307)
+    events = [c.kwargs for c in cap.call_args_list
+              if c.kwargs.get("event") == "ms_auth_window_opened"]
+    assert len(events) == 1
+    assert events[0]["distinct_id"] == "abc123DEF456"
+    assert events[0]["properties"]["install_source"] == "chrome"
+
+
+def test_login_redirect_capture_failure_never_blocks_the_redirect(client, fake_db):
+    """Telemetry must not be able to break sign-in itself."""
+    with patch("routers.auth.POSTHOG_API_KEY", "phc_test"), \
+         patch("routers.auth.posthog.capture", side_effect=RuntimeError("down")):
+        resp = client.get(
+            "/auth/login",
+            params={"ext": EXT, "aid": "abc123DEF456"},
+            follow_redirects=False,
+        )
+    assert resp.status_code in (302, 307)
+    assert "login.microsoftonline.com" in resp.headers["location"]
+
+
 def test_login_redirect_accepts_and_forwards_a_valid_attempt_id(client, fake_db):
     resp = client.get(
         "/auth/login",
