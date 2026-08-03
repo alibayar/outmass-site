@@ -420,6 +420,34 @@ PostHog project 152466 also receives a game's events (`match_started`,
 
 ---
 
+## 🧭 Exit-readiness — TRIGGER: $2k MRR + 3 consecutive months of growth (Ali, 2026-08-04)
+
+Not a goal, an option to keep alive. Decision from the 2026-08-04 discussion:
+exits in this market price on **MRR and its trend, never on user count** (free
+users are a cost, not an asset). Realistic ladder: ~100 paying (~$1-1.5k MRR)
+→ ~$35-60k marketplace sale (Acquire.com/Flippa) and TinySeed application
+territory; ~1000 paying (~$10-15k MRR) → $350-600k+ at 2.5-4x ARR. Strategic
+buyers (GMass, Mailmeteor, cold-outreach suites missing an Outlook leg) pay
+for the Graph sending infra + store history + SEO assets, not the P&L. VC
+path: not applicable (feature-market, capped TAM) — don't spend time on it.
+Biggest multiple discount we cannot fix: platform risk (Chrome/Edge stores +
+Graph API dependency).
+
+**Standing rules until the trigger (all cheap, mostly already true):**
+- Books stay clean: Stripe is the ledger; assets (domain, Azure app, store
+  accounts, PostHog) stay owned by Metis Ltd and transferable.
+- Keep the diligence trail buyers pay a premium for: tests, runbooks,
+  handoffs, telemetry, `emails_sent_total` lifetime metrics.
+- Store ratings/reviews are an ACQUISITION asset too (featuring playbook).
+- **Never sign exclusivity** in partnerships (HeyReach-class outreach) — it
+  handcuffs a sale.
+
+**At the trigger:** revisit deliberately — Acquire.com listing and a TinySeed
+application are each ~two weeks of prep from our books. Until then the best
+exit strategy is growing MRR.
+
+---
+
 ## ⏸️ Deferred (deliberately)
 
 - **Send pacing Phase 2/3:** account-type awareness (personal ~300/day vs business
