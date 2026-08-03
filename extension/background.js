@@ -185,16 +185,23 @@ chrome.runtime.onInstalled.addListener(function (details) {
 //      is a no-op but the sign-in itself is kept.
 var _authFlightByKey = {};
 var _authFlightStartedAt = {};
-// Normal sign-ins settle in 6-30s; MFA or a password reset can take a couple
-// of minutes. 2 min is long enough for those and short enough that a user
-// still at the keyboard gets a working button on their next click.
-var AUTH_FLIGHT_STALE_MS = 2 * 60 * 1000;
+// Normal sign-ins settle in 6-30s, so a flight past a minute is already far
+// outside the successful range. The threshold only matters when the user
+// RE-CLICKS — and a re-click means they can't see the window, so whatever
+// progress that window holds is unreachable to them anyway. (This was 2 min
+// at first, sized to MFA duration; that protected a user who, being mid-MFA
+// in a visible window, never re-clicks in the first place.)
+var AUTH_FLIGHT_STALE_MS = 60 * 1000;
 var AUTH_FLIGHT_TIMEOUT_MS = 5 * 60 * 1000;
 // Below this age a re-click joins silently — that's the accidental
 // double-click the single-flight guard was built for. Above it, the user is
 // deliberately clicking again because they can't SEE the window, so telling
 // them where to look beats doing nothing.
 var AUTH_FLIGHT_SILENT_JOIN_MS = 10 * 1000;
+// One hint per flight. If the user re-clicks AFTER being told where to look,
+// they looked and couldn't find it — repeating the hint would just be the
+// dead-click problem wearing a message; open a fresh window instead.
+var _authFlightHinted = {};
 
 // How many sign-in attempts this service-worker life has seen, so a report
 // can tell one abandoned attempt apart from someone fighting the flow. A
@@ -231,7 +238,7 @@ function startMSLogin(includeOneDrive) {
       log("MS OAuth already in progress (" + key + ") — joining existing flow");
       return existing;
     }
-    if (age < AUTH_FLIGHT_STALE_MS) {
+    if (!_authFlightHinted[key] && age < AUTH_FLIGHT_STALE_MS) {
       // The window is open but the user clearly can't see it, or they
       // wouldn't be clicking Sign in again. Point them at it instead of
       // silently joining — the 2026-08-03 uninstall was six of these dead
@@ -239,18 +246,26 @@ function startMSLogin(includeOneDrive) {
       // and finish the window, storage.onChanged delivers the sign-in.
       log("MS OAuth window already open (" + Math.round(age / 1000) + "s) — telling the user where to look");
       track("oauth_already_open_hint", { flow: key, age_seconds: Math.round(age / 1000) });
+      _authFlightHinted[key] = true;
       return Promise.resolve({
         error: "A Microsoft sign-in window is already open. Check your other windows or taskbar.",
         errorCode: "auth_window_already_open",
       });
     }
-    // Zombie flight: abandon the key and open a fresh window. The old
-    // window (wherever it is) stays functional — if the user completes it
-    // later, its handleResult still stores the tokens.
-    log("MS OAuth flight stale after " + Math.round(age / 1000) + "s — opening a fresh window");
-    track("oauth_stale_relaunch", { flow: key, stale_seconds: Math.round(age / 1000) });
+    // Abandon the flight and open a fresh window — either it aged past the
+    // stale threshold, or the user already got the hint, looked, and still
+    // couldn't find the window. The old window (wherever it is) stays
+    // functional; if the user completes it later, its handleResult still
+    // stores the tokens.
+    log("MS OAuth flight abandoned after " + Math.round(age / 1000) + "s — opening a fresh window");
+    track("oauth_stale_relaunch", {
+      flow: key,
+      stale_seconds: Math.round(age / 1000),
+      after_hint: !!_authFlightHinted[key],
+    });
     delete _authFlightByKey[key];
     delete _authFlightStartedAt[key];
+    delete _authFlightHinted[key];
   }
 
   var flight = _startMSLoginInner(includeOneDrive);
@@ -262,6 +277,7 @@ function startMSLogin(includeOneDrive) {
     if (_authFlightByKey[key] === flight) {
       delete _authFlightByKey[key];
       delete _authFlightStartedAt[key];
+      delete _authFlightHinted[key];
     }
   };
   flight.then(clear, clear);
