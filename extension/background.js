@@ -166,7 +166,30 @@ chrome.runtime.onInstalled.addListener(function (details) {
 // consent flow and a plain sign-in don't return each other's result. The key
 // is cleared when the flow settles (success OR cancel/error), so the next
 // deliberate sign-in always starts fresh.
+//
+// STALENESS (2026-08-03 uninstall incident): a launchWebAuthFlow that never
+// settles — auth window lost behind Outlook, wedged on a blank page, left on
+// another monitor — used to hold the single-flight key FOREVER, because the
+// pending API call also keeps this service worker alive. Every later
+// "Sign in" click then joined the dead flight and visibly did NOTHING. A US
+// user with a 447-recipient list clicked Sign in six times over three hours
+// against one such zombie flight, got not_authenticated on every send, and
+// uninstalled with the feedback "GARBAGE. DOES NOT WORK". Two guards now:
+//   1. joins are honored only while the flight is younger than
+//      AUTH_FLIGHT_STALE_MS — after that, a new click abandons the zombie
+//      and opens a FRESH window (the click finally does something visible);
+//   2. the flight itself resolves with auth_timeout after
+//      AUTH_FLIGHT_TIMEOUT_MS, so sidebar buttons waiting on its callback
+//      are never disabled forever. If the user completes the old window
+//      even later, handleResult still stores the JWT — the late resolve()
+//      is a no-op but the sign-in itself is kept.
 var _authFlightByKey = {};
+var _authFlightStartedAt = {};
+// Normal sign-ins settle in 6-30s; MFA or a password reset can take a couple
+// of minutes. 2 min is long enough for those and short enough that a user
+// still at the keyboard gets a working button on their next click.
+var AUTH_FLIGHT_STALE_MS = 2 * 60 * 1000;
+var AUTH_FLIGHT_TIMEOUT_MS = 5 * 60 * 1000;
 
 // How many sign-in attempts this service-worker life has seen, so a report
 // can tell one abandoned attempt apart from someone fighting the flow. A
@@ -196,13 +219,33 @@ function _newAuthAttemptId() {
 
 function startMSLogin(includeOneDrive) {
   var key = includeOneDrive ? "onedrive" : "signin";
-  if (_authFlightByKey[key]) {
-    log("MS OAuth already in progress (" + key + ") — joining existing flow");
-    return _authFlightByKey[key];
+  var existing = _authFlightByKey[key];
+  if (existing) {
+    var age = Date.now() - (_authFlightStartedAt[key] || 0);
+    if (age < AUTH_FLIGHT_STALE_MS) {
+      log("MS OAuth already in progress (" + key + ") — joining existing flow");
+      return existing;
+    }
+    // Zombie flight: abandon the key and open a fresh window. The old
+    // window (wherever it is) stays functional — if the user completes it
+    // later, its handleResult still stores the tokens.
+    log("MS OAuth flight stale after " + Math.round(age / 1000) + "s — opening a fresh window");
+    track("oauth_stale_relaunch", { flow: key, stale_seconds: Math.round(age / 1000) });
+    delete _authFlightByKey[key];
+    delete _authFlightStartedAt[key];
   }
+
   var flight = _startMSLoginInner(includeOneDrive);
   _authFlightByKey[key] = flight;
-  var clear = function () { delete _authFlightByKey[key]; };
+  _authFlightStartedAt[key] = Date.now();
+  // Only the flight that OWNS the key may clear it — a zombie settling late
+  // must not evict the fresh flight that replaced it.
+  var clear = function () {
+    if (_authFlightByKey[key] === flight) {
+      delete _authFlightByKey[key];
+      delete _authFlightStartedAt[key];
+    }
+  };
   flight.then(clear, clear);
   return flight;
 }
@@ -266,6 +309,28 @@ async function _startMSLoginInner(includeOneDrive) {
     // We warm the backend and relaunch ONCE before giving up.
     let retried = false;
 
+    // Hard ceiling on the whole flight. A window that never settles used to
+    // leave every sidebar button that awaits this promise disabled forever
+    // (the reauth banner showed "…" until the iframe was reloaded). Resolving
+    // with a timeout gives the UI closure; if the user completes the zombie
+    // window afterwards, handleResult below still stores the tokens — the
+    // second resolve() is simply a no-op.
+    let settled = false;
+    const finish = (value) => {
+      settled = true;
+      clearTimeout(timeoutHandle);
+      resolve(value);
+    };
+    const timeoutHandle = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      track("oauth_failed", failureContext({ reason: "auth_timeout" }));
+      resolve({
+        error: "Sign-in window timed out. Please try again.",
+        errorCode: "auth_timeout",
+      });
+    }, AUTH_FLIGHT_TIMEOUT_MS);
+
     function launch() {
       chrome.identity.launchWebAuthFlow(
         { url: authUrl, interactive: true },
@@ -301,7 +366,7 @@ async function _startMSLoginInner(includeOneDrive) {
           return;
         }
 
-        resolve({ error: m, errorCode: errorCode });
+        finish({ error: m, errorCode: errorCode });
         // NOTE on reading this event: `consent_declined` is Chrome's label for
         // "auth window closed without a successful redirect" — it does NOT
         // mean the user pressed No. A tenant block (AADSTS90094) leaves the
@@ -320,7 +385,7 @@ async function _startMSLoginInner(includeOneDrive) {
       }
 
       if (!redirectUrl) {
-        resolve({ error: "No redirect URL received" });
+        finish({ error: "No redirect URL received" });
         track("oauth_failed", failureContext({ reason: "no_redirect" }));
         return;
       }
@@ -333,7 +398,7 @@ async function _startMSLoginInner(includeOneDrive) {
         const u = new URL(redirectUrl);
         fragment = u.hash.startsWith("#") ? u.hash.substring(1) : u.hash;
       } catch (e) {
-        resolve({ error: "Invalid redirect URL" });
+        finish({ error: "Invalid redirect URL" });
         track("oauth_failed", failureContext({ reason: "invalid_redirect" }));
         return;
       }
@@ -346,7 +411,7 @@ async function _startMSLoginInner(includeOneDrive) {
       const errorMsg = params.get("error");
 
       if (errorMsg) {
-        resolve({ error: errorMsg });
+        finish({ error: errorMsg });
         track(
           "oauth_failed",
           failureContext({
@@ -358,7 +423,7 @@ async function _startMSLoginInner(includeOneDrive) {
       }
 
       if (!jwtToken || !email) {
-        resolve({ error: "Incomplete auth response from backend" });
+        finish({ error: "Incomplete auth response from backend" });
         track("oauth_failed", failureContext({ reason: "incomplete_response" }));
         return;
       }
@@ -385,7 +450,7 @@ async function _startMSLoginInner(includeOneDrive) {
           // we identify by email — PostHog accepts any string as distinct_id.
           identify(email);
           track("oauth_completed", { plan: plan });
-          resolve({ error: null, user: user });
+          finish({ error: null, user: user });
         }
       );
     }
