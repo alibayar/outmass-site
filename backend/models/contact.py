@@ -180,12 +180,35 @@ def mark_failed(contact_id: str, status: str = "failed"):
     ).eq("id", contact_id).execute()
 
 
+def mark_suppressed(contact_id: str):
+    """Record that a send loop skipped this contact for the suppression list.
+
+    Addresses on the list are normally filtered at upload time, so this only
+    catches the ones added AFTER the CSV went in (including anyone who
+    unsubscribed from an earlier campaign — that adds them to the list).
+    Those contacts used to be skipped with a bare `continue`, leaving them
+    'pending' forever: they stayed in every resumable set, inflating what
+    Resume and the auto-resume beat thought was left to do, and a campaign
+    whose only remaining "pending" were suppressed would churn
+    scheduled → sent on each pass.
+
+    Deliberately NOT reversible: if the user later removes the address from
+    the suppression list, this contact stays skipped rather than quietly
+    becoming sendable again. Re-emailing someone who was on a do-not-email
+    list has to be a deliberate act (upload them again), not a side effect.
+    """
+    get_db().table("contacts").update(
+        {"status": "suppressed"}
+    ).eq("id", contact_id).execute()
+
+
 def get_resumable_contacts(campaign_id: str) -> list[dict]:
     """Contacts eligible for (re)sending: never-attempted + transiently-failed.
 
-    Excludes permanently `failed` (retry is futile) and already `sent`.
-    Used by the send loop, the scheduled worker, and the Resume endpoint so
-    a partial campaign's recoverable contacts go out on the next run.
+    Excludes permanently `failed` (retry is futile), `suppressed` (the user
+    asked us not to email them) and already `sent`. Used by the send loop,
+    the scheduled worker, and the Resume endpoint so a partial campaign's
+    recoverable contacts go out on the next run.
     """
     result = (
         get_db()

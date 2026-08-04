@@ -132,8 +132,12 @@ def process_scheduled_campaigns():
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in pending:
                 if contact.get("unsubscribed"):
+                    # The unsubscribed flag already excludes them everywhere.
                     continue
                 if contact.get("email", "").lower() in suppressed_emails:
+                    # Record the skip, or they stay 'pending' forever and keep
+                    # reappearing in resumable sets (see mark_suppressed).
+                    contact_model.mark_suppressed(contact["id"])
                     continue
 
                 try:
@@ -410,6 +414,7 @@ def evaluate_ab_tests():
                 if contact.get("unsubscribed"):
                     continue
                 if contact.get("email", "").lower() in suppressed_emails:
+                    contact_model.mark_suppressed(contact["id"])
                     continue
 
                 try:

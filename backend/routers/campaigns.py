@@ -763,8 +763,14 @@ async def _run_campaign_send(
         async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for idx, contact in enumerate(send_list):
                 if contact.get("unsubscribed"):
+                    # Already excluded from every resumable set by the
+                    # unsubscribed flag itself — nothing to record.
                     continue
                 if contact.get("email", "").lower() in suppressed_emails:
+                    # Record the skip. A bare `continue` left these 'pending'
+                    # forever, so they stayed in every resumable set and made
+                    # Resume/auto-resume think work remained.
+                    contact_model.mark_suppressed(contact["id"])
                     continue
 
                 # Determine subject for A/B testing

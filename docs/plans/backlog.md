@@ -203,14 +203,27 @@ drain falls out after two. Reports still offers Resume. Proper fix needs a
 `campaigns.updated_at`/last-activity column (migration) — revisit if a real
 user hits it.
 
-### ⬜ Suppressed-skip contacts stay 'pending' forever (found 2026-07-26)
-Both send loops (routers/campaigns._run_campaign_send and scheduled_worker)
-`continue` past suppressed/unsubscribed contacts WITHOUT marking them, so
-they sit in the resumable set indefinitely: inflate pending counts, and an
-auto-resumed campaign whose only "pending" are suppressed does one harmless
-scheduled→sent churn cycle. Fix: mark them (status or failure_reason
-'suppressed') at skip time in both loops + exclude from resumable. Touches
-Reports counts → decide display semantics before shipping.
+### ✅ Suppressed-skip contacts stay 'pending' forever — FIXED 2026-08-04
+`contact_model.mark_suppressed()` records the skip in all three send loops
+(router send-now, scheduled worker, A/B winner pass); `get_resumable_contacts`
+already filters on `status IN (pending, deferred)` so they drop out with no
+query change. 5 tests.
+
+Two things the original diagnosis had wrong, worth keeping:
+- **unsubscribed needed no fix.** `get_resumable_contacts` already carries
+  `.eq("unsubscribed", False)`, so those were never the problem — only the
+  suppression-list path was. Marking them too would touch rows for no gain.
+- **"Decide Reports display semantics" was a non-issue.** The stats endpoint
+  returns sent/opened/clicked/engaged/reply rates plus pending_followups; it
+  never counts contact status. The only consumer is the resumable set, so
+  nothing user-visible moved.
+
+Scope note: suppressed addresses are filtered at UPLOAD time, so the rows
+reaching these loops are only those added to the list AFTER the CSV went in
+(including anyone who unsubscribed from an earlier campaign). Deliberately
+NOT reversible — if the user later un-suppresses an address, the contact
+stays skipped. Re-emailing someone who was on a do-not-email list should be
+a deliberate act, not a side effect.
 
 ### ✅ Store-listing refresh — DONE 2026-07-29 (content ready; Ali pastes to dashboards)
 Trigger fired: Edge published 0.1.26 on 07-29. All 9 points applied to
