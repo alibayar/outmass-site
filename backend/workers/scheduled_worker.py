@@ -137,7 +137,18 @@ def process_scheduled_campaigns():
                 if contact.get("email", "").lower() in suppressed_emails:
                     # Record the skip, or they stay 'pending' forever and keep
                     # reappearing in resumable sets (see mark_suppressed).
-                    contact_model.mark_suppressed(contact["id"])
+                    # Guarded: this sits outside the per-contact try below, so
+                    # an unguarded raise would escape the Celery task, leave
+                    # the campaign 'sending', and skip every other campaign due
+                    # in this beat. Failing to record is harmless by itself.
+                    try:
+                        contact_model.mark_suppressed(contact["id"])
+                    except Exception:  # noqa: BLE001
+                        import logging
+                        logging.getLogger(__name__).warning(
+                            "Could not mark contact %s suppressed", contact.get("id"),
+                            exc_info=True,
+                        )
                     continue
 
                 try:
@@ -414,7 +425,19 @@ def evaluate_ab_tests():
                 if contact.get("unsubscribed"):
                     continue
                 if contact.get("email", "").lower() in suppressed_emails:
-                    contact_model.mark_suppressed(contact["id"])
+                    # Guarded — see process_scheduled_campaigns. This loop is
+                    # the worst place to raise: the ab_test row was already
+                    # flipped to 'sending_winner' above, and evaluate_ab_tests
+                    # only ever re-queries 'awaiting_winner', so an escape here
+                    # leaves the pair in a state no beat or sweep picks up.
+                    try:
+                        contact_model.mark_suppressed(contact["id"])
+                    except Exception:  # noqa: BLE001
+                        import logging
+                        logging.getLogger(__name__).warning(
+                            "Could not mark contact %s suppressed", contact.get("id"),
+                            exc_info=True,
+                        )
                     continue
 
                 try:

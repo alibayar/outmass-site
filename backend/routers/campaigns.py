@@ -770,7 +770,24 @@ async def _run_campaign_send(
                     # Record the skip. A bare `continue` left these 'pending'
                     # forever, so they stayed in every resumable set and made
                     # Resume/auto-resume think work remained.
-                    contact_model.mark_suppressed(contact["id"])
+                    #
+                    # GUARDED ON PURPOSE. This sits ABOVE the per-contact
+                    # try (below), so an unguarded raise here is caught by
+                    # the function-level handler and aborts the ENTIRE
+                    # campaign — a bookkeeping write killing delivery. Worse,
+                    # with sent_count still 0 the campaign lands on
+                    # 'scheduled' with scheduled_for NULL, which no recovery
+                    # path queries. Failing to record only restores the old
+                    # benign behaviour (row stays 'pending'), so swallow it.
+                    try:
+                        contact_model.mark_suppressed(contact["id"])
+                    except Exception:  # noqa: BLE001
+                        import logging
+                        logging.getLogger(__name__).warning(
+                            "Could not mark contact %s suppressed; skipping anyway",
+                            contact.get("id"),
+                            exc_info=True,
+                        )
                     continue
 
                 # Determine subject for A/B testing
@@ -849,9 +866,16 @@ async def _run_campaign_send(
         )
         try:
             user_model.increment_sent_count(user["id"], sent_count)
-            campaign_model.update_campaign(
-                campaign_id, {"status": "partial" if sent_count else "scheduled"}
-            )
+            # ALWAYS 'partial', never 'scheduled'. This function only ever runs
+            # the send-NOW path (queued as a background task from /send), so
+            # the campaign has scheduled_for NULL — and the due-campaign query
+            # filters `.lte("scheduled_for", now)`, which never matches NULL.
+            # A campaign parked on 'scheduled' here was therefore invisible to
+            # the send beat, to Resume (409s unless 'partial'), to auto-resume
+            # ('partial' only) and to the stuck sweep ('sending' only): its
+            # recipients were unreachable by every path. 'partial' is the one
+            # status the recovery machinery actually looks at.
+            campaign_model.update_campaign(campaign_id, {"status": "partial"})
         except Exception:  # noqa: BLE001
             pass
 
