@@ -125,18 +125,12 @@ chrome.runtime.onInstalled.addListener(function (details) {
   // Must run inside onInstalled because manifest.json doesn't support
   // a declarative uninstall URL in MV3. Re-setting on updates is cheap
   // and keeps us covered if the URL ever changes.
-  try {
-    chrome.runtime.setUninstallURL(
-      "https://getoutmass.com/uninstall.html",
-      function () {
-        if (chrome.runtime.lastError) {
-          log("setUninstallURL failed:", chrome.runtime.lastError.message);
-        }
-      }
-    );
-  } catch (e) {
-    log("setUninstallURL threw:", e);
-  }
+  //
+  // The URL carries the funnel stage the user has reached (see analytics.js);
+  // refreshUninstallUrl reads the stored stage rather than assuming a fresh
+  // install, so an UPDATE does not demote a long-time sender back to
+  // "installed". From here on analytics.js re-registers it on every advance.
+  refreshUninstallUrl();
 
   // Telemetry: install vs update
   if (details.reason === "install") {

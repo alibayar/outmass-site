@@ -258,6 +258,45 @@ class UninstallFeedback(BaseModel):
     reason: str | None = None
     details: str | None = None
     user_agent: str | None = None
+    # Furthest funnel stage the install reached, carried in the uninstall URL
+    # the extension registers ahead of time (extension/analytics.js). Anonymous
+    # by construction — a stage name and a version string, nothing per-user.
+    stage: str | None = None
+    version: str | None = None
+
+
+# The stage ladder, mirrored from extension/analytics.js. This endpoint is
+# unauthenticated and the value arrives from a hand-editable query string, so
+# anything not on the ladder is recorded as "invalid" rather than passed
+# through — otherwise a crafted URL writes arbitrary text into our Telegram
+# alerts and poisons the breakdown in PostHog.
+_UNINSTALL_STAGES = frozenset(
+    {
+        "installed",
+        "onboarded",
+        "panel_opened",
+        "signin_clicked",
+        "auth_started",
+        "signed_in",
+        "recipients_uploaded",
+        "test_sent",
+        "sent",
+    }
+)
+
+
+def _clean_stage(raw: str | None) -> str:
+    """Known stage, 'invalid' if someone made one up, 'unknown' if absent.
+
+    The three cases must stay distinguishable: 'unknown' is the honest answer
+    for installs that predate this field (and for uninstalls where Chrome never
+    opened the page), while 'invalid' means somebody hit the URL by hand.
+    Collapsing them would make the pre-rollout backlog look like tampering.
+    """
+    stage = (raw or "").strip()
+    if not stage:
+        return "unknown"
+    return stage if stage in _UNINSTALL_STAGES else "invalid"
 
 
 @app.post("/api/uninstall-feedback")
@@ -265,6 +304,8 @@ async def uninstall_feedback(body: UninstallFeedback):
     reason = (body.reason or "").strip()[:40]
     details = (body.details or "").strip()[:1000]
     ua = (body.user_agent or "").strip()[:200]
+    stage = _clean_stage(body.stage)
+    version = (body.version or "").strip()[:20]
 
     # Silently accept empty submissions — the UI already blocks totally
     # blank ones, but we'd rather log a no-op than 400 a churning user.
@@ -279,6 +320,8 @@ async def uninstall_feedback(body: UninstallFeedback):
                 "reason": reason,
                 "details": details[:500],
                 "user_agent": ua,
+                "stage": stage,
+                "extension_version": version or "unknown",
             },
         )
 
@@ -287,7 +330,8 @@ async def uninstall_feedback(body: UninstallFeedback):
         text = (
             "👋 OutMass uninstall feedback\n\n"
             f"Reason: {reason or '(none)'}\n"
-            f"Details: {details or '(none)'}"
+            f"Details: {details or '(none)'}\n"
+            f"Got as far as: {stage} (v{version or '?'})"
         )
         try:
             httpx.post(
@@ -298,7 +342,13 @@ async def uninstall_feedback(body: UninstallFeedback):
         except Exception as e:  # noqa: BLE001
             logger.warning("Uninstall Telegram dispatch failed: %s", e)
 
-    logger.info("Uninstall feedback: reason=%s details=%s", reason, details[:200])
+    logger.info(
+        "Uninstall feedback: reason=%s stage=%s version=%s details=%s",
+        reason,
+        stage,
+        version or "unknown",
+        details[:200],
+    )
     return {"status": "received"}
 
 

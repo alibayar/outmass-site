@@ -126,6 +126,15 @@
     var form = document.getElementById("feedback-form");
     var status = document.getElementById("status");
 
+    // The extension registers this page's URL ahead of time and keeps it
+    // pointed at the furthest funnel stage the user reached (see
+    // analytics.js). "bugs / didn't work" means something very different at
+    // stage=signin_clicked than at stage=sent, and the free-text box rarely
+    // says which. Anyone can hand-edit these, so the backend re-validates.
+    var params = new URLSearchParams(window.location.search);
+    var stage = (params.get("stage") || "").slice(0, 40);
+    var extVersion = (params.get("v") || "").slice(0, 20);
+
     reasons.addEventListener("click", function (e) {
       if (!e.target.classList.contains("reason-chip")) return;
       // Single-select: clear other chips
@@ -152,7 +161,9 @@
         body: JSON.stringify({
           reason: selectedReason,
           details: details,
-          user_agent: navigator.userAgent
+          user_agent: navigator.userAgent,
+          stage: stage,
+          version: extVersion
         })
       })
       .then(function (r) {
