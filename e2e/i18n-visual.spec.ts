@@ -14,6 +14,7 @@
 import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
+import { installChromeStub } from "./chrome-stub";
 
 const SIDEBAR_URL = `file:///${path.resolve("extension/sidebar.html").replace(/\\/g, "/")}`;
 const SCREENSHOT_DIR = path.resolve("e2e/screenshots");
@@ -44,6 +45,11 @@ const LOCALES = [
 async function loadLocaleAndApply(page: any, locale: string) {
   const messagesPath = path.resolve(`extension/_locales/${locale}/messages.json`);
   const messages = JSON.parse(fs.readFileSync(messagesPath, "utf-8"));
+
+  // Without this the page has no `chrome`, the sidebar script dies at init,
+  // and no tab handler ever binds — every test here that clicks a tab then
+  // times out. (Same root cause that kept CI red from 2026-06-03.)
+  await page.addInitScript(installChromeStub);
 
   await page.addInitScript((msgs: any) => {
     // Override i18n BEFORE scripts run

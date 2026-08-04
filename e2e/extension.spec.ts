@@ -9,10 +9,12 @@
 
 import { test, expect } from "@playwright/test";
 import path from "path";
+import { installChromeStub } from "./chrome-stub";
 
 const SIDEBAR_URL = `file:///${path.resolve("extension/sidebar.html").replace(/\\/g, "/")}`;
 
 test.beforeEach(async ({ page }) => {
+  await page.addInitScript(installChromeStub);
   await page.goto(SIDEBAR_URL);
 });
 
@@ -104,12 +106,23 @@ test("template section exists", async ({ page }) => {
 
 test("settings tab has all sections", async ({ page }) => {
   await page.click('[data-tab="settings"]');
-  // Settings content is behind a loading state (hidden until API returns)
-  // Check the settings section structure exists in the DOM
   await expect(page.locator("#tab-settings")).toBeVisible();
-  await expect(page.locator("#settings-loading")).toBeVisible();
-  // The actual settings-content div exists but is hidden until loaded
-  await expect(page.locator("#settings-content")).toBeAttached();
+
+  // Assert the structure the tab promises. This used to assert that
+  // #settings-loading was VISIBLE, which only held because the page had no
+  // `chrome` global: the script died at init, the request was never made, and
+  // the spinner stayed up forever. With the stub the request completes, so
+  // the spinner resolving is the correct behaviour — pinning it visible was
+  // pinning the bug.
+  for (const id of [
+    "#settings-content",
+    "#settings-sender-name",
+    "#settings-sender-position",
+    "#settings-sender-company",
+    "#settings-language",
+  ]) {
+    await expect(page.locator(id)).toBeAttached();
+  }
 });
 
 test("reports tab has list and detail areas", async ({ page }) => {
