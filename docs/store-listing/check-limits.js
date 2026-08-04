@@ -10,6 +10,37 @@ const listings = JSON.parse(fs.readFileSync(file, "utf8"));
 const TITLE_MAX = 45;
 const SUMMARY_MAX = 132;
 const DESC_MAX = 16000;
+
+// Edge Add-ons search terms, verified against Microsoft's own docs
+// (publish-extension + developer-policies 1.1.4, checked 2026-08-04):
+// at most 7 terms, 30 characters each, 21 WORDS in total. Chrome has no
+// equivalent field — it ranks on title/summary/description alone.
+const TERMS_MAX = 7;
+const TERM_CHARS_MAX = 30;
+const TERMS_WORDS_MAX = 21;
+
+// Another company's brand in our metadata is not "created by us or licensed
+// from the rights holder" (Edge policy 2.2) and invites a takedown, however
+// tempting the search volume. Ours and the platform we integrate with are
+// fine; these are not.
+const FOREIGN_BRANDS = [
+  /\bgmass\b/i,
+  /\bmailmeteor\b/i,
+  /\byamm\b/i,
+  /\byet another mail merge\b/i,
+  /\bmailchimp\b/i,
+  /\bsendgrid\b/i,
+  /\blemlist\b/i,
+  /\bwoodpecker\b/i,
+  /\bapollo\.io\b/i,
+  /\bsalesforce\b/i,
+  /\bhubspot\b/i,
+  /\bgmail\b/i,
+];
+
+// Words the product cannot deliver — a search term promising them is a
+// claims-discipline break, not just a bad keyword.
+const UNSUPPORTED = [/\bsmtp\b/i, /\blinkedin\b/i, /\bwhatsapp\b/i, /\bscrap(er|ing)\b/i];
 // Claims that were killed in audits and must never come back.
 const BANNED = [
   /across time zones/i,
@@ -57,6 +88,38 @@ for (const [lang, entry] of Object.entries(listings)) {
   for (const re of BANNED) {
     if (re.test(all)) err(lang, `banned claim matches ${re}`);
   }
+  // ── Edge search terms (optional field; validated when present) ──
+  const terms = entry.search_terms;
+  if (terms) {
+    if (!Array.isArray(terms)) {
+      err(lang, "search_terms must be an array");
+    } else {
+      if (terms.length > TERMS_MAX) {
+        err(lang, `${terms.length} search terms > ${TERMS_MAX}`);
+      }
+      const words = terms.join(" ").split(/\s+/).filter(Boolean).length;
+      if (words > TERMS_WORDS_MAX) {
+        err(lang, `search terms total ${words} words > ${TERMS_WORDS_MAX} (Edge rejects the submission)`);
+      }
+      const seen = new Set();
+      for (const term of terms) {
+        const len = [...term].length;
+        if (len > TERM_CHARS_MAX) err(lang, `search term "${term}" is ${len} chars > ${TERM_CHARS_MAX}`);
+        const key = term.trim().toLowerCase();
+        if (seen.has(key)) err(lang, `duplicate search term "${term}" (Edge requires unique terms)`);
+        seen.add(key);
+        if (!term.trim()) err(lang, "empty search term");
+        for (const re of FOREIGN_BRANDS) {
+          if (re.test(term)) err(lang, `search term "${term}" contains another company's brand — Edge policy 2.2`);
+        }
+        for (const re of UNSUPPORTED) {
+          if (re.test(term)) err(lang, `search term "${term}" promises something OutMass does not do`);
+        }
+      }
+      console.log(`      search terms: ${terms.length}/${TERMS_MAX}, ${words}/${TERMS_WORDS_MAX} words`);
+    }
+  }
+
   const n = countOf(entry.summary) || countOf(entry.description);
   if (n) counts.set(lang, n);
   console.log(

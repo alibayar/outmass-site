@@ -62,6 +62,32 @@ the release that makes it true. Chrome and Edge publish a listing edit and a
 package submission together, so pasting the new count alongside the 0.1.27
 upload is correct — pasting it while 0.1.26 is the live version is not.
 
+## Search terms (Edge only)
+
+`search_terms` in `listings.json` feeds **Edge Partner Center → Store listings
+→ Details for \<language\> → Search terms**. Chrome Web Store has no such
+field — it ranks on title/summary/description alone, so don't go looking for
+it there.
+
+Limits, from Microsoft's own docs (verified 2026-08-04): at most **7 terms**,
+each **≤ 30 characters**, **≤ 21 words in total**, and terms must be relevant
+to the extension (developer policy 1.1.4). They are never shown to users.
+
+Two rules the checker enforces so they can't be argued away later:
+
+- **No other company's brand.** Policy 2.2 requires metadata to be created by
+  us or licensed from the rights holder; a competitor's trademark is neither,
+  and the search volume isn't worth a takedown. "Outlook" and "Microsoft 365"
+  are fine — we genuinely integrate with them.
+- **Nothing we don't do** (SMTP, LinkedIn, WhatsApp, scraping).
+
+Method that produced the current sets: a term repeating a word the listing
+already contains is a wasted slot, because the store indexes the description
+anyway. So each slot buys a token the entry does NOT have — and the terms are
+what each market actually types, not translations of the English list
+(German searches *Serienmail*/*Seriendruck*, Japanese 一斉送信, Turkish
+*adres mektup birleştirme*, Taiwan *合併列印*).
+
 ## Copying text into the dashboards
 
 **Do not copy out of `listings.json`.** It is JSON, so its line breaks are
