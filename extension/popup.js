@@ -261,12 +261,28 @@
         var activeTab = tabs[0];
 
         if (activeTab && isOutlookUrl(activeTab.url)) {
-          // Active tab is Outlook — ensure sidebar is open. The .catch swallows
-          // the benign "Could not establish connection. Receiving end does not
-          // exist." that fires when the content script isn't in this tab yet
-          // (e.g. an Outlook tab opened before the extension loaded/updated).
-          chrome.tabs.sendMessage(activeTab.id, { type: "SHOW_SIDEBAR" }).catch(function () {});
-          window.close();
+          // Active tab is Outlook — ensure sidebar is open.
+          //
+          // The rejection here is "Could not establish connection. Receiving
+          // end does not exist.", which we used to swallow as benign. It is
+          // benign for the CODE and total failure for the USER: Chrome kills
+          // the content script in every already-open tab when the extension
+          // updates and never re-injects one (no "scripting" permission), so
+          // that tab is deaf until it is reloaded. Ten versions shipped
+          // 0.1.18 → 0.1.27, each minting this state in every long-lived
+          // Outlook tab — the normal state for a mail tool. The old empty
+          // catch plus window.close() on the next line meant the panel never
+          // opened, nothing was said, and nothing was recorded: in PostHog a
+          // user who tried five times looked identical to one who never came
+          // back. window.close() now only runs on success.
+          chrome.tabs.sendMessage(activeTab.id, { type: "SHOW_SIDEBAR" })
+            .then(function () {
+              window.close();
+            })
+            .catch(function () {
+              track("panel_open_failed", { reason: "no_content_script" });
+              showError(t("extUpdatedReload"));
+            });
         } else {
           // Not on Outlook — find an existing Outlook tab or open one
           chrome.tabs.query({}, function (allTabs) {
@@ -278,8 +294,18 @@
               // Focus existing Outlook tab and ensure sidebar is open
               chrome.tabs.update(outlookTab.id, { active: true }, function () {
                 chrome.windows.update(outlookTab.windowId, { focused: true }, function () {
-                  chrome.tabs.sendMessage(outlookTab.id, { type: "SHOW_SIDEBAR" }).catch(function () {});
-                  window.close();
+                  // Same deaf-tab case as above, and MORE likely here: this
+                  // branch finds an Outlook tab the user left open in another
+                  // window, which is exactly the tab most likely to predate
+                  // the current build.
+                  chrome.tabs.sendMessage(outlookTab.id, { type: "SHOW_SIDEBAR" })
+                    .then(function () {
+                      window.close();
+                    })
+                    .catch(function () {
+                      track("panel_open_failed", { reason: "no_content_script_other_window" });
+                      showError(t("extUpdatedReload"));
+                    });
                 });
               });
             } else {

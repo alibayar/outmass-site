@@ -709,6 +709,12 @@
   "csvErrEncoding": {
     "message": "此檔案並非以 UTF-8 儲存，因此無法正確讀取其中的文字。在 Excel 中：檔案 > 另存新檔 > 選擇「CSV UTF-8（逗號分隔）」，然後上傳該檔案。"
   },
+  "csvErrNotCsv": {
+    "message": "這個檔案不是 CSV。在 Excel 中：檔案 > 另存新檔 > 選擇「CSV UTF-8 (逗號分隔)」，然後將儲存後的檔案拖曳到這裡。"
+  },
+  "csvErrRead": {
+    "message": "無法讀取這個檔案。如果檔案位於網路磁碟機或 USB 隨身碟，請先複製到電腦再試一次。"
+  },
   "alertBackendUnreachable": {
     "message": "OutMass 目前無法連線到自己的伺服器。這是連線問題——與您的帳戶或方案無關。請檢查您的網路連線、VPN 或防火牆，稍後再試一次。"
   },

@@ -568,8 +568,24 @@
     e.preventDefault();
     csvDropzone.classList.remove("dragover");
     var files = e.dataTransfer.files;
-    if (files.length > 0 && files[0].name.endsWith(".csv")) {
+    // Case-INsensitive: a CRM or Outlook contacts export lands as
+    // "Contacts.CSV" on Windows, and the old endsWith(".csv") rejected it.
+    // The file picker's accept=".csv" filters case-insensitively and the
+    // change handler below checks nothing at all, so the identical file used
+    // to work when clicked and die when dropped.
+    //
+    // The else branch is the point: this is the first gate of the main
+    // journey, and it used to reject with no message, no event and no log.
+    // preventDefault() above already killed the browser's own feedback, so a
+    // dropped .xlsx produced pixel-identical UI and the user simply dragged
+    // it again. All three csv_upload_failed events live inside handleCSV,
+    // i.e. past this gate — so the population that never got in was invisible.
+    if (files.length > 0 && /\.csv$/i.test(files[0].name)) {
       handleCSV(files[0]);
+    } else if (files.length > 0) {
+      var ext = (files[0].name.split(".").pop() || "").slice(0, 8).toLowerCase();
+      track("csv_upload_failed", { error_code: "unsupported_file_type", ext: ext });
+      alert(t("csvErrNotCsv"));
     }
   });
 
@@ -645,6 +661,14 @@
     }
 
     var reader = new FileReader();
+    // A read can fail outright — a file on a disconnected network share, a
+    // USB stick pulled mid-read, a permissions change. Without this the
+    // promise of a preview simply never arrives and the user waits on a
+    // screen that will never change.
+    reader.onerror = function () {
+      alert(t("csvErrRead"));
+      track("csv_upload_failed", { error_code: "read_failed" });
+    };
     reader.onload = function (e) {
       var decoded = decodeCsvBuffer(e.target.result);
       // A.3: reject files no candidate encoding can decode cleanly. The
@@ -2173,7 +2197,16 @@
         reportsLoading.style.display = "none";
 
         if (!resp || resp.error) {
-          campaignListEl.innerHTML = '<div class="no-campaigns">' + t("noCampaignsFound") + '</div>';
+          // A reachable backend returning HTTP 500 lands here, and the health
+          // dot stays green because the server DID answer — so the user reads
+          // "no campaigns found" and concludes their work is gone. Say it is
+          // an error, and record it: this branch had no telemetry at all, so
+          // a backend fault that hid every user's campaigns would have looked
+          // like a quiet week.
+          track("reports_load_failed", {
+            error_code: String((resp && resp.error) || "no_response").slice(0, 64),
+          });
+          campaignListEl.innerHTML = '<div class="no-campaigns">' + t("reportsError") + '</div>';
           return;
         }
 

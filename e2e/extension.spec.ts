@@ -137,3 +137,79 @@ test("quota bar is visible", async ({ page }) => {
   await expect(page.locator("#quota-text")).toBeVisible();
   await expect(page.locator("#quota-fill")).toBeVisible();
 });
+
+// ── CSV dropzone: the first gate of the main journey ──
+//
+// Until 2026-08-04 this gate was `if (name.endsWith(".csv")) handleCSV(file)`
+// with NO else. A rejected drop executed zero further statements — and
+// preventDefault() runs before the check, so even the browser's own feedback
+// was suppressed. The user saw pixel-identical UI and dragged the file again.
+// All three csv_upload_failed events live inside handleCSV, past this gate,
+// so the population that never got in was invisible in PostHog too.
+//
+// t() returns the KEY when chrome.i18n yields nothing (i18n.js:144), which is
+// what the stub arranges — so asserting on "csvErrNotCsv" pins that the right
+// key is used, and locale-consistency separately proves it exists in all 14.
+
+async function dropFile(page, name: string, body = "email\na@example.com\n") {
+  const dt = await page.evaluateHandle(
+    ([n, b]) => {
+      const t = new DataTransfer();
+      t.items.add(new File([b], n, { type: "text/plain" }));
+      return t;
+    },
+    [name, body] as const
+  );
+  await page.dispatchEvent("#csv-dropzone", "drop", { dataTransfer: dt });
+}
+
+test("dropping a non-CSV file says so instead of doing nothing", async ({ page }) => {
+  const dialogs: string[] = [];
+  page.on("dialog", (d) => {
+    dialogs.push(d.message());
+    d.dismiss();
+  });
+
+  await dropFile(page, "Recipients.xlsx");
+
+  expect(dialogs).toEqual(["csvErrNotCsv"]);
+
+  const tracked = await page.evaluate(() => (window as any).__outmassTracked);
+  const failed = tracked.filter((e: any) => e.event === "csv_upload_failed");
+  expect(failed).toHaveLength(1);
+  expect(failed[0].properties.error_code).toBe("unsupported_file_type");
+  // The extension is what tells us WHICH format users actually bring. If it
+  // turns out to be mostly .xlsx, the fix is an xlsx parser, not a message.
+  expect(failed[0].properties.ext).toBe("xlsx");
+});
+
+test("an uppercase .CSV is accepted — it used to be silently rejected", async ({ page }) => {
+  const dialogs: string[] = [];
+  page.on("dialog", (d) => {
+    dialogs.push(d.message());
+    d.dismiss();
+  });
+
+  // A CRM or Outlook contacts export lands as Contacts.CSV on Windows. The
+  // old endsWith(".csv") is case-sensitive, so this exact file was rejected
+  // by drag-and-drop while working perfectly via the file picker — whose
+  // accept=".csv" filters case-insensitively and whose change handler checks
+  // nothing at all.
+  await dropFile(page, "Contacts.CSV");
+
+  expect(dialogs).toEqual([]);
+  const tracked = await page.evaluate(() => (window as any).__outmassTracked);
+  expect(tracked.filter((e: any) => e.event === "csv_upload_failed")).toHaveLength(0);
+});
+
+test("a dropped file with no extension is rejected loudly, not silently", async ({ page }) => {
+  const dialogs: string[] = [];
+  page.on("dialog", (d) => {
+    dialogs.push(d.message());
+    d.dismiss();
+  });
+
+  await dropFile(page, "contacts");
+
+  expect(dialogs).toEqual(["csvErrNotCsv"]);
+});

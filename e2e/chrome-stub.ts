@@ -21,6 +21,12 @@
 export function installChromeStub() {
   const noop = () => {};
   const store: Record<string, unknown> = { onboardingDone: true };
+  // Every sidebar event goes out as sendMessage({type:"TRACK", ...}), so
+  // recording them here is how a test can assert that a failure path REPORTS
+  // itself. Without this, a branch that silently does nothing and a branch
+  // that correctly emits a *_failed event look identical to the suite —
+  // which is the exact blind spot the 2026-08-04 silence audit found.
+  (window as unknown as { __outmassTracked: unknown[] }).__outmassTracked = [];
   (window as unknown as { chrome: unknown }).chrome = {
     runtime: {
       id: "test-extension-id",
@@ -28,7 +34,11 @@ export function installChromeStub() {
       getURL: (p: string) => p,
       // Callbacks fire with undefined so the UI settles deterministically
       // into its signed-out state instead of waiting forever.
-      sendMessage: (_msg: unknown, cb?: (r: unknown) => void) => {
+      sendMessage: (msg: unknown, cb?: (r: unknown) => void) => {
+        const m = msg as { type?: string };
+        if (m && m.type === "TRACK") {
+          (window as unknown as { __outmassTracked: unknown[] }).__outmassTracked.push(msg);
+        }
         if (typeof cb === "function") cb(undefined);
       },
       onMessage: { addListener: noop, removeListener: noop },

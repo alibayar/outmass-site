@@ -2,6 +2,14 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.1.28 — unreleased
+
+- **The panel button can no longer do nothing.** When OutMass updates itself, any Outlook tab you already had open quietly loses its connection to the extension until the page is refreshed. Clicking "Open Campaign Panel" in that tab used to do nothing at all, however many times you tried it, with no explanation. It now tells you to reload the Outlook tab — which is all it takes.
+- **Dropping the wrong file now tells you.** Dragging an Excel .xlsx file — or anything that isn't a CSV — onto the recipient box did absolutely nothing: no message, no hint, so the drop zone looked broken. It now says what happened and how to save your file as a CSV.
+- **Contacts.CSV works when you drag it.** Exports from a CRM or from Outlook often arrive with an uppercase .CSV extension. Those already worked when you picked them through the file browser, but were silently ignored when dragged in. Both routes now behave the same.
+- **A file that can't be read now says so** — instead of leaving you waiting for a preview that never arrives. This comes up with files on a disconnected network drive, or a USB stick that was unplugged.
+- **Reports says when it can't load your campaigns.** If the server had a problem, the list said "no campaigns found", which read as though your campaigns were gone. It now reports the error for what it is.
+
 ## v0.1.27 — 2026-07-29
 
 - **OutMass now speaks Portuguese.** The whole panel is available in Português (Brasil) and Português (Portugal) — two separate translations, not one shared approximation, so each reads the way you actually write. Pick either in Settings → Interface Language, or let OutMass follow your browser. The AI Email Writer can now draft in Portuguese too.

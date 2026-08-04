@@ -696,6 +696,12 @@
   "csvErrEncoding": {
     "message": "Este archivo no esta guardado como UTF-8; los caracteres no se pueden leer correctamente. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y sube ese archivo."
   },
+  "csvErrNotCsv": {
+    "message": "Ese archivo no es un CSV. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y arrastra aquí el archivo guardado."
+  },
+  "csvErrRead": {
+    "message": "No se pudo leer el archivo. Si está en una unidad de red o en una memoria USB, cópialo primero a tu equipo y vuelve a intentarlo."
+  },
   "alertBackendUnreachable": {
     "message": "OutMass no puede conectarse a sus servidores ahora mismo. Es un problema de conexion — no de tu cuenta ni de tu plan. Revisa tu conexion, VPN o firewall y vuelve a intentarlo en un momento."
   },

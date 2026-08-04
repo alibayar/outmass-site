@@ -10,6 +10,7 @@ POST /campaigns/{id}/send         → start sending
 import asyncio
 import csv
 import io
+import logging
 import re
 import urllib.parse
 from datetime import datetime, timedelta, timezone
@@ -837,6 +838,22 @@ async def _run_campaign_send(
                     await asyncio.sleep(SEND_DELAY_SECONDS)
 
         user_model.increment_sent_count(user["id"], sent_count)
+
+        # One line per finished send. The `errors` list was built through the
+        # whole loop and then died with the function: a batch where every
+        # single recipient was rejected 4xx by Graph produced no Railway line
+        # at any level, so "I sent a campaign and nobody got it" was
+        # unanswerable from the server side. Cheap and permanent.
+        logging.getLogger(__name__).warning(
+            "campaign %s finished: sent=%s failed=%s quota_capped=%s "
+            "token_expired=%s first_error=%s",
+            campaign_id,
+            sent_count,
+            len(errors),
+            quota_capped,
+            token_expired_midbatch,
+            errors[:1],
+        )
 
         if token_expired_midbatch:
             campaign_model.update_campaign(campaign_id, {"status": "partial"})

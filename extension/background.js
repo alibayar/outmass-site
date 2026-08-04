@@ -1238,6 +1238,13 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           var timer = setInterval(function () {
             attempts++;
             if (attempts > 16) {
+              // 24 seconds of asking and no content script ever answered. The
+              // user asked for the panel and is now looking at a plain Outlook
+              // tab. Common cause: the tab is parked on login.microsoftonline
+              // .com for MFA, which is not in content_scripts.matches, so
+              // nothing can ever ack. Giving up silently made this identical
+              // to never having clicked.
+              track("panel_open_gave_up", { attempts: attempts - 1 });
               clearInterval(timer);
               return;
             }

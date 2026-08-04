@@ -709,6 +709,12 @@
   "csvErrEncoding": {
     "message": "This file isn't saved as UTF-8, so its characters can't be read correctly. In Excel: File > Save As > choose 'CSV UTF-8 (Comma delimited)', then upload that file."
   },
+  "csvErrNotCsv": {
+    "message": "That file isn't a CSV. In Excel: File > Save As > choose 'CSV UTF-8 (Comma delimited)', then drag the saved file here."
+  },
+  "csvErrRead": {
+    "message": "That file couldn't be read. If it's on a network drive or a USB stick, copy it to your computer first, then try again."
+  },
   "alertBackendUnreachable": {
     "message": "OutMass can't reach its servers right now. This is a connection problem — not an issue with your account or plan. Check your internet connection, VPN or firewall, then try again in a moment."
   },

@@ -696,6 +696,12 @@
   "csvErrEncoding": {
     "message": "Diese Datei ist nicht als UTF-8 gespeichert; Zeichen koennen nicht korrekt gelesen werden. In Excel: Datei > Speichern unter > 'CSV UTF-8 (durch Trennzeichen getrennt)' waehlen und diese Datei hochladen."
   },
+  "csvErrNotCsv": {
+    "message": "Das ist keine CSV-Datei. In Excel: Datei > Speichern unter > 'CSV UTF-8 (Trennzeichen-getrennt)' auswählen und die gespeicherte Datei hierher ziehen."
+  },
+  "csvErrRead": {
+    "message": "Die Datei konnte nicht gelesen werden. Wenn sie auf einem Netzlaufwerk oder USB-Stick liegt, kopieren Sie sie zuerst auf Ihren Computer und versuchen Sie es erneut."
+  },
   "alertBackendUnreachable": {
     "message": "OutMass kann seine Server derzeit nicht erreichen. Das ist ein Verbindungsproblem — kein Problem mit Ihrem Konto oder Tarif. Pruefen Sie Internetverbindung, VPN oder Firewall und versuchen Sie es gleich erneut."
   },

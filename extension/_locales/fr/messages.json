@@ -696,6 +696,12 @@
   "csvErrEncoding": {
     "message": "Ce fichier n'est pas enregistre en UTF-8 ; les caracteres ne peuvent pas etre lus correctement. Dans Excel : Fichier > Enregistrer sous > choisissez 'CSV UTF-8 (delimite par des virgules)', puis importez ce fichier."
   },
+  "csvErrNotCsv": {
+    "message": "Ce fichier n'est pas un CSV. Dans Excel : Fichier > Enregistrer sous > choisissez « CSV UTF-8 (délimité par des virgules) », puis faites glisser le fichier enregistré ici."
+  },
+  "csvErrRead": {
+    "message": "Impossible de lire ce fichier. S'il se trouve sur un lecteur réseau ou une clé USB, copiez-le d'abord sur votre ordinateur, puis réessayez."
+  },
   "alertBackendUnreachable": {
     "message": "OutMass ne peut pas joindre ses serveurs pour le moment. C'est un probleme de connexion — pas un probleme de compte ou d'abonnement. Verifiez votre connexion, VPN ou pare-feu, puis reessayez dans un instant."
   },

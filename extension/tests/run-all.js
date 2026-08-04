@@ -8,6 +8,7 @@
  *   i18n-usage          — every literal t()/data-i18n key exists in en
  *   locale-variants     — script/regional purity (zh Simplified, pt_BR vs pt_PT)
  *   uninstall-stage     — funnel stage ladder carried on the uninstall URL
+ *   no-silent-dead-ends — rejection branches on the main journey must report
  *
  * A suite's run() may be sync or async — the result is awaited either way.
  *
@@ -21,6 +22,7 @@ const suites = [
   require("./i18n-usage.test.js"),
   require("./locale-variants.test.js"),
   require("./uninstall-stage.test.js"),
+  require("./no-silent-dead-ends.test.js"),
 ];
 
 async function main() {
