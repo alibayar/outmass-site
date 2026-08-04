@@ -135,6 +135,27 @@
     var stage = (params.get("stage") || "").slice(0, 40);
     var extVersion = (params.get("v") || "").slice(0, 20);
 
+    // Most people who land here close the tab without writing anything. If we
+    // only counted the ones who fill in the form, "where do we lose users"
+    // would be answered by the handful willing to type a sentence. So record
+    // the stage on arrival — and ONLY when a stage is present, which means
+    // Chrome opened this page from a registered uninstall URL. A plain visit
+    // to /uninstall.html is not an uninstall and is not counted.
+    if (stage) {
+      try {
+        fetch("https://outmass-production.up.railway.app/api/uninstall-seen", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify({
+            stage: stage,
+            version: extVersion,
+            user_agent: navigator.userAgent
+          })
+        }).catch(function () { /* the user is leaving; never surface this */ });
+      } catch (e) { /* ancient browser — not worth a fallback */ }
+    }
+
     reasons.addEventListener("click", function (e) {
       if (!e.target.classList.contains("reason-chip")) return;
       // Single-select: clear other chips

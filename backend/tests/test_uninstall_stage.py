@@ -158,3 +158,59 @@ def test_legacy_payload_without_stage_still_accepted(client):
     props = _capture_props(client, {"reason": "too_expensive", "user_agent": "Chrome"})
     assert props["stage"] == "unknown"
 
+
+# ── The arrival beacon ──
+
+
+def test_beacon_records_the_stage_without_any_feedback(client):
+    """The point of the beacon: churn is measured for everyone, not just the
+    minority who write a sentence."""
+    with patch.object(main, "POSTHOG_API_KEY", "ph-test"), \
+         patch.object(main, "posthog") as ph:
+        resp = client.post(
+            "/api/uninstall-seen",
+            json={"stage": "signin_clicked", "version": "0.1.28"},
+        )
+
+    assert resp.status_code == 200
+    assert resp.json()["status"] == "received"
+    kwargs = ph.capture.call_args.kwargs
+    assert kwargs["event"] == "extension_uninstall_page", (
+        "the beacon must not reuse the feedback event name — it would inflate "
+        "the reason breakdown with empty reasons"
+    )
+    assert kwargs["properties"]["stage"] == "signin_clicked"
+
+
+def test_beacon_ignores_visits_without_a_stage(client):
+    """A stage is only present when Chrome opened the page from a registered
+    uninstall URL. Anyone browsing to /uninstall.html — including us, testing
+    — must not be counted as churn."""
+    for payload in ({}, {"stage": ""}, {"stage": "not_a_stage"}):
+        with patch.object(main, "POSTHOG_API_KEY", "ph-test"), \
+             patch.object(main, "posthog") as ph:
+            resp = client.post("/api/uninstall-seen", json=payload)
+        assert resp.json()["status"] == "ignored", payload
+        assert not ph.capture.called, payload
+
+
+def test_beacon_never_pages_anyone(client):
+    """Telegram stays for real feedback. One ping per uninstall page load
+    would train us to ignore the channel that currently carries payment
+    failures."""
+    with patch.object(main, "TELEGRAM_BOT_TOKEN", "tok"), \
+         patch.object(main, "TELEGRAM_CHAT_ID", "chat"), \
+         patch.object(main.httpx, "post") as post:
+        client.post("/api/uninstall-seen", json={"stage": "sent", "version": "0.1.28"})
+
+    assert not post.called
+
+
+def test_beacon_page_fires_only_when_a_stage_is_present():
+    """The guard lives in the page, not just the backend — a beacon on every
+    visit would still cost a request and show up in the network tab."""
+    page = (REPO_ROOT / "docs" / "uninstall.html").read_text(encoding="utf-8")
+    assert "/api/uninstall-seen" in page, "the page no longer sends the beacon"
+    assert re.search(r"if \(stage\) \{", page), (
+        "the beacon is no longer gated on a stage being present"
+    )

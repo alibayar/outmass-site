@@ -352,6 +352,49 @@ async def uninstall_feedback(body: UninstallFeedback):
     return {"status": "received"}
 
 
+class UninstallSeen(BaseModel):
+    stage: str | None = None
+    version: str | None = None
+    user_agent: str | None = None
+
+
+@app.post("/api/uninstall-seen")
+async def uninstall_seen(body: UninstallSeen):
+    """Record that an uninstall happened, whether or not they tell us why.
+
+    The feedback form above only fires for the minority who fill it in, so
+    until now churn was measured by the subset willing to write a sentence.
+    This records the stage for everyone — which is the number that answers
+    "where do we lose people", the question the form was never going to
+    answer at our volume.
+
+    Deliberately narrow: no Telegram (that stays for actual feedback), no
+    identifiers, and it only fires when a stage is present. A stage only
+    exists if Chrome opened this page from a registered uninstall URL, so
+    ordinary visits — including our own testing — never count as churn.
+    """
+    stage = _clean_stage(body.stage)
+    if stage in ("unknown", "invalid"):
+        return {"status": "ignored"}
+
+    version = (body.version or "").strip()[:20]
+    ua = (body.user_agent or "").strip()[:200]
+
+    if POSTHOG_API_KEY:
+        posthog.capture(
+            distinct_id="uninstalled-anonymous",
+            event="extension_uninstall_page",
+            properties={
+                "stage": stage,
+                "extension_version": version or "unknown",
+                "user_agent": ua,
+            },
+        )
+
+    logger.info("Uninstall page: stage=%s version=%s", stage, version or "unknown")
+    return {"status": "received"}
+
+
 # ── Manual report trigger (diagnostics) ──
 @app.post("/api/admin/trigger-report")
 async def trigger_report(
