@@ -36,7 +36,7 @@ Mail merge, A/B, AI writer — inside Outlook
 
 **Option B (positioning):**
 ```
-GMass for Outlook — in 10 languages
+GMass for Outlook — in 13 languages
 ```
 
 **Option C (founder voice):**
@@ -49,7 +49,7 @@ Turn Outlook Web into a cold-outreach machine
 ### Description (260 chars for cards, longer body below)
 
 ```
-OutMass adds a sidebar to Outlook Web that handles everything cold outreach: CSV mail merge, scheduled sending, A/B subject tests, auto follow-ups, open + click tracking, and a Claude-powered AI writer. Works with Microsoft 365 and Outlook.com. From $9/mo.
+OutMass adds a sidebar to Outlook Web that handles everything cold outreach: CSV mail merge, scheduled sending, A/B subject tests, auto follow-ups, open + click tracking, and an AI email writer. Works with Microsoft 365 and Outlook.com. From $9/mo.
 ```
 
 ### Gallery (upload in this order — first is hero)
@@ -106,17 +106,17 @@ Outlook Web with everything a cold-email tool should have:
   • Mail merge from CSV with {{firstName}} / {{company}} / any column
   • Subject A/B testing (Pro)
   • Open + click tracking, unsubscribe handling
-  • Scheduled sending across time zones
+  • Scheduled sending
   • Auto follow-ups for non-openers
-  • AI email writer powered by Claude (Pro)
-  • 10 UI languages including Arabic RTL
+  • AI email writer (Pro)
+  • 13 UI languages including Arabic RTL
 
 Under the hood, it sends through your own Microsoft Graph API (OAuth 2.0) 
 — we never store email contents, we don't proxy through our servers, 
 your Outlook account stays entirely yours. No deliverability surprises.
 
-Pricing is deliberately undercut: $9/mo Starter (2k emails), $19/mo Pro 
-(10k emails + AI + A/B). Free forever at 50/month.
+Pricing is deliberately undercut: $9/mo Starter (2,500 emails), $19/mo Pro 
+(10,000 emails + AI + A/B). Free forever at 250/month.
 
 I'd love your feedback — especially from anyone who's tried mail-merging 
 in Outlook and given up. What features would unlock this for your team?
@@ -149,7 +149,7 @@ GMass. Both legit, different stacks.
 
 ### Q2: "Is the AI writer good?"
 ```
-It's Claude (Sonnet for quality). You give it a target persona + 
+It runs on a frontier language model. You give it a target persona + 
 campaign goal, it drafts subject + body with merge tags pre-filled. 
 50 generations/month on Pro. Honest take: I use it as a starting 
 point about 60% of the time, still manually edit before sending. 
@@ -224,7 +224,7 @@ All times in **Istanbul (UTC+3)**. PH day starts at 11:01 Istanbul.
 
 ### T-0 to T+4h (the critical window — 11:01 to 15:00 Istanbul)
 - [ ] **11:01** — PH goes live, post the first comment immediately
-- [ ] **11:05** — Tweet: "Launching OutMass on Product Hunt today! [link]. 10 languages, mail merge for Outlook. Would love your support 🙏"
+- [ ] **11:05** — Tweet: "Launching OutMass on Product Hunt today! [link]. 13 languages, mail merge for Outlook. Would love your support 🙏"
 - [ ] **11:10** — LinkedIn post with the same message + 2-3 screenshots
 - [ ] **11:15** — Post in relevant Discord/Slack communities (Indie Hackers, Turkish Founders, Startup School, etc.)
 - [ ] **11:30–15:00** — Check PH every 10 minutes. Reply to every comment within 15 minutes. Upvote replies to your comments.

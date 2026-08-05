@@ -165,6 +165,21 @@ if (fs.existsSync(descDir)) {
   }
 }
 
+// Same rule, one directory up. `edge-description-en.txt` sat here since June
+// and was never validated by anything: on 2026-08-05 it still advertised
+// "10 UI languages", "across time zones" and "Claude-powered" — all three
+// removed from every other file by the 07-15 audit. It looked exactly like a
+// paste source, in the directory whose whole purpose is paste sources, and
+// pasting it would have reintroduced the lot. Nothing loose belongs here.
+const loose = fs.readdirSync(__dirname).filter((f) => f.endsWith(".txt"));
+for (const f of loose) {
+  err(
+    "store-listing",
+    `${f} is an unvalidated paste source — listings.json is the only source of ` +
+    `truth and descriptions/ the only output. Delete it or fold it into listings.json.`
+  );
+}
+
 if (fail) {
   console.error(`\n${fail} problem(s).`);
   process.exit(1);

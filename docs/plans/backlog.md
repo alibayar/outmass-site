@@ -341,7 +341,30 @@ with zero output, so the usual multi-lens review could not run on this half.
 Verification was: 4 extension suites + a wide one-off character/vocabulary
 audit + structural parity check against en.
 
-### ⬜ FALSE CLAIM on the live pricing page: "Traditional Chinese" — now fixable (2026-07-29)
+### ✅ FALSE CLAIM on the live pricing page: "Traditional Chinese" — DONE 2026-08-05
+**Closed the day Chrome published 0.1.27**, per claims-follow-product. Ali
+approved; `docs/pricing.html` now says 13 in all four places and the
+"joined at a user's request" anecdote is gone (it was never true).
+
+Three counts turned out to be different, and the old copy claimed one number
+for all three — each verified against the code, not assumed:
+- **interface: 13** — options in `sidebar.html`'s language `<select>`, minus Auto
+- **AI Writer: 12** — options built in `sidebar.js` (`aiLang*`)
+- **unsubscribe pages: 12** — keys in `_UNSUB_STRINGS`, `backend/routers/tracking.py`
+
+Both 12s differ from 13 for the same reason (Portuguese is offered once, not
+twice), so the FAQ explains it in one clause instead of three numbers.
+
+Found while doing it: **`docs/store-listing/edge-description-en.txt`** had sat
+unvalidated since June and still advertised "10 UI languages", "across time
+zones" AND "Claude-powered" — every claim the 07-15 audit removed elsewhere —
+in the one directory whose purpose is paste sources. Deleted (superseded by
+`descriptions/en.txt`); `check-limits.js` now fails on ANY loose `.txt` there.
+`docs/launch/producthunt.md` carried the same three plus "Free forever at
+50/month" (real free tier is **250**) and "Starter 2k" (real: **2,500**) —
+all corrected.
+
+Original plan (for history):
 **Update 2026-07-30: the claim is about to become TRUE** — 0.1.27 ships a real
 Traditional translation. So the page no longer needs the claim removed, only
 corrected: the count and the list. Honest post-publish wording: **13 interface
