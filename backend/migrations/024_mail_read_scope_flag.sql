@@ -17,10 +17,24 @@
 -- to a user who granted Mail.Read at sign-in, so backfill is automatic and
 -- correct. New rows get their value written explicitly by _persist_ms_tokens.
 --
--- Safe to run more than once. Reversible:
---   ALTER TABLE user_tokens DROP COLUMN has_mail_read_scope;
--- (Dropping it while the code still reads it makes refreshes fall back to the
--- full scope set — the current behaviour — so a rollback is not destructive.)
+-- Safe to run more than once.
+--
+-- DO NOT DROP THIS COLUMN. An earlier version of this comment called
+-- `ALTER TABLE user_tokens DROP COLUMN has_mail_read_scope` a safe reversal.
+-- It is not, and the 2026-08-06 review proved why:
+--
+--   * Before the flag is ever flipped, dropping it is merely pointless — the
+--     code's missing-column guard swallows the error and every user keeps the
+--     full scope set, which is what the column would have said anyway.
+--   * AFTER the flag has been flipped and narrow users exist, dropping it
+--     ERASES the only record of who consented to what. Those users' refresh
+--     requests then ask for Mail.Read they never granted, Microsoft answers
+--     AADSTS65001, and the ENTIRE refresh fails — every background send stops
+--     for them, silently, with the guard hiding the cause.
+--
+-- The column is one boolean on one row per user. There is no scenario where
+-- removing it is worth that. If the feature is abandoned, set
+-- FIRST_SIGNIN_INCLUDE_MAIL_READ=true and leave the column in place.
 
 ALTER TABLE user_tokens
     ADD COLUMN IF NOT EXISTS has_mail_read_scope BOOLEAN NOT NULL DEFAULT TRUE;
