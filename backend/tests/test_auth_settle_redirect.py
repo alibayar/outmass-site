@@ -43,6 +43,91 @@ def test_fragment_never_comes_back_empty():
     assert _settle_fragment("<>&$") == "Sign-in failed, please try again"
 
 
+# ── PII must never reach the fragment ──
+#
+# Caught by the 2026-08-06 pre-deploy adversarial review, both skeptics
+# confirming: the first version derived the fragment from the page message —
+# Microsoft's error_description — and the character sanitizer deleted the '@'
+# in "User account 'victim@customer.com'" while keeping the parts, shipping
+# 'victimcustomer.com' into PostHog and every client within the 64-char cap.
+# The repo already had this invariant for the TELEMETRY pipe
+# (test_oauth_failure_telemetry.py); the settle redirect was a second pipe
+# without the filter.
+
+_LEAKY_DESCRIPTION = (
+    "AADSTS50020: User account 'victim@customer.com' from identity provider "
+    "'live.com' does not exist in tenant 'Contoso Ltd'."
+)
+
+
+def _settle_url_of(html: str) -> str:
+    import re as _re
+
+    m = _re.search(r'location\.replace\("([^"]+)"\)', html)
+    assert m, "no settle redirect found in the page"
+    return m.group(1)
+
+
+def test_fragment_carries_the_class_never_the_user(client):
+    resp = client.get(
+        "/auth/callback",
+        params={
+            "error": "access_denied",
+            "error_description": _LEAKY_DESCRIPTION,
+            "state": _encode_state(CHROME_EXT),
+        },
+    )
+    url = _settle_url_of(resp.text)
+    assert "victim" not in url and "customer" not in url and "Contoso" not in url, (
+        "the settle fragment leaked the user's address or tenant — it must be "
+        "built from the classifier, never from the description"
+    )
+    assert "AADSTS50020" in url, "the class code is the whole point — keep it"
+
+
+def test_fragment_is_identical_across_users(client):
+    """One distinct fragment per user would shatter the PostHog grouping the
+    property exists for — tenant-mismatch failures would become uncountable."""
+    urls = []
+    for who in ("alice@corp-a.com", "bob@corp-b.org"):
+        resp = client.get(
+            "/auth/callback",
+            params={
+                "error": "access_denied",
+                "error_description": f"AADSTS50020: User account '{who}' does not exist in tenant 'X'.",
+                "state": _encode_state(CHROME_EXT),
+            },
+        )
+        urls.append(_settle_url_of(resp.text))
+    assert urls[0] == urls[1]
+
+
+def test_page_message_may_still_show_the_description(client):
+    """The page renders only in the user's own window — their own address is
+    fine THERE. The separation is message→page, class→fragment."""
+    resp = client.get(
+        "/auth/callback",
+        params={
+            "error": "access_denied",
+            "error_description": _LEAKY_DESCRIPTION,
+            "state": _encode_state(CHROME_EXT),
+        },
+    )
+    assert "victim@customer.com" in resp.text
+
+
+def test_forgotten_fragment_degrades_to_generic_not_to_message():
+    """Structural safety: a future call site that passes only the message must
+    produce the generic sentence, never a derivative of the message."""
+    from routers.auth import _error_page
+
+    resp = _error_page(_LEAKY_DESCRIPTION, state=_encode_state(CHROME_EXT))
+    body = resp.body.decode("utf-8")
+    url = _settle_url_of(body)
+    assert "victim" not in url and "AADSTS50020" not in url
+    assert "Sign-in+failed" in url
+
+
 # ── the error page ──
 
 

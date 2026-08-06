@@ -469,23 +469,37 @@ async def auth_callback(
     then redirects to extension with OutMass JWT in URL fragment.
     """
     if error:
+        classified = _classify_ms_error(error, error_description)
         _track_ms_auth_failed(
-            state,
-            "authorize",
-            _classify_ms_error(error, error_description),
-            host=_request_host(request),
+            state, "authorize", classified, host=_request_host(request)
         )
-        return _error_page(error_description or error, state=state)
+        # The PAGE may show Microsoft's full description — it renders only in
+        # the user's own window. The FRAGMENT may not: it becomes a PostHog
+        # property and a client-side string, and descriptions embed the
+        # user's address and tenant name ("User account 'x@y.com' from...").
+        return _error_page(
+            error_description or error,
+            state=state,
+            fragment=_ms_settle_code(classified, fallback=error),
+        )
 
     if not code:
         _track_ms_auth_failed(
             state, "authorize", {"error": "no_code"}, host=_request_host(request)
         )
-        return _error_page("No authorization code received", state=state)
+        return _error_page(
+            "No authorization code received",
+            state=state,
+            fragment="No authorization code received",
+        )
 
     if not AZURE_CLIENT_SECRET:
+        # The env-var name belongs on the operator-facing page, not in every
+        # client's telemetry.
         return _error_page(
-            "Server misconfigured: AZURE_CLIENT_SECRET not set", state=state
+            "Server misconfigured: AZURE_CLIENT_SECRET not set",
+            state=state,
+            fragment="Sign-in failed on our server, please retry",
         )
 
     # Exchange code for tokens using Web platform (client_secret)
@@ -519,24 +533,28 @@ async def auth_callback(
             )
         except httpx.HTTPError as e:
             logger.error("Token exchange network error: %s", e)
-            return _error_page("Could not reach Microsoft", state=state)
+            return _error_page(
+                "Could not reach Microsoft",
+                state=state,
+                fragment="Could not reach Microsoft, please retry",
+            )
 
     if token_resp.status_code != 200:
         err = token_resp.json() if token_resp.content else {}
         logger.error("Token exchange failed: %s %s", token_resp.status_code, err)
+        classified = _classify_ms_error(
+            err.get("error"), err.get("error_description")
+        )
         _track_ms_auth_failed(
             state,
             "token_exchange",
             host=_request_host(request),
-            fields={
-                "status": token_resp.status_code,
-                **_classify_ms_error(
-                    err.get("error"), err.get("error_description")
-                ),
-            },
+            fields={"status": token_resp.status_code, **classified},
         )
         return _error_page(
-            err.get("error_description", "Token exchange failed"), state=state
+            err.get("error_description", "Token exchange failed"),
+            state=state,
+            fragment=_ms_settle_code(classified, fallback="Token exchange failed"),
         )
 
     tokens = token_resp.json()
@@ -544,7 +562,11 @@ async def auth_callback(
     refresh_token = tokens.get("refresh_token")
 
     if not access_token:
-        return _error_page("No access token received", state=state)
+        return _error_page(
+            "No access token received",
+            state=state,
+            fragment="No access token received",
+        )
 
     # Fetch user profile
     async with httpx.AsyncClient() as client:
@@ -555,7 +577,11 @@ async def auth_callback(
 
     if profile_resp.status_code != 200:
         logger.error("Profile fetch failed: %s", profile_resp.text)
-        return _error_page("Could not fetch user profile", state=state)
+        return _error_page(
+            "Could not fetch user profile",
+            state=state,
+            fragment="Could not fetch user profile",
+        )
 
     profile = profile_resp.json()
     ms_id = profile.get("id", "")
@@ -563,7 +589,11 @@ async def auth_callback(
     name = profile.get("displayName", "")
 
     if not ms_id or not email:
-        return _error_page("Incomplete user profile from Microsoft", state=state)
+        return _error_page(
+            "Incomplete user profile from Microsoft",
+            state=state,
+            fragment="Incomplete user profile from Microsoft",
+        )
 
     # Upsert user in DB
     user, created = user_model.upsert_user(
@@ -678,6 +708,30 @@ async def auth_callback(
 _SETTLE_DELAY_MS = 9000
 
 
+def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
+    """A class-stable, PII-free settle fragment for a Microsoft-side error.
+
+    The raw error_description must NEVER feed the fragment: it embeds the
+    user's address and tenant ("User account 'x@y.com' from identity
+    provider..."), and the character sanitizer downstream deletes the '@'
+    but keeps the parts — 'xy.com' inside the 64-char cap. That is a PII
+    leak into PostHog and every client, and it also shatters the grouping
+    the fragment exists for (one distinct code per user). This helper is
+    built ONLY from the classifier's outputs: the AADSTS number and our own
+    meaning vocabulary. Underscores become spaces — '_' is deliberately
+    outside the sanitizer alphabet so the fragment can never collide with
+    the sidebar's exact-match "session_expired" handling.
+    """
+    aadsts = classified.get("aadsts") or ""
+    meaning = (classified.get("meaning") or "").replace("_", " ")
+    if aadsts:
+        if meaning and meaning != "unclassified":
+            return f"{aadsts}: {meaning}"
+        return f"Sign-in failed ({aadsts})"
+    err = (fallback or "").replace("_", " ").strip()
+    return f"Sign-in failed ({err})" if err else "Sign-in failed, please try again"
+
+
 def _settle_fragment(message: str) -> str:
     """The error string carried back to the extension in the URL fragment.
 
@@ -696,7 +750,9 @@ def _settle_fragment(message: str) -> str:
     return (clean or "Sign-in failed, please try again")[:64]
 
 
-def _error_page(message: str, state: str | None = None) -> HTMLResponse:
+def _error_page(
+    message: str, state: str | None = None, fragment: str | None = None
+) -> HTMLResponse:
     """HTML error page shown in the auth popup when sign-in fails.
 
     Until 2026-08-05 this page simply sat there. That had a nasty side
@@ -720,6 +776,16 @@ def _error_page(message: str, state: str | None = None) -> HTMLResponse:
     JSON), and redirecting to an arbitrary <id>.chromiumapp.org would hang
     a foreign browser's popup on an unresolvable address. No valid state →
     no redirect → exactly the old behaviour.
+
+    `message` and `fragment` are STRUCTURALLY separate on purpose. The page
+    message renders only in the user's own window and may carry Microsoft's
+    full description; the fragment becomes a PostHog property and a string
+    inside every client, so it must be class-stable and PII-free. The
+    pre-deploy adversarial review (2026-08-06) caught the first version of
+    this function deriving the fragment FROM the message — which walked
+    "User account 'x@y.com'..." straight into telemetry with only the '@'
+    removed. `message` must never feed the fragment again; a call site that
+    forgets to pass one gets a generic sentence, not a leak.
     """
     safe_message = (
         message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
@@ -728,7 +794,9 @@ def _error_page(message: str, state: str | None = None) -> HTMLResponse:
     if settle_ext:
         settle_url = (
             f"https://{settle_ext}.chromiumapp.org/auth#"
-            + urllib.parse.urlencode({"error": _settle_fragment(message)})
+            + urllib.parse.urlencode(
+                {"error": _settle_fragment(fragment or "")}
+            )
         )
         footer = "<p>This window will return to OutMass in a few seconds.</p>"
         settle_script = (
