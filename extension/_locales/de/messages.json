@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Ein Microsoft-Anmeldefenster ist bereits geöffnet. Prüfen Sie Ihre anderen Fenster oder die Taskleiste — es könnte hinter Outlook liegen."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "Das Microsoft-Anmeldefenster ist noch offen. Schließen Sie die Anmeldung dort ab oder schließen Sie das Fenster und beginnen Sie neu."
+  },
+  "authStillWorking": {
+    "message": "Anmeldung läuft noch? Wenn Ihre Organisation für neue Apps eine Administratorgenehmigung verlangt, weist Microsoft auf diesem Bildschirm darauf hin."
+  }}

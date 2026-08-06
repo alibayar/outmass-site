@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "已經有一個 Microsoft 登入視窗開啟中。請檢查其他視窗或工作列——它可能被 Outlook 視窗擋住了。"
-  }
-}
+  },
+  "authTimeout": {
+    "message": "Microsoft 登入視窗仍然開著。您可以在該視窗完成登入，或關閉後重新開始。"
+  },
+  "authStillWorking": {
+    "message": "還在登入嗎？如果貴單位規定新應用程式須經管理員核准，Microsoft 會在該畫面上說明。"
+  }}

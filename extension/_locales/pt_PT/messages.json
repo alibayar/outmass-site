@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Já está aberta uma janela de início de sessão da Microsoft. Verifique as suas outras janelas ou a barra de tarefas — pode estar atrás do Outlook."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "A janela de início de sessão da Microsoft ainda está aberta. Conclua o início de sessão aí ou feche a janela e comece de novo."
+  },
+  "authStillWorking": {
+    "message": "Ainda a iniciar sessão? Se a sua organização exige aprovação do administrador para novas aplicações, a Microsoft indica-o nesse ecrã."
+  }}

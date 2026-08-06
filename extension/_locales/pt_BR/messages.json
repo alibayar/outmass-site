@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Uma janela de login da Microsoft já está aberta. Verifique suas outras janelas ou a barra de tarefas — ela pode estar atrás do Outlook."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "A janela de login da Microsoft ainda está aberta. Conclua o login por lá ou feche a janela e comece de novo."
+  },
+  "authStillWorking": {
+    "message": "Ainda entrando? Se a sua organização exige aprovação do administrador para novos aplicativos, a Microsoft avisa nessa tela."
+  }}

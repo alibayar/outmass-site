@@ -191,6 +191,11 @@
     if (code === "consent_declined") return t("authErrorConsent");
     if (code === "auth_page_failed") return t("authErrorPageLoad");
     if (code === "auth_window_already_open") return t("authWindowAlreadyOpen");
+    // Not a failure: the 5-minute ceiling released the UI while the Microsoft
+    // window is still open and still usable. Shipped 0.1.27 with a hardcoded
+    // English string and no mapping here, so a non-English user got an
+    // untranslated sentence that also told them the wrong thing.
+    if (code === "auth_timeout") return t("authTimeout");
     return (resp && resp.error) || t("popupUnknownError");
   }
 

@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "A Microsoft sign-in window is already open. Check your other windows or taskbar — it may be hiding behind Outlook."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "The Microsoft sign-in window is still open. Finish signing in there, or close it and start again."
+  },
+  "authStillWorking": {
+    "message": "Still signing in? If your organisation requires admin approval for new apps, Microsoft will say so on that screen."
+  }}

@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "已有一个 Microsoft 登录窗口处于打开状态。请检查其他窗口或任务栏——它可能被 Outlook 窗口挡住了。"
-  }
-}
+  },
+  "authTimeout": {
+    "message": "Microsoft 登录窗口仍然打开。可以在那里完成登录，或者关闭它重新开始。"
+  },
+  "authStillWorking": {
+    "message": "还在登录吗？如果贵单位要求新应用须经管理员批准，Microsoft 会在该页面上说明。"
+  }}

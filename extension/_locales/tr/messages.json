@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Bir Microsoft oturum açma penceresi zaten açık. Diğer pencerelerinizi veya görev çubuğunu kontrol edin — Outlook'un arkasında kalmış olabilir."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "Microsoft oturum açma penceresi hâlâ açık. Girişi orada tamamlayabilir ya da pencereyi kapatıp yeniden başlayabilirsiniz."
+  },
+  "authStillWorking": {
+    "message": "Giriş sürüyor mu? Kurumunuz yeni uygulamalar için yönetici onayı istiyorsa Microsoft bunu o ekranda belirtir."
+  }}

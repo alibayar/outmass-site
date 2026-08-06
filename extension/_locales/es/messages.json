@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Ya hay una ventana de inicio de sesión de Microsoft abierta. Revisa tus otras ventanas o la barra de tareas — puede estar oculta detrás de Outlook."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "La ventana de inicio de sesión de Microsoft sigue abierta. Termina de iniciar sesión ahí, o ciérrala y vuelve a empezar."
+  },
+  "authStillWorking": {
+    "message": "¿Sigues iniciando sesión? Si tu organización exige aprobación del administrador para nuevas aplicaciones, Microsoft lo indicará en esa pantalla."
+  }}

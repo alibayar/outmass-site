@@ -415,8 +415,15 @@ async function _startMSLoginInner(includeOneDrive) {
       if (settled) return;
       settled = true;
       track("oauth_failed", failureContext({ reason: "auth_timeout" }));
+      // The old text here said "timed out, please try again", which was
+      // simply untrue: this timeout releases the UI, it does NOT cancel the
+      // flow. The Microsoft window is still open and still works — finishing
+      // in it lands the tokens through handleResult below. Telling the user
+      // to "try again" pushed them away from a session that was fine.
+      // The localized key says both options; the English string stays as the
+      // fallback for a t() that somehow returns nothing.
       resolve({
-        error: "Sign-in window timed out. Please try again.",
+        error: "The Microsoft sign-in window is still open. Finish signing in there, or close it and start again.",
         errorCode: "auth_timeout",
       });
     }, AUTH_FLIGHT_TIMEOUT_MS);

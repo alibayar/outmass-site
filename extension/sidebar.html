@@ -33,6 +33,17 @@
     </button>
   </div>
 
+  <!-- Shown ~60s into a pending sign-in. NOT an error and deliberately not an
+       alert(): an alert would steal focus from the Microsoft window the user
+       is actively working in. Names the one thing that most often blocks a
+       first sign-in silently — an org requiring admin approval — because the
+       user cannot infer that from Microsoft's screen alone. -->
+  <div class="reauth-banner" id="signin-hint" style="display:none;">
+    <span class="reauth-banner-text" data-i18n="authStillWorking">
+      Still signing in? If your organisation requires admin approval for new apps, Microsoft will say so on that screen.
+    </span>
+  </div>
+
   <!-- High-priority announcement strip (reuses reauth-banner styling) -->
   <div class="announce-strip" id="announce-strip" style="display:none;">
     <span class="announce-strip-text" id="announce-strip-text"></span>

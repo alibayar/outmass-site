@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Microsoft のサインインウィンドウは既に開いています。他のウィンドウやタスクバーを確認してください — Outlook の後ろに隠れている可能性があります。"
-  }
-}
+  },
+  "authTimeout": {
+    "message": "Microsoft のサインイン ウィンドウはまだ開いています。そのウィンドウでサインインを完了するか、閉じてやり直してください。"
+  },
+  "authStillWorking": {
+    "message": "サインインは進行中ですか？組織が新しいアプリに管理者の承認を必要とする場合、Microsoft がその画面で通知します。"
+  }}

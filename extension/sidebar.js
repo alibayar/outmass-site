@@ -119,6 +119,26 @@
     }
   }
 
+  // ── Pending sign-in hint ──
+  //
+  // The 5-minute auth ceiling releases the UI but says nothing while the user
+  // is actually stuck; on 2026-08-06 an Indonesian first-timer sat in that
+  // window for the full 300s and left. This fills the silence at 60s without
+  // interrupting: inline text, never an alert (an alert would pull focus off
+  // the Microsoft window they are working in), and it never claims failure.
+  function showSigninHintAfter(delayMs) {
+    return setTimeout(function () {
+      var el = document.getElementById("signin-hint");
+      if (el) el.style.display = "";
+    }, delayMs);
+  }
+
+  function clearSigninHint(timer) {
+    if (timer) clearTimeout(timer);
+    var el = document.getElementById("signin-hint");
+    if (el) el.style.display = "none";
+  }
+
   var reauthBtn = document.getElementById("reauth-banner-btn");
   if (reauthBtn) {
     reauthBtn.addEventListener("click", function () {
@@ -127,7 +147,14 @@
       // Fresh OAuth flow. On success, backend clears the flag; on next
       // GET_SETTINGS, banner hides.
       track("signin_clicked", { context: "reauth_banner" });
+      // A sign-in that is still pending after a minute means the user is
+      // stuck on Microsoft's own pages — the state we cannot instrument and
+      // the biggest measured leak in the funnel. We can at least name the
+      // usual cause while they are still looking at it. Cleared on every
+      // exit path below so it can never outlive the attempt.
+      var hintTimer = showSigninHintAfter(60000);
       chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+        clearSigninHint(hintTimer);
         reauthBtn.disabled = false;
         reauthBtn.textContent = t("reauthBannerCta");
         if (resp && resp.error) {
@@ -135,6 +162,7 @@
           alert(ac === "consent_declined" ? t("authErrorConsent")
               : ac === "auth_page_failed" ? t("authErrorPageLoad")
               : ac === "auth_window_already_open" ? t("authWindowAlreadyOpen")
+              : ac === "auth_timeout" ? t("authTimeout")
               : t("reauthFailed", [resp.error]));
           return;
         }
@@ -472,7 +500,9 @@
       var prevLabel = btn.textContent;
       btn.disabled = true;
       track("signin_clicked", { context: "sending_as" });
+      var hintTimer = showSigninHintAfter(60000);
       chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+        clearSigninHint(hintTimer);
         btn.disabled = false;
         btn.textContent = prevLabel;
         // A sign-in window from an earlier click is still open somewhere —

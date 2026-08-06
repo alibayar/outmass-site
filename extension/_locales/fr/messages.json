@@ -1083,5 +1083,10 @@
   },
   "authWindowAlreadyOpen": {
     "message": "Une fenêtre de connexion Microsoft est déjà ouverte. Vérifiez vos autres fenêtres ou la barre des tâches — elle est peut-être cachée derrière Outlook."
-  }
-}
+  },
+  "authTimeout": {
+    "message": "La fenêtre de connexion Microsoft est toujours ouverte. Terminez la connexion dans cette fenêtre, ou fermez-la et recommencez."
+  },
+  "authStillWorking": {
+    "message": "Connexion toujours en cours ? Si votre organisation exige l'approbation d'un administrateur pour les nouvelles applications, Microsoft l'indiquera sur cet écran."
+  }}
