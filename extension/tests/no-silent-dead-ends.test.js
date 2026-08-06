@@ -108,6 +108,37 @@ function run() {
     "FileReader has no error handler — an unreadable file (network share, " +
     "pulled USB stick) leaves the user waiting for a preview that never comes"
   );
+  // ── content script: the first-run auto-open must be a ONE-SHOT ──
+  //
+  // Not a silence bug but the same "cannot be reproduced in a harness" class:
+  // this only runs inside a real Outlook page on a real first install. The
+  // invariant is that the flag is cleared BEFORE the panel is shown. Get it
+  // backwards — or clear it in a callback that never fires — and the panel
+  // reopens on every single page load, forever, with no way for the user to
+  // make it stop. That is far worse than the missed first run it fixes.
+  const contentScript = read("content_script.js");
+  const autoOpen = /firstRunAutoOpen[\s\S]{0,400}/.exec(contentScript);
+  check(autoOpen !== null, "the first-run auto-open block is gone");
+  if (autoOpen) {
+    const clearAt = contentScript.indexOf("firstRunAutoOpen: false");
+    const showAt = contentScript.indexOf("showSidebar()", clearAt);
+    check(
+      clearAt > -1,
+      "the first-run flag is never cleared — the panel would reopen on every " +
+      "page load, forever, and the user could not stop it"
+    );
+    check(
+      clearAt > -1 && showAt > clearAt,
+      "the panel is shown BEFORE the one-shot flag is cleared — if the write " +
+      "fails or the page unloads first, auto-open becomes permanent"
+    );
+  }
+  check(
+    contentScript.includes("outlook_reached"),
+    "the arrival milestone is gone — 32 of 97 installs stall before the panel " +
+    "and this event is the only thing that says whether they reached Outlook"
+  );
+
   check(
     sidebar.includes("reports_load_failed"),
     "the Reports load-failure branch is unreported again — a backend fault " +

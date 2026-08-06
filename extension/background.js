@@ -101,6 +101,11 @@ chrome.runtime.onInstalled.addListener(function (details) {
       accessToken: null,
       refreshToken: null,
       expiresAt: null,
+      // Arms the one-shot auto-open in content_script.js: the first Outlook
+      // tab this install sees opens the panel by itself. Set ONLY on a real
+      // first install — an update must never reopen the panel on someone who
+      // deliberately keeps it closed.
+      firstRunAutoOpen: true,
     });
     // First-run welcome tab: without it a fresh install is pure silence —
     // the user must guess to open Outlook Web and find the round button.

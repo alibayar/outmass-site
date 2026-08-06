@@ -4,6 +4,7 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 ## v0.1.28 — unreleased
 
+- **The panel opens itself the first time you reach Outlook.** After installing, you no longer have to hunt for the round OutMass button in the corner — open Outlook once and the campaign panel is already there. It happens exactly once; after that the panel opens only when you ask for it.
 - **A slow sign-in no longer gets told it failed.** If the Microsoft window stayed open for five minutes, OutMass used to say "sign-in timed out, please try again" — untrue, because that window is still open and still works. It now tells you both options, in your own language (the message was English-only before).
 - **A hint while you're signing in.** If a sign-in is still going after a minute, the panel quietly notes that an organisation requiring admin approval for new apps will say so on Microsoft's screen — the single most common reason a first sign-in stalls, and something Microsoft's page doesn't spell out.
 - **Clicking Sign in again now brings the sign-in window to the front.** If the Microsoft window opened behind Outlook or on another screen, clicking Sign in again used to only tell you a window was open somewhere. Now it also brings that window forward.

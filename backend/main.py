@@ -273,6 +273,7 @@ class UninstallFeedback(BaseModel):
 _UNINSTALL_STAGES = frozenset(
     {
         "installed",
+        "outlook_reached",
         "onboarded",
         "panel_opened",
         "signin_clicked",

@@ -41,6 +41,11 @@ const _UNINSTALL_URL = "https://getoutmass.com/uninstall.html";
 // rather than looking like a fresh install.
 const _PH_STAGE_LADDER = [
   "installed",
+  // Reaching Outlook at all. Between "installed" and everything below sat the
+  // largest hole in the funnel — 32 of 97 installs over 60 days (2026-08-06)
+  // never opened the panel and never tried to sign in, and we could not tell
+  // whether they never got to Outlook or got there and missed the launcher.
+  "outlook_reached",
   "onboarded",
   "panel_opened",
   "signin_clicked",
@@ -56,6 +61,7 @@ const _PH_STAGE_LADDER = [
 // we emit. Both onboarding outcomes count — skipping onboarding is still
 // leaving it behind.
 const _PH_STAGE_EVENTS = {
+  outlook_reached: "outlook_reached",
   onboarding_completed: "onboarded",
   onboarding_skipped: "onboarded",
   sidebar_opened: "panel_opened",

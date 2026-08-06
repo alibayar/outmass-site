@@ -141,5 +141,43 @@
   // Single injection at document_idle is sufficient — no MutationObserver needed.
   injectLauncher();
 
+  // ── First run: reaching Outlook is the milestone we could never see ──
+  //
+  // Measured 2026-08-06 over 60 days: of 97 installs, 32 people never opened
+  // the panel and never attempted sign-in. Until now we could not tell whether
+  // they never got to Outlook at all, or got here and failed to find the round
+  // launcher — two problems with completely different fixes, and between them
+  // the single largest hole in the funnel (bigger than the Microsoft consent
+  // screen, which loses 28).
+  //
+  // So: report arrival ONCE per install, and on a genuine first run open the
+  // panel automatically instead of asking the user to hunt for a button. The
+  // welcome page tells them to "look at the bottom-right corner… refresh the
+  // tab if you don't see it" — three manual steps across a tab switch, at the
+  // exact moment a new user's patience is thinnest.
+  chrome.storage.local.get(["outlookReached", "firstRunAutoOpen"], function (r) {
+    if (chrome.runtime.lastError) return;
+
+    if (!r.outlookReached) {
+      chrome.storage.local.set({ outlookReached: true });
+      try {
+        chrome.runtime.sendMessage({
+          type: "TRACK",
+          event: "outlook_reached",
+          properties: { host: location.hostname },
+        });
+      } catch (e) { /* context gone — the flag still prevents a repeat */ }
+    }
+
+    // One-shot. Cleared BEFORE opening so a failure here can never leave the
+    // panel auto-opening on every future page load — a self-reopening panel
+    // the user cannot dismiss would be far worse than a missed first run.
+    if (r.firstRunAutoOpen) {
+      chrome.storage.local.set({ firstRunAutoOpen: false }, function () {
+        showSidebar();
+      });
+    }
+  });
+
   log("Content script loaded on", location.hostname);
 })();
