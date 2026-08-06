@@ -183,6 +183,29 @@ def test_uncapped_clean_send_still_lands_on_sent(client, fake_db, auth_bypass):
     assert final.args[1] == {"status": "sent"}
 
 
+def test_clean_send_charges_quota_exactly_once(client, fake_db, auth_bypass):
+    """A finished send bumps the quota counter ONCE.
+
+    _run_campaign_send bumps it on the happy path and again in its failure
+    handler (so recipients sent before a mid-batch crash still count). Any
+    exception raised between the two — an `import logging` that shadowed the
+    module-level name did it for every send from 2026-08-04 — therefore
+    charged the user twice. Counting is the thing users pay for; assert it.
+    """
+    camp = _campaign("cq8")
+    _install(fake_db, camp, _contacts(3), FAKE_USER)
+    with patch("models.ms_token.get_fresh_access_token", return_value="tok"), \
+         patch("routers.campaigns._send_single_email",
+               new=AsyncMock(return_value={"success": True})), \
+         patch("models.campaign.update_campaign"), \
+         patch("models.user.increment_sent_count") as inc:
+        resp = client.post("/campaigns/cq8/send",
+                           headers={"Authorization": "Bearer t"})
+
+    assert resp.status_code == 200
+    inc.assert_called_once_with(FAKE_USER["id"], 3)
+
+
 def test_limit_exceeded_message_is_english(client, fake_db):
     """Quota fully used → 402 limit_exceeded with an ENGLISH message."""
     user = {**FAKE_USER, "emails_sent_this_month": FREE_PLAN_MONTHLY_LIMIT}

@@ -760,6 +760,13 @@ async def _run_campaign_send(
     sent_count = 0
     errors = []
     token_expired_midbatch = False
+    # The quota counter is bumped once on the happy path and once more in the
+    # failure handler, so recipients sent before a mid-batch crash still count.
+    # Without this flag ANY exception raised after the first bump charges the
+    # user twice — which is what the `import logging` shadowing did to every
+    # send between 2026-08-04 and 08-06. Fixing that shadowing removed the
+    # trigger; this removes the whole failure mode.
+    quota_counted = False
     try:
         async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for idx, contact in enumerate(send_list):
@@ -837,12 +844,19 @@ async def _run_campaign_send(
                     await asyncio.sleep(SEND_DELAY_SECONDS)
 
         user_model.increment_sent_count(user["id"], sent_count)
+        quota_counted = True
 
         # One line per finished send. The `errors` list was built through the
         # whole loop and then died with the function: a batch where every
         # single recipient was rejected 4xx by Graph produced no Railway line
         # at any level, so "I sent a campaign and nobody got it" was
         # unanswerable from the server side. Cheap and permanent.
+        #
+        # `logging` here is the MODULE-level import. Never add a local
+        # `import logging` anywhere in this function: it makes the name local
+        # to the whole scope, so this line raises UnboundLocalError before it
+        # ever binds, every send lands in the handler below as 'partial', and
+        # the quota gets charged twice.
         logging.getLogger(__name__).warning(
             "campaign %s finished: sent=%s failed=%s quota_capped=%s "
             "token_expired=%s first_error=%s",
@@ -880,7 +894,8 @@ async def _run_campaign_send(
             "Background campaign send failed: campaign=%s", campaign_id
         )
         try:
-            user_model.increment_sent_count(user["id"], sent_count)
+            if not quota_counted:
+                user_model.increment_sent_count(user["id"], sent_count)
             # ALWAYS 'partial', never 'scheduled'. This function only ever runs
             # the send-NOW path (queued as a background task from /send), so
             # the campaign has scheduled_for NULL — and the due-campaign query

@@ -12,6 +12,8 @@ freshness guarantees matter:
 from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
+from fastapi import Response
+
 from models import user as user_model
 from tests.conftest import FAKE_USER, FakeQueryBuilder
 
@@ -155,7 +157,10 @@ def test_get_current_user_calls_maybe_touch_activity(fake_db):
          patch("models.user.maybe_touch_activity") as mock_touch, \
          patch("routers.auth.decode_jwt", return_value={"sub": FAKE_USER["id"]}):
         import asyncio
-        user = asyncio.run(get_current_user(authorization=f"Bearer faketoken"))
+        user = asyncio.run(get_current_user(
+            response=Response(),
+            authorization="Bearer faketoken",
+        ))
 
     assert user is not None
     mock_touch.assert_called_once()
@@ -285,6 +290,7 @@ def test_get_current_user_passes_extension_version_header(fake_db):
          patch("routers.auth.decode_jwt", return_value={"sub": FAKE_USER["id"]}):
         import asyncio
         asyncio.run(get_current_user(
+            response=Response(),
             authorization="Bearer faketoken",
             x_extension_version="0.1.9",
         ))
@@ -304,7 +310,10 @@ def test_get_current_user_no_header_passes_none(fake_db):
          patch("models.user.maybe_touch_activity") as mock_touch, \
          patch("routers.auth.decode_jwt", return_value={"sub": FAKE_USER["id"]}):
         import asyncio
-        asyncio.run(get_current_user(authorization="Bearer faketoken"))
+        asyncio.run(get_current_user(
+            response=Response(),
+            authorization="Bearer faketoken",
+        ))
 
     mock_touch.assert_called_once()
     call_kwargs = mock_touch.call_args
