@@ -200,7 +200,14 @@ def mark_mail_read_column_missing() -> None:
 
 def mark_mail_read_column_present() -> None:
     if _mail_read_column_state["missing"]:
-        logger.info(
+        # WARNING, not INFO, deliberately: the backend configures no root
+        # logger, so the default level is WARNING and every logger.info in
+        # this codebase is silently dropped. On 2026-08-06 Ali ran migration
+        # 024, the "unrun" warnings correctly stopped, and this confirmation
+        # never appeared — leaving the absence of a message as the only
+        # evidence the fix had healed. A once-per-process state transition is
+        # not noise; make it visible.
+        logger.warning(
             "user_tokens.%s is now queryable — migration 024 has run",
             _MAIL_READ_COLUMN,
         )
