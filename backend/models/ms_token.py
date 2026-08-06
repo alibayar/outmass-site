@@ -15,6 +15,7 @@ from config import (
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
     MAILERSEND_FROM_NAME,
+    MS_GRAPH_FIRST_SIGNIN_SCOPES,
     MS_GRAPH_ONEDRIVE_SCOPES,
     MS_GRAPH_SCOPES,
     MS_TOKEN_ENDPOINT,
@@ -113,6 +114,34 @@ def _mark_requires_reauth(user_id: str, reason: str) -> None:
         logger.exception("Failed to mark user %s as requires_reauth", user_id)
 
 
+def user_has_mail_read_scope(user_id: str) -> bool:
+    """Has this user consented to Mail.Read?
+
+    True for everyone who signed in while it was part of the first-sign-in
+    ask, and for anyone who has since opted into reply detection. False only
+    for users created after the split who have not upgraded.
+
+    Every failure mode returns True — no row, no column (migration 024
+    unrun), a DB hiccup. That is the safe direction: a wrong True merely
+    means we don't offer an upgrade prompt, while a wrong False would nag
+    established users to re-consent to something they already granted.
+    """
+    try:
+        result = (
+            get_db()
+            .table("user_tokens")
+            .select("has_mail_read_scope")
+            .eq("user_id", user_id)
+            .execute()
+        )
+        if not result.data:
+            return True
+        return result.data[0].get("has_mail_read_scope") is not False
+    except Exception:  # noqa: BLE001
+        logger.warning("mail-read scope lookup failed for %s", user_id, exc_info=True)
+        return True
+
+
 def get_fresh_access_token(user_id: str) -> str | None:
     """
     Return a valid Microsoft access token for the given user.
@@ -125,7 +154,9 @@ def get_fresh_access_token(user_id: str) -> str | None:
     db = get_db()
     result = (
         db.table("user_tokens")
-        .select("access_token, refresh_token, has_onedrive_scope")
+        .select(
+            "access_token, refresh_token, has_onedrive_scope, has_mail_read_scope"
+        )
         .eq("user_id", user_id)
         .execute()
     )
@@ -139,9 +170,22 @@ def get_fresh_access_token(user_id: str) -> str | None:
     # flow. If we ask for OneDrive scopes but the user only granted
     # Mail, Microsoft returns AADSTS65001 and the entire refresh fails
     # — knocking the user out of all background sends.
-    refresh_scopes = MS_GRAPH_SCOPES
+    #
+    # Mail.Read now works the same way, and the direction of the default
+    # matters: `.get(...) is not False` treats BOTH a True flag and a
+    # MISSING key as "has it". Missing happens in exactly two harmless
+    # cases — the column not yet added (migration 024 unrun) and any row
+    # predating it — and in both, the user really does have Mail.Read from
+    # the old first-sign-in ask. Defaulting the other way would silently
+    # narrow every established user's token and kill reply detection for
+    # the entire base the moment this deploys.
+    refresh_scopes = (
+        MS_GRAPH_SCOPES
+        if row.get("has_mail_read_scope") is not False
+        else MS_GRAPH_FIRST_SIGNIN_SCOPES
+    )
     if row.get("has_onedrive_scope"):
-        refresh_scopes = f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}"
+        refresh_scopes = f"{refresh_scopes} {MS_GRAPH_ONEDRIVE_SCOPES}"
 
     # Strategy 1: Stored access token may still be valid
     access_token = row.get("access_token")

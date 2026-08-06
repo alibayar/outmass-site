@@ -40,6 +40,9 @@ from config import (
     JWT_ALGORITHM,
     JWT_EXPIRATION_HOURS,
     JWT_SECRET,
+    FIRST_SIGNIN_INCLUDE_MAIL_READ,
+    MS_GRAPH_FIRST_SIGNIN_SCOPES,
+    MS_GRAPH_MAIL_READ_SCOPE,
     MS_GRAPH_ONEDRIVE_SCOPES,
     MS_GRAPH_SCOPES,
     MS_TOKEN_ENDPOINT,
@@ -155,6 +158,7 @@ def _encode_state(
     ext_id: str,
     include_onedrive: bool = False,
     attempt_id: str | None = None,
+    include_mail_read: bool = False,
 ) -> str:
     """Pack extension_id + CSRF nonce + onedrive flag into an opaque
     OAuth `state` param.
@@ -177,6 +181,13 @@ def _encode_state(
     }
     if include_onedrive:
         payload["od"] = True
+    # ALWAYS written, both True and False — unlike `od`, whose absence
+    # unambiguously means "not requested". Absence of `mr` means "minted
+    # before the split", which the decoder reads as True. So omitting it
+    # when narrow would make the token exchange request Mail.Read that
+    # /authorize never asked for: scope mismatch, AADSTS65001, and a dead
+    # sign-in for every new user the moment the flag is flipped.
+    payload["mr"] = bool(include_mail_read)
     if attempt_id:
         payload["aid"] = attempt_id[:40]
     payload_str = json.dumps(payload, separators=(",", ":"))
@@ -321,6 +332,22 @@ def _decode_state_ext(state: str | None) -> str | None:
     return None
 
 
+def _state_includes_mail_read(state: str | None) -> bool:
+    """True if the state was minted with include_mail_read=true.
+
+    Note the default is the OPPOSITE of the OneDrive helper below, and that
+    is deliberate. A state with no `mr` key was minted before this split
+    existed, i.e. by a build that always asked for Mail.Read — so absence
+    means "yes, it was requested". Any sign-in already in flight when this
+    deploys carries exactly that shape; defaulting to False would make the
+    token exchange under-request and drop Mail.Read from their token.
+    """
+    data = _decode_state(state)
+    if data is None:
+        return True
+    return bool(data.get("mr", True))
+
+
 def _state_includes_onedrive(state: str | None) -> bool:
     """True if the state was minted with include_onedrive=true. Lets
     /auth/callback know whether to ask for OneDrive scopes during the
@@ -336,6 +363,7 @@ def _persist_ms_tokens(
     access_token: str,
     refresh_token: str | None,
     wants_onedrive: bool,
+    wants_mail_read: bool = True,
 ) -> None:
     """Store the freshest Microsoft tokens for the user.
 
@@ -358,16 +386,29 @@ def _persist_ms_tokens(
     db = get_db()
     existing = (
         db.table("user_tokens")
-        .select("id, has_onedrive_scope")
+        .select("id, has_onedrive_scope, has_mail_read_scope")
         .eq("user_id", user_id)
         .execute()
     )
     previously_had_onedrive = bool(
         existing.data and existing.data[0].get("has_onedrive_scope")
     )
+    # Sticky like OneDrive: consent outlives individual tokens. For an
+    # EXISTING row a missing key reads as True — the column may not exist
+    # yet (migration 024 unrun) and every pre-024 row belongs to someone who
+    # granted Mail.Read at sign-in. A brand-new user has granted nothing, so
+    # only this flow's own request counts.
+    if existing.data:
+        previously_had_mail_read = (
+            existing.data[0].get("has_mail_read_scope") is not False
+        )
+    else:
+        previously_had_mail_read = False
+
     token_row = {
         "access_token": access_token,
         "has_onedrive_scope": previously_had_onedrive or wants_onedrive,
+        "has_mail_read_scope": previously_had_mail_read or wants_mail_read,
     }
     if refresh_token:
         token_row["refresh_token"] = refresh_token
@@ -394,6 +435,7 @@ async def login_redirect(
     ext: str | None = Query(None),
     include_onedrive: bool = Query(False),
     aid: str | None = Query(None),
+    include_mail_read: bool = Query(False),
 ):
     """Redirect user to Microsoft login. Used by extension launchWebAuthFlow.
 
@@ -411,17 +453,34 @@ async def login_redirect(
     Microsoft re-issues a token covering all previously-granted scopes
     plus the new ones, so a successful callback gives us a single
     refresh_token usable for both Mail and OneDrive operations.
+
+    `include_mail_read=true` does the same for Mail.Read, which is leaving
+    the first-sign-in ask (see MS_GRAPH_FIRST_SIGNIN_SCOPES). Reply
+    detection is the only thing that needs it, and it cannot matter before
+    the user's first campaign — whereas "Read your mail" on a consent
+    screen shown to someone who has sent nothing yet is the most alarming
+    line there. Gated by FIRST_SIGNIN_INCLUDE_MAIL_READ so the narrow ask
+    only starts when that variable is flipped; until then this endpoint
+    behaves exactly as it did.
     """
     chosen_ext = ext if ext in ALLOWED_EXTENSION_IDS else AZURE_EXTENSION_ID
     # `aid` is the extension's opaque attempt id (0.1.27+). Older clients
     # simply don't send one — the failure is still reported, just without
     # the link back to their oauth_started event.
     safe_aid = aid if aid and re.fullmatch(r"[A-Za-z0-9_-]{6,40}", aid) else None
+    # Ask for Mail.Read when the flag says to (today's behaviour) OR when the
+    # client is explicitly upgrading for reply detection. Both cases must be
+    # recorded in `state`, because the token exchange has to request exactly
+    # what /authorize did — a mismatch is AADSTS65001 and a dead sign-in.
+    wants_mail_read = FIRST_SIGNIN_INCLUDE_MAIL_READ or include_mail_read
     state = _encode_state(
-        chosen_ext, include_onedrive=include_onedrive, attempt_id=safe_aid
+        chosen_ext,
+        include_onedrive=include_onedrive,
+        attempt_id=safe_aid,
+        include_mail_read=wants_mail_read,
     )
 
-    scope = MS_GRAPH_SCOPES
+    scope = MS_GRAPH_SCOPES if wants_mail_read else MS_GRAPH_FIRST_SIGNIN_SCOPES
     if include_onedrive:
         scope = f"{scope} {MS_GRAPH_ONEDRIVE_SCOPES}"
 
@@ -530,11 +589,17 @@ async def auth_callback(
             # and only then request them here. The legacy state shape
             # (no `od` flag) defaults to Mail-only.
             wants_onedrive = _state_includes_onedrive(state)
+            # Legacy state (no `mr` key) means the flow started before the
+            # split existed, when Mail.Read was always requested — so the
+            # absence of the flag must read as True, not False. Getting this
+            # backwards would under-request on every in-flight sign-in the
+            # moment this deploys.
+            wants_mail_read = _state_includes_mail_read(state)
             exchange_scope = (
-                f"{MS_GRAPH_SCOPES} {MS_GRAPH_ONEDRIVE_SCOPES}"
-                if wants_onedrive
-                else MS_GRAPH_SCOPES
+                MS_GRAPH_SCOPES if wants_mail_read else MS_GRAPH_FIRST_SIGNIN_SCOPES
             )
+            if wants_onedrive:
+                exchange_scope = f"{exchange_scope} {MS_GRAPH_ONEDRIVE_SCOPES}"
             token_resp = await client.post(
                 MS_TOKEN_ENDPOINT,
                 data={
@@ -652,6 +717,7 @@ async def auth_callback(
         access_token=access_token,
         refresh_token=refresh_token,
         wants_onedrive=wants_onedrive,
+        wants_mail_read=wants_mail_read,
     )
 
     # Clear any prior requires_reauth flag on ANY successful interactive

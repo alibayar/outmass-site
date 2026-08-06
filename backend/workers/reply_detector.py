@@ -23,9 +23,13 @@ fine, false positives would be embarrassing):
      attempt to associate one inbound message with multiple
      contacts.
 
-The user already granted Mail.Read at sign-in (it's part of
-MS_GRAPH_SCOPES — used previously for the not_opened follow-up
-condition heuristic), so no new consent needed.
+Mail.Read is NOT guaranteed. It left the first-sign-in ask on
+2026-08-06 (see MS_GRAPH_FIRST_SIGNIN_SCOPES) because "Read your
+mail" was the most alarming line on a consent screen shown to
+someone who had not sent anything yet. Everyone who signed in
+before that has it; newer users grant it only by opting into reply
+detection. A user without it simply gets skipped — see the 403
+branch below, which is a normal state now, not an anomaly.
 
 Privacy: we read message metadata only (from, receivedDateTime,
 internetMessageId). We never persist message bodies. Microsoft
@@ -84,9 +88,10 @@ def _list_recent_messages(
             break
         if resp.status_code != 200:
             if resp.status_code == 403:
-                # Mail.Read scope missing — user signed up before this
-                # was a default scope. We log once and stop; nothing
-                # the beat task can do.
+                # Mail.Read not granted. Expected for users who signed in
+                # after the scope split and never opted into reply
+                # detection; the panel offers them the one-click upgrade.
+                # Nothing for the beat task to do but skip.
                 logger.info(
                     "reply detector: 403 — user lacks Mail.Read scope"
                 )

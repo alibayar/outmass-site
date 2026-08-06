@@ -13,6 +13,7 @@ from pydantic import BaseModel
 from config import monthly_limit_for_plan, upload_limit_for_plan
 from database import get_db
 from models import announcement as ann
+from models import ms_token
 from models import user as user_model
 from routers.auth import get_current_user
 
@@ -76,6 +77,13 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "requires_reauth": bool(user.get("requires_reauth", False)),
         "reauth_reason": user.get("reauth_reason"),
         "announcements_summary": announcements_summary,
+        # False only for users who signed in after Mail.Read left the
+        # first-sign-in ask and have not opted into reply detection since.
+        # The panel uses it to offer the one-click upgrade
+        # (/auth/login?include_mail_read=true) instead of silently never
+        # detecting replies. Degrades to True on any error, which is the
+        # safe direction: at worst we don't offer an upgrade nobody needs.
+        "has_mail_read_scope": ms_token.user_has_mail_read_scope(user["id"]),
     }
 
 

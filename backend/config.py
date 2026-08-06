@@ -97,7 +97,36 @@ if AZURE_EXTENSION_ID and AZURE_EXTENSION_ID not in ALLOWED_EXTENSION_IDS:
     ALLOWED_EXTENSION_IDS.append(AZURE_EXTENSION_ID)
 MS_AUTH_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/authorize"
 MS_TOKEN_ENDPOINT = "https://login.microsoftonline.com/common/oauth2/v2.0/token"
+# The FULL scope set — what an established user has consented to. Value
+# deliberately unchanged: it is what every existing user's refresh request
+# must keep asking for, or Microsoft issues a narrower token and reply
+# detection silently dies for people who already granted Mail.Read.
 MS_GRAPH_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/Mail.Read https://graph.microsoft.com/User.Read offline_access"
+
+# What a BRAND-NEW user is asked for at first sign-in. Mail.Read is absent on
+# purpose: Microsoft renders it as "Read your mail", which is the most
+# alarming line on the consent screen and the least justifiable for a tool
+# the user has not sent a single email with yet. It exists only for reply
+# detection, which cannot matter before the first campaign goes out.
+# Measured 2026-08-06: ~31% of first-time Chrome users and ~54% of
+# first-time Edge users never complete the consent screen, and publisher
+# verification (done 2026-06-24) did not move it.
+MS_GRAPH_FIRST_SIGNIN_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.Read offline_access"
+
+# Requested later, on its own, when the user opts into reply detection —
+# same incremental-consent mechanism as OneDrive below.
+MS_GRAPH_MAIL_READ_SCOPE = "https://graph.microsoft.com/Mail.Read"
+
+# Master switch for the split above. TRUE = today's behaviour, byte for
+# byte: first sign-in asks for everything including Mail.Read. Flip to
+# false on Railway to start the narrow ask; flip back to recover instantly,
+# with no deploy either way. Deliberately defaulting to the old behaviour so
+# the code can ship and sit inert until the migration has been run and Ali
+# decides to turn it on.
+FIRST_SIGNIN_INCLUDE_MAIL_READ = (
+    os.getenv("FIRST_SIGNIN_INCLUDE_MAIL_READ", "true").strip().lower()
+    not in ("false", "0", "no")
+)
 
 # Optional OneDrive scopes — requested only when the user opts into the
 # OneDrive-link feature for the first time (incremental consent). Keeping
