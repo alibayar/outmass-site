@@ -288,7 +288,17 @@ def _decode_state(state: str | None) -> dict | None:
         data = json.loads(base64.urlsafe_b64decode(padded.encode("ascii")))
         if isinstance(data, dict):
             return data
-    except (ValueError, json.JSONDecodeError, UnicodeDecodeError):
+    # Deliberately broad. The narrow tuple that used to sit here
+    # ((ValueError, json.JSONDecodeError, UnicodeDecodeError)) missed
+    # RecursionError — json.loads on deeply nested arrays raises it, and it
+    # inherits from RuntimeError, not ValueError. A ~45KB crafted `state` on
+    # an UNAUTHENTICATED GET therefore escaped this function, escaped
+    # _error_page, and became a 500 with no settle script: the popup hang
+    # this whole feature exists to eliminate, triggerable by anyone.
+    # Verified end-to-end against real uvicorn+h11 by the 2026-08-06 review.
+    # This function's contract is "a bad state is no state" — nothing a
+    # parser can throw should ever be louder than that.
+    except Exception:
         return None
     return None
 
@@ -300,7 +310,13 @@ def _decode_state_ext(state: str | None) -> str | None:
     if not data:
         return None
     ext = data.get("ext")
-    if ext and ext in ALLOWED_EXTENSION_IDS:
+    # isinstance BEFORE the membership test: `ext` is attacker-minted JSON
+    # and can be a list or dict. Harmless against today's list allowlist
+    # (`in` falls back to ==), but the day someone tidies
+    # ALLOWED_EXTENSION_IDS into a set — the natural change for a
+    # membership-only lookup — an unhashable value raises TypeError on this
+    # same unguarded path. 67 bytes of crafted state would then be a 500.
+    if isinstance(ext, str) and ext in ALLOWED_EXTENSION_IDS:
         return ext
     return None
 
@@ -490,7 +506,7 @@ async def auth_callback(
         return _error_page(
             "No authorization code received",
             state=state,
-            fragment="No authorization code received",
+            fragment="Sign-in did not complete, please try again",
         )
 
     if not AZURE_CLIENT_SECRET:
@@ -540,7 +556,24 @@ async def auth_callback(
             )
 
     if token_resp.status_code != 200:
-        err = token_resp.json() if token_resp.content else {}
+        # NOT assumed to be JSON. A successful HTTP response carrying an ISP
+        # or captive-portal block page — precisely the network-filtering
+        # scenario this feature line exists to diagnose — used to raise here,
+        # OUTSIDE the httpx.HTTPError guard above (which only covers
+        # transport errors). FastAPI then returned 500 with no HTML at all,
+        # so no settle script ran and the popup hung: the exact chain the
+        # settle redirect was built to break.
+        try:
+            err = token_resp.json() if token_resp.content else {}
+            if not isinstance(err, dict):
+                err = {}
+        except ValueError:
+            logger.error(
+                "Token exchange returned non-JSON (%s): %r",
+                token_resp.status_code,
+                token_resp.text[:200],
+            )
+            err = {}
         logger.error("Token exchange failed: %s %s", token_resp.status_code, err)
         classified = _classify_ms_error(
             err.get("error"), err.get("error_description")
@@ -552,9 +585,9 @@ async def auth_callback(
             fields={"status": token_resp.status_code, **classified},
         )
         return _error_page(
-            err.get("error_description", "Token exchange failed"),
+            err.get("error_description") or "Token exchange failed",
             state=state,
-            fragment=_ms_settle_code(classified, fallback="Token exchange failed"),
+            fragment=_ms_settle_code(classified, fallback="server_error"),
         )
 
     tokens = token_resp.json()
@@ -565,7 +598,7 @@ async def auth_callback(
         return _error_page(
             "No access token received",
             state=state,
-            fragment="No access token received",
+            fragment="Microsoft sent no token, please try again",
         )
 
     # Fetch user profile
@@ -580,7 +613,7 @@ async def auth_callback(
         return _error_page(
             "Could not fetch user profile",
             state=state,
-            fragment="Could not fetch user profile",
+            fragment="Could not read your Microsoft profile, please retry",
         )
 
     profile = profile_resp.json()
@@ -592,7 +625,7 @@ async def auth_callback(
         return _error_page(
             "Incomplete user profile from Microsoft",
             state=state,
-            fragment="Incomplete user profile from Microsoft",
+            fragment="Your Microsoft profile has no email address",
         )
 
     # Upsert user in DB
@@ -708,6 +741,32 @@ async def auth_callback(
 _SETTLE_DELAY_MS = 9000
 
 
+# RFC 6749 §4.1.2.1 + OpenID Connect: the complete set of `error` codes an
+# authorization server may return. The fragment reaches PostHog and every
+# client, so only a value FROM THIS LIST is ever echoed — everything else
+# collapses to the generic sentence.
+_OAUTH_ERROR_CODES = frozenset(
+    {
+        "invalid_request",
+        "unauthorized_client",
+        "access_denied",
+        "unsupported_response_type",
+        "invalid_scope",
+        "server_error",
+        "temporarily_unavailable",
+        "interaction_required",
+        "login_required",
+        "account_selection_required",
+        "consent_required",
+        "invalid_request_uri",
+        "invalid_request_object",
+        "request_not_supported",
+        "request_uri_not_supported",
+        "registration_not_supported",
+    }
+)
+
+
 def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
     """A class-stable, PII-free settle fragment for a Microsoft-side error.
 
@@ -716,20 +775,29 @@ def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
     provider..."), and the character sanitizer downstream deletes the '@'
     but keeps the parts — 'xy.com' inside the 64-char cap. That is a PII
     leak into PostHog and every client, and it also shatters the grouping
-    the fragment exists for (one distinct code per user). This helper is
-    built ONLY from the classifier's outputs: the AADSTS number and our own
-    meaning vocabulary. Underscores become spaces — '_' is deliberately
-    outside the sanitizer alphabet so the fragment can never collide with
-    the sidebar's exact-match "session_expired" handling.
+    the fragment exists for (one distinct code per user).
+
+    So this helper is built from CLOSED VOCABULARIES only: the AADSTS number
+    and our own meaning table, or an `error` value that appears in the
+    RFC 6749 list above. The first version of this function claimed exactly
+    that in prose while its last line echoed the caller's free text — the
+    2026-08-06 review proved PII straight through it via the `error` query
+    param. An allowlist keeps the docstring and the code the same shape.
+
+    Underscores become spaces — '_' is deliberately outside the sanitizer
+    alphabet, so no fragment can ever collide with the sidebar's exact-match
+    "session_expired" handling.
     """
     aadsts = classified.get("aadsts") or ""
     meaning = (classified.get("meaning") or "").replace("_", " ")
     if aadsts:
         if meaning and meaning != "unclassified":
-            return f"{aadsts}: {meaning}"
-        return f"Sign-in failed ({aadsts})"
-    err = (fallback or "").replace("_", " ").strip()
-    return f"Sign-in failed ({err})" if err else "Sign-in failed, please try again"
+            return f"{aadsts}: {meaning}"[:64]
+        return f"Sign-in failed ({aadsts}), please try again"[:64]
+    code = (fallback or "").strip().lower()
+    if code in _OAUTH_ERROR_CODES:
+        return f"Sign-in failed ({code.replace('_', ' ')}), please try again"[:64]
+    return "Sign-in failed, please try again"
 
 
 def _settle_fragment(message: str) -> str:
@@ -787,8 +855,14 @@ def _error_page(
     removed. `message` must never feed the fragment again; a call site that
     forgets to pass one gets a generic sentence, not a leak.
     """
+    # str() first: a JSON `error_description: null` reached this as None and
+    # crashed on .replace — a 500 with no settle script, i.e. the hung popup
+    # again, from a field we do not control.
     safe_message = (
-        message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+        str(message or "Sign-in failed")
+        .replace("&", "&amp;")
+        .replace("<", "&lt;")
+        .replace(">", "&gt;")
     )
     settle_ext = _decode_state_ext(state)
     if settle_ext:

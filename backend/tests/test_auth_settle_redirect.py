@@ -128,6 +128,216 @@ def test_forgotten_fragment_degrades_to_generic_not_to_message():
     assert "Sign-in+failed" in url
 
 
+def test_the_error_query_param_cannot_smuggle_free_text(client):
+    """The `error` param is attacker/Microsoft-controlled free text and feeds
+    _ms_settle_code's fallback. It is echoed ONLY if it appears in the RFC 6749
+    vocabulary; anything else collapses to the generic sentence.
+
+    Caught by the 2026-08-06 post-fix review: the first version of the PII fix
+    echoed this param verbatim, so routing the same tenant sentence through
+    `error` instead of `error_description` walked it straight past the fix.
+    """
+    resp = client.get(
+        "/auth/callback",
+        params={
+            "error": "User bob@corp-internal.com of Contoso Ltd was blocked",
+            "error_description": "no aadsts code here",
+            "state": _encode_state(CHROME_EXT),
+        },
+    )
+    url = _settle_url_of(resp.text)
+    assert "bob" not in url and "corp-internal" not in url and "Contoso" not in url
+    assert "Sign-in+failed%2C+please+try+again" in url
+
+    ok = client.get(
+        "/auth/callback",
+        params={
+            "error": "access_denied",
+            "error_description": "no aadsts code here",
+            "state": _encode_state(CHROME_EXT),
+        },
+    )
+    assert "access+denied" in _settle_url_of(ok.text), (
+        "a real RFC 6749 code is worth keeping — it is the only class signal "
+        "when Microsoft sends no AADSTS number"
+    )
+
+
+# ── every call site must keep passing a fragment ──
+
+
+def test_every_error_page_call_site_passes_a_fragment():
+    """The PII guard is one-directional: a forgotten fragment cannot LEAK, but
+    nothing stopped a call site from silently dropping one — mutation testing
+    showed 6 of 8 sites could be stripped with the whole suite still green.
+    The failure is invisible in production too: that class of error just
+    collapses into the generic sentence and its PostHog grouping disappears,
+    which is the very diagnosis this release was built to enable.
+    """
+    import ast
+    import pathlib
+
+    src = pathlib.Path(__file__).resolve().parents[1] / "routers" / "auth.py"
+    tree = ast.parse(src.read_text(encoding="utf-8"))
+
+    missing = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        if not (isinstance(node.func, ast.Name) and node.func.id == "_error_page"):
+            continue
+        if not any(kw.arg == "fragment" for kw in node.keywords):
+            missing.append(node.lineno)
+
+    assert not missing, (
+        f"_error_page called without fragment= at auth.py lines {missing} — "
+        "every failure class needs its own stable settle string"
+    )
+
+
+def test_every_aadsts_meaning_survives_the_round_trip():
+    """A future entry with a long meaning would truncate mid-word in both
+    PostHog and the user's popup, with a green suite."""
+    import urllib.parse
+
+    from routers.auth import _AADSTS_MEANINGS, _classify_ms_error, _ms_settle_code
+
+    seen = {}
+    for code, meaning in _AADSTS_MEANINGS.items():
+        classified = _classify_ms_error("access_denied", f"{code}: some detail.")
+        frag = _settle_fragment(_ms_settle_code(classified))
+        assert len(frag) <= 64, f"{code} fragment is {len(frag)} chars"
+        assert code in frag, f"{code} lost its code in {frag!r}"
+        assert meaning.replace("_", " ") in frag, (
+            f"{code} meaning truncated: {frag!r} — shorten the meaning or "
+            "raise the cap"
+        )
+        # Survives URL encode/decode unchanged (the client re-parses it).
+        assert urllib.parse.parse_qs(
+            urllib.parse.urlencode({"error": frag})
+        )["error"][0] == frag
+        assert frag not in seen, f"{code} collides with {seen.get(frag)}"
+        seen[frag] = code
+
+
+# ── crafted state must never become a 500 ──
+
+
+def _nested_state(depth):
+    import base64 as _b64
+
+    payload = ("[" * depth) + ("]" * depth)
+    return _b64.urlsafe_b64encode(payload.encode()).decode().rstrip("=")
+
+
+def test_recursion_error_is_swallowed_by_decode_state():
+    """json.loads raises RecursionError on deep nesting, and RecursionError is
+    NOT a ValueError — it escaped _decode_state's old except tuple, escaped
+    _error_page, and became an unauthenticated 500 with no settle script.
+
+    The recursion limit is lowered here so the test asserts the CONTRACT ("a
+    bad state is no state") rather than one interpreter's threshold — the
+    depth that trips json varies by Python build (~3k on 3.12, ~17k on 3.14),
+    which is exactly how a version-pinned depth would rot into a test that
+    passes without exercising anything.
+    """
+    import sys
+
+    from routers.auth import _decode_state
+
+    original = sys.getrecursionlimit()
+    sys.setrecursionlimit(120)
+    try:
+        assert _decode_state(_nested_state(400)) is None
+    finally:
+        sys.setrecursionlimit(original)
+
+
+def test_deeply_nested_state_is_a_400_not_a_500(client):
+    """The same thing end-to-end through the real endpoint."""
+    resp = client.get(
+        "/auth/callback",
+        params={"error": "access_denied", "state": _nested_state(20000)},
+    )
+    assert resp.status_code == 400
+    assert "chromiumapp.org" not in resp.text, "unparseable state must not redirect"
+
+
+def test_non_string_ext_never_raises():
+    """`ext` is attacker-minted JSON and can be a list or dict.
+
+    Asserted against a SET allowlist on purpose: today's list tolerates an
+    unhashable value because `in` falls back to ==, so a list-based test would
+    pass with or without the isinstance guard. The day someone tidies
+    ALLOWED_EXTENSION_IDS into a set — the natural change for a
+    membership-only lookup — an unguarded membership test turns 67 bytes of
+    crafted state into a 500.
+    """
+    import base64 as _b64
+    import json as _json
+    from unittest.mock import patch
+
+    from routers import auth as auth_module
+
+    with patch.object(auth_module, "ALLOWED_EXTENSION_IDS", {CHROME_EXT, EDGE_EXT}):
+        for bad in ([1, 2], {"a": 1}, 5, True, None):
+            raw = _json.dumps({"ext": bad, "n": "x"}).encode()
+            state = _b64.urlsafe_b64encode(raw).decode().rstrip("=")
+            assert auth_module._decode_state_ext(state) is None
+        # and the good path still resolves
+        good = _b64.urlsafe_b64encode(
+            _json.dumps({"ext": CHROME_EXT, "n": "x"}).encode()
+        ).decode().rstrip("=")
+        assert auth_module._decode_state_ext(good) == CHROME_EXT
+
+
+# ── a crash before the page is a hung popup ──
+
+
+def test_non_json_token_response_still_renders_a_settling_page(client):
+    """An ISP block page returned with a 4xx/5xx used to raise on .json()
+    BEFORE any HTML was produced — 500, no settle script, popup hangs. That is
+    the same network-filtering scenario this whole feature line diagnoses.
+
+    AZURE_CLIENT_SECRET must be patched truthy: it is empty in the test env,
+    so without this the request returns at the misconfig branch and the test
+    passes having never reached the token exchange (it did exactly that when
+    first written — mutation testing caught it).
+    """
+    from unittest.mock import AsyncMock, MagicMock, patch
+
+    blocked = MagicMock()
+    blocked.status_code = 502
+    blocked.content = b"<html>ISP block page</html>"
+    blocked.text = "<html>ISP block page</html>"
+    blocked.json.side_effect = ValueError("not json")
+
+    ctx = MagicMock()
+    ctx.__aenter__ = AsyncMock(return_value=MagicMock(post=AsyncMock(return_value=blocked)))
+    ctx.__aexit__ = AsyncMock(return_value=False)
+
+    with patch.object(auth_module, "AZURE_CLIENT_SECRET", "test-secret"), \
+         patch("routers.auth.httpx.AsyncClient", return_value=ctx):
+        resp = client.get(
+            "/auth/callback",
+            params={"code": "abc", "state": _encode_state(CHROME_EXT)},
+        )
+
+    assert resp.status_code == 400, "must render our page, not a bare 500"
+    assert "chromiumapp.org" in resp.text, "the popup must still be settled"
+    assert "ISP block page" not in resp.text, "never echo a third party's HTML"
+
+
+def test_null_error_description_does_not_crash_the_page(client):
+    """`error_description: null` reached _error_page as None and crashed on
+    .replace — again a 500 with no settle script."""
+    from routers.auth import _error_page
+
+    resp = _error_page(None, state=_encode_state(CHROME_EXT), fragment="x failed")
+    assert resp.status_code == 400
+    assert "chromiumapp.org" in resp.body.decode("utf-8")
+
+
 # ── the error page ──
 
 

@@ -505,12 +505,34 @@ async function _startMSLoginInner(includeOneDrive) {
       const errorMsg = params.get("error");
 
       if (errorMsg) {
-        finish({ error: errorMsg });
+        // The backend now settles its error pages through this path (it used
+        // to leave the window open), so this branch carries real Microsoft
+        // failure classes like "AADSTS90094: admin consent required" instead
+        // of only our own server errors.
+        //
+        // Recover an errorCode from the class string. Without it the sidebar
+        // and popup fall through to showing the raw English sentence, and the
+        // localized guidance we already ship in 14 locales — "your org may
+        // need an admin to approve OutMass" — never appears, even though it
+        // is exactly what that user needs. Consent walls are the single
+        // biggest sign-in leak we have measured.
+        var settled = String(errorMsg);
+        // errorCode is set ONLY for classes that have localized guidance —
+        // friendlyAuthError falls through to the raw string for anything
+        // else, so an unmapped code would just look handled without being.
+        // Consent (65001/65004/90094) is the one with real text, and it is
+        // also the single biggest sign-in leak we have measured.
+        var isConsent = /AADSTS(65001|65004|90094)\b/.test(settled) ||
+          /consent/i.test(settled);
+        // The AADSTS number is the stable grouping key regardless.
+        var aadsts = (settled.match(/AADSTS\d+/) || [null])[0];
+        finish(isConsent ? { error: settled, errorCode: "consent_declined" } : { error: settled });
         track(
           "oauth_failed",
           failureContext({
             reason: "backend_error",
-            code: String(errorMsg).slice(0, 64),
+            code: settled.slice(0, 64),
+            aadsts: aadsts,
           })
         );
         return;
