@@ -783,7 +783,6 @@ async def _run_campaign_send(
                     try:
                         contact_model.mark_suppressed(contact["id"])
                     except Exception:  # noqa: BLE001
-                        import logging
                         logging.getLogger(__name__).warning(
                             "Could not mark contact %s suppressed; skipping anyway",
                             contact.get("id"),
@@ -877,7 +876,6 @@ async def _run_campaign_send(
                 },
             )
     except Exception:  # noqa: BLE001
-        import logging
         logging.getLogger(__name__).exception(
             "Background campaign send failed: campaign=%s", campaign_id
         )
