@@ -4,11 +4,16 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 ## v0.1.28 — unreleased
 
+- **Clicking Sign in again now brings the sign-in window to the front.** If the Microsoft window opened behind Outlook or on another screen, clicking Sign in again used to only tell you a window was open somewhere. Now it also brings that window forward.
 - **The panel button can no longer do nothing.** When OutMass updates itself, any Outlook tab you already had open quietly loses its connection to the extension until the page is refreshed. Clicking "Open Campaign Panel" in that tab used to do nothing at all, however many times you tried it, with no explanation. It now tells you to reload the Outlook tab — which is all it takes.
 - **Dropping the wrong file now tells you.** Dragging an Excel .xlsx file — or anything that isn't a CSV — onto the recipient box did absolutely nothing: no message, no hint, so the drop zone looked broken. It now says what happened and how to save your file as a CSV.
 - **Contacts.CSV works when you drag it.** Exports from a CRM or from Outlook often arrive with an uppercase .CSV extension. Those already worked when you picked them through the file browser, but were silently ignored when dragged in. Both routes now behave the same.
 - **A file that can't be read now says so** — instead of leaving you waiting for a preview that never arrives. This comes up with files on a disconnected network drive, or a USB stick that was unplugged.
 - **Reports says when it can't load your campaigns.** If the server had a problem, the list said "no campaigns found", which read as though your campaigns were gone. It now reports the error for what it is.
+
+### Behind the scenes (backend — affects all extension versions)
+
+- **A failed sign-in now finds its way back to you.** When Microsoft reports a problem during sign-in (for example, your organization requires admin approval), the error used to sit in a window that stayed open until you noticed and closed it — and the extension never learned the reason. That window now shows the reason for a few seconds and then returns to OutMass on its own, so the Sign in button is immediately usable again and the message tells you what actually happened.
 
 ## v0.1.27 — 2026-07-29
 

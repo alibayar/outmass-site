@@ -197,6 +197,60 @@ var AUTH_FLIGHT_SILENT_JOIN_MS = 10 * 1000;
 // dead-click problem wearing a message; open a fresh window instead.
 var _authFlightHinted = {};
 
+// ── Auth window tracking (for focus-on-re-click) ──
+//
+// launchWebAuthFlow never hands back its window, so we catch it the only way
+// available: arm a short watch right before launching, and take the first
+// popup-type window that appears. On a re-click while the flight is pending
+// we can then FOCUS the real window instead of only describing it — the
+// 2026-08-05 Vietnam user re-clicked while their auth window sat parked for
+// 28 minutes; a hint tells them where to look, a focus puts it in their face.
+//
+// Best-effort by design: a service-worker restart loses the id (fine — a
+// pending launchWebAuthFlow keeps this worker alive, so flight and id die
+// together), and if some other extension opens a popup in the same instant
+// we focus the wrong window once. Both failure modes degrade to exactly the
+// old behaviour.
+var _authWindow = null; // { key, id }
+var _authWindowWatchKey = null;
+var _authWindowWatchTimer = null;
+
+chrome.windows.onCreated.addListener(function (w) {
+  if (_authWindowWatchKey === null || !w || w.type !== "popup") return;
+  _authWindow = { key: _authWindowWatchKey, id: w.id };
+  _authWindowWatchKey = null;
+  clearTimeout(_authWindowWatchTimer);
+});
+
+function _armAuthWindowWatch(key) {
+  _authWindowWatchKey = key;
+  clearTimeout(_authWindowWatchTimer);
+  // The auth window appears within milliseconds of launchWebAuthFlow; if
+  // nothing came in 3s, stop watching so an unrelated later popup (print
+  // dialog, OAuth window of another product) is never mistaken for ours.
+  _authWindowWatchTimer = setTimeout(function () {
+    _authWindowWatchKey = null;
+  }, 3000);
+}
+
+function _focusAuthWindow(key) {
+  if (!_authWindow || _authWindow.key !== key) return;
+  try {
+    chrome.windows.update(
+      _authWindow.id,
+      { focused: true, drawAttention: true },
+      function () {
+        if (chrome.runtime.lastError) {
+          // Window already gone — the flight will settle on its own.
+          log("Auth window focus failed:", chrome.runtime.lastError.message);
+        }
+      }
+    );
+  } catch (e) {
+    log("Auth window focus threw:", e);
+  }
+}
+
 // How many sign-in attempts this service-worker life has seen, so a report
 // can tell one abandoned attempt apart from someone fighting the flow. A
 // real user managed five failures in twenty minutes on 2026-06-23.
@@ -230,6 +284,9 @@ function startMSLogin(includeOneDrive) {
     var age = Date.now() - (_authFlightStartedAt[key] || 0);
     if (age < AUTH_FLIGHT_SILENT_JOIN_MS) {
       log("MS OAuth already in progress (" + key + ") — joining existing flow");
+      // A double-click within seconds usually means the window opened
+      // behind something. Bring it forward; the join stays silent.
+      _focusAuthWindow(key);
       return existing;
     }
     if (!_authFlightHinted[key] && age < AUTH_FLIGHT_STALE_MS) {
@@ -241,6 +298,10 @@ function startMSLogin(includeOneDrive) {
       log("MS OAuth window already open (" + Math.round(age / 1000) + "s) — telling the user where to look");
       track("oauth_already_open_hint", { flow: key, age_seconds: Math.round(age / 1000) });
       _authFlightHinted[key] = true;
+      // The hint says "check your other windows" — do them one better and
+      // bring the window forward too. Focus can fail (other desktop, other
+      // monitor's minimized group); the hint text still covers that case.
+      _focusAuthWindow(key);
       return Promise.resolve({
         error: "A Microsoft sign-in window is already open. Check your other windows or taskbar.",
         errorCode: "auth_window_already_open",
@@ -272,6 +333,7 @@ function startMSLogin(includeOneDrive) {
       delete _authFlightByKey[key];
       delete _authFlightStartedAt[key];
       delete _authFlightHinted[key];
+      if (_authWindow && _authWindow.key === key) _authWindow = null;
     }
   };
   flight.then(clear, clear);
@@ -360,6 +422,10 @@ async function _startMSLoginInner(includeOneDrive) {
     }, AUTH_FLIGHT_TIMEOUT_MS);
 
     function launch() {
+      // Catch the popup this call is about to create, so a later re-click
+      // can focus it (see _armAuthWindowWatch). Armed per launch: the
+      // auto-retry path re-launches and gets a NEW window.
+      _armAuthWindowWatch(includeOneDrive ? "onedrive" : "signin");
       chrome.identity.launchWebAuthFlow(
         { url: authUrl, interactive: true },
         handleResult
@@ -476,8 +542,16 @@ async function _startMSLoginInner(includeOneDrive) {
           log("LOGIN_SUCCESS:", email);
           // Backend doesn't return user_id in the redirect fragment today, so
           // we identify by email — PostHog accepts any string as distinct_id.
-          identify(email);
-          track("oauth_completed", { plan: plan });
+          //
+          // Chained, not fire-and-forget: launched side by side these two
+          // raced inside the analytics queue and the loser's event vanished
+          // (see _phEnqueue in analytics.js — the enqueue is serialized now,
+          // but $identify arriving before oauth_completed is also what lets
+          // PostHog attach the event to the aliased person). The UI never
+          // waits on telemetry: finish() runs immediately.
+          identify(email).then(function () {
+            return track("oauth_completed", { plan: plan });
+          });
           finish({ error: null, user: user });
         }
       );

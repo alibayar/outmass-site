@@ -23,6 +23,7 @@ const suites = [
   require("./locale-variants.test.js"),
   require("./uninstall-stage.test.js"),
   require("./no-silent-dead-ends.test.js"),
+  require("./analytics-race.test.js"),
 ];
 
 async function main() {

@@ -68,7 +68,7 @@ function loadAnalytics(opts) {
   const selfStub = { crypto: { randomUUID: () => "11111111-1111-4111-8111-111111111111" }, navigator: { userAgent: "Chrome" } };
 
   const exported =
-    "\n;return { track, refreshUninstallUrl, _PH_STAGE_LADDER, _PH_STAGE_EVENTS, _PH_STAGE_KEY };";
+    "\n;return { track, identify, refreshUninstallUrl, _PH_STAGE_LADDER, _PH_STAGE_EVENTS, _PH_STAGE_KEY, _PH_QUEUE_KEY };";
   // eslint-disable-next-line no-new-func
   const api = new Function(
     "chrome",

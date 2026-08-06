@@ -117,12 +117,30 @@ async function _phDefaultProps() {
   };
 }
 
-async function _phEnqueue(event) {
-  const cur = (await chrome.storage.local.get([_PH_QUEUE_KEY]))[_PH_QUEUE_KEY] || [];
-  cur.push(event);
-  // Hard cap — drop oldest events if we ever back up
-  while (cur.length > _PH_QUEUE_CAP) cur.shift();
-  await chrome.storage.local.set({ [_PH_QUEUE_KEY]: cur });
+// Writes to the queue are SERIALIZED through this promise chain. The
+// read-modify-write below is not atomic, and the one moment two writers
+// reliably overlap is sign-in completion: identify() enqueues $identify while
+// track() enqueues oauth_completed, both awaited nowhere, and whichever set()
+// lands second erases the other's event. That lost update ate oauth_completed
+// for a real Edge user on 2026-07-30 — who had actually signed in and sent a
+// campaign — and made "zero Edge completions" look like a browser-breaking
+// bug for a whole investigation. Only ever possible for FIRST sign-ins (the
+// only time identify() has work to do), i.e. it corrupted the funnel at
+// exactly the new-user conversion step.
+let _phEnqueueChain = Promise.resolve();
+
+function _phEnqueue(event) {
+  const link = _phEnqueueChain.then(async function () {
+    const cur = (await chrome.storage.local.get([_PH_QUEUE_KEY]))[_PH_QUEUE_KEY] || [];
+    cur.push(event);
+    // Hard cap — drop oldest events if we ever back up
+    while (cur.length > _PH_QUEUE_CAP) cur.shift();
+    await chrome.storage.local.set({ [_PH_QUEUE_KEY]: cur });
+  });
+  // The chain must survive a failed write, or one storage error would make
+  // every later enqueue reject too.
+  _phEnqueueChain = link.catch(function () {});
+  return link;
 }
 
 async function _phFlush() {
