@@ -4,9 +4,11 @@ Refreshes access tokens using stored refresh_token + client_secret (Web flow).
 """
 
 import logging
+import time
 from datetime import datetime, timezone
 
 import httpx
+from postgrest.exceptions import APIError
 
 from config import (
     AZURE_CLIENT_ID,
@@ -114,6 +116,134 @@ def _mark_requires_reauth(user_id: str, reason: str) -> None:
         logger.exception("Failed to mark user %s as requires_reauth", user_id)
 
 
+# ── migration-024 column guard ──────────────────────────────────────────────
+#
+# has_mail_read_scope is added by migration 024, which is run BY HAND on
+# Supabase. This code must deploy safely BEFORE that happens, and PostgREST
+# does not shrug at unknown columns — it raises:
+#
+#   SELECT ...,has_mail_read_scope → APIError code 42703
+#       ("column user_tokens.has_mail_read_scope does not exist")
+#   INSERT/UPDATE with the key      → APIError code PGRST204
+#       ("Could not find the 'has_mail_read_scope' column ... in the schema
+#        cache" — PostgREST rejects it before any SQL runs, so a retry
+#        without the key never half-writes)
+#
+# supabase-py surfaces both as postgrest.exceptions.APIError; it NEVER
+# returns a row that is merely missing the key. So "a missing column reads
+# as a missing dict key" — the assumption the first version of this feature
+# leaned on — is false, and without this guard an unrun migration 024 would
+# 500 every sign-in (via _persist_ms_tokens) and kill every token refresh,
+# including the worker beats that stop at the first failing user.
+#
+# Strategy: optimistic single query, with a process-cached fallback.
+#   * Steady state (migration run, i.e. forever after one weekend): the
+#     optimistic query simply succeeds — exactly ONE query, zero overhead.
+#     This is why the guard is not a catch-per-call double query.
+#   * Migration unrun: the first query fails once, we cache "column
+#     missing", and every later query goes straight to the column-free
+#     shape — again one query per call.
+#   * SELF-HEALING: while cached as missing we re-probe at most once per
+#     _MAIL_READ_COLUMN_RETRY_SECONDS. When migration 024 lands, every
+#     process (API + each Celery worker independently) starts reading the
+#     column again within that window — no redeploy, no restart.
+#
+# A row WITHOUT the key is semantically safe everywhere by design: all
+# readers use `.get("has_mail_read_scope") is not False`, i.e. absent ⇒
+# True ⇒ "user has Mail.Read" — correct for every pre-024 row, because the
+# column can only be missing before the split is allowed to be flipped on.
+#
+# Concurrency note: the state dict is shared across threads without a lock
+# on purpose — a race costs at worst one redundant probe query, never a
+# wrong answer.
+
+_MAIL_READ_COLUMN = "has_mail_read_scope"
+_MAIL_READ_COLUMN_RETRY_SECONDS = 300.0
+
+_mail_read_column_state = {
+    "missing": False,  # believed absent (migration 024 not run yet)
+    "retry_at": 0.0,   # monotonic deadline after which we probe again
+}
+
+
+def is_missing_mail_read_column(err: APIError) -> bool:
+    """True only for THE error that means migration 024 has not run.
+
+    Deliberately narrow — code AND column name must both match. Any other
+    APIError (RLS denial, some other missing column, malformed query) is a
+    real bug and must keep propagating exactly as it does today.
+    """
+    code = getattr(err, "code", None)
+    message = getattr(err, "message", None) or ""
+    return code in ("42703", "PGRST204") and _MAIL_READ_COLUMN in message
+
+
+def mail_read_column_attemptable() -> bool:
+    """Should the next user_tokens query include has_mail_read_scope?"""
+    if not _mail_read_column_state["missing"]:
+        return True
+    return time.monotonic() >= _mail_read_column_state["retry_at"]
+
+
+def mark_mail_read_column_missing() -> None:
+    _mail_read_column_state["missing"] = True
+    _mail_read_column_state["retry_at"] = (
+        time.monotonic() + _MAIL_READ_COLUMN_RETRY_SECONDS
+    )
+    logger.warning(
+        "user_tokens.%s does not exist yet (migration 024 unrun) — querying "
+        "without it and re-probing in %ss",
+        _MAIL_READ_COLUMN,
+        int(_MAIL_READ_COLUMN_RETRY_SECONDS),
+    )
+
+
+def mark_mail_read_column_present() -> None:
+    if _mail_read_column_state["missing"]:
+        logger.info(
+            "user_tokens.%s is now queryable — migration 024 has run",
+            _MAIL_READ_COLUMN,
+        )
+    _mail_read_column_state["missing"] = False
+    _mail_read_column_state["retry_at"] = 0.0
+
+
+def reset_mail_read_column_state() -> None:
+    """Test hook: forget everything learned about the column."""
+    _mail_read_column_state["missing"] = False
+    _mail_read_column_state["retry_at"] = 0.0
+
+
+def select_user_tokens(db, user_id: str, base_columns: str):
+    """SELECT one user's user_tokens row, adding has_mail_read_scope only
+    when the column is believed to exist.
+
+    On the fallback path the returned row simply lacks the key, which every
+    reader already treats as True ("has Mail.Read") — the correct value for
+    any row that can exist before migration 024.
+    """
+    if mail_read_column_attemptable():
+        try:
+            result = (
+                db.table("user_tokens")
+                .select(f"{base_columns}, {_MAIL_READ_COLUMN}")
+                .eq("user_id", user_id)
+                .execute()
+            )
+            mark_mail_read_column_present()
+            return result
+        except APIError as err:
+            if not is_missing_mail_read_column(err):
+                raise
+            mark_mail_read_column_missing()
+    return (
+        db.table("user_tokens")
+        .select(base_columns)
+        .eq("user_id", user_id)
+        .execute()
+    )
+
+
 def user_has_mail_read_scope(user_id: str) -> bool:
     """Has this user consented to Mail.Read?
 
@@ -127,13 +257,10 @@ def user_has_mail_read_scope(user_id: str) -> bool:
     established users to re-consent to something they already granted.
     """
     try:
-        result = (
-            get_db()
-            .table("user_tokens")
-            .select("has_mail_read_scope")
-            .eq("user_id", user_id)
-            .execute()
-        )
+        # Routed through the column guard: with migration 024 unrun this
+        # returns rows without the key (⇒ True below) instead of leaning on
+        # the except-arm — the fallback is a decision, not an accident.
+        result = select_user_tokens(get_db(), user_id, "user_id")
         if not result.data:
             return True
         return result.data[0].get("has_mail_read_scope") is not False
@@ -152,13 +279,13 @@ def get_fresh_access_token(user_id: str) -> str | None:
     3. Return None if neither works (user needs to re-login)
     """
     db = get_db()
-    result = (
-        db.table("user_tokens")
-        .select(
-            "access_token, refresh_token, has_onedrive_scope, has_mail_read_scope"
-        )
-        .eq("user_id", user_id)
-        .execute()
+    # Column-guarded select: with migration 024 unrun the row comes back
+    # WITHOUT has_mail_read_scope instead of the query raising 42703 —
+    # which used to kill this function for every caller, including the
+    # worker beats that die at the first failing user. The missing key
+    # then reads as True below, which is correct for every pre-024 row.
+    result = select_user_tokens(
+        db, user_id, "access_token, refresh_token, has_onedrive_scope"
     )
     if not result.data:
         return None

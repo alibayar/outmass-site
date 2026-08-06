@@ -16,6 +16,7 @@ from typing import Annotated
 
 import httpx
 import posthog
+from postgrest.exceptions import APIError
 from fastapi import (
     APIRouter,
     BackgroundTasks,
@@ -49,6 +50,7 @@ from config import (
     POSTHOG_API_KEY,
 )
 from models import audit
+from models import ms_token as ms_token_model
 from models import user as user_model
 from utils import welcome_email
 
@@ -375,20 +377,33 @@ def _persist_ms_tokens(
     re-launched consent in a loop.
 
     Rules:
-      - access_token: always overwrite — it's the freshest, widest-scope one.
+      - access_token: overwrite with the freshest one — EXCEPT when this
+        exchange requested a narrower scope set than the user's recorded
+        consent (a plain re-sign-in after the Mail.Read split flips on).
+        Storing that token would make get_fresh_access_token's Strategy 1
+        serve it for up to ~1h (the /me validity probe cannot see scopes)
+        and reply detection would 403 silently the whole time. Instead we
+        store NULL: Strategy 1 is skipped and the very next token use goes
+        straight to the refresh, which requests the full recorded consent
+        (wide Mail + OneDrive if granted) — one extra token round-trip,
+        never a wrong-scope window, and it also covers the combined case
+        where the same sign-in ADDS OneDrive while narrowing Mail.
       - refresh_token: only overwrite when Microsoft returned one; never
         clobber a still-good stored token with nothing.
       - has_onedrive_scope: sticky True once any OneDrive consent
         completes (the consent record outlives individual tokens).
+      - has_mail_read_scope: same stickiness; written only when migration
+        024's column exists (see the guarded write below).
     """
     from database import get_db
 
     db = get_db()
-    existing = (
-        db.table("user_tokens")
-        .select("id, has_onedrive_scope, has_mail_read_scope")
-        .eq("user_id", user_id)
-        .execute()
+    # Column-guarded select (models.ms_token): with migration 024 unrun this
+    # returns the row WITHOUT has_mail_read_scope instead of raising 42703 —
+    # which used to escape to main.py's global handler and 500 every OAuth
+    # callback, bypassing _error_page and its settle redirect (hung popups).
+    existing = ms_token_model.select_user_tokens(
+        db, user_id, "id, has_onedrive_scope"
     )
     previously_had_onedrive = bool(
         existing.data and existing.data[0].get("has_onedrive_scope")
@@ -405,26 +420,63 @@ def _persist_ms_tokens(
     else:
         previously_had_mail_read = False
 
+    has_mail_read = previously_had_mail_read or wants_mail_read
+    # This exchange asked Microsoft for LESS than the user's recorded
+    # consent — see the access_token rule in the docstring.
+    narrower_than_consent = previously_had_mail_read and not wants_mail_read
+
     token_row = {
-        "access_token": access_token,
+        "access_token": None if narrower_than_consent else access_token,
         "has_onedrive_scope": previously_had_onedrive or wants_onedrive,
-        "has_mail_read_scope": previously_had_mail_read or wants_mail_read,
     }
     if refresh_token:
         token_row["refresh_token"] = refresh_token
 
-    if existing.data:
-        db.table("user_tokens").update(token_row).eq("user_id", user_id).execute()
-    elif refresh_token:
-        token_row["user_id"] = user_id
-        db.table("user_tokens").insert(token_row).execute()
-    else:
-        # No stored row AND no refresh_token: shouldn't happen on a first
-        # consent (offline_access always yields one), and a row that can
-        # never refresh is useless — log loudly instead of half-inserting.
-        logger.warning(
-            "Token exchange for user %s returned no refresh_token on first "
-            "sign-in; tokens not persisted",
+    def _write(payload: dict) -> None:
+        if existing.data:
+            db.table("user_tokens").update(payload).eq(
+                "user_id", user_id
+            ).execute()
+        elif refresh_token:
+            db.table("user_tokens").insert(
+                {**payload, "user_id": user_id}
+            ).execute()
+        else:
+            # No stored row AND no refresh_token: shouldn't happen on a first
+            # consent (offline_access always yields one), and a row that can
+            # never refresh is useless — log loudly instead of half-inserting.
+            logger.warning(
+                "Token exchange for user %s returned no refresh_token on "
+                "first sign-in; tokens not persisted",
+                user_id,
+            )
+
+    # Guarded write. With migration 024 unrun, an update/insert payload
+    # containing has_mail_read_scope is rejected by PostgREST with PGRST204
+    # BEFORE any SQL runs (so the retry below never double-writes). The
+    # guard also covers the brief post-migration window where PostgREST's
+    # schema cache hasn't reloaded: the select above may already succeed
+    # while the write still bounces.
+    if ms_token_model.mail_read_column_attemptable():
+        try:
+            _write({**token_row, "has_mail_read_scope": has_mail_read})
+            return
+        except APIError as err:
+            if not ms_token_model.is_missing_mail_read_column(err):
+                raise
+            ms_token_model.mark_mail_read_column_missing()
+    _write(token_row)
+    if not has_mail_read:
+        # Only reachable when FIRST_SIGNIN_INCLUDE_MAIL_READ was flipped
+        # BEFORE migration 024 ran — an operator-order violation. The narrow
+        # consent cannot be recorded, migration 024 will backfill this row
+        # to TRUE, and this user's refresh will then over-request Mail.Read
+        # and fail with AADSTS65001. Loud on purpose.
+        logger.error(
+            "user %s consented WITHOUT Mail.Read but user_tokens.has_mail_"
+            "read_scope does not exist (migration 024 unrun) — the narrow "
+            "consent is NOT recorded and will be backfilled wrongly to TRUE. "
+            "Run migration 024 before flipping FIRST_SIGNIN_INCLUDE_MAIL_READ.",
             user_id,
         )
 
@@ -750,11 +802,16 @@ async def auth_callback(
     # authorized Mail.Send scope" (survives chargeback disputes), and
     # login ties that authorization to a specific session that may
     # later click Send.
+    #
+    # `exchange_scope`, NOT the MS_GRAPH_SCOPES constant: once the
+    # Mail.Read split flips on, narrow users never consent to Mail.Read,
+    # and an audit record asserting they did is worse than none — this
+    # trail exists precisely to be believed in a dispute.
     audit.emit(
         audit.EVENT_OAUTH_GRANTED,
         user_id=user["id"],
         email=user["email"],
-        metadata={"scopes": MS_GRAPH_SCOPES, "microsoft_id": ms_id},
+        metadata={"scopes": exchange_scope, "microsoft_id": ms_id},
         request=request,
     )
     audit.emit(

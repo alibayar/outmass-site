@@ -131,6 +131,19 @@ class FakeSupabase:
         self._rpc_results[name] = data
 
 
+@pytest.fixture(autouse=True)
+def _forget_mail_read_column_probe():
+    """models.ms_token caches "does user_tokens.has_mail_read_scope exist?"
+    for the process lifetime (migration-024 guard). One test simulating the
+    unrun migration must not silently switch every later test onto the
+    column-free query path — reset the probe on both sides of each test."""
+    from models import ms_token
+
+    ms_token.reset_mail_read_column_state()
+    yield
+    ms_token.reset_mail_read_column_state()
+
+
 @pytest.fixture()
 def fake_db():
     """Provide a FakeSupabase and patch database.get_db everywhere it's imported."""
