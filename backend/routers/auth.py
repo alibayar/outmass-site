@@ -196,7 +196,26 @@ _AADSTS_MEANINGS = {
     "AADSTS700016": "app_not_found_in_tenant",
     "AADSTS900561": "bad_request_method",
     "AADSTS7000218": "client_secret_missing",
+    # Fires on the token-EXCHANGE leg only: an unregistered redirect_uri at
+    # the authorize leg errors on Microsoft's own page and never reaches us.
+    "AADSTS50011": "redirect_uri_not_registered",
 }
+
+
+def _request_host(request: Request) -> str:
+    """Which public hostname served this request.
+
+    We run one backend behind two domains (api.getoutmass.com primary,
+    the railway.app domain as the extension's fallback), and some networks
+    filter one but not the other — Saudi ISPs blocked railway.app outright in
+    the 0.1.18 era. The 2026-08-05 Vietnam investigation burned an evening of
+    Ali reading Railway log screenshots to learn which door one user came
+    through; this property answers it from PostHog for every future attempt.
+    """
+    raw = request.headers.get("x-forwarded-host") or request.headers.get("host") or ""
+    # X-Forwarded-Host may be a comma-joined chain; the first entry is the
+    # client-facing one. Port and case are noise for a breakdown.
+    return raw.split(",")[0].strip().split(":")[0].lower()[:80]
 
 _AADSTS_RE = re.compile(r"AADSTS\d+")
 
@@ -218,7 +237,9 @@ def _classify_ms_error(error: str | None, description: str | None) -> dict:
     }
 
 
-def _track_ms_auth_failed(state: str | None, stage: str, fields: dict) -> None:
+def _track_ms_auth_failed(
+    state: str | None, stage: str, fields: dict, host: str = ""
+) -> None:
     """Report a sign-in that died on Microsoft's side.
 
     This used to be invisible. The callback rendered an error page and
@@ -245,6 +266,10 @@ def _track_ms_auth_failed(state: str | None, stage: str, fields: dict) -> None:
                 "attempt_id": attempt_id,
                 "install_source": _install_source(data.get("ext")),
                 "wants_onedrive": bool(data.get("od")),
+                # The domain Microsoft redirected the user's browser to. If a
+                # network blocks one of our two domains, failures cluster on
+                # the OTHER one's absence — measurable without server logs.
+                "host": host,
                 **fields,
             },
         )
@@ -349,6 +374,7 @@ def _persist_ms_tokens(
 
 @router.get("/login")
 async def login_redirect(
+    request: Request,
     ext: str | None = Query(None),
     include_onedrive: bool = Query(False),
     aid: str | None = Query(None),
@@ -414,6 +440,12 @@ async def login_redirect(
                     "attempt_id": safe_aid,
                     "install_source": _install_source(chosen_ext),
                     "wants_onedrive": include_onedrive,
+                    # Which of our two domains the extension's sticky base
+                    # actually picked. Distinguishes "user on the primary"
+                    # from "user riding the railway fallback because their
+                    # network filters the primary" — the fork the 2026-08-05
+                    # investigation could only close with Railway screenshots.
+                    "host": _request_host(request),
                 },
             )
         except Exception:
@@ -438,16 +470,23 @@ async def auth_callback(
     """
     if error:
         _track_ms_auth_failed(
-            state, "authorize", _classify_ms_error(error, error_description)
+            state,
+            "authorize",
+            _classify_ms_error(error, error_description),
+            host=_request_host(request),
         )
-        return _error_page(error_description or error)
+        return _error_page(error_description or error, state=state)
 
     if not code:
-        _track_ms_auth_failed(state, "authorize", {"error": "no_code"})
-        return _error_page("No authorization code received")
+        _track_ms_auth_failed(
+            state, "authorize", {"error": "no_code"}, host=_request_host(request)
+        )
+        return _error_page("No authorization code received", state=state)
 
     if not AZURE_CLIENT_SECRET:
-        return _error_page("Server misconfigured: AZURE_CLIENT_SECRET not set")
+        return _error_page(
+            "Server misconfigured: AZURE_CLIENT_SECRET not set", state=state
+        )
 
     # Exchange code for tokens using Web platform (client_secret)
     async with httpx.AsyncClient() as client:
@@ -480,7 +519,7 @@ async def auth_callback(
             )
         except httpx.HTTPError as e:
             logger.error("Token exchange network error: %s", e)
-            return _error_page("Could not reach Microsoft")
+            return _error_page("Could not reach Microsoft", state=state)
 
     if token_resp.status_code != 200:
         err = token_resp.json() if token_resp.content else {}
@@ -488,21 +527,24 @@ async def auth_callback(
         _track_ms_auth_failed(
             state,
             "token_exchange",
-            {
+            host=_request_host(request),
+            fields={
                 "status": token_resp.status_code,
                 **_classify_ms_error(
                     err.get("error"), err.get("error_description")
                 ),
             },
         )
-        return _error_page(err.get("error_description", "Token exchange failed"))
+        return _error_page(
+            err.get("error_description", "Token exchange failed"), state=state
+        )
 
     tokens = token_resp.json()
     access_token = tokens.get("access_token")
     refresh_token = tokens.get("refresh_token")
 
     if not access_token:
-        return _error_page("No access token received")
+        return _error_page("No access token received", state=state)
 
     # Fetch user profile
     async with httpx.AsyncClient() as client:
@@ -513,7 +555,7 @@ async def auth_callback(
 
     if profile_resp.status_code != 200:
         logger.error("Profile fetch failed: %s", profile_resp.text)
-        return _error_page("Could not fetch user profile")
+        return _error_page("Could not fetch user profile", state=state)
 
     profile = profile_resp.json()
     ms_id = profile.get("id", "")
@@ -521,7 +563,7 @@ async def auth_callback(
     name = profile.get("displayName", "")
 
     if not ms_id or not email:
-        return _error_page("Incomplete user profile from Microsoft")
+        return _error_page("Incomplete user profile from Microsoft", state=state)
 
     # Upsert user in DB
     user, created = user_model.upsert_user(
@@ -614,6 +656,7 @@ async def auth_callback(
                     "install_source": _src,
                     "ext_id": ext_from_state or "",
                     "plan": user.get("plan", "free"),
+                    "host": _request_host(request),
                     "$set": {"install_source": _src},
                 },
             )
@@ -632,11 +675,69 @@ async def auth_callback(
     return RedirectResponse(url=f"{ext_redirect}#{fragment}")
 
 
-def _error_page(message: str) -> HTMLResponse:
-    """Minimal HTML error page shown when auth fails."""
+_SETTLE_DELAY_MS = 9000
+
+
+def _settle_fragment(message: str) -> str:
+    """The error string carried back to the extension in the URL fragment.
+
+    The frozen 0.1.26 client parses the fragment with URLSearchParams and, on
+    `error=`, resolves the flight and reports oauth_failed with
+    reason=backend_error, code=value[:64] — a path that shipped and works. The
+    value doubles as BOTH the user-visible error text (popup, sidebar reauth
+    banner, OneDrive picker) and the telemetry code, so: one short plain
+    sentence, stable per failure class so PostHog can group it, ASCII only
+    (no `$` — the sidebar's i18n substitution treats it as a placeholder
+    marker), and hard-capped at 64 chars because that is where the client
+    truncates the code anyway.
+    """
+    clean = re.sub(r"[^A-Za-z0-9 .,:()\-]", "", message or "")
+    clean = re.sub(r"\s+", " ", clean).strip()
+    return (clean or "Sign-in failed, please try again")[:64]
+
+
+def _error_page(message: str, state: str | None = None) -> HTMLResponse:
+    """HTML error page shown in the auth popup when sign-in fails.
+
+    Until 2026-08-05 this page simply sat there. That had a nasty side
+    effect: launchWebAuthFlow only settles when the window reaches the
+    chromiumapp.org redirect or closes, so this page HELD the popup open —
+    the user parked it behind other windows, the extension's single-flight
+    guard then made every later Sign-in click silently join the dead flight
+    (the 2026-08-03 rage-uninstall), and Chrome filed the eventual close as
+    "user did not approve", burying the real AADSTS reason this page was
+    displaying all along.
+
+    Now, when the state identifies an allowlisted extension, the page shows
+    the message for _SETTLE_DELAY_MS (9s) and then redirects itself to that
+    extension's chromiumapp.org URL with the error in the FRAGMENT. The
+    browser closes the popup, the flight settles, the frozen 0.1.26 client
+    reports the real reason through its existing backend_error path, and the
+    Sign-in button is immediately usable again.
+
+    The redirect is gated on _decode_state_ext, which validates against
+    ALLOWED_EXTENSION_IDS — state is attacker-mintable (unsigned base64
+    JSON), and redirecting to an arbitrary <id>.chromiumapp.org would hang
+    a foreign browser's popup on an unresolvable address. No valid state →
+    no redirect → exactly the old behaviour.
+    """
     safe_message = (
         message.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
     )
+    settle_ext = _decode_state_ext(state)
+    if settle_ext:
+        settle_url = (
+            f"https://{settle_ext}.chromiumapp.org/auth#"
+            + urllib.parse.urlencode({"error": _settle_fragment(message)})
+        )
+        footer = "<p>This window will return to OutMass in a few seconds.</p>"
+        settle_script = (
+            f'<script>setTimeout(function(){{location.replace({json.dumps(settle_url)})}},'
+            f"{_SETTLE_DELAY_MS});</script>"
+        )
+    else:
+        footer = "<p>Please close this window and try again.</p>"
+        settle_script = ""
     html = f"""<!DOCTYPE html>
 <html><head><title>OutMass Auth Error</title>
 <style>body{{font-family:sans-serif;padding:40px;max-width:500px;margin:auto;text-align:center;color:#323130}}
@@ -644,7 +745,7 @@ h1{{color:#a4262c}}.msg{{background:#fde7e9;padding:12px;border-radius:4px;margi
 </head><body>
 <h1>Authentication Failed</h1>
 <div class="msg">{safe_message}</div>
-<p>Please close this window and try again.</p>
+{footer}{settle_script}
 </body></html>"""
     return HTMLResponse(content=html, status_code=400)
 

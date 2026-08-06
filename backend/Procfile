@@ -5,6 +5,13 @@
 # forced to pick one of the three commands below. Otherwise every new
 # service silently inherits the web command (ask me how I know).
 #
+# railway.json also intentionally OMITS healthcheckPath, for the same
+# per-service reason: worker and beat run no HTTP server, so a shared
+# healthcheck would fail their every deploy. Set it on the WEB service
+# only, by hand: Settings → Deploy → Healthcheck Path = /
+# (it gates deploy cutover so a restarting web no longer drops in-flight
+# OAuth callbacks — the client only auto-retries the login leg).
+#
 #   web service    → uvicorn main:app --host 0.0.0.0 --port $PORT
 #   worker service → celery -A workers.celery_app worker --loglevel=info --concurrency=2
 #   beat service   → celery -A workers.celery_app beat --loglevel=info
