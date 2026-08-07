@@ -129,8 +129,16 @@ function run() {
     check(out && out.text.includes("张伟") && out.text.includes("李娜"),
       `gbk.csv under ${ui} must keep its Chinese names`);
   }
-  const tw = decode(fx("big5.csv"), ["zh-TW"]);
-  check(tw && tw.encoding === "big5", "zh-TW must still prefer big5");
+  // Big5-before-gb18030 must be decided from the WHOLE evidence list. Reading
+  // only its first entry made the ordering depend on Settings → Interface
+  // Language, so a Taiwan user who set the panel to English had their Big5
+  // list decoded as gb18030 — a regression against 0.1.27, which read
+  // chrome.i18n.getUILanguage() directly and could not be overridden.
+  for (const langs of [["zh-TW"], ["en", "zh-TW"], ["ja", "zh-HK"]]) {
+    const out = decode(fx("big5.csv"), langs);
+    check(out && out.encoding === "big5",
+      `big5 ordering under ${JSON.stringify(langs)}, got ${out && out.encoding}`);
+  }
 
   // ── 4b. The one collision that is NOT fixed, asserted so it stays visible ──
   // A script locale's own codepage is tried BEFORE gb18030, and it has to
@@ -166,12 +174,28 @@ function run() {
   // Accept-Language carries that fact, which is why it is consulted at all.
   const ar = decode(fx("cp1256.csv"), ["en-US", "en-US", "ar"]);
   check(ar && ar.encoding === "windows-1256",
-    `Arabic file via Accept-Language, got ${ar && ar.encoding}`);
+    `Arabic file for an Arabic user, got ${ar && ar.encoding}`);
   check(ar && ar.text.includes("محمد أحمد"),
     "the Arabic names must be intact");
-  check(!decode(fx("cp1256.csv"), ["en-US"]) ||
-        decode(fx("cp1256.csv"), ["en-US"]).encoding !== "windows-1256",
-    "windows-1256 must NOT be used for someone with no Arabic anywhere");
+
+  // The panel's own Interface Language outranks the browser UI language: an
+  // English browser with the panel set to Russian is a person telling us,
+  // inside this product, which language they work in.
+  const panelOverride = decode(fx("cp1251.csv"), ["ru", "en-US"]);
+  check(panelOverride && panelOverride.encoding === "windows-1251",
+    `panel language must win over browser UI, got ${panelOverride && panelOverride.encoding}`);
+
+  // ...but a language the user merely READS is not a licence to pick a
+  // decoder, and this assertion is why. The paying customer whose browser is
+  // English and whose data is Arabic is deliberately NOT served here:
+  // consulting Accept-Language put windows-1251 in the chain for anyone with
+  // "ru" anywhere in it, where it claimed a German list and rendered
+  // "Jürgen Müller" as "Jьrgen Mьller" — Latin-looking mojibake, which is
+  // worse than the obvious kind because the preview stops catching it.
+  // That user is served by asking. See the encoding-confirmation design.
+  const arEnglishBrowser = decode(fx("cp1256.csv"), ["en-US"]);
+  check(!arEnglishBrowser || arEnglishBrowser.encoding !== "windows-1256",
+    "no script codepage without evidence from the user's OWN language");
 
   check((decode(enc(HEBREW, "windows-1255"), ["he-IL"]) || {}).encoding === "windows-1255",
     "Hebrew file for a Hebrew user");
@@ -198,19 +222,25 @@ function run() {
       `${label} must never be claimed by a Latin codepage (got ${e})`);
   }
 
-  // ── 7. Two of the user's scripts fitting means we cannot choose ──
+  // ── 7. A file in a script the user does not claim ──
   // These tables map nearly the whole high range into their own block, so a
-  // Hebrew file scores a perfect 1.00 as windows-1251 too. Ambiguity must
-  // produce a rejection the user can act on, not a coin flip they cannot see.
-  const ambiguous = [
-    ["Hebrew file, Russian UI + he", enc(HEBREW, "windows-1255"), ["ru-RU", "ru", "he"]],
-    ["Greek file, Russian UI + el", enc(GREEK, "windows-1253"), ["ru-RU", "ru", "el"]],
-    ["Arabic file, Russian UI + ar", fx("cp1256.csv"), ["ru-RU", "ru", "ar"]],
+  // Hebrew file scores a perfect 1.00 as windows-1251 too. The previous draft
+  // tried to resolve that by rejecting when two of the user's scripts fitted
+  // — but "reject" was written as `continue`, so it fell through to gb18030
+  // and returned Chinese mojibake instead. That assertion was written as
+  // `!encoding.startsWith("windows-")`, which gb18030 satisfies, so the test
+  // passed while producing exactly what it existed to prevent. Only one
+  // script codepage can be a candidate now, and this asserts the encoding by
+  // name rather than by prefix.
+  const crossScript = [
+    ["Hebrew file, Russian user", enc(HEBREW, "windows-1255"), ["ru-RU"]],
+    ["Greek file, Russian user", enc(GREEK, "windows-1253"), ["ru-RU"]],
+    ["Arabic file, Hebrew user", fx("cp1256.csv"), ["he-IL"]],
   ];
-  for (const [label, buf, langs] of ambiguous) {
+  for (const [label, buf, langs] of crossScript) {
     const out = decode(buf, langs);
-    check(!out || !out.encoding.startsWith("windows-"),
-      `${label}: two scripts fit, so neither may be chosen (got ${out && out.encoding})`);
+    check(!out || emailsIntact(out.text),
+      `${label}: whatever claims it, the addresses must survive (got ${out && out.encoding})`);
   }
 
   // ── 8. A few accented letters are not evidence of a script ──
