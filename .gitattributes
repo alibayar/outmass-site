@@ -1,0 +1,9 @@
+# The CSV encoding fixtures are byte fixtures, not text. They are written in
+# windows-1251/1252/1254/1256, GBK, Big5 and Shift_JIS, plus one file of
+# deliberate garbage, and the decoder test asserts on the exact bytes.
+#
+# Without this, core.autocrlf rewrites 0x0A to 0x0D 0x0A on every Windows
+# checkout — silently altering the byte stream the test is meant to pin. Git
+# already warned about it when cp1252.csv was added (2026-08-08); today the
+# fixtures happen to survive it, which is luck, not a guarantee.
+extension/tests/fixtures/* -text
