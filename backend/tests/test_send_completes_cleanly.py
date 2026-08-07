@@ -77,6 +77,81 @@ def test_clean_send_lands_on_sent_and_charges_quota_once():
     )
 
 
+def test_cancelled_mid_send_still_charges_the_recipients_that_went_out():
+    """A deploy during a send must not give the emails away for free.
+
+    asyncio.CancelledError has derived from BaseException since Python 3.8,
+    so `except Exception` does not catch it — and uvicorn raises exactly that
+    into in-flight background tasks when it shuts down on SIGTERM, which
+    happens on every deploy.
+
+    Each recipient is marked 'sent' and counted into campaigns.sent_count as
+    the loop runs, but the user's monthly quota is charged once at the end.
+    Cancelled in between, the per-contact state was durable and the quota
+    charge simply vanished: the emails went out, nothing was counted, and the
+    resumed remainder was later charged against a quota that had never seen
+    them.
+    """
+    import asyncio
+
+    from routers import campaigns as campaigns_router
+
+    increments = []
+    updates = []
+    calls = {"n": 0}
+
+    async def _ok_then_cancelled(**kwargs):
+        calls["n"] += 1
+        if calls["n"] > 2:
+            raise asyncio.CancelledError()
+        return {"success": True}
+
+    async def _run():
+        await campaigns_router._run_campaign_send(
+            campaign_id="camp-cancel",
+            campaign={"id": "camp-cancel", "subject": "Hi", "body": "Hello",
+                      "attachments": []},
+            send_list=[_contact("c%d" % i, "u%d@example.com" % i) for i in range(5)],
+            ab_test=None,
+            half=0,
+            ab_remaining=[],
+            access_token="tok",
+            user=dict(FAKE_STARTER_USER),
+            suppressed_emails=set(),
+        )
+
+    with patch("models.contact.mark_sent"), \
+         patch("models.contact.mark_failed"), \
+         patch("models.campaign.increment_stat"), \
+         patch("models.campaign.update_campaign",
+               side_effect=lambda cid, payload: updates.append(payload)), \
+         patch("models.user.increment_sent_count",
+               side_effect=lambda uid, n: increments.append(n)), \
+         patch("routers.campaigns._send_single_email",
+               new=AsyncMock(side_effect=_ok_then_cancelled)), \
+         patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
+        try:
+            asyncio.run(_run())
+        except asyncio.CancelledError:
+            cancelled = True
+        else:
+            cancelled = False
+
+    assert cancelled, (
+        "CancelledError must propagate — swallowing it tells the event loop "
+        "this task is still alive while it is shutting down"
+    )
+    assert increments == [2], (
+        f"the 2 recipients that actually went out must be charged, got "
+        f"{increments} — anything else is either free email or double billing"
+    )
+    assert updates and updates[-1] == {"status": "partial"}, (
+        f"a cancelled send must land on 'partial', got {updates}; 'sending' "
+        "waits an hour for the sweep and 'scheduled' is invisible to every "
+        "recovery path"
+    )
+
+
 def test_logging_is_not_shadowed_inside_the_send_path():
     """The specific trap, pinned by name.
 

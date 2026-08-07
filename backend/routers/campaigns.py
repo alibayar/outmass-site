@@ -889,6 +889,39 @@ async def _run_campaign_send(
                     else "partial"
                 },
             )
+    except asyncio.CancelledError:
+        # NOT covered by `except Exception`. CancelledError has derived from
+        # BaseException since Python 3.8, and uvicorn raises it into the
+        # awaits above when it cancels in-flight background tasks on
+        # SIGTERM — i.e. on every deploy, which for this project is often.
+        #
+        # What that cost: each recipient is marked 'sent' and counted into
+        # campaigns.sent_count as it goes, but the user's monthly quota is
+        # charged ONCE after the whole loop. Cancelled mid-loop, the
+        # per-contact state was durable and the quota charge simply
+        # vanished, so a deploy during a 1,500-recipient send let ~600 real
+        # emails go out uncounted — and the resumed remainder then charged
+        # against a quota that had never seen them.
+        #
+        # Charge what actually went out, park the campaign where the
+        # recovery paths can see it, then re-raise: swallowing cancellation
+        # would leave the event loop shutting down while this task claims
+        # to still be running.
+        try:
+            if not quota_counted:
+                user_model.increment_sent_count(user["id"], sent_count)
+        except Exception:  # noqa: BLE001
+            pass
+        try:
+            campaign_model.update_campaign(campaign_id, {"status": "partial"})
+        except Exception:  # noqa: BLE001
+            pass
+        logging.getLogger(__name__).warning(
+            "campaign %s cancelled mid-send: charged %s sent recipients",
+            campaign_id,
+            sent_count,
+        )
+        raise
     except Exception:  # noqa: BLE001
         logging.getLogger(__name__).exception(
             "Background campaign send failed: campaign=%s", campaign_id

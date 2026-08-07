@@ -505,12 +505,41 @@ def reset_stuck_sending_campaigns():
     only 'scheduled' rows, so it never retries on its own.
 
     Strategy:
-      - Find campaigns in 'sending' that haven't moved in 30+ minutes
-        (we use scheduled_for as a proxy when no updated_at column).
-      - If any contact rows are status='sent', mark the campaign
-        'partial' so the user can see it + (later) hit Resume.
-      - If nothing was sent, drop it back to 'scheduled' so the next
-        beat retries from scratch.
+      - Find campaigns in 'sending' whose LAST ACTUAL SEND is 30+
+        minutes old (or, before the first send lands, whose row is
+        30+ minutes old).
+      - Mark them 'partial' so the user sees them and both resume
+        paths can pick them up.
+
+    Freshness is measured from contacts.sent_at, not from
+    scheduled_for. That used to be the proxy, and it was a
+    correctness bug rather than an approximation: `scheduled_for` is
+    NULL for every campaign started with Send now (only the scheduler
+    writes it), so `if scheduled_for and scheduled_for > cutoff`
+    short-circuited and the 30-minute guard was skipped ENTIRELY for
+    exactly those campaigns. A send-now run is one Graph call plus
+    SEND_DELAY_SECONDS per recipient, so any list big enough to still
+    be running when the hourly beat fired was flipped to 'partial'
+    mid-flight — after which Resume (or auto_resume_partial_campaigns,
+    whose eligibility check is only a date window) could start a
+    SECOND loop over contacts the first loop had not reached yet, and
+    email those people twice.
+
+    contacts.sent_at is written per recipient as the loop runs, so
+    "the newest sent_at is recent" means the loop is alive. It needs
+    no migration and it cannot be NULL for a campaign that is
+    genuinely progressing — which is the property scheduled_for never
+    had.
+
+    Nothing is ever parked on 'scheduled' any more either. A send-now
+    campaign has scheduled_for NULL, and get_due_scheduled_campaigns
+    filters `.lte("scheduled_for", now)`, which NULL never satisfies —
+    so 'scheduled' made the campaign invisible to the send beat, to
+    Resume (409s unless 'partial'), to auto-resume ('partial' only)
+    and to this sweep ('sending' only). Its recipients were reachable
+    by nothing. _run_campaign_send's own failure handler already
+    refuses to write 'scheduled' for this reason; this sweep was the
+    remaining way in.
 
     Idempotent — running this twice in a row is a no-op the second
     time because the status no longer matches. Hourly schedule keeps
@@ -526,7 +555,7 @@ def reset_stuck_sending_campaigns():
     try:
         stuck = (
             db.table("campaigns")
-            .select("id, scheduled_for, sent_count, status")
+            .select("id, scheduled_for, sent_count, status, created_at")
             .eq("status", "sending")
             .execute()
         )
@@ -541,45 +570,54 @@ def reset_stuck_sending_campaigns():
     reset_to_partial = 0
     reset_to_scheduled = 0
     for row in rows:
-        # If we have a scheduled_for that's recent (within 30 min) the
-        # campaign might genuinely still be processing — skip.
-        scheduled_for = row.get("scheduled_for")
-        if scheduled_for and scheduled_for > cutoff:
-            continue
-
-        # Count how many contacts already went out so we know whether
-        # to mark partial (some sent) vs reschedule (none sent).
+        # The newest recipient that actually went out. Present => the send
+        # loop reached it, so its age is the age of the campaign's last
+        # observable progress.
         try:
-            sent_contacts = (
+            latest = (
                 db.table("contacts")
-                .select("id")
+                .select("sent_at")
                 .eq("campaign_id", row["id"])
                 .eq("status", "sent")
+                .order("sent_at", desc=True)
                 .limit(1)
                 .execute()
             )
-            has_progress = bool(sent_contacts.data)
+            newest = (latest.data or [{}])[0].get("sent_at")
         except Exception:  # noqa: BLE001
-            has_progress = bool((row.get("sent_count") or 0) > 0)
+            # Cannot measure progress => cannot prove it is stuck. Leaving a
+            # dead campaign in 'sending' costs one hour until the next beat;
+            # flipping a live one costs the recipients a duplicate email.
+            continue
 
-        new_status = "partial" if has_progress else "scheduled"
+        if newest:
+            if newest > cutoff:
+                continue  # still delivering — leave it alone
+        else:
+            # No send has landed yet. Before the first Graph call returns
+            # that is completely normal, so fall back to the row's own age.
+            # A missing created_at means no basis to judge — skip.
+            created_at = row.get("created_at")
+            if not created_at or created_at > cutoff:
+                continue
+
         try:
             (
                 db.table("campaigns")
-                .update({"status": new_status})
+                .update({"status": "partial"})
                 .eq("id", row["id"])
                 .eq("status", "sending")  # double-check to avoid races
                 .execute()
             )
-            if new_status == "partial":
-                reset_to_partial += 1
-            else:
-                reset_to_scheduled += 1
+            reset_to_partial += 1
         except Exception:  # noqa: BLE001
             continue
 
     return {
         "reset_to_partial": reset_to_partial,
+        # Always 0 now — kept so the beat's result shape does not change
+        # under anything reading it. See the docstring: 'scheduled' with a
+        # NULL scheduled_for is a state no recovery path can see.
         "reset_to_scheduled": reset_to_scheduled,
     }
 

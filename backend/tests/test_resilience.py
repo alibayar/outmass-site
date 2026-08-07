@@ -127,14 +127,15 @@ def test_stuck_reset_does_nothing_when_no_stuck_campaigns(fake_db):
 
 
 def test_stuck_reset_marks_partial_when_some_sent(fake_db):
-    """A stuck 'sending' campaign with at least one sent contact gets
-    reset to 'partial' so the user can hit Resume."""
+    """A stuck 'sending' campaign whose last send is old gets reset to
+    'partial' so the user — and both resume paths — can see it."""
     from workers import scheduled_worker
 
     old_iso = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
     stuck = {
         "id": "c-stuck-progress",
         "scheduled_for": old_iso,
+        "created_at": old_iso,
         "sent_count": 5,
         "status": "sending",
     }
@@ -149,26 +150,34 @@ def test_stuck_reset_marks_partial_when_some_sent(fake_db):
             return super().update(vals)
 
     campaigns = _CampaignsTable(rows=[stuck])
-    contacts = FakeQueryBuilder(data=[{"id": "co-1"}])  # at least one sent
+    contacts = FakeQueryBuilder(data=[{"sent_at": old_iso}])
     fake_db.set_table("campaigns", campaigns)
     fake_db.set_table("contacts", contacts)
 
     result = scheduled_worker.reset_stuck_sending_campaigns()
     assert result["reset_to_partial"] == 1
     assert result["reset_to_scheduled"] == 0
-    # Status update was 'partial'
     assert any(u.get("status") == "partial" for u in campaigns.update_calls)
 
 
-def test_stuck_reset_marks_scheduled_when_nothing_sent(fake_db):
-    """Stuck campaign that never made progress goes back to 'scheduled'
-    so the next beat retries from scratch."""
+def test_stuck_reset_never_parks_a_campaign_on_scheduled(fake_db):
+    """A campaign that made no progress must still become 'partial'.
+
+    It used to be written back to 'scheduled'. For a Send-now campaign
+    scheduled_for is NULL, and get_due_scheduled_campaigns filters
+    `.lte("scheduled_for", now)`, which NULL never satisfies — so
+    'scheduled' hid the campaign from the send beat, from Resume (409s
+    unless 'partial'), from auto-resume ('partial' only) and from this
+    sweep ('sending' only). Its recipients were reachable by nothing at
+    all, and nobody was told.
+    """
     from workers import scheduled_worker
 
     old_iso = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
     stuck = {
         "id": "c-stuck-fresh",
-        "scheduled_for": old_iso,
+        "scheduled_for": None,
+        "created_at": old_iso,
         "sent_count": 0,
         "status": "sending",
     }
@@ -183,24 +192,75 @@ def test_stuck_reset_marks_scheduled_when_nothing_sent(fake_db):
             return super().update(vals)
 
     campaigns = _CampaignsTable(rows=[stuck])
-    contacts = FakeQueryBuilder(data=[])  # nothing sent
     fake_db.set_table("campaigns", campaigns)
-    fake_db.set_table("contacts", contacts)
+    fake_db.set_table("contacts", FakeQueryBuilder(data=[]))  # nothing sent
 
     result = scheduled_worker.reset_stuck_sending_campaigns()
-    assert result["reset_to_scheduled"] == 1
-    assert any(u.get("status") == "scheduled" for u in campaigns.update_calls)
+    assert result["reset_to_scheduled"] == 0
+    assert campaigns.update_calls, "the campaign must still be recovered"
+    assert all(u.get("status") == "partial" for u in campaigns.update_calls)
 
 
-def test_stuck_reset_skips_recent_campaigns(fake_db):
-    """A campaign whose scheduled_for is within the 30-min window is
-    considered legitimately processing, not stuck."""
+def test_stuck_reset_leaves_a_running_send_now_campaign_alone(fake_db):
+    """THE duplicate-email bug.
+
+    Send now leaves campaigns.scheduled_for NULL — only the scheduler
+    ever writes it. The old freshness guard was
+    `if scheduled_for and scheduled_for > cutoff`, so for every send-now
+    campaign it short-circuited on the falsy NULL and the 30-minute
+    window was skipped entirely. A campaign still delivering when the
+    hourly beat fired was flipped to 'partial' mid-flight, and Resume or
+    auto_resume_partial_campaigns could then start a SECOND loop over
+    the contacts the first loop had not reached — emailing those people
+    twice.
+
+    Freshness now comes from the newest contacts.sent_at, which is
+    written per recipient as the loop runs and cannot be NULL for a
+    campaign that is genuinely progressing.
+    """
     from workers import scheduled_worker
 
-    recent_iso = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    running = {
+        "id": "c-send-now",
+        "scheduled_for": None,  # Send now never sets this
+        "created_at": (datetime.now(timezone.utc) - timedelta(hours=3)).isoformat(),
+        "sent_count": 1800,
+        "status": "sending",
+    }
+
+    class _CampaignsTable(FakeQueryBuilder):
+        def __init__(self, rows):
+            super().__init__(data=rows)
+            self.update_calls = []
+
+        def update(self, vals):
+            self.update_calls.append(vals)
+            return super().update(vals)
+
+    campaigns = _CampaignsTable(rows=[running])
+    # A recipient went out 20 seconds ago: the loop is alive.
+    just_now = (datetime.now(timezone.utc) - timedelta(seconds=20)).isoformat()
+    fake_db.set_table("campaigns", campaigns)
+    fake_db.set_table("contacts", FakeQueryBuilder(data=[{"sent_at": just_now}]))
+
+    result = scheduled_worker.reset_stuck_sending_campaigns()
+    assert result["reset_to_partial"] == 0, (
+        "a campaign that sent 20 seconds ago is not stuck — flipping it "
+        "invites a concurrent second send loop"
+    )
+    assert campaigns.update_calls == []
+
+
+def test_stuck_reset_skips_a_campaign_that_has_not_sent_yet(fake_db):
+    """Between /send returning and the first Graph call landing there are
+    no sent contacts at all. That is normal, not stuck, so the row's own
+    age is the fallback."""
+    from workers import scheduled_worker
+
     fresh = {
-        "id": "c-fresh",
-        "scheduled_for": recent_iso,
+        "id": "c-just-started",
+        "scheduled_for": None,
+        "created_at": (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat(),
         "sent_count": 0,
         "status": "sending",
     }
@@ -219,7 +279,77 @@ def test_stuck_reset_skips_recent_campaigns(fake_db):
     fake_db.set_table("contacts", FakeQueryBuilder(data=[]))
 
     result = scheduled_worker.reset_stuck_sending_campaigns()
-    # Nothing reset because campaign is "fresh"
+    assert result["reset_to_partial"] == 0
+    assert campaigns.update_calls == []
+
+
+def test_stuck_reset_skips_when_progress_cannot_be_measured(fake_db):
+    """If the contacts lookup fails we cannot prove the campaign is stuck.
+
+    Leaving a dead campaign in 'sending' costs an hour until the next
+    beat. Flipping a live one costs its recipients a duplicate email, so
+    the tie goes to doing nothing.
+    """
+    from workers import scheduled_worker
+
+    old_iso = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+
+    class _CampaignsTable(FakeQueryBuilder):
+        def __init__(self, rows):
+            super().__init__(data=rows)
+            self.update_calls = []
+
+        def update(self, vals):
+            self.update_calls.append(vals)
+            return super().update(vals)
+
+    class _ExplodingContacts(FakeQueryBuilder):
+        def execute(self):
+            raise RuntimeError("contacts unavailable")
+
+    campaigns = _CampaignsTable(rows=[{
+        "id": "c-unknown",
+        "scheduled_for": None,
+        "created_at": old_iso,
+        "sent_count": 3,
+        "status": "sending",
+    }])
+    fake_db.set_table("campaigns", campaigns)
+    fake_db.set_table("contacts", _ExplodingContacts(data=[]))
+
+    result = scheduled_worker.reset_stuck_sending_campaigns()
+    assert result["reset_to_partial"] == 0
+    assert campaigns.update_calls == []
+
+
+def test_stuck_reset_skips_recent_campaigns(fake_db):
+    """A scheduled campaign whose last send is inside the 30-min window is
+    legitimately processing, not stuck."""
+    from workers import scheduled_worker
+
+    recent_iso = (datetime.now(timezone.utc) - timedelta(minutes=5)).isoformat()
+    fresh = {
+        "id": "c-fresh",
+        "scheduled_for": recent_iso,
+        "created_at": recent_iso,
+        "sent_count": 0,
+        "status": "sending",
+    }
+
+    class _CampaignsTable(FakeQueryBuilder):
+        def __init__(self, rows):
+            super().__init__(data=rows)
+            self.update_calls = []
+
+        def update(self, vals):
+            self.update_calls.append(vals)
+            return super().update(vals)
+
+    campaigns = _CampaignsTable(rows=[fresh])
+    fake_db.set_table("campaigns", campaigns)
+    fake_db.set_table("contacts", FakeQueryBuilder(data=[]))
+
+    result = scheduled_worker.reset_stuck_sending_campaigns()
     assert result["reset_to_partial"] + result["reset_to_scheduled"] == 0
     assert campaigns.update_calls == []
 
