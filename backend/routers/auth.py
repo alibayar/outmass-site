@@ -1012,7 +1012,28 @@ h1{{color:#a4262c}}.msg{{background:#fde7e9;padding:12px;border-radius:4px;margi
 <div class="msg">{safe_message}</div>
 {footer}{settle_script}
 </body></html>"""
-    return HTMLResponse(content=html, status_code=400)
+    # 200, not 400 — and that is the whole point of this line.
+    #
+    # Chromium fails a launchWebAuthFlow navigation whose response code is
+    # >= 400 and reports it as "Authorization page could not be loaded".
+    # So a 400 here destroyed everything this page does: the browser tore
+    # the popup down before the settle script above could run, the real
+    # AADSTS reason never reached the client, and — worse — the generic
+    # load-failure message matched the extension's `auth_page_failed`
+    # branch, which fires a one-shot auto-retry. A user who had just
+    # DECLINED consent was handed a fresh consent screen 3 seconds later.
+    # The comment guarding that retry says consent declines must never be
+    # retried; it was correct and simply never engaged, because the decline
+    # arrived disguised as a page-load failure.
+    #
+    # Measured 2026-08-07: a US user clicked sign-in 48s after installing,
+    # then fought that loop six times over 75 minutes and left.
+    #
+    # Nothing reads this status code. The page is only ever loaded inside
+    # the auth popup, and both the message and the settle fragment are the
+    # actual channel. Serving it as a successful response is what lets the
+    # browser render it and then follow the redirect we chose.
+    return HTMLResponse(content=html, status_code=200)
 
 
 @router.post("/microsoft", response_model=AuthResponse)

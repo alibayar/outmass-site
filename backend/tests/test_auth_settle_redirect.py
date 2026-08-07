@@ -253,13 +253,14 @@ def test_recursion_error_is_swallowed_by_decode_state():
         sys.setrecursionlimit(original)
 
 
-def test_deeply_nested_state_is_a_400_not_a_500(client):
+def test_deeply_nested_state_is_our_page_not_a_500(client):
     """The same thing end-to-end through the real endpoint."""
     resp = client.get(
         "/auth/callback",
         params={"error": "access_denied", "state": _nested_state(20000)},
     )
-    assert resp.status_code == 400
+    assert resp.status_code == 200
+    assert "Authentication Failed" in resp.text, "our page, not a stack trace"
     assert "chromiumapp.org" not in resp.text, "unparseable state must not redirect"
 
 
@@ -323,7 +324,7 @@ def test_non_json_token_response_still_renders_a_settling_page(client):
             params={"code": "abc", "state": _encode_state(CHROME_EXT)},
         )
 
-    assert resp.status_code == 400, "must render our page, not a bare 500"
+    assert resp.status_code == 200, "must render our page, not a bare 500"
     assert "chromiumapp.org" in resp.text, "the popup must still be settled"
     assert "ISP block page" not in resp.text, "never echo a third party's HTML"
 
@@ -334,7 +335,7 @@ def test_null_error_description_does_not_crash_the_page(client):
     from routers.auth import _error_page
 
     resp = _error_page(None, state=_encode_state(CHROME_EXT), fragment="x failed")
-    assert resp.status_code == 400
+    assert resp.status_code == 200
     assert "chromiumapp.org" in resp.body.decode("utf-8")
 
 
@@ -351,10 +352,31 @@ def _callback_error(client, state):
     return client.get("/auth/callback", params=params)
 
 
+def test_error_page_is_served_as_200(client):
+    """A 4xx here silently destroys everything the rest of this file tests.
+
+    Chromium aborts a launchWebAuthFlow navigation whose response code is
+    >= 400 and surfaces it as "Authorization page could not be loaded". So
+    with a 400 the popup was torn down BEFORE the settle script could run,
+    the real AADSTS reason never reached the client, and the generic
+    load-failure text matched the extension's `auth_page_failed` branch —
+    which fires a one-shot auto-retry. A user who had just declined consent
+    got a fresh consent screen ~3 seconds later; one fought that loop six
+    times over 75 minutes on 2026-08-07 and left.
+
+    This is exactly the kind of line a later tidy-up ("error pages should
+    return an error status") would flip back, so it is pinned on its own
+    rather than only as a side assertion of the redirect tests.
+    """
+    resp = _callback_error(client, _encode_state(CHROME_EXT))
+    assert resp.status_code == 200
+    assert "Authentication Failed" in resp.text
+
+
 def test_error_page_settles_toward_the_owning_extension(client):
     state = _encode_state(EDGE_EXT)
     resp = _callback_error(client, state)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
     assert f"https://{EDGE_EXT}.chromiumapp.org/auth#" in resp.text, (
         "the page must redirect to the EDGE extension's chromiumapp URL — "
         "settling toward the wrong browser's id hangs the popup on an "
@@ -367,7 +389,7 @@ def test_error_page_settles_toward_the_owning_extension(client):
 
 def test_error_page_without_state_keeps_the_old_behaviour(client):
     resp = _callback_error(client, state=None)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
     assert "chromiumapp.org" not in resp.text
     assert "close this window" in resp.text
 
@@ -378,7 +400,7 @@ def test_error_page_with_forged_state_never_redirects(client):
     foreign extension's origin."""
     forged = _encode_state("a" * 32)
     resp = _callback_error(client, forged)
-    assert resp.status_code == 400
+    assert resp.status_code == 200
     assert "chromiumapp.org" not in resp.text
 
 

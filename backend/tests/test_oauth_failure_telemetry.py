@@ -158,9 +158,12 @@ def test_callback_error_redirect_is_reported(client, fake_db):
             },
         )
 
-    # The user-facing error page (400), never a 500 — telemetry must not
-    # change what the person in the auth window sees.
-    assert resp.status_code == 400
+    # The user-facing error page, never a 500 — telemetry must not change
+    # what the person in the auth window sees. 200 is load-bearing: Chromium
+    # aborts a launchWebAuthFlow navigation returning >= 400 and reports it
+    # as a page-load failure, which the extension auto-retries. See
+    # test_error_page_is_served_as_200 for the full argument.
+    assert resp.status_code == 200
     assert "Authentication Failed" in resp.text
 
     events = [c.kwargs for c in cap.call_args_list if c.kwargs.get("event") == "ms_auth_failed"]
