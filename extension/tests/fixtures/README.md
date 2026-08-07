@@ -20,6 +20,9 @@ cases = {
     'cp1251.csv':    ('cp1251',    'name,email\nИван Петров,ivan@example.com\n'),
     'cp1254.csv':    ('cp1254',    'name,email\nAyşe Yılmaz,ayse@example.com\nÇağrı Öztürk,cagri@example.com\n'),
     'cp1256.csv':    ('cp1256',    'name,email\nمحمد أحمد,mohammed@example.com\n'),
+    # Mostly-ASCII Western file with a few stray high bytes (accents and a
+    # Word smart quote) — the ONLY shape windows-1252 is allowed to claim.
+    'cp1252.csv':    ('cp1252',    'name,email\nJosé Muñoz,jose@example.com\nZoë O’Brien,zoe@example.com\nAnne-Sophie Müller,anne@example.com\nJohn Smith,john@example.com\n'),
 }
 for fname, (enc, text) in cases.items():
     open(fname, 'wb').write(text.encode(enc))

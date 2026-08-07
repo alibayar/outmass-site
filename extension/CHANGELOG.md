@@ -13,10 +13,12 @@ All notable user-facing changes to the OutMass Chrome Extension.
 - **Contacts.CSV works when you drag it.** Exports from a CRM or from Outlook often arrive with an uppercase .CSV extension. Those already worked when you picked them through the file browser, but were silently ignored when dragged in. Both routes now behave the same.
 - **A file that can't be read now says so** — instead of leaving you waiting for a preview that never arrives. This comes up with files on a disconnected network drive, or a USB stick that was unplugged.
 - **Reports says when it can't load your campaigns.** If the server had a problem, the list said "no campaigns found", which read as though your campaigns were gone. It now reports the error for what it is.
+- **Your CSV no longer has to be UTF-8.** Excel saves in whatever character set your computer uses, and until now OutMass could only read UTF-8 and the two Chinese ones — so a list written in Russian, Arabic, Turkish, Polish, Greek, Hebrew or Thai was rejected outright, as was a plain English list that happened to contain an accented name or a Word smart quote. OutMass now reads the character set your browser says you use, and checks the result actually makes sense before accepting it. If it still can't read the file, the message telling you to re-save as "CSV UTF-8" is unchanged — it just comes up far less often.
 
 ### Behind the scenes (backend — affects all extension versions)
 
 - **A failed sign-in now finds its way back to you.** When Microsoft reports a problem during sign-in (for example, your organization requires admin approval), the error used to sit in a window that stayed open until you noticed and closed it — and the extension never learned the reason. That window now shows the reason for a few seconds and then returns to OutMass on its own, so the Sign in button is immediately usable again and the message tells you what actually happened.
+- **Declining a permission no longer reopens the same permission screen.** If you said no on Microsoft's consent screen — or Microsoft refused for any other reason — OutMass could not tell the difference between that and the page failing to load, so it helpfully tried again, showing you the screen you had just dismissed. It now recognises the difference and stops.
 
 ## v0.1.27 — 2026-07-29
 

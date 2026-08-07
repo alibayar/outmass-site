@@ -60,6 +60,12 @@ export function installChromeStub() {
     },
     i18n: {
       getUILanguage: () => "en-US",
+      // Callback-only in the real API, and the CSV decoder reads it at load
+      // to learn which scripts the user can actually read. Stubbed so that
+      // path runs here rather than being swallowed by its own try/catch.
+      getAcceptLanguages: (cb?: (l: string[]) => void) => {
+        if (typeof cb === "function") cb(["en-US"]);
+      },
       // "" makes t() fall through to its own fallback chain, so assertions
       // read the same strings a user would see.
       getMessage: () => "",
