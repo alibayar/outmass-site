@@ -23,13 +23,22 @@ fine, false positives would be embarrassing):
      attempt to associate one inbound message with multiple
      contacts.
 
-Mail.Read is NOT guaranteed. It left the first-sign-in ask on
-2026-08-06 (see MS_GRAPH_FIRST_SIGNIN_SCOPES) because "Read your
-mail" was the most alarming line on a consent screen shown to
-someone who had not sent anything yet. Everyone who signed in
-before that has it; newer users grant it only by opting into reply
-detection. A user without it simply gets skipped — see the 403
-branch below, which is a normal state now, not an anomaly.
+Mail.Read is NOT guaranteed by design — but as of 2026-08-08 it IS
+guaranteed in fact, because the narrow ask has never been switched
+on. MS_GRAPH_FIRST_SIGNIN_SCOPES exists and works;
+FIRST_SIGNIN_INCLUDE_MAIL_READ still defaults to true, so every
+live user has the scope and the 403 branch below is unreachable in
+production.
+
+That is deliberate. The reason "Read your mail" should leave the
+first consent screen is real (it is the most alarming line shown to
+someone who has not sent anything yet), but a user who declines it
+loses reply detection SILENTLY: their follow-ups keep chasing
+people who already replied, and Reports shows a 0.0% reply rate
+that looks like a result rather than a missing permission. Nothing
+in the panel reads has_mail_read_scope today — /settings returns
+it, and no client asks. Building that is the precondition for the
+flip, not a follow-up to it.
 
 Privacy: we read message metadata only (from, receivedDateTime,
 internetMessageId). We never persist message bodies. Microsoft
@@ -88,10 +97,12 @@ def _list_recent_messages(
             break
         if resp.status_code != 200:
             if resp.status_code == 403:
-                # Mail.Read not granted. Expected for users who signed in
-                # after the scope split and never opted into reply
-                # detection; the panel offers them the one-click upgrade.
-                # Nothing for the beat task to do but skip.
+                # Mail.Read not granted. Unreachable while
+                # FIRST_SIGNIN_INCLUDE_MAIL_READ is true, which it still
+                # is; it becomes the normal state for new users the day
+                # that flips. Nothing for the beat task to do but skip —
+                # and note that skipping is invisible to the user until
+                # the panel learns to read has_mail_read_scope.
                 logger.info(
                     "reply detector: 403 — user lacks Mail.Read scope"
                 )
