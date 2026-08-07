@@ -661,7 +661,7 @@
   // Which languages this person actually READS, which is not the same as the
   // language their browser's menus are in. A paying customer in Saudi Arabia
   // ran Chrome in en-US and uploaded Arabic CSVs; the UI language said
-  // "English" and told us nothing, so the file was rejected ~40 times across
+  // "English" and told us nothing, so the file was rejected 32 times across
   // three sessions. Accept-Language is the signal that would have said
   // "Arabic". Fetched once at load (it is callback-only); an empty list just
   // means the decode chain falls back to what it does today.
@@ -673,6 +673,17 @@
     });
   } catch (e) { /* older/odd browser — the chain still works without it */ }
 
+  // Ordered evidence for the CSV decoder, most authoritative first.
+  // getActiveLocale() leads because it honours Settings -> Interface
+  // Language: someone running an English browser who has set the panel to
+  // Russian has told us, in this product, which language they work in.
+  function csvLanguageEvidence() {
+    var out = [];
+    try { out.push(getActiveLocale()); } catch (e) { /* i18n not ready */ }
+    try { out.push(chrome.i18n.getUILanguage()); } catch (e) { /* ignore */ }
+    return out.concat(csvAcceptLanguages).filter(Boolean);
+  }
+
   function handleCSV(file) {
     // A.3: size limit check before reading
     if (file.size > CSV_MAX_BYTES) {
@@ -681,49 +692,65 @@
       return;
     }
     // Email addresses are ASCII and identical under every candidate below,
-    // so a wrong pick can only garble display-name columns \u2014 visible in the
+    // so a wrong pick can only garble display-name columns — visible in the
     // preview before anything is sent. That is the safety floor; the rest of
     // this function is about not needing it.
-    function decodeCsvBuffer(buf, extraLangs) {
+    //
+    // `langs` is ordered evidence about who the user is, most authoritative
+    // first: the panel's own language setting, then the browser UI language,
+    // then Accept-Language.
+    function decodeCsvBuffer(buf, langs) {
       // Excel writes the SYSTEM codepage, so which decoders we try is a
-      // question about who the user is. Two confirmed losses, 2026-08-08:
-      // a user in Poland running a ru-locale browser was rejected once and
-      // never came back, and a PAYING customer in SA/AE was rejected ~40
-      // times across three sessions (2026-06-25, 06-27, 07-20). Neither
-      // file was CJK, so neither could ever have decoded.
+      // question about who the user is. Two confirmed losses: a user in
+      // Poland running a ru-locale browser, rejected once and gone
+      // (2026-08-07), and a paying customer in SA/AE rejected 32 times
+      // across three sessions who worked around us and never said a word
+      // (2026-06-25, 06-27, 07-20). Neither file was CJK, so neither could
+      // ever have decoded.
       //
-      // The legacy single-byte codepages fix that, but they carry a danger
-      // the CJK ones do not: they have no invalid byte sequences, so a
-      // wrong one does not FAIL \u2014 it silently returns mojibake, which then
-      // goes out in a merge field to a real recipient. So we only try the
-      // one belonging to the user's own UI language, plus windows-1252 as a
-      // deliberately gated last resort. "This Cyrillic user's file is
-      // Cyrillic" is a guess about text we have evidence for; "this English
-      // user's Arabic file is Western European" is not, and a hard
-      // rejection beats a silent corruption.
-      var CODEPAGE_BY_LANG = {
-        ru: "windows-1251", uk: "windows-1251", be: "windows-1251",
-        bg: "windows-1251", sr: "windows-1251", mk: "windows-1251",
-        pl: "windows-1250", cs: "windows-1250", sk: "windows-1250",
-        hu: "windows-1250", ro: "windows-1250", hr: "windows-1250",
-        sl: "windows-1250", sq: "windows-1250", bs: "windows-1250",
-        lt: "windows-1257", lv: "windows-1257", et: "windows-1257",
-        tr: "windows-1254",
-        ar: "windows-1256", fa: "windows-1256", ur: "windows-1256",
-        he: "windows-1255", iw: "windows-1255",
-        el: "windows-1253", th: "windows-874", vi: "windows-1258",
-        zh: "gb18030", ja: "shift_jis", ko: "euc-kr",
-      };
-      // Decoders that reject malformed input on their own \u2014 safe to probe
-      // in any order, and unchanged from the shipped behaviour.
-      var STRUCTURAL = {
-        "utf-8": 1, gb18030: 1, big5: 1, shift_jis: 1, "euc-kr": 1,
-      };
-      // Codepages whose output we can actually CHECK: each exists to carry
-      // a single non-Latin script, so a correct decode lands almost
-      // entirely inside that Unicode block and a wrong one does not. That
-      // check is what makes it safe to act on a language the user merely
-      // READS, rather than only the one their menus are in.
+      // ONE RULE GOVERNS THIS WHOLE FUNCTION: never use a decoder whose
+      // output we cannot check. Legacy single-byte codepages have no
+      // invalid byte sequences, so a wrong one does not FAIL — it returns
+      // mojibake, and that mojibake goes into a merge field and out to a
+      // real recipient. A rejection costs the user an afternoon; a silently
+      // corrupted first name costs them someone else's inbox.
+      //
+      // The codepages below each carry exactly ONE non-Latin script, so a
+      // correct decode lands almost entirely in that Unicode block. Be
+      // honest about how much that check buys, because it is much less than
+      // it looks. Measured in-block share, correct table vs wrong table:
+      //
+      //                    cp1251   cp1256   cp1255   cp1253
+      //   russian file     1.00     0.59     1.00     1.00
+      //   arabic file      1.00     1.00     FFFD     1.00
+      //   polish file      1.00     0.40     C1       C1
+      //   turkish file     1.00     0.43     FFFD     1.00
+      //
+      // Only windows-1256 actually discriminates. windows-1251 maps nearly
+      // the whole high range into Cyrillic, so it scores a perfect 1.00 on
+      // Polish, Turkish, Hebrew and Arabic files alike — the check cannot
+      // tell them apart at ANY threshold, and raising it does nothing.
+      //
+      // What holds the line is therefore not the score but the two rules
+      // below it: a codepage must come from THIS user's own languages, and
+      // it must be the only one of them that fits. The residual is stated
+      // plainly: a Russian-locale user who uploads a Polish or Turkish list
+      // gets Cyrillic mojibake. That is a real cost, accepted because the
+      // population it serves (people whose list is in their own language)
+      // is far larger than the population it hurts, and because 0.1.27
+      // served that same user gb18030 mojibake or a flat rejection.
+      //
+      // The Latin ones — 1250 (Polish/Czech), 1252 (Western), 1254
+      // (Turkish), 1257 (Baltic), 1258 (Vietnamese) — are deliberately
+      // ABSENT, although their users are rejected today and adding them is
+      // a one-line change. They cannot be checked: every byte maps to some
+      // Latin letter, a real contact list is only 4-12% non-ASCII because
+      // the email column dilutes it, and the C1 guard almost never fires.
+      // A Turkish list silently becomes "Ayþe Yýlmaz" and a Polish one
+      // "Ma³gorzata" — which is exactly what 0.1.28's first draft did, and
+      // exactly what 0.1.27 correctly refused to do. Serving those users
+      // needs a confirmation step ("we read this as Turkish — is that
+      // right?"), not a cleverer guess.
       var SCRIPT_RANGE = {
         "windows-1251": [0x0400, 0x04ff], // Cyrillic
         "windows-1256": [0x0600, 0x06ff], // Arabic
@@ -731,41 +758,47 @@
         "windows-1253": [0x0370, 0x03ff], // Greek
         "windows-874": [0x0e00, 0x0e7f],  // Thai
       };
+      var CODEPAGE_BY_LANG = {
+        ru: "windows-1251", uk: "windows-1251", be: "windows-1251",
+        bg: "windows-1251", sr: "windows-1251", mk: "windows-1251",
+        ar: "windows-1256", fa: "windows-1256", ur: "windows-1256",
+        he: "windows-1255", iw: "windows-1255",
+        el: "windows-1253",
+        th: "windows-874",
+      };
 
-      var ui = "";
-      try { ui = (chrome.i18n.getUILanguage() || "").toLowerCase(); } catch (e) { /* ignore */ }
-      var own = CODEPAGE_BY_LANG[ui.split("-")[0]] || "";
-      if (ui.indexOf("zh-tw") === 0 || ui.indexOf("zh-hk") === 0) own = "big5";
-
-      // Order is the whole design, because these decoders differ in whether
-      // they can be WRONG in a detectable way.
-      //
-      //   utf-8 / gb18030 / big5 / shift_jis / euc-kr — reject malformed
-      //     input on their own.
-      //   windows-1251/1253/1255/1256/874 — cannot fail, but each carries
-      //     one non-Latin script, so a correct decode is checkable.
-      //   windows-1250/1252/1254/1257/1258 — cannot fail and cannot be
-      //     checked. Every byte is some Latin letter or symbol.
-      //
-      // So the checkable ones go early and the Latin ones go LAST, after
-      // the CJK probes. That ordering is not cosmetic: placed first,
-      // windows-1254 claimed every fixture we have — GBK, Big5, Cyrillic,
-      // Arabic — for any Turkish user, which would have silently undone the
-      // 2026-07-14 fix for one of our larger locales.
-      var candidates = ["utf-8"];
-      if (own && (STRUCTURAL[own] || SCRIPT_RANGE[own])) candidates.push(own);
-      // Then the scripts the browser says this person READS. Only
-      // script-verifiable codepages qualify: a Latin one taken from
-      // Accept-Language would be an unfalsifiable guess, which is the exact
-      // failure mode this function exists to avoid.
-      var extra = extraLangs || [];
-      for (var k = 0; k < extra.length; k++) {
-        var cp = CODEPAGE_BY_LANG[String(extra[k]).toLowerCase().split("-")[0]];
-        if (cp && SCRIPT_RANGE[cp]) candidates.push(cp);
+      var list = [];
+      for (var n = 0; n < (langs || []).length; n++) {
+        var tag = String(langs[n] || "").toLowerCase();
+        if (tag) list.push(tag);
       }
-      candidates.push("gb18030", "big5");
-      if (own) candidates.push(own);
-      candidates.push("windows-1252");
+      if (!list.length) {
+        try {
+          list.push((chrome.i18n.getUILanguage() || "").toLowerCase());
+        } catch (e) { /* ignore */ }
+      }
+
+      // UTF-8 first. Then the scripts this person's own languages name,
+      // AHEAD of the CJK probes — the order is not a detail: gb18030 reads
+      // a run of Cyrillic bytes as perfectly valid two-byte GBK pairs, so
+      // probing it first claims a Russian user's file and hands back
+      // Chinese mojibake instead of their names.
+      //
+      // shift_jis and euc-kr are NOT here. Adding them for ja/ko users put
+      // them ahead of gb18030, where they accept a Chinese GBK file without
+      // complaint — GBK's two-byte space is largely valid in both — and
+      // turned 张伟 into ﾕﾅﾎｰ. 0.1.27 decoded that file correctly.
+      var scripts = [];
+      for (var k = 0; k < list.length; k++) {
+        var cp = CODEPAGE_BY_LANG[list[k].split("-")[0]];
+        if (cp && scripts.indexOf(cp) < 0) scripts.push(cp);
+      }
+      var candidates = ["utf-8"].concat(scripts);
+      if (list.length && /^zh-(tw|hk)/.test(list[0])) {
+        candidates.push("big5", "gb18030");
+      } else {
+        candidates.push("gb18030", "big5");
+      }
 
       // How much of the decode is non-ASCII, and how much of THAT sits
       // inside one Unicode block.
@@ -784,52 +817,54 @@
         };
       }
 
-      function accepts(text, enc) {
-        if (text.indexOf("\uFFFD") >= 0) return false;
-        if (STRUCTURAL[enc]) return true;
-        // WHATWG fills the undefined slots of these codepages with C1
-        // controls (U+0080-U+009F). Real text never contains one, so their
-        // presence means we picked the wrong table.
-        if (/[\u0080-\u009F]/.test(text)) return false;
-        var s = shares(text, SCRIPT_RANGE[enc]);
-        // A single-script codepage must actually produce that script.
-        // Without this, windows-1256 would claim a French name list \u2014 it
-        // keeps \u00e9/\u00e0/\u00e7 at the same positions as windows-1252 and turns
-        // everything else into Arabic letters \u2014 for any user who merely
-        // happens to read Arabic.
-        //
-        // The 5% floor is the other half of that argument. In a file that
-        // is 96% ASCII, "100% of the non-ASCII characters are Cyrillic"
-        // means four accented letters happened to land in that block \u2014 no
-        // evidence at all. Without the floor, windows-1251 claimed the
-        // Western fixture (3.8% non-ASCII) for every Russian-locale user
-        // and turned Jos\u00e9 into Jos\u0449.
-        if (SCRIPT_RANGE[enc]) return s.nonAscii >= 0.05 && s.inScript >= 0.7;
-        // What is left is the Latin group, which cannot be checked against
-        // anything \u2014 so it is held to the one thing that is true of Latin
-        // text and false of every script it might steal: it is mostly
-        // ASCII. These codepages exist here to repair a file carrying a few
-        // stray high bytes (an accented name, a Word smart quote, a
-        // currency sign), not to decode a foreign alphabet.
-        //
-        // A diluted CJK file cannot reach this branch \u2014 gb18030 and big5
-        // are probed first and accept it \u2014 so the threshold does not have
-        // to separate Turkish from Chinese, only Turkish (~12% here) from
-        // Arabic and Cyrillic (28%+).
-        return s.nonAscii <= 0.15;
+      function decode(enc) {
+        try {
+          return new TextDecoder(enc).decode(buf);
+        } catch (e) {
+          return null; // decoder unavailable in this browser
+        }
       }
 
-      var seen = {};
+      // Is `enc` a believable reading of these bytes?
+      function scriptFits(enc, text) {
+        if (text === null || text.indexOf("\uFFFD") >= 0) return false;
+        // WHATWG fills the undefined slots of these tables with C1 controls
+        // (U+0080-U+009F). Real text never contains one, so their presence
+        // proves the table is wrong.
+        if (/[\u0080-\u009F]/.test(text)) return false;
+        var s = shares(text, SCRIPT_RANGE[enc]);
+        // The 5% floor matters as much as the 70%. In a file that is 96%
+        // ASCII, "all the non-ASCII characters are Cyrillic" means four
+        // accented letters happened to land in that block — no evidence at
+        // all. Without it, windows-1251 claimed a Western list (3.8%
+        // non-ASCII) for every Russian-locale user and made José into Josщ.
+        return s.nonAscii >= 0.05 && s.inScript >= 0.7;
+      }
+
+      // These tables map nearly the whole high range into their own block,
+      // so feeding one script's bytes to another's scores just as well: a
+      // Hebrew file read as windows-1251 fits exactly as neatly as read as
+      // windows-1255. Passing the check therefore proves the DECODE is
+      // Cyrillic, not that the FILE is. So a script codepage is used only
+      // when it is the ONLY one of this user's scripts that fits. When two
+      // fit we have two equally good stories and no way to choose, and a
+      // rejection the user can act on beats a coin flip they cannot see.
+      var fits = [];
+      for (var s1 = 0; s1 < scripts.length; s1++) {
+        var t1 = decode(scripts[s1]);
+        if (scriptFits(scripts[s1], t1)) fits.push({ enc: scripts[s1], text: t1 });
+      }
+
       for (var i = 0; i < candidates.length; i++) {
         var enc = candidates[i];
-        if (seen[enc]) continue;
-        seen[enc] = 1;
-        try {
-          var text = new TextDecoder(enc).decode(buf);
-          if (accepts(text, enc)) {
-            return { text: text, encoding: enc };
-          }
-        } catch (e) { /* decoder unavailable \u2014 try the next one */ }
+        if (SCRIPT_RANGE[enc]) {
+          if (fits.length !== 1 || fits[0].enc !== enc) continue;
+          return { text: fits[0].text, encoding: enc };
+        }
+        var text = decode(enc);
+        if (text !== null && text.indexOf("\uFFFD") < 0) {
+          return { text: text, encoding: enc };
+        }
       }
       return null;
     }
@@ -844,7 +879,7 @@
       track("csv_upload_failed", { error_code: "read_failed" });
     };
     reader.onload = function (e) {
-      var decoded = decodeCsvBuffer(e.target.result, csvAcceptLanguages);
+      var decoded = decodeCsvBuffer(e.target.result, csvLanguageEvidence());
       // A.3: reject files no candidate encoding can decode cleanly. The
       // alert names the concrete fix (Excel's "CSV UTF-8" save option).
       if (!decoded) {

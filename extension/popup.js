@@ -177,8 +177,16 @@
     });
   }
 
-  function showError(message) {
+  // `retry` decides whether the error section's only button is shown, and it
+  // is not cosmetic: that button is wired to doLogin, so it means "start a
+  // Microsoft sign-in" and nothing else. Every caller until 0.1.28 was an
+  // auth failure, where that is exactly right. The deaf-tab message added in
+  // 0.1.28 ("Extension updated. Please reload the page.") is not — it would
+  // have put a Try Again button under a reload instruction and opened an
+  // OAuth window for an already-signed-in user who pressed it.
+  function showError(message, retry) {
     errorText.textContent = message || t("popupUnknownError");
+    btnRetry.style.display = retry === false ? "none" : "";
     showSection("error");
   }
 
@@ -286,7 +294,7 @@
             })
             .catch(function () {
               track("panel_open_failed", { reason: "no_content_script" });
-              showError(t("extUpdatedReload"));
+              showError(t("extUpdatedReload"), false);
             });
         } else {
           // Not on Outlook — find an existing Outlook tab or open one
@@ -309,7 +317,7 @@
                     })
                     .catch(function () {
                       track("panel_open_failed", { reason: "no_content_script_other_window" });
-                      showError(t("extUpdatedReload"));
+                      showError(t("extUpdatedReload"), false);
                     });
                 });
               });
