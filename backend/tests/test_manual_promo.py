@@ -6,6 +6,7 @@ We use a recording fake users table to assert exactly which rows the
 task chose to update, and with what payload.
 """
 from datetime import datetime, timedelta, timezone
+from unittest.mock import MagicMock
 
 from tests.conftest import FakeQueryBuilder
 
@@ -15,22 +16,69 @@ def _ts(days_from_now: int) -> str:
 
 
 class _RecordingUsers(FakeQueryBuilder):
-    """Records update payloads and the eq() filters used to target them,
-    so a test can assert which user row was updated and how."""
+    """Records update payloads and the ids they targeted, and honours .eq()
+    on reads so each row is fetched independently.
+
+    Rewritten 2026-08-08 when expire_manual_promos began re-reading each row
+    immediately before writing it (to avoid overwriting a plan that a Stripe
+    checkout wrote after the batch snapshot was taken). The old version had
+    two flaws the re-read exposed:
+
+      * `updated_ids` recorded EVERY .eq("id", ...), so a read counted as a
+        write and `updated_ids == ["revert-me"]` no longer meant what it
+        said;
+      * the inherited update() replaced the whole row set, so the next
+        user's re-read returned the PREVIOUS user's update payload.
+
+    Both were harmless while nothing re-read. Neither is a behaviour change
+    in the task — only the fake was too loose to model it.
+    """
 
     def __init__(self, rows):
         super().__init__(data=rows)
+        self.rows = [dict(r) for r in rows]
         self.update_calls = []          # list of payload dicts
-        self.updated_ids = []           # ids targeted by .eq("id", <id>)
+        self.updated_ids = []           # ids targeted by an UPDATE
+        self._filters = {}
+        self._pending = None
+
+    def select(self, *a, **kw):
+        self._filters = {}
+        self._pending = None
+        return self
 
     def update(self, vals):
-        self.update_calls.append(vals)
-        return super().update(vals)
+        self._filters = {}
+        self._pending = dict(vals)
+        self.update_calls.append(dict(vals))
+        return self
 
     def eq(self, col, val):
-        if col == "id":
+        self._filters[col] = val
+        if col == "id" and self._pending is not None:
             self.updated_ids.append(val)
-        return super().eq(col, val)
+        return self
+
+    def limit(self, *a):
+        return self
+
+    def is_(self, *a):
+        return self
+
+    @property
+    def not_(self):
+        return self
+
+    def execute(self):
+        matched = [
+            r for r in self.rows
+            if all(r.get(k) == v for k, v in self._filters.items())
+        ]
+        if self._pending is not None:
+            for r in matched:
+                r.update(self._pending)
+            self._pending = None
+        return MagicMock(data=matched)
 
 
 def _promo_user(*, uid, plan, expires_days, stripe_sub=None):

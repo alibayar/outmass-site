@@ -757,22 +757,183 @@ def check_user_tokens():
 
 # ── Manual promo expiry ──
 #
-# When we hand a user a free promo (e.g. a 30-day Starter as an apology) we
-# set users.manual_promo_until. This daily task reverts an expired promo back
-# to 'free' so we don't have to keep a manual calendar reminder — UNLESS the
-# user became a real Stripe subscriber in the meantime (never downgrade a
-# paying customer). Idempotent: reverting clears manual_promo_until, so the
-# row drops out of the candidate set on subsequent runs and never re-fires.
+# When we hand a user a free promo (e.g. a 60-day Starter as an apology) we
+# set users.manual_promo_until. This daily task ends an expired promo so we
+# don't have to keep a manual calendar reminder — UNLESS the user became a
+# real Stripe subscriber in the meantime (never downgrade a paying customer).
+# Idempotent: ending a promo clears manual_promo_until, so the row drops out
+# of the candidate set on subsequent runs and never re-fires.
+#
+# Since migration 026 the grant is recorded in manual_promo_grants, and that
+# record is what tells us how to undo it. This matters because granting a
+# promo is DESTRUCTIVE to users.stripe_subscription_id: the guard below
+# skips anyone carrying one, so the column has to be cleared for the promo
+# to be expirable at all. The original value lives in the grant row and is
+# put back here.
+#
+# Rows granted before 026 have no grant record. They still work — they fall
+# back to the old behaviour (revert to 'free', leave the subscription id
+# alone), which is exactly what they were granted under.
+
+
+def _load_active_grant(db, user_id):
+    """The user's live promo record, or None.
+
+    Never raises: a promo must still expire even if the grants lookup
+    fails, and the fallback (revert to 'free') is the pre-026 behaviour.
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+    try:
+        res = (
+            db.table("manual_promo_grants")
+            .select(
+                "id, user_id, granted_plan, previous_plan, "
+                "previous_stripe_subscription_id, expires_at, status"
+            )
+            .eq("user_id", user_id)
+            .eq("status", "active")
+            .limit(1)
+            .execute()
+        )
+    except Exception:  # noqa: BLE001
+        logger.warning("promo grant lookup failed for user %s", user_id, exc_info=True)
+        return None
+    rows = res.data or []
+    return rows[0] if rows else None
+
+
+def _reread_user(db, user_id):
+    """Fetch the user row fresh, immediately before writing to it.
+
+    Returns None if the row cannot be read — in which case the caller skips
+    it and the next daily run tries again, which is the safe direction.
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+    try:
+        res = (
+            db.table("users")
+            .select("id, email, plan, manual_promo_until, stripe_subscription_id")
+            .eq("id", user_id)
+            .limit(1)
+            .execute()
+        )
+    except Exception:  # noqa: BLE001
+        logger.warning("promo re-read failed for user %s", user_id, exc_info=True)
+        return None
+    rows = res.data or []
+    return rows[0] if rows else None
+
+
+def _reconcile_orphaned_grants(db, now):
+    """Close grants whose user row no longer shows a promo.
+
+    The expiry of one promo is two writes — the users row, then the grant
+    record — and they cannot be made atomic through the REST client. If the
+    second one fails, users.manual_promo_until is already NULL, so that user
+    never appears in the candidate query again and the grant sits at
+    'active' forever. That is not a cosmetic leak: the partial unique index
+    allows one active grant per user, so the next time we try to gift that
+    same customer anything, the INSERT fails on a row nobody remembers.
+
+    This sweep is the retry the candidate query cannot provide. It is
+    deliberately narrow — only grants already past their own expiry whose
+    user shows no promo — so it can never close a grant that is still doing
+    its job.
+    """
+    import logging
+
+    logger = logging.getLogger(__name__)
+    closed = 0
+
+    try:
+        res = (
+            db.table("manual_promo_grants")
+            .select("id, user_id, expires_at, status")
+            .eq("status", "active")
+            .limit(500)
+            .execute()
+        )
+    except Exception:  # noqa: BLE001
+        logger.warning("orphaned-grant sweep lookup failed", exc_info=True)
+        return 0
+
+    for grant in res.data or []:
+        expires = grant.get("expires_at")
+        if not expires:
+            continue
+        try:
+            expires_dt = datetime.fromisoformat(str(expires).replace("Z", "+00:00"))
+            if expires_dt.tzinfo is None:
+                expires_dt = expires_dt.replace(tzinfo=timezone.utc)
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "orphaned-grant sweep: unparseable expires_at %r on grant %s",
+                expires,
+                grant.get("id"),
+            )
+            continue
+        if expires_dt >= now:
+            continue
+
+        user = _reread_user(db, grant.get("user_id"))
+        if user is None or user.get("manual_promo_until"):
+            # Either unreadable, or the promo is still marked on the user
+            # row — in which case the main loop owns it, not this sweep.
+            continue
+
+        # Record what actually happened rather than a convenient default:
+        # a user carrying a subscription id went the supersede route.
+        outcome = "superseded" if user.get("stripe_subscription_id") else "restored"
+        _resolve_grant(db, grant["id"], outcome)
+        logger.info(
+            "orphaned-grant sweep closed grant %s for user %s",
+            grant.get("id"),
+            grant.get("user_id"),
+        )
+        closed += 1
+
+    return closed
+
+
+def _resolve_grant(db, grant_id, status):
+    """Close out a grant record. Best-effort: the user row is the source of
+    truth for what the user gets, so a bookkeeping failure here must not
+    make the caller think the expiry itself failed."""
+    import logging
+    from datetime import datetime, timezone
+
+    logger = logging.getLogger(__name__)
+    try:
+        (
+            db.table("manual_promo_grants")
+            .update(
+                {
+                    "status": status,
+                    "resolved_at": datetime.now(timezone.utc).isoformat(),
+                }
+            )
+            .eq("id", grant_id)
+            .execute()
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("failed to mark promo grant %s as %s", grant_id, status)
 
 
 @celery.task
 def expire_manual_promos():
-    """Revert expired manual plan promos to free.
+    """End expired manual plan promos, restoring what the grant replaced.
 
     Targets rows where manual_promo_until is set and in the past, the plan
     is not already free, and there's no Stripe subscription. The
     stripe_subscription_id guard is the load-bearing safety check — a manual
     promo recipient who later subscribed for real must keep their paid plan.
+    Since 026 that guard reads correctly rather than by luck: a grant clears
+    the column, so anything found there was set AFTER the grant, i.e. by a
+    real new subscription.
 
     The DB-side filters (date, plan, stripe) are re-applied in Python so the
     task is correct even against a client that doesn't push every predicate
@@ -804,21 +965,16 @@ def expire_manual_promos():
 
     rows = result.data or []
     reverted = 0
+    superseded = 0
 
     for user in rows:
         until = user.get("manual_promo_until")
         if not until:
             continue
 
-        # Never touch a real paying customer.
-        if user.get("stripe_subscription_id"):
-            continue
-
-        # Already free → nothing to revert.
-        if user.get("plan") in (None, "free"):
-            continue
-
-        # Only act once the promo window has actually passed.
+        # Only act once the promo window has actually passed. This check
+        # comes FIRST so that nothing below — including closing out a grant
+        # record — can touch a promo that is still running.
         try:
             until_dt = datetime.fromisoformat(str(until).replace("Z", "+00:00"))
             if until_dt.tzinfo is None:
@@ -833,10 +989,86 @@ def expire_manual_promos():
         if until_dt >= now:
             continue
 
+        # Re-read the row we are about to overwrite.
+        #
+        # The candidate SELECT above takes one snapshot of up to 500 rows and
+        # the loop then makes several round-trips per row, so by the time we
+        # reach row #300 the snapshot can be minutes old. The dangerous case
+        # is small but real: a user whose promo expires today completes a
+        # Stripe checkout while the beat is mid-batch. The snapshot still
+        # says stripe_subscription_id=NULL, so we would take the restore
+        # branch and overwrite the plan the checkout webhook had just
+        # written — downgrading someone moments after they paid.
+        fresh = _reread_user(db, user["id"])
+        if fresh is None:
+            continue
+        if not fresh.get("manual_promo_until"):
+            # Someone (a concurrent run, a manual fix) already ended it.
+            continue
+        user = fresh
+
+        grant = _load_active_grant(db, user["id"])
+
+        # Never touch a real paying customer. A grant CLEARS
+        # stripe_subscription_id, and grant_manual_promo refuses to run
+        # while a live one is present, so a value here was written after the
+        # grant — by a genuine new subscription. There is nothing to undo:
+        # they are paying, and the plan they are paying for is theirs.
+        if user.get("stripe_subscription_id"):
+            if grant:
+                # Clear the marker BEFORE closing the grant, not after.
+                #
+                # These two writes cannot be one transaction through the
+                # REST client, so one of them can land alone — and the order
+                # decides whether the leftover state can heal. Marker first:
+                # if it fails, the grant stays 'active' and the row stays a
+                # candidate, so tomorrow's run simply tries again. Grant
+                # first: the grant is closed, `grant` is None on every later
+                # run, and the retry the old comment promised silently never
+                # happens.
+                try:
+                    (
+                        db.table("users")
+                        .update({"manual_promo_until": None})
+                        .eq("id", user["id"])
+                        .execute()
+                    )
+                except Exception:  # noqa: BLE001
+                    logger.exception(
+                        "expire_manual_promos: failed to clear promo marker for %s",
+                        user.get("id"),
+                    )
+                    continue
+                _resolve_grant(db, grant["id"], "superseded")
+                superseded += 1
+            continue
+
+        if grant:
+            # Undo exactly what the grant did. previous_plan rather than a
+            # hardcoded 'free': the user may have been on a paid plan when
+            # the promo was granted, and the billing webhook retargets this
+            # field to 'free' if their subscription dies mid-promo.
+            payload = {
+                "plan": grant.get("previous_plan") or "free",
+                "manual_promo_until": None,
+            }
+            stashed = grant.get("previous_stripe_subscription_id")
+            if stashed:
+                # Put the link back. Harmless even when the subscription is
+                # dead: daily_report counts a payer as paid plan AND a
+                # subscription id, and the plan has just gone back to free.
+                payload["stripe_subscription_id"] = stashed
+        else:
+            # Granted before migration 026, so there is no record of what to
+            # restore. Fall back to the behaviour it was granted under.
+            if user.get("plan") in (None, "free"):
+                continue
+            payload = {"plan": "free", "manual_promo_until": None}
+
         try:
             (
                 db.table("users")
-                .update({"plan": "free", "manual_promo_until": None})
+                .update(payload)
                 .eq("id", user["id"])
                 .execute()
             )
@@ -846,18 +1078,39 @@ def expire_manual_promos():
             )
             continue
 
+        if grant:
+            _resolve_grant(db, grant["id"], "restored")
+
         audit.emit(
             audit.EVENT_MANUAL_PROMO_EXPIRED,
             user_id=user["id"],
             email=user.get("email"),
             metadata={
+                # The plan they were ON during the promo (the granted one),
+                # named "previous_plan" since 019 because from the audit
+                # entry's point of view the promo is what just ended.
                 "previous_plan": user.get("plan"),
                 "manual_promo_until": str(until),
+                "restored_to": payload.get("plan"),
+                "subscription_id_restored": bool(
+                    payload.get("stripe_subscription_id")
+                ),
+                "grant_id": grant.get("id") if grant else None,
             },
         )
         reverted += 1
 
-    return {"reverted": reverted, "considered": len(rows)}
+    # Catch grants whose user row was updated but whose own close-out write
+    # failed on some earlier run. Nothing else revisits those, and each one
+    # blocks that customer from ever being granted another promo.
+    orphans_closed = _reconcile_orphaned_grants(db, now)
+
+    return {
+        "reverted": reverted,
+        "superseded": superseded,
+        "orphans_closed": orphans_closed,
+        "considered": len(rows),
+    }
 
 
 # ── Auto-resume quota-capped partial campaigns ──

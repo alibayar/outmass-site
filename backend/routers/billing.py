@@ -64,6 +64,83 @@ def _get_user_from_db(user_id: str) -> dict | None:
     return None
 
 
+def _promo_shield(db, customer_id: str) -> dict | None:
+    """The user behind this Stripe customer IF they are inside a manual promo.
+
+    A manual promo (migration 026) is a plan we granted and put in writing —
+    "two months of Starter, already active". Two webhook branches downgrade
+    to 'free' on a dead subscription, and they match on stripe_customer_id,
+    which a promo does NOT clear. So without this, a stale cancellation for
+    the subscription that died BEFORE the promo would silently revoke a gift
+    we had just promised, and the user would find out by hitting the old
+    limit again — the exact failure the promo was apologising for.
+
+    Returns None on any error: a downgrade that should happen is a smaller
+    problem than a downgrade that is skipped by accident, so the caller
+    falls through to normal behaviour when we cannot tell.
+    """
+    if not customer_id:
+        return None
+    try:
+        res = (
+            db.table("users")
+            .select("id, email, plan, manual_promo_until, stripe_subscription_id")
+            .eq("stripe_customer_id", customer_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        if not rows:
+            return None
+
+        # A grant CLEARS stripe_subscription_id, and grant_manual_promo
+        # refuses to run while a live one is present. So a value here was
+        # written AFTER the grant — the user went and subscribed for real
+        # during their promo. From that moment Stripe owns their plan, and
+        # this event is about that new subscription, not the dead one the
+        # promo was granted over.
+        #
+        # Without this check the shield cannot tell the two apart: it would
+        # read "promo still running" and refuse to downgrade someone whose
+        # real, paid subscription had just failed — leaving them on a paid
+        # tier for free, attached to a subscription id that daily_report
+        # counts as revenue. That is the exact bug this whole mechanism was
+        # built to remove, reintroduced through the front door.
+        if rows[0].get("stripe_subscription_id"):
+            return None
+
+        until = rows[0].get("manual_promo_until")
+        if not until:
+            return None
+        until_dt = datetime.fromisoformat(str(until).replace("Z", "+00:00"))
+        if until_dt.tzinfo is None:
+            until_dt = until_dt.replace(tzinfo=timezone.utc)
+        return rows[0] if until_dt > datetime.now(timezone.utc) else None
+    except Exception:  # noqa: BLE001
+        logger.exception("promo shield check failed for customer %s", customer_id)
+        return None
+
+
+def _retarget_grant_to_free(db, user_id: str) -> None:
+    """Point the active grant's restore target at 'free'.
+
+    Called when a shielded user's subscription dies mid-promo. They keep the
+    granted plan until the promo ends — but what they go back to afterwards
+    is no longer whatever they were paying for when we granted it. Without
+    this, expiry would faithfully restore a paid plan nobody is paying for.
+    """
+    try:
+        (
+            db.table("manual_promo_grants")
+            .update({"previous_plan": "free"})
+            .eq("user_id", user_id)
+            .eq("status", "active")
+            .execute()
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("failed to retarget promo grant for user %s", user_id)
+
+
 def _capture_billing_event(distinct_id: str, event: str, properties: dict) -> None:
     """Best-effort PostHog capture for checkout-funnel telemetry.
 
@@ -335,13 +412,31 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     elif event_type == "customer.subscription.deleted":
         customer_id = data_object.get("customer")
         if customer_id:
-            db.table("users").update({
-                "plan": "free",
+            update_data = {
                 "stripe_subscription_id": None,
                 "plan_updated_at": datetime.now(timezone.utc).isoformat(),
-            }).eq("stripe_customer_id", customer_id).execute()
+            }
 
-            logger.info("Subscription deleted for customer %s", customer_id)
+            shielded = _promo_shield(db, customer_id)
+            if shielded:
+                # Inside a manual promo: they keep the granted plan for the
+                # rest of it. Only the restore target moves.
+                _retarget_grant_to_free(db, shielded["id"])
+                logger.info(
+                    "Subscription deleted for customer %s — plan held by "
+                    "manual promo until %s",
+                    customer_id,
+                    shielded.get("manual_promo_until"),
+                )
+            else:
+                update_data["plan"] = "free"
+
+            db.table("users").update(update_data).eq(
+                "stripe_customer_id", customer_id
+            ).execute()
+
+            if not shielded:
+                logger.info("Subscription deleted for customer %s", customer_id)
 
     # ── customer.subscription.updated ──
     elif event_type == "customer.subscription.updated":
@@ -364,7 +459,24 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                 except (KeyError, IndexError):
                     update_data["plan"] = "pro"
             elif status in ("canceled", "unpaid", "past_due"):
-                update_data["plan"] = "free"
+                # A manual promo outranks a dead subscription. The gift was
+                # promised in writing for a fixed window; a cancellation for
+                # the subscription that died BEFORE it must not revoke it.
+                # Note the shield deliberately does NOT cover the 'active'
+                # branch above — a real new subscription always wins, and
+                # promo expiry then leaves that user alone.
+                shielded = _promo_shield(db, customer_id)
+                if shielded:
+                    _retarget_grant_to_free(db, shielded["id"])
+                    logger.info(
+                        "Subscription %s for customer %s — plan held by "
+                        "manual promo until %s",
+                        status,
+                        customer_id,
+                        shielded.get("manual_promo_until"),
+                    )
+                else:
+                    update_data["plan"] = "free"
 
             db.table("users").update(update_data).eq(
                 "stripe_customer_id", customer_id
