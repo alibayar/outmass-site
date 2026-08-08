@@ -5,9 +5,10 @@ All notable user-facing changes to the OutMass Chrome Extension.
 ## v0.2.0 — 2026-08-08
 
 A minor version rather than another patch, because two things behave
-differently rather than merely better: some contact lists that used to load
-are now refused (see below — and re-saving fixes them for good), and the
-panel gained a permission it can ask for on its own.
+differently rather than merely better: a contact list OutMass cannot read now
+opens a dialog asking which language it is in, instead of being loaded with
+quietly broken names; and the panel gained a permission it can ask for on its
+own.
 
 - **OutMass can now turn reply detection back on by itself.** Reply detection
   needs Microsoft's permission to see your inbox, and until now that
@@ -27,8 +28,9 @@ panel gained a permission it can ask for on its own.
 - **Contacts.CSV works when you drag it.** Exports from a CRM or from Outlook often arrive with an uppercase .CSV extension. Those already worked when you picked them through the file browser, but were silently ignored when dragged in. Both routes now behave the same.
 - **A file that can't be read now says so** — instead of leaving you waiting for a preview that never arrives. This comes up with files on a disconnected network drive, or a USB stick that was unplugged.
 - **Reports says when it can't load your campaigns.** If the server had a problem, the list said "no campaigns found", which read as though your campaigns were gone. It now reports the error for what it is.
-- **Lists written in your own alphabet now load.** Excel saves in whatever character set your computer uses, and until now OutMass could only read UTF-8 and the two Chinese ones — so a contact list written in Russian, Ukrainian, Bulgarian, Serbian, Arabic, Persian, Hebrew, Greek or Thai was rejected or garbled. OutMass now reads the alphabet of the language OutMass itself is set to, falling back to your browser's. Turkish, Polish, Baltic, Vietnamese and Western European lists are **not** covered yet — those character sets cannot be told apart from one another by looking at the file, and reading one wrongly would put a mangled name into an email you send, so we would rather not guess.
-- **A file we can't read is now refused instead of half-read.** Some lists — Polish and other Central European ones especially — used to load with names quietly shortened or replaced: `Łukasz` came through as `kasz`, and nothing said anything was wrong. Those files are now refused, with the message that tells you to re-save in Excel as "CSV UTF-8". If a list of yours stops loading after this update, that is why, and re-saving it fixes it for good. Chinese lists are unaffected, including ones with only a couple of Chinese names in them.
+- **Lists written in your own alphabet now load.** Excel saves in whatever character set your computer uses, and until now OutMass could only read UTF-8 and the two Chinese ones — so a contact list written in Russian, Ukrainian, Bulgarian, Serbian, Arabic, Persian, Hebrew, Greek or Thai was rejected or garbled. OutMass now reads the alphabet of the language OutMass itself is set to, falling back to your browser's.
+- **And when it still can't tell, it asks instead of giving up.** Turkish, Polish, Baltic, Vietnamese and Western European character sets genuinely cannot be told apart by looking at the file — the same bytes are valid in all of them — so OutMass no longer pretends otherwise. It shows you the first few names decoded, with a list of languages to choose from: pick one, watch the names in the preview, and load the file when they look right. It starts on its best guess, so usually that is a single click.
+- **A file we can't read is never half-read.** Some lists — Polish and other Central European ones especially — used to load with names quietly shortened or replaced: `Łukasz` came through as `kasz`, and nothing said anything was wrong. That cannot happen any more: OutMass either reads a file correctly or asks you which language it is in. Chinese lists are unaffected, including ones with only a couple of Chinese names in them.
 
 ### Behind the scenes (backend — affects all extension versions)
 
