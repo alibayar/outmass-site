@@ -136,6 +136,7 @@ def test_stuck_reset_marks_partial_when_some_sent(fake_db):
         "id": "c-stuck-progress",
         "scheduled_for": old_iso,
         "created_at": old_iso,
+        "updated_at": old_iso,
         "sent_count": 5,
         "status": "sending",
     }
@@ -178,6 +179,7 @@ def test_stuck_reset_never_parks_a_campaign_on_scheduled(fake_db):
         "id": "c-stuck-fresh",
         "scheduled_for": None,
         "created_at": old_iso,
+        "updated_at": old_iso,
         "sent_count": 0,
         "status": "sending",
     }
@@ -224,6 +226,7 @@ def test_stuck_reset_leaves_a_running_send_now_campaign_alone(fake_db):
         "id": "c-send-now",
         "scheduled_for": None,  # Send now never sets this
         "created_at": (datetime.now(timezone.utc) - timedelta(hours=3)).isoformat(),
+        "updated_at": (datetime.now(timezone.utc) - timedelta(seconds=20)).isoformat(),
         "sent_count": 1800,
         "status": "sending",
     }
@@ -261,6 +264,7 @@ def test_stuck_reset_skips_a_campaign_that_has_not_sent_yet(fake_db):
         "id": "c-just-started",
         "scheduled_for": None,
         "created_at": (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat(),
+        "updated_at": (datetime.now(timezone.utc) - timedelta(minutes=2)).isoformat(),
         "sent_count": 0,
         "status": "sending",
     }
@@ -307,7 +311,7 @@ def test_stuck_reset_skips_when_progress_cannot_be_measured(fake_db):
         def execute(self):
             raise RuntimeError("contacts unavailable")
 
-    campaigns = _CampaignsTable(rows=[{
+    campaigns = _PreMigrationCampaigns(rows=[{
         "id": "c-unknown",
         "scheduled_for": None,
         "created_at": old_iso,
@@ -332,6 +336,7 @@ def test_stuck_reset_skips_recent_campaigns(fake_db):
         "id": "c-fresh",
         "scheduled_for": recent_iso,
         "created_at": recent_iso,
+        "updated_at": recent_iso,
         "sent_count": 0,
         "status": "sending",
     }
@@ -351,6 +356,131 @@ def test_stuck_reset_skips_recent_campaigns(fake_db):
 
     result = scheduled_worker.reset_stuck_sending_campaigns()
     assert result["reset_to_partial"] + result["reset_to_scheduled"] == 0
+    assert campaigns.update_calls == []
+
+
+class _PreMigrationCampaigns(FakeQueryBuilder):
+    """campaigns without migration 025.
+
+    PostgREST rejects an unknown column at the QUERY level, so selecting
+    updated_at raises rather than returning rows without the key. That is the
+    same trap migration 024 taught: a missing column is not a missing value.
+    """
+
+    def __init__(self, rows):
+        super().__init__(data=rows)
+        self.update_calls = []
+        self.select_attempts = []
+
+    def select(self, *a, **kw):
+        cols = a[0] if a else ""
+        self.select_attempts.append(cols)
+        if "updated_at" in cols:
+            raise Exception('column campaigns.updated_at does not exist')
+        return self
+
+    def update(self, vals):
+        self.update_calls.append(vals)
+        return super().update(vals)
+
+
+def test_resumed_run_is_not_judged_by_its_previous_run(fake_db):
+    """THE case updated_at exists for.
+
+    The interim fix measured freshness from the newest contacts.sent_at. For
+    a campaign resumed after a quota reset that timestamp is from the PREVIOUS
+    run — days old — so the campaign read as stale the instant it started
+    sending again, and the mid-flight flip to 'partial' (and the duplicate
+    send behind it) was reachable during its whole first 30 minutes.
+
+    updated_at is stamped by the trigger on every write, including the
+    per-recipient increment_stat, so a resumed run is fresh from its first
+    update.
+    """
+    from workers import scheduled_worker
+
+    class _CampaignsTable(FakeQueryBuilder):
+        def __init__(self, rows):
+            super().__init__(data=rows)
+            self.update_calls = []
+
+        def update(self, vals):
+            self.update_calls.append(vals)
+            return super().update(vals)
+
+    long_ago = (datetime.now(timezone.utc) - timedelta(days=9)).isoformat()
+    campaigns = _CampaignsTable(rows=[{
+        "id": "c-resumed",
+        "scheduled_for": (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat(),
+        "created_at": long_ago,
+        # Resumed a minute ago; its newest sent_at is still from last week.
+        "updated_at": (datetime.now(timezone.utc) - timedelta(minutes=1)).isoformat(),
+        "sent_count": 250,
+        "status": "sending",
+    }])
+    fake_db.set_table("campaigns", campaigns)
+    fake_db.set_table("contacts", FakeQueryBuilder(data=[{"sent_at": long_ago}]))
+
+    result = scheduled_worker.reset_stuck_sending_campaigns()
+    assert result["reset_to_partial"] == 0, (
+        "a campaign resumed one minute ago is not stuck, however old its "
+        "previous run's sends are"
+    )
+    assert campaigns.update_calls == []
+
+
+def test_falls_back_to_sent_at_when_migration_025_has_not_run(fake_db):
+    """The column is selected optimistically every beat, so the sweep starts
+    using it the moment Ali applies the migration — no deploy. Until then the
+    2026-08-08 behaviour has to still work."""
+    from workers import scheduled_worker
+
+    old_iso = (datetime.now(timezone.utc) - timedelta(hours=2)).isoformat()
+    campaigns = _PreMigrationCampaigns(rows=[{
+        "id": "c-pre-025",
+        "scheduled_for": None,
+        "created_at": old_iso,
+        "sent_count": 5,
+        "status": "sending",
+    }])
+    fake_db.set_table("campaigns", campaigns)
+    fake_db.set_table("contacts", FakeQueryBuilder(data=[{"sent_at": old_iso}]))
+
+    result = scheduled_worker.reset_stuck_sending_campaigns()
+    assert any("updated_at" in c for c in campaigns.select_attempts), (
+        "the wide select must be retried every beat, not cached off"
+    )
+    assert result["reset_to_partial"] == 1
+    assert all(u.get("status") == "partial" for u in campaigns.update_calls)
+
+
+def test_a_row_without_updated_at_is_never_flipped(fake_db):
+    """No basis to judge means do nothing. Flipping a live campaign costs its
+    recipients a duplicate email; leaving a dead one costs an hour."""
+    from workers import scheduled_worker
+
+    class _CampaignsTable(FakeQueryBuilder):
+        def __init__(self, rows):
+            super().__init__(data=rows)
+            self.update_calls = []
+
+        def update(self, vals):
+            self.update_calls.append(vals)
+            return super().update(vals)
+
+    campaigns = _CampaignsTable(rows=[{
+        "id": "c-null-updated",
+        "scheduled_for": None,
+        "created_at": (datetime.now(timezone.utc) - timedelta(hours=5)).isoformat(),
+        "updated_at": None,
+        "sent_count": 1,
+        "status": "sending",
+    }])
+    fake_db.set_table("campaigns", campaigns)
+    fake_db.set_table("contacts", FakeQueryBuilder(data=[]))
+
+    result = scheduled_worker.reset_stuck_sending_campaigns()
+    assert result["reset_to_partial"] == 0
     assert campaigns.update_calls == []
 
 

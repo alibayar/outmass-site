@@ -495,6 +495,27 @@ def evaluate_ab_tests():
 
 
 @celery.task
+def _mark_partial(db, campaign_id) -> bool:
+    """Move a stuck campaign to 'partial'. Never to 'scheduled'.
+
+    'scheduled' with a NULL scheduled_for is a state no recovery path can
+    see: get_due_scheduled_campaigns filters `.lte("scheduled_for", now)`,
+    Resume 409s unless 'partial', auto-resume queries 'partial' only, and the
+    sweep itself queries 'sending'. Its recipients were reachable by nothing.
+    """
+    try:
+        (
+            db.table("campaigns")
+            .update({"status": "partial"})
+            .eq("id", campaign_id)
+            .eq("status", "sending")  # double-check to avoid races
+            .execute()
+        )
+        return True
+    except Exception:  # noqa: BLE001
+        return False
+
+
 def reset_stuck_sending_campaigns():
     """Recover campaigns stuck in 'sending' status.
 
@@ -552,17 +573,33 @@ def reset_stuck_sending_campaigns():
 
     db = get_db()
     cutoff = (datetime.now(timezone.utc) - timedelta(minutes=30)).isoformat()
-    try:
-        stuck = (
-            db.table("campaigns")
-            .select("id, scheduled_for, sent_count, status, created_at")
-            .eq("status", "sending")
-            .execute()
-        )
-    except Exception as e:  # noqa: BLE001
+
+    # updated_at is maintained by the trigger in migration 025 and is the only
+    # signal here that is right for BOTH a first run and a resumed one. It is
+    # selected optimistically: PostgREST rejects an unknown column at the
+    # QUERY level (42703), so an unrun migration raises rather than returning
+    # rows without the key, and the fallback below is the 2026-08-08
+    # behaviour. Retry the wide select on every beat — one wasted round trip
+    # per hour is nothing, and it means the sweep starts using the column the
+    # moment the migration is applied, with no deploy.
+    stuck = None
+    have_updated_at = True
+    for columns in (
+        "id, scheduled_for, sent_count, status, created_at, updated_at",
+        "id, scheduled_for, sent_count, status, created_at",
+    ):
+        try:
+            stuck = (
+                db.table("campaigns").select(columns).eq("status", "sending").execute()
+            )
+            break
+        except Exception as e:  # noqa: BLE001
+            have_updated_at = False
+            last_error = e
+    if stuck is None:
         import logging
         logging.getLogger(__name__).warning(
-            "stuck-sending lookup failed: %s", e
+            "stuck-sending lookup failed: %s", last_error
         )
         return {"reset": 0}
 
@@ -570,6 +607,20 @@ def reset_stuck_sending_campaigns():
     reset_to_partial = 0
     reset_to_scheduled = 0
     for row in rows:
+        # Migration 025 present: the database has been stamping this row on
+        # every write, including the per-recipient increment_stat that IS the
+        # progress signal. Right for a first run and a resumed one alike,
+        # which is what the two proxies below never managed.
+        if have_updated_at:
+            updated_at = row.get("updated_at")
+            if not updated_at:
+                continue  # no basis to judge — never flip on a guess
+            if updated_at > cutoff:
+                continue  # touched recently — still working
+            _mark_partial(db, row["id"])
+            reset_to_partial += 1
+            continue
+
         # The newest recipient that actually went out. Present => the send
         # loop reached it, so its age is the age of the campaign's last
         # observable progress.
@@ -601,17 +652,8 @@ def reset_stuck_sending_campaigns():
             if not created_at or created_at > cutoff:
                 continue
 
-        try:
-            (
-                db.table("campaigns")
-                .update({"status": "partial"})
-                .eq("id", row["id"])
-                .eq("status", "sending")  # double-check to avoid races
-                .execute()
-            )
+        if _mark_partial(db, row["id"]):
             reset_to_partial += 1
-        except Exception:  # noqa: BLE001
-            continue
 
     return {
         "reset_to_partial": reset_to_partial,
