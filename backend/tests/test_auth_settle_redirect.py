@@ -196,11 +196,25 @@ def test_every_error_page_call_site_passes_a_fragment():
 
 
 def test_every_aadsts_meaning_survives_the_round_trip():
-    """A future entry with a long meaning would truncate mid-word in both
-    PostHog and the user's popup, with a green suite."""
+    """A future entry too long for the cap would truncate mid-word in both
+    PostHog and the user's popup, with a green suite.
+
+    What "survives" means changed on 2026-08-08. The fragment used to be
+    diagnostic-only — Chromium discarded it, because the page returned 400 —
+    so carrying the raw meaning ("admin consent required") was free. Serving
+    the page as 200 made it the string every shipped client shows the user
+    verbatim, so a mapped code now carries an INSTRUCTION with the code in
+    parentheses. Unmapped codes keep the old shape. Both must fit and stay
+    unique.
+    """
     import urllib.parse
 
-    from routers.auth import _AADSTS_MEANINGS, _classify_ms_error, _ms_settle_code
+    from routers.auth import (
+        _AADSTS_MEANINGS,
+        _SETTLE_MESSAGES,
+        _classify_ms_error,
+        _ms_settle_code,
+    )
 
     seen = {}
     for code, meaning in _AADSTS_MEANINGS.items():
@@ -208,9 +222,9 @@ def test_every_aadsts_meaning_survives_the_round_trip():
         frag = _settle_fragment(_ms_settle_code(classified))
         assert len(frag) <= 64, f"{code} fragment is {len(frag)} chars"
         assert code in frag, f"{code} lost its code in {frag!r}"
-        assert meaning.replace("_", " ") in frag, (
-            f"{code} meaning truncated: {frag!r} — shorten the meaning or "
-            "raise the cap"
+        expected = _SETTLE_MESSAGES.get(meaning, meaning.replace("_", " "))
+        assert expected in frag, (
+            f"{code} truncated: {frag!r} — shorten its entry or raise the cap"
         )
         # Survives URL encode/decode unchanged (the client re-parses it).
         assert urllib.parse.parse_qs(
@@ -382,8 +396,15 @@ def test_error_page_settles_toward_the_owning_extension(client):
         "settling toward the wrong browser's id hangs the popup on an "
         "unresolvable address"
     )
-    assert "error=AADSTS90094" in resp.text
-    assert "9000" in resp.text, "the message must stay readable ~9s before settling"
+    assert "IT+admin+must+approve" in resp.text, (
+        "the fragment must LEAD with the actionable sentence: every shipped "
+        "client renders it verbatim to the user with no way to localize it"
+    )
+    assert "AADSTS90094" in resp.text, (
+        "and must still carry the code, in parentheses — it is the telemetry "
+        "grouping key and what support greps for"
+    )
+    assert "5000" in resp.text, "the message must dwell ~5s before settling"
     assert "return to OutMass" in resp.text
 
 
@@ -410,6 +431,73 @@ def test_aadsts50011_is_classified():
         "AADSTS50011: The redirect URI specified in the request does not match.",
     )
     assert out["meaning"] == "redirect_uri_not_registered"
+
+
+# ── the settle fragment is the message, so it has to be deliverable ──
+
+
+def test_settle_messages_are_deliverable():
+    """Four constraints, all of them learned the hard way.
+
+    The fragment is not a diagnostic string: every client in the field
+    renders it verbatim to the user. 0.1.26 and 0.1.27 both resolve the
+    flight with `{ error: errorMsg }` and no errorCode, so nothing downstream
+    can turn it into localized guidance, and it doubles as the PostHog
+    grouping key.
+    """
+    import re
+
+    from routers.auth import _SETTLE_MESSAGES, _settle_fragment
+
+    for meaning, message in _SETTLE_MESSAGES.items():
+        assert len(message) <= 48, (
+            f"{meaning}: {len(message)} chars — the AADSTS code is appended in "
+            "parentheses and the longest one costs 16, so anything over 48 "
+            "loses the code or gets truncated mid-word at the client's 64"
+        )
+        assert _settle_fragment(message) == message, (
+            f"{meaning}: the sanitizer rewrites this. Apostrophes are the "
+            "usual cause — they are stripped, turning organization's into "
+            "organizations mid-word"
+        )
+        assert "$" not in message, (
+            f"{meaning}: the sidebar i18n substitution reads $ as a "
+            "placeholder marker"
+        )
+        assert re.search(r"[a-z]", message), f"{meaning}: not a sentence"
+
+
+def test_known_aadsts_codes_say_what_to_do():
+    """AADSTS90094 means the tenant needs an admin to approve the app. The
+    user cannot act on that string; they can act on the sentence."""
+    from routers.auth import _classify_ms_error, _ms_settle_code
+
+    cases = {
+        "AADSTS90094": "Your IT admin must approve OutMass first",
+        "AADSTS65004": "Permission was declined on the Microsoft screen",
+        "AADSTS50105": "Your IT admin has not given you access",
+        "AADSTS53003": "Your organization blocked this sign-in",
+    }
+    for code, expected in cases.items():
+        classified = _classify_ms_error("access_denied", f"{code}: something happened")
+        out = _ms_settle_code(classified)
+        assert len(out) <= 64, f"{code} -> {len(out)} chars"
+        assert out == f"{expected} ({code})", (
+            f"{code} -> {out!r}. The instruction leads because a user cannot "
+            "act on a code and this string is shown to them verbatim; the "
+            "code trails because it is the grouping key support greps for"
+        )
+
+
+def test_an_unmapped_aadsts_code_still_degrades_safely():
+    """A code we have never seen must not produce an empty or raw message."""
+    from routers.auth import _classify_ms_error, _ms_settle_code
+
+    out = _ms_settle_code(
+        _classify_ms_error("access_denied", "AADSTS999999: brand new failure")
+    )
+    assert out and len(out) <= 64
+    assert "brand new failure" not in out, "never echo Microsoft free text"
 
 
 # ── host telemetry ──

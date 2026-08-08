@@ -861,7 +861,21 @@ async def auth_callback(
     return RedirectResponse(url=f"{ext_redirect}#{fragment}")
 
 
-_SETTLE_DELAY_MS = 9000
+# How long the error page shows before it redirects itself and closes.
+#
+# 9s while the page returned 400 — where it never actually ran, because
+# Chromium tore the popup down first. Serving it as 200 made the dwell real,
+# and a real dwell has a cost the 400 hid: a user who closes the window
+# manually makes launchWebAuthFlow report "user did not approve", which every
+# shipped client maps to consent_declined. A network blip then gets filed as
+# a refused permission, in the user's face and in our telemetry.
+#
+# 5s, because the dwell is a bridge and not the destination — the same reason
+# is shown again, persistently, by the extension once the flight settles
+# (popup error section, sidebar reauth banner). Long enough not to read as a
+# flash, short enough to halve the window in which a manual close can lie
+# about what happened.
+_SETTLE_DELAY_MS = 5000
 
 
 # RFC 6749 §4.1.2.1 + OpenID Connect: the complete set of `error` codes an
@@ -890,6 +904,46 @@ _OAUTH_ERROR_CODES = frozenset(
 )
 
 
+# What the user should DO, one sentence per failure class.
+#
+# Constraints, all enforced by test_settle_messages_are_deliverable:
+#   * <= 64 chars — every shipped client truncates the fragment there;
+#   * only characters that survive _settle_fragment's sanitizer, so no
+#     apostrophes (they are stripped, turning "organization's" into
+#     "organizations" mid-word);
+#   * no '$' — the sidebar's i18n substitution reads it as a placeholder;
+#   * one stable sentence per class, because this doubles as the PostHog
+#     grouping key.
+#
+# English only. The server does not know the user's panel language, and
+# guessing from Accept-Language would be the same mistake the CSV decoder
+# just made. An English sentence naming the next step beats a localized
+# nothing; localizing properly needs the client to read errorCode, which no
+# shipped version does.
+_SETTLE_MESSAGES = {
+    "user_declined_consent":
+        "Permission was declined on the Microsoft screen",
+    "consent_required":
+        "OutMass needs your permission from Microsoft",
+    "admin_consent_required":
+        "Your IT admin must approve OutMass first",
+    "user_not_assigned_to_app":
+        "Your IT admin has not given you access",
+    "account_from_other_tenant":
+        "Use the account you use for Outlook",
+    "blocked_by_conditional_access":
+        "Your organization blocked this sign-in",
+    "mfa_required":
+        "Finish your extra sign-in check, then retry",
+    "app_not_found_in_tenant":
+        "Your IT admin must add OutMass to your org",
+    "client_secret_missing":
+        "Sign-in is misconfigured. Please contact us",
+    "redirect_uri_not_registered":
+        "Sign-in is misconfigured. Please contact us",
+}
+
+
 def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
     """A class-stable, PII-free settle fragment for a Microsoft-side error.
 
@@ -912,8 +966,28 @@ def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
     "session_expired" handling.
     """
     aadsts = classified.get("aadsts") or ""
-    meaning = (classified.get("meaning") or "").replace("_", " ")
+    raw_meaning = classified.get("meaning") or ""
+    meaning = raw_meaning.replace("_", " ")
     if aadsts:
+        # Every client in the field renders this string verbatim: 0.1.26 and
+        # 0.1.27 both resolve the flight with `{ error: errorMsg }` and no
+        # errorCode, so nothing downstream can turn it into localized
+        # guidance. Until the 200 fix the point was moot — Chromium threw the
+        # fragment away — but now it IS the message, and "AADSTS90094: admin
+        # consent required" tells a user nothing they can act on.
+        #
+        # So say what to do. The diagnostic code is not lost: ms_auth_failed
+        # carries the AADSTS number and meaning server-side, correlated by
+        # attempt_id, which is where support should read it from anyway.
+        if raw_meaning in _SETTLE_MESSAGES:
+            # Sentence first, code in parentheses. The user reads an
+            # instruction; support still greps the AADSTS number, which two
+            # earlier tests pin as the telemetry grouping key. Messages are
+            # capped at 48 so the longest code still fits inside 64.
+            composed = f"{_SETTLE_MESSAGES[raw_meaning]} ({aadsts})"
+            if len(composed) <= 64:
+                return composed
+            return _SETTLE_MESSAGES[raw_meaning]
         if meaning and meaning != "unclassified":
             return f"{aadsts}: {meaning}"[:64]
         return f"Sign-in failed ({aadsts}), please try again"[:64]
