@@ -247,6 +247,21 @@ def upload_limit_for_plan(plan: str) -> int:
 # of triggering 429s and account spam-flagging on large sends. Slower but
 # safer for both throttling and deliverability.
 SEND_DELAY_SECONDS = 2
+
+# How many recipients may go out before the monthly quota is charged for them.
+#
+# It used to be the whole batch, charged once after the loop finished — and
+# the loop is a FastAPI background task, so the end is not guaranteed to
+# arrive. A Railway deploy or an OOM mid-send left every recipient already
+# emailed and marked 'sent' uncharged: the durable per-contact state said
+# they went out, the counter said they never did, and the resumed remainder
+# was later billed against a quota that had never seen the first half.
+#
+# A SIGKILL runs no handler, so no except block can close that; only having
+# already written the number can. 25 bounds the loss to at most 24 emails
+# however the process dies, at one extra DB write per 25 sends — against the
+# 2s SEND_DELAY_SECONDS between recipients, that is free.
+QUOTA_CHARGE_BATCH = 25
 RATE_LIMIT_WAIT_SECONDS = 60
 
 # ── HTTPX timeouts for outbound calls ──

@@ -27,6 +27,27 @@ from config import (
 )
 from routers import account, ai, announcements, auth, billing, campaigns, launch, onedrive, settings, templates, tracking
 
+# Without this the root logger sits at WARNING, so EVERY logger.info in this
+# codebase is invisible in Railway — including the ones written specifically
+# to answer production questions. Migration 024's "column is now queryable"
+# confirmation was an info line: Ali ran the migration, watched the logs, and
+# saw nothing, and the only way we knew it had worked was that the warnings
+# stopped.
+#
+# force=True because uvicorn installs its own handlers first; without it this
+# call is a silent no-op under the production start command and the whole
+# thing would have looked done while changing nothing.
+#
+# Level is INFO, not DEBUG: DEBUG turns on httpx request logging, which prints
+# a line per Graph call — one per recipient, thousands per campaign.
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s %(levelname)s %(name)s %(message)s",
+    force=True,
+)
+logging.getLogger("httpx").setLevel(logging.WARNING)
+logging.getLogger("httpcore").setLevel(logging.WARNING)
+
 logger = logging.getLogger(__name__)
 
 # ── PostHog Error Tracking ──

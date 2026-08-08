@@ -4,23 +4,23 @@
  */
 
 // ── Azure Config (user must fill in Client ID) ──
-const AZURE_CLIENT_ID = "3b6a9f9b-cbb6-4dcb-a3b6-d993de74a1b5";
+// Only the redirect URI survives, and only because two log lines print it —
+// it is what has to be registered in Azure, so having it in the console has
+// saved an hour more than once.
+//
+// The client id, the Microsoft authorize/token endpoints and the scope list
+// left with graph_api.js on 2026-08-08. They belonged to a SECOND,
+// client-side implementation of token refresh and email sending that nothing
+// called: its three message types (GET_AUTH_TOKEN, GET_USER_INFO, SEND_EMAIL)
+// had zero senders anywhere in the extension or the e2e suite. Worse than
+// unused, it contradicted the architecture — sending goes through the backend
+// via Graph, never from the client — so it sat there as a working-looking
+// trap for whoever debugged the send path next.
 const AZURE_REDIRECT_URI = chrome.identity.getRedirectURL("auth");
-const MS_AUTH_ENDPOINT =
-  "https://login.microsoftonline.com/common/oauth2/v2.0/authorize";
-const MS_TOKEN_ENDPOINT =
-  "https://login.microsoftonline.com/common/oauth2/v2.0/token";
-const MS_SCOPES = [
-  "https://graph.microsoft.com/Mail.Send",
-  "https://graph.microsoft.com/Mail.Read",
-  "https://graph.microsoft.com/User.Read",
-  "offline_access",
-].join(" ");
 
 // ── Import modules ──
 importScripts("config.js");
 importScripts("analytics.js");
-importScripts("graph_api.js");
 
 // Override backend URL from storage (set during install or via settings)
 chrome.storage.local.get(["backendUrl", "debug"], function (result) {
@@ -855,12 +855,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
-    case "GET_AUTH_TOKEN":
-      getValidToken().then(function (result) {
-        sendResponse({ token: result.token, error: result.error });
-      });
-      return true;
-
     case "GET_USER_STATE":
       chrome.storage.local.get(
         ["user", "plan", "emailsSentThisMonth", "backendJwt"],
@@ -930,23 +924,6 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
           }
         }
       );
-      return true;
-
-    case "GET_USER_INFO":
-      fetchUserProfile().then(function (profile) {
-        sendResponse(profile);
-      });
-      return true;
-
-    case "SEND_EMAIL":
-      sendEmail(
-        message.to,
-        message.subject,
-        message.body,
-        message.trackingPixelUrl || null
-      ).then(function (result) {
-        sendResponse(result);
-      });
       return true;
 
     case "SYNC_AUTH":

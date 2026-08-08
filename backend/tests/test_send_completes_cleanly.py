@@ -152,6 +152,94 @@ def test_cancelled_mid_send_still_charges_the_recipients_that_went_out():
     )
 
 
+def test_quota_is_charged_in_batches_so_a_kill_cannot_lose_the_lot():
+    """A SIGKILL runs no handler, so no except block can rescue the charge.
+
+    The only thing that survives a kill is what was already written. Charging
+    once after the loop meant a Railway deploy mid-send left every recipient
+    already emailed and marked 'sent' uncharged — durable per-contact state
+    saying they went out, a counter saying they never did, and the resumed
+    remainder later billed against a quota that had never seen the first half.
+    """
+    import asyncio
+
+    from routers import campaigns as campaigns_router
+
+    increments = []
+
+    async def _ok(**kwargs):
+        return {"success": True}
+
+    with patch("models.contact.mark_sent"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.user.increment_sent_count",
+               side_effect=lambda uid, n: increments.append(n)),          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
+        asyncio.run(campaigns_router._run_campaign_send(
+            campaign_id="camp-batched",
+            campaign={"id": "camp-batched", "subject": "Hi", "body": "Hello",
+                      "attachments": []},
+            send_list=[_contact("c%d" % i, "u%d@example.com" % i) for i in range(25)],
+            ab_test=None,
+            half=0,
+            ab_remaining=[],
+            access_token="tok",
+            user=dict(FAKE_STARTER_USER),
+            suppressed_emails=set(),
+        ))
+
+    assert sum(increments) == 25, (
+        f"every recipient must be charged exactly once, got {increments}"
+    )
+    assert len(increments) > 1, (
+        "the whole point is that the charge lands DURING the loop, not only "
+        f"after it — got a single write of {increments}"
+    )
+    assert increments == [10, 10, 5], (
+        f"expected two full batches then the remainder, got {increments}"
+    )
+
+
+def test_a_kill_after_the_first_batch_still_leaves_that_batch_charged():
+    """The bound, stated as a number: at most QUOTA_CHARGE_BATCH - 1 free."""
+    import asyncio
+
+    from routers import campaigns as campaigns_router
+
+    increments = []
+    calls = {"n": 0}
+
+    async def _ok_then_die(**kwargs):
+        calls["n"] += 1
+        if calls["n"] > 12:
+            raise asyncio.CancelledError()
+        return {"success": True}
+
+    async def _run():
+        await campaigns_router._run_campaign_send(
+            campaign_id="camp-killed",
+            campaign={"id": "camp-killed", "subject": "Hi", "body": "Hello",
+                      "attachments": []},
+            send_list=[_contact("c%d" % i, "u%d@example.com" % i) for i in range(25)],
+            ab_test=None,
+            half=0,
+            ab_remaining=[],
+            access_token="tok",
+            user=dict(FAKE_STARTER_USER),
+            suppressed_emails=set(),
+        )
+
+    with patch("models.contact.mark_sent"),          patch("models.contact.mark_failed"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.user.increment_sent_count",
+               side_effect=lambda uid, n: increments.append(n)),          patch("routers.campaigns._send_single_email",
+               new=AsyncMock(side_effect=_ok_then_die)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
+        try:
+            asyncio.run(_run())
+        except asyncio.CancelledError:
+            pass
+
+    assert sum(increments) == 12, (
+        f"12 went out, so 12 must be charged — no more (double billing) and "
+        f"no fewer (free email). Got {increments}"
+    )
+
+
 def test_logging_is_not_shadowed_inside_the_send_path():
     """The specific trap, pinned by name.
 

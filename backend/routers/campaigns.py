@@ -27,6 +27,7 @@ from config import (
     GRAPH_API_BASE,
     OUTBOUND_HTTP_TIMEOUT,
     RATE_LIMIT_WAIT_SECONDS,
+    QUOTA_CHARGE_BATCH,
     SEND_DELAY_SECONDS,
     FREE_UPLOAD_ROW_LIMIT,
     STARTER_UPLOAD_ROW_LIMIT,
@@ -767,6 +768,10 @@ async def _run_campaign_send(
     # send between 2026-08-04 and 08-06. Fixing that shadowing removed the
     # trigger; this removes the whole failure mode.
     quota_counted = False
+    # How much of sent_count has already been charged to the monthly quota.
+    # Every path that charges must move this with it, or a recovery handler
+    # bills the same recipients twice.
+    quota_charged = 0
     try:
         async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for idx, contact in enumerate(send_list):
@@ -826,6 +831,23 @@ async def _run_campaign_send(
                             contact_model.set_ab_variant(contact["id"], ab_variant)
                         campaign_model.increment_stat(campaign_id, "sent_count")
                         sent_count += 1
+                        # Charge the quota in batches as we go, not once at
+                        # the end. The end is not guaranteed to arrive: a
+                        # Railway deploy or an OOM kills this task mid-loop,
+                        # and every recipient already emailed and marked
+                        # 'sent' was then free — the durable per-contact
+                        # state said they went out while the counter said
+                        # they never did. A SIGKILL runs no handler at all,
+                        # so no except block can fix that; only having
+                        # already written the number can.
+                        #
+                        # 25 bounds the loss to at most 24 emails however the
+                        # process dies, at one extra write per 25 sends.
+                        if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
+                            user_model.increment_sent_count(
+                                user["id"], sent_count - quota_charged
+                            )
+                            quota_charged = sent_count
                     else:
                         sc = result.get("status_code")
                         if sc in (401, 403):
@@ -843,7 +865,10 @@ async def _run_campaign_send(
                 if sent_count < len(send_list):
                     await asyncio.sleep(SEND_DELAY_SECONDS)
 
-        user_model.increment_sent_count(user["id"], sent_count)
+        # Whatever the batches have not covered yet.
+        if sent_count > quota_charged:
+            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+            quota_charged = sent_count
         quota_counted = True
 
         # One line per finished send. The `errors` list was built through the
@@ -908,8 +933,9 @@ async def _run_campaign_send(
         # would leave the event loop shutting down while this task claims
         # to still be running.
         try:
-            if not quota_counted:
-                user_model.increment_sent_count(user["id"], sent_count)
+            if not quota_counted and sent_count > quota_charged:
+                user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+                quota_charged = sent_count
         except Exception:  # noqa: BLE001
             pass
         try:
@@ -927,8 +953,9 @@ async def _run_campaign_send(
             "Background campaign send failed: campaign=%s", campaign_id
         )
         try:
-            if not quota_counted:
-                user_model.increment_sent_count(user["id"], sent_count)
+            if not quota_counted and sent_count > quota_charged:
+                user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+                quota_charged = sent_count
             # ALWAYS 'partial', never 'scheduled'. This function only ever runs
             # the send-NOW path (queued as a background task from /send), so
             # the campaign has scheduled_for NULL — and the due-campaign query
