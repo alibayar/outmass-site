@@ -155,6 +155,10 @@ def _post_checkout(client, users_tbl, subscription):
                 "metadata": {"user_id": "u-42"},
                 "customer": "cus_x",
                 "subscription": subscription,
+                # Card sessions are "paid" on completion; the handler now
+                # requires that before granting a plan, because ACH sessions
+                # complete while still unpaid.
+                "payment_status": "paid",
             }
         },
     }

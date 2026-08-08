@@ -142,6 +142,12 @@ def _post_checkout_event(client, users_tbl, subscription=None):
                 "metadata": {"user_id": "u-42"},
                 "customer": "cus_x",
                 "subscription": subscription,
+                # A real Stripe session always carries this. It was missing
+                # from the fixture until 2026-08-08, when ACH Direct Debit
+                # was enabled and the handler started requiring a settled
+                # payment before granting the plan — a card session is
+                # "paid" the moment it completes, which is what this models.
+                "payment_status": "paid",
             }
         },
     }

@@ -259,6 +259,119 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
 
 # ─── 2. Webhook ─────────────────────────────────────────────────────────────
 
+
+# Checkout session payment_status values that mean the money is actually
+# ours. Anything else (notably "unpaid") means a delayed payment method is
+# still clearing and the plan must NOT be granted yet.
+_SETTLED_PAYMENT_STATUSES = ("paid", "no_payment_required")
+
+
+def _activate_from_checkout_session(db, session: dict, background_tasks) -> None:
+    """Grant the plan bought in a completed, PAID checkout session.
+
+    Called from two events, because a card and a bank debit finish at
+    different moments:
+
+      * checkout.session.completed — cards. The session completing IS the
+        payment, so payment_status is already "paid".
+      * checkout.session.async_payment_succeeded — ACH Direct Debit and any
+        other delayed notification method. There, session.completed only
+        means the customer authorised the debit; the money lands days later
+        and can still fail.
+
+    Safe to run from both: the plan write is idempotent and the quota
+    re-anchor is behind the same replay guard that protects against Stripe's
+    at-least-once delivery.
+    """
+    user_id = (session.get("metadata") or {}).get("user_id")
+    if not user_id:
+        logger.warning("checkout session without user_id in metadata")
+        return
+
+    customer_id = session.get("customer")
+    subscription_id = session.get("subscription")
+
+    # Replay guard: Stripe delivers webhooks at-least-once (retries on
+    # timeout/non-2xx for days, plus manual dashboard "Resend"). The plan
+    # write is idempotent, but the quota re-anchor below is NOT — a replay
+    # must never re-zero the counter (bonus quota) or shift the anchor to
+    # the redelivery date. If we already stored this subscription id, this
+    # event was processed.
+    #
+    # This also covers the delayed-payment ordering: completed (unpaid, no
+    # grant) then async_payment_succeeded (grant) is a single activation,
+    # and a redelivery of either is a no-op.
+    already_processed = False
+    if subscription_id:
+        existing = (
+            db.table("users")
+            .select("stripe_subscription_id")
+            .eq("id", user_id)
+            .execute()
+        )
+        already_processed = bool(
+            existing.data
+            and existing.data[0].get("stripe_subscription_id") == subscription_id
+        )
+
+    # Determine plan from the price ID in the subscription
+    plan = "pro"
+    if subscription_id:
+        try:
+            sub = stripe.Subscription.retrieve(subscription_id)
+            sub_price_id = sub["items"]["data"][0]["price"]["id"] if sub["items"]["data"] else ""
+            if sub_price_id == STRIPE_STARTER_PRICE_ID:
+                plan = "starter"
+        except Exception:
+            pass
+
+    update_payload = {
+        "plan": plan,
+        "stripe_customer_id": customer_id,
+        "stripe_subscription_id": subscription_id,
+        "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    if not already_processed:
+        # The paid quota period starts the day they pay: fresh counters +
+        # anchor = today, so the rolling monthly reset (check_monthly_reset)
+        # keeps quota month == billed month from here on. ALL period-scoped
+        # counters reset together (AI too — a new paid period must not
+        # inherit the old period's AI usage). Deliberately NOT done in
+        # customer.subscription.updated — that event also fires on portal
+        # edits (e.g. cancel/uncancel toggles), which must never refill
+        # quota. Renewals need no webhook: the rolling reset is time-based
+        # off this anchor.
+        update_payload.update({
+            "emails_sent_this_month": 0,
+            "ai_generations_this_month": 0,
+            "month_reset_date": datetime.now(timezone.utc).date().isoformat(),
+        })
+
+    # Grab email/name before the plan write (which doesn't touch them)
+    # for the one-time thank-you below.
+    upgraded = _get_user_from_db(user_id) if not already_processed else None
+
+    db.table("users").update(update_payload).eq("id", user_id).execute()
+
+    # One-time upgrade thank-you email — rides the same replay guard as
+    # the quota re-anchor, so Stripe redeliveries can't send it twice.
+    # The user's only confirmation used to be Stripe's bare receipt.
+    if upgraded and upgraded.get("email") and background_tasks is not None:
+        background_tasks.add_task(
+            welcome_email.send_upgrade_email,
+            upgraded["email"],
+            upgraded.get("name"),
+            plan,
+        )
+
+    logger.info(
+        "User %s upgraded to %s (%s)",
+        user_id,
+        plan,
+        "replay — anchor kept" if already_processed else "quota period re-anchored",
+    )
+
+
 @router.post("/webhook")
 async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     """Verify and handle incoming Stripe webhook events."""
@@ -283,89 +396,79 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     db = get_db()
 
     # ── checkout.session.completed ──
+    #
+    # For a card, this event IS the payment. For a delayed notification
+    # method — ACH Direct Debit, enabled 2026-08-08 — it only means the
+    # customer authorised the debit; the money arrives days later and can
+    # still fail. Stripe says so on the ACH enablement dialog: do not
+    # fulfil before the payment clears.
+    #
+    # Granting here regardless would hand out a full Starter month (2,500
+    # sends, counters re-zeroed) against a bank debit that may never
+    # settle. The financial loss would be small — sends leave through the
+    # customer's own Microsoft mailbox — but a mass-email tool that opens
+    # 2,500 sends on an unverified bank instruction is an abuse target, and
+    # a plan we grant is a plan we report as revenue.
     if event_type == "checkout.session.completed":
-        user_id = data_object.get("metadata", {}).get("user_id")
-        if not user_id:
-            logger.warning("checkout.session.completed without user_id in metadata")
-            return {"received": True}
-
-        customer_id = data_object.get("customer")
-        subscription_id = data_object.get("subscription")
-
-        # Replay guard: Stripe delivers webhooks at-least-once (retries on
-        # timeout/non-2xx for days, plus manual dashboard "Resend"). The plan
-        # write is idempotent, but the quota re-anchor below is NOT — a replay
-        # must never re-zero the counter (bonus quota) or shift the anchor to
-        # the redelivery date. If we already stored this subscription id, this
-        # event was processed.
-        already_processed = False
-        if subscription_id:
-            existing = (
-                db.table("users")
-                .select("stripe_subscription_id")
-                .eq("id", user_id)
-                .execute()
-            )
-            already_processed = bool(
-                existing.data
-                and existing.data[0].get("stripe_subscription_id") == subscription_id
+        payment_status = data_object.get("payment_status")
+        if payment_status in _SETTLED_PAYMENT_STATUSES:
+            _activate_from_checkout_session(db, data_object, background_tasks)
+        else:
+            # Nothing to do but wait for async_payment_succeeded. Logged
+            # rather than silent so an ACH sign-up that never settles is
+            # findable afterwards.
+            logger.info(
+                "Checkout session %s completed but payment_status=%s — "
+                "delayed payment method, plan withheld until it settles",
+                data_object.get("id"),
+                payment_status,
             )
 
-        # Determine plan from the price ID in the subscription
-        plan = "pro"
-        if subscription_id:
-            try:
-                sub = stripe.Subscription.retrieve(subscription_id)
-                sub_price_id = sub["items"]["data"][0]["price"]["id"] if sub["items"]["data"] else ""
-                if sub_price_id == STRIPE_STARTER_PRICE_ID:
-                    plan = "starter"
-            except Exception:
-                pass
-
-        update_payload = {
-            "plan": plan,
-            "stripe_customer_id": customer_id,
-            "stripe_subscription_id": subscription_id,
-            "plan_updated_at": datetime.now(timezone.utc).isoformat(),
-        }
-        if not already_processed:
-            # The paid quota period starts the day they pay: fresh counters +
-            # anchor = today, so the rolling monthly reset (check_monthly_reset)
-            # keeps quota month == billed month from here on. ALL period-scoped
-            # counters reset together (AI too — a new paid period must not
-            # inherit the old period's AI usage). Deliberately NOT done in
-            # customer.subscription.updated — that event also fires on portal
-            # edits (e.g. cancel/uncancel toggles), which must never refill
-            # quota. Renewals need no webhook: the rolling reset is time-based
-            # off this anchor.
-            update_payload.update({
-                "emails_sent_this_month": 0,
-                "ai_generations_this_month": 0,
-                "month_reset_date": datetime.now(timezone.utc).date().isoformat(),
-            })
-
-        # Grab email/name before the plan write (which doesn't touch them)
-        # for the one-time thank-you below.
-        upgraded = _get_user_from_db(user_id) if not already_processed else None
-
-        db.table("users").update(update_payload).eq("id", user_id).execute()
-
-        # One-time upgrade thank-you email — rides the same replay guard as
-        # the quota re-anchor, so Stripe redeliveries can't send it twice.
-        # The user's only confirmation used to be Stripe's bare receipt.
-        if upgraded and upgraded.get("email"):
-            background_tasks.add_task(
-                welcome_email.send_upgrade_email,
-                upgraded["email"],
-                upgraded.get("name"),
-                plan,
-            )
-
+    # ── checkout.session.async_payment_succeeded ──
+    # The delayed debit cleared. This is the real moment of purchase for
+    # ACH, and it runs the identical activation path as a card.
+    elif event_type == "checkout.session.async_payment_succeeded":
         logger.info(
-            "User %s upgraded to %s (%s)",
-            user_id,
-            plan,
-            "replay — anchor kept" if already_processed else "quota period re-anchored",
+            "Delayed payment settled for checkout session %s",
+            data_object.get("id"),
+        )
+        _activate_from_checkout_session(db, data_object, background_tasks)
+
+    # ── checkout.session.async_payment_failed ──
+    # The debit bounced days after the customer thought they had bought.
+    # No plan was granted (the completed branch withheld it), so there is
+    # nothing to revoke — but the customer is sitting on the free tier
+    # believing otherwise, and only an operator can tell them.
+    elif event_type == "checkout.session.async_payment_failed":
+        meta = data_object.get("metadata") or {}
+        email = data_object.get("customer_email")
+        if not email and meta.get("user_id"):
+            row = _get_user_from_db(meta["user_id"])
+            email = (row or {}).get("email")
+
+        logger.warning(
+            "Delayed payment FAILED for checkout session %s (user=%s)",
+            data_object.get("id"),
+            email or meta.get("user_id"),
+        )
+        _capture_billing_event(
+            email or meta.get("user_id") or "unknown",
+            "checkout_async_payment_failed",
+            {
+                "plan": meta.get("plan"),
+                "session_id": data_object.get("id"),
+                "amount_total": data_object.get("amount_total"),
+                "currency": data_object.get("currency"),
+            },
+        )
+        _telegram_alert(
+            "🔴 OutMass delayed payment FAILED (bank debit bounced)\n\n"
+            f"User: {email or meta.get('user_id') or 'unknown'}\n"
+            f"Plan: {meta.get('plan') or 'unknown'}\n"
+            f"Session: {data_object.get('id')}\n\n"
+            "No plan was granted, so nothing to revoke — but the customer "
+            "went through checkout days ago and believes they subscribed. "
+            "They will not find out on their own. Reach out."
         )
 
     # ── checkout.session.expired ──
