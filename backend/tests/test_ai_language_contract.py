@@ -41,9 +41,19 @@ def test_every_picker_language_has_a_backend_name():
 
     # A regex that silently matches fewer rows than exist would make the
     # assertion below vacuous, so pin the count to the t("aiLang…") calls.
-    assert len(codes) == src.count('t("aiLang'), (
+    #
+    # The count is hoisted into a local rather than inlined into the f-string
+    # below on purpose: `f"{src.count('t(\"aiLang')}"` puts a backslash inside
+    # an f-string expression, which PEP 701 only legalised in Python 3.12.
+    # Local dev runs 3.14 and swallowed it; CI pins 3.11 (.github/workflows/
+    # ci.yml) and raised SyntaxError at COLLECTION time, so pytest aborted
+    # before running anything — all 555 backend tests were dark in CI from
+    # 2026-07-29 until this was found on 08-08. A syntax error in one test
+    # file silently disables every other one, so keep this expression plain.
+    label_count = src.count('t("aiLang')
+    assert len(codes) == label_count, (
         f"regex matched {len(codes)} picker options but the file has "
-        f"{src.count('t(\"aiLang')} aiLang labels — the pattern is stale, "
+        f"{label_count} aiLang labels — the pattern is stale, "
         "so some options are escaping this check"
     )
 

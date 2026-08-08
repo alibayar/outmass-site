@@ -6,6 +6,24 @@ site, so this never ships to getoutmass.com.)
 
 **Status:** ⬜ todo · 🔧 in progress · ✅ done · ⏸️ deferred
 
+> **Audited 2026-08-08.** Every open entry was re-checked against the code, and
+> most of them had drifted: three were done and still marked open, two were
+> partly done in ways that read as fully done, and one heading carried a second
+> unrelated item that had been invisible for five weeks. One entry ("unit-tests
+> green") had gone from true to false without anyone editing it, which is how a
+> ten-day CI outage stayed hidden.
+>
+> Two habits that would have prevented most of it:
+> - **A ✅ must not contain an open action.** If the remaining step is Ali's, it
+>   is a separate ⬜, not a sentence at the end of a done entry.
+> - **Pin claims to evidence, not to memory.** Counts (locale keys, listing
+>   languages, send loops) age silently; every number here now carries the date
+>   it was measured. Three of them were wrong by the time they were re-read.
+>
+> Current release state lives in the handoffs, not here — see
+> `handoff-2026-08-08.md`. Entries pinned to a version number go stale within
+> the week.
+
 ---
 
 ## 🔴 P0 — blocks users / revenue now
@@ -66,10 +84,18 @@ confirmed by an organic new user (India, person `2348cf80`) already running
 0.1.18 end-to-end. Bundles large-send warning + benign-noise client filter
 (P2 #2) + feedback reassurance copy (P2 #3).
 
-### ⬜ Upload extension v0.1.18 to Edge
-Chrome is live on 0.1.18. Edge still pending — upload `outmass-0.1.18.zip` at
-https://partner.microsoft.com/dashboard/microsoftedge/ (if 0.1.15 is still
-"in review", cancel it first, then submit 0.1.18).
+### ✅ Upload extension v0.1.18 to Edge — SUPERSEDED (closed 2026-08-08)
+Overtaken by events long ago and left open by bookkeeping alone. Edge was
+already on 0.1.20 by 2026-07-03 (`handoff-2026-07-03.md:26`), reached 0.1.25 in
+July and published 0.1.26 on 07-29 (see the store-listing entry below). The
+0.1.18 zip was never the thing to upload.
+
+**Current store state** (self-reported in `handoff-2026-08-08.md:22`, NOT read
+from the dashboards — only Ali can confirm those): Chrome 0.1.27 live, Edge
+0.1.26 live with 0.1.27 in review, and `outmass-0.2.0.zip` built and verified
+but not yet uploaded to either store. Track the live versions in the handoff,
+not here — a backlog entry pinned to one version number goes stale the week
+after it is written.
 
 ---
 
@@ -114,17 +140,53 @@ her feedback did arrive).
 
 ## 🔵 P3 — ops / quality
 
-### ⬜ Support send-as + deliverability
-Replies go from `outmassapp@outlook.com`, not the branded `support@getoutmass.com`
-(Outlook.com can't send-as an external domain). Set up Gmail "Send mail as
-`support@getoutmass.com`" via MailerSend SMTP. Also add **DKIM/DMARC** for
-getoutmass.com so support/transactional mail stops landing in recipients' spam.
+### ⬜ DMARC for getoutmass.com — CONFIRMED MISSING (probed 2026-08-08)
+`nslookup -type=TXT _dmarc.getoutmass.com 8.8.8.8` → **NXDOMAIN**. SPF is
+already there and correct (`v=spf1 include:_spf.mx.cloudflare.net
+include:_spf.mailersend.net ~all`), so the groundwork exists and the missing
+piece is one DNS TXT record. Without DMARC, receivers have no policy to apply
+to mail that fails SPF/DKIM — our transactional mail (welcome, reconnect,
+quota-cap, nudge, feedback) is likelier to land in spam, and nothing tells us
+when it does. Ali's action, at the DNS provider.
+DKIM was NOT probed (needs the MailerSend selector, e.g.
+`mlsn1._domainkey.getoutmass.com`) — check it in the same sitting.
 
-### ⬜ Re-run the PostHog funnel (verify the fixes)
-In 2-3 days, re-run the auth + send funnel: did *"Authorization page could not be
-loaded"* drop (healthcheck + retry)? did *"did not approve"* drop after publisher
-verification lands? are the new fixes (async send, pacing, the 13 leaks) behaving?
-Watch `send_failed` / HTTP 502.
+### ⬜ Branded support send-as (`support@getoutmass.com`)
+Split out of the entry above on 2026-08-08 because the two are independent and
+bundling them hid that one of them is a one-record DNS fix. Replies still come
+from `outmassapp@outlook.com` (Outlook.com cannot send-as an external domain).
+Note the repo uses MailerSend as an **HTTP API** sender, not SMTP
+(`backend/utils/welcome_email.py`, `backend/workers/inactivity_nudge.py`,
+`backend/models/ms_token.py`, `backend/routers/account.py`) — so this is a Gmail
+"Send mail as" setup against MailerSend SMTP credentials, entirely outside the
+codebase. Nothing to implement here; it is an account setting.
+
+### ✅ Re-run the PostHog funnel (verify the fixes) — DONE 2026-08-07
+
+> **Resolved.** Asked on 06-24 for "2-3 days later"; actually done 08-07, and it
+> was worth the wait because by then there was enough volume to read. The full
+> store→install→sign-in→send funnel is in `handoff-2026-08-07.md:24-54`:
+> 430 impressions → 140 views (33%) → 48 installs (34%); post-install
+> 63 → 30 opened the panel → 37 tried sign-in → 22 signed in → 16 uploaded →
+> 9 sent (14%). Cohort split: of 54 who never opened the panel, **0 sent**;
+> of 43 who did, 15 sent (35%).
+>
+> It answered both original questions with evidence, and both answers were
+> different from the guess. *"Authorization page could not be loaded"* was NOT a
+> Microsoft-side failure at all — it was our own error page returning HTTP 400,
+> which Chromium reports as a page-load failure and the extension auto-retried,
+> so a user who had just declined got a fresh consent screen 3 seconds later.
+> Fixed and deployed 08-08 (`7233d35`). And *"did not approve"* turned out to be
+> partly real: AADSTS65004 events are the first hard proof that users actively
+> decline, rather than being blocked.
+>
+> Two lessons kept: reading the funnel found a bug that no test suite could have
+> (the 400 was correct HTTP and wrong behaviour), and store conversion turned out
+> to be the healthy part — see `funnel_truth_2026_08`. The lever is impressions
+> volume and post-install activation, not the store listing.
+
+**Not a standing cadence.** This was one ad-hoc read. If a weekly rhythm is
+wanted, that is a separate commitment nobody has made yet.
 
 ### ✅ Debounce the sign-in button (prevent stacked OAuth popups) — DONE (2026-06-25)
 
@@ -144,14 +206,30 @@ progress (`background.js` launch path + the sidebar/popup buttons) so a flow
 can't be started twice. Also dampens false "did not approve" noise in the
 oauth funnel. Low effort, UX-only.
 
-### ⬜ Quota follow-ups (deferred from the 2026-07-03 billing-anchored quota review)
+### 🔧 Quota follow-ups (deferred from the 2026-07-03 billing-anchored quota review)
 Adversarial review of the rolling-quota change surfaced these; all bounded /
-rare, deliberately deferred:
-1. **Mid-campaign reset/increment race** — send loops increment the counter
+rare, deliberately deferred. **Audited 2026-08-08 — item 1 is now partly done
+and the entry's own loop count was wrong. Items 2-4 verified still open.**
+1. 🔧 **Mid-campaign reset/increment race** — send loops increment the counter
    ONCE at the end of a paced (possibly hours-long) run; if the period boundary
    rolls over mid-flight, the whole campaign's count lands in the NEW period.
-   Fix: increment in small batches (~25) inside the 5 send loops. Bounded
+   Fix: increment in small batches (~25) inside the send loops. Bounded
    (≤1 campaign), self-corrects next period; pre-existed in calendar form.
+   - **Done for ONE loop.** `840ee99` (2026-08-08) added
+     `QUOTA_CHARGE_BATCH = 25` (`backend/config.py:264`) and batches inside
+     `_run_campaign_send` (`backend/routers/campaigns.py:972-976`, with a
+     tail-catch at 995 and handlers for cancellation and generic failure) —
+     the **send-now** path only. That commit touched no worker file.
+   - **Still unbatched, all three:** `scheduled_worker.py:178`
+     (scheduled campaigns), `scheduled_worker.py:473` (A/B winner pass),
+     `followup_worker.py:109` (follow-ups). Each still calls
+     `increment_sent_count(user_id, sent_count)` once, after the loop.
+     Scheduled sends are the *most* exposed of the four, because they are the
+     ones most likely to straddle a period boundary unattended.
+   - **The entry said "5 send loops"; there are 4.** The fifth,
+     `email_worker.send_email_task`, is **dead code** — grep finds no caller,
+     and it never touches `increment_sent_count` at all. Worth deleting or
+     documenting rather than leaving as a phantom obligation.
 2. **cancel_at_period_end final-day refill** — date-granularity reset fires at
    00:00 UTC on the final anniversary while the sub dies at its creation TIME
    that day → up to one bonus quota-month for a cancelling user. Fix: persist
@@ -166,7 +244,32 @@ rare, deliberately deferred:
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
-### ⬜ Microsoft-consent funnel leak (promoted from watch, Ali 2026-07-26)
+### 🔧 Microsoft-consent funnel leak (promoted from watch, Ali 2026-07-26)
+
+> **Audited 2026-08-08 — one of the three ideas shipped. Read this before
+> assuming the other two did, because adjacent work landed near both.**
+>
+> - **Idea 3, per-step funnel measurement: SHIPPED and used.** `abfae48`
+>   (07-31) added `ms_auth_failed` with AADSTS classification;
+>   `0f0636c` (08-03) added `ms_auth_window_opened` as the midpoint between
+>   `oauth_started` (client) and completion. Real numbers came out of it on
+>   08-07 (37 tried sign-in → 22 signed in). No weekly cadence exists though —
+>   that was part of the idea and remains unmade.
+> - **Idea 1, pre-OAuth trust panel: NOT shipped.** `popupConsentExplainer`
+>   still lives only in `popup.html` and the locale files — grep finds it
+>   nowhere in `sidebar.html`/`sidebar.js`. The panel, which is where users
+>   actually are when they hit sign-in, still says nothing about what Microsoft
+>   is about to ask for.
+> - **Idea 2, consent-decline follow-up UX: NOT shipped — and this is the one
+>   most likely to be miscounted as done.** The 08-08 auth work (error page
+>   400→200, `_SETTLE_MESSAGES`, dwell 9s→5s) fixed the *repeat-prompt bug* and
+>   improved the *server-side* settle text. But the client still collapses every
+>   consent failure to one `consent_declined` code (`background.js:553-557`) and
+>   renders one static alert (`authErrorConsent`) for all of them. Stopping a
+>   loop is not the same as replacing a dead end with an explanation.
+>
+> So: 1 of 3. Do not close this entry.
+
 ~5 anonymous users lost AT the Microsoft consent screen in 10 days (AU 07-17,
 BR 07-21, TR ×3 07-23, PH 07-25 — the PH one had a NEAR-PERFECT activation:
 29-recipient CSV + 6 chip insertions in 5 minutes, then bailed at consent).
@@ -225,7 +328,26 @@ NOT reversible — if the user later un-suppresses an address, the contact
 stays skipped. Re-emailing someone who was on a do-not-email list should be
 a deliberate act, not a side effect.
 
-### ✅ Store-listing refresh — DONE 2026-07-29 (content ready; Ali pastes to dashboards)
+### 🔧 Store-listing refresh — content READY, dashboards NOT confirmed
+
+> **Re-marked 2026-08-08.** This was ✅ while its last line said "Remaining: Ali
+> pastes all 11 languages into BOTH dashboards" — so the repo-side prep was
+> done and the only part users can actually see was not, tracked nowhere. A ✅
+> with an open action inside it is how work disappears. **Ali: has the paste
+> happened?** If yes this closes; if no it is the oldest open user-visible item
+> we have.
+>
+> **And the number moved: it is 12 now, not 11.** `listings.json` currently
+> holds en, tr, de, fr, es, ru, ar, hi, zh_CN, **zh_TW**, ja, pt_BR — zh_TW was
+> added the day after this entry was written, when Traditional Chinese became a
+> real translation. `docs/store-listing/README.md` still says 11 and still
+> describes pt_BR as "listing-only until the pt locales ship in 0.1.27"; 0.1.27
+> shipped on 08-05.
+>
+> **One open question for Ali:** there is no `pt_PT` entry in `listings.json`,
+> though the extension ships both pt_BR and pt_PT. Deliberate (the stores may
+> not list them separately) or a gap?
+
 Trigger fired: Edge published 0.1.26 on 07-29. All 9 points applied to
 `docs/store-listing/listings.json` (10 languages edited + NEW pt_BR entry) via
 a 15-agent translate+verify workflow; `check-limits.js` guards limits + banned
@@ -268,7 +390,10 @@ Original audit (for history):
 9. "30-day money-back guarantee" ✓ verified real (refund.html + pricing FAQ) —
    keep.
 
-### ✅ 0.1.27 queue — CUT 2026-07-29 (zip built + verified, awaiting Ali's upload)
+### ✅ 0.1.27 queue — CUT 2026-07-29, PUBLISHED on Chrome 2026-08-05
+*(Heading corrected 08-08: it still said "awaiting Ali's upload" nine days after
+the upload happened — the same ✅-with-an-open-action-inside pattern flagged at
+the top of this file. Edge 0.1.27 was still in review at the time of writing.)*
 Both queue items shipped, plus what the mandated adversarial review turned up.
 **Shipped:** pt_BR + pt_PT locales (323 keys each, translated separately — not
 one file copied; verified BR/PT vocabulary split) · reworded `alertQuotaCapped`
@@ -322,10 +447,12 @@ backend = Portuguese requested, English email delivered, no error anywhere.
 ### ✅ Traditional Chinese is now REAL — shipped in 0.1.27 (2026-07-30)
 Ali's call after the count discussion: rather than keep explaining that `zh` was
 a Simplified fallback, make Traditional genuine. `extension/_locales/zh_TW/`
-(324 keys) written from English in TAIWAN terminology — 軟體/檔案/資訊/資料/
-範本/伺服器/設定/收件者/儲存/登入/排程/主旨/預設/行銷/支援/點選 — deliberately
-NOT a character conversion of zh_CN (only 14/324 strings coincide, all of them
-short labels that are identical in both scripts anyway).
+(324 keys at the time) written from English in TAIWAN terminology — 軟體/檔案/
+資訊/資料/範本/伺服器/設定/收件者/儲存/登入/排程/主旨/預設/行銷/支援/點選 —
+deliberately NOT a character conversion of zh_CN (only 14/324 strings coincide,
+all of them short labels that are identical in both scripts anyway).
+*(Re-measured 2026-08-08: both files are now 340 keys with 15 coinciding —
+later releases added strings. The claim holds; only the numbers aged.)*
 Also: AI writer gained a Traditional option (and the Simplified one is now
 labelled explicitly); `_LANG_NAMES["zh_TW"]`; recipient-facing unsubscribe page
 in Traditional with `_detect_lang` preserving the region FOR CHINESE ONLY;
@@ -397,25 +524,60 @@ published (claims-follow-product: only after the store shows it):
 - also `docs/store-listing/descriptions/*.txt` + `edge-description-en.txt` still
   say "10 UI languages" (they feed the same dashboards as listings.json).
 
-### ⬜ Claims-audit leftovers (from the 2026-07-15 site audit)
-0. **[READY, in master] OneDrive picker consent-loop guard** — one-shot
-   `_oneDriveAuthAttempted` guard + `oneDriveAuthStuck` message (11 locales) +
-   `onedrive_auth_stuck` telemetry, from the 2026-07-16 lucia incident (paying
-   Starter hit an endless consent-window loop). Backend half (persist scoped
-   access token without refresh_token; license-403 → no_onedrive) ships with
-   the next backend deploy; the sidebar guard rides 0.1.26.
+### ✅ Claims-audit leftovers (from the 2026-07-15 site audit) — ALL THREE DONE
+
+> **Closed 2026-08-08 after verifying each sub-item against the code.** The
+> header had been left ⬜ while every item under it shipped — a section marker
+> that outlived its contents.
+
+0. ✅ **OneDrive picker consent-loop guard** — deployed, not just "in master".
+   `_oneDriveAuthAttempted` one-shot guard (`sidebar.js:3465,3573-3578,3736`),
+   `onedrive_auth_stuck` telemetry, `oneDriveAuthStuck` present in all 14 locale
+   files. Backend half is live too: `_persist_ms_tokens` keeps the access token
+   when Microsoft omits a refresh token (`auth.py:363-433`) and the license-403
+   marker maps to `no_onedrive` (`onedrive.py:65`, 5 tests). Shipped in
+   `060a6d0`, deployed per `handoff-2026-07-26.md:9-13` — with field proof in
+   the same handoff (a user self-recovered and used OneDrive cleanly).
 1. ✅ **popupConsentExplainer softened (2026-07-18, in master for 0.1.26)** —
    honest framing in all 11 locales: never reads your other emails; campaigns
    stored securely to power scheduling and follow-ups.
-2. ✅ **Reply cancels pending follow-ups (2026-07-18, backend — live on next
-   deploy)** — followup_worker excludes contacts with replied_at for every
-   condition; tests in test_followup_reply_cancel.py. (Site copy can now
-   truthfully claim it again — add to Pro feature bullets AFTER deploy.)
-   but followup_worker never reads it. Small real feature: exclude
-   contacts with replied_at from follow-up sends. Turns the corrected copy
-   back into a truthful selling point.
+2. ✅ **Reply cancels pending follow-ups (2026-07-18, backend — DEPLOYED)** —
+   `_get_filtered_contacts` applies `.is_("replied_at", "null")` before the
+   per-condition filters (`followup_worker.py:124-148`), so replied contacts
+   drop out for every condition, not just the not-opened one; three tests in
+   `test_followup_reply_cancel.py`. Shipped in `4460729`, deployed per
+   `handoff-2026-07-26.md`. **The follow-on action is done too:** the claim is
+   back on the site — `docs/pricing.html:126` "stops automatically when someone
+   replies", added in `bd606fd` only after it went live.
 
-### ⬜ Move the API to api.getoutmass.com (custom domain — unblocks filtered networks)
+   *(A dangling sentence fragment from an earlier draft of this item lived here
+   until 2026-08-08 and was deleted; it described the pre-fix state.)*
+
+### 🔧 Move the API to api.getoutmass.com — DONE except one env var (audited 2026-08-08)
+
+> **Step 1 and the extension half of step 2 both shipped on 2026-07-14**
+> (`eb5e81b`, folded into 0.1.25), and the entry was simply never updated:
+> `extension/config.js:13-14` makes `api.getoutmass.com` the primary base with
+> the railway host as fallback, and `manifest.json:15-16` carries both. Probed
+> live 08-08: both return `{"status":"ok"}` — api.getoutmass.com through
+> Cloudflare, the fallback through Railway direct.
+>
+> **What is NOT confirmed: the backend's own `BACKEND_URL` env var on Railway.**
+> It is not in the repo, and no public probe distinguishes it — `AZURE_REDIRECT_URI`
+> can be set independently (so the OAuth redirect proves nothing), CORS allow-lists
+> several origins explicitly (so origin reflection proves nothing), and the
+> unsubscribe page uses a relative form action. This variable stamps **tracking
+> pixels, click-tracking links, unsubscribe links and Stripe redirect URLs** into
+> outgoing mail — i.e. it carries the entire reason this item exists, since a
+> recipient behind the GFW or a corporate filter is exactly who gets a broken
+> tracking pixel and a dead unsubscribe link. If it still reads
+> `outmass-production.up.railway.app`, the user-facing half of this fix has not
+> landed at all.
+>
+> **Ali: Railway → web service → Variables → `BACKEND_URL`.** Or open any recent
+> sent email and look at where the unsubscribe link points.
+
+Original entry (for history):
 The 2026-07-14 zh-CN churn exposed a structural reach problem: our API lives on
 `outmass-production.up.railway.app`, and shared-platform domains like
 railway.app are blocked wholesale by some corporate filters and national
@@ -434,7 +596,62 @@ removes the failure class. Steps:
    links keep working as long as both domains stay attached).
 Bonus: branded tracking/unsub links also help deliverability.
 
-### ⬜ Fix the e2e CI suite (red on EVERY push since 2026-06-03)
+### ✅ Fix the e2e CI suite — DONE 2026-08-04 (`25389b7`)
+
+> **Resolved** with option (a), exactly as proposed: `e2e/chrome-stub.ts`
+> supplies a `window.chrome` stub (runtime, storage, i18n, identity, alarms)
+> installed via `page.addInitScript` in the `beforeEach` of both
+> `extension.spec.ts` and `i18n-visual.spec.ts`. Verified three ways: 51/51 pass
+> locally, the `e2e-tests` job has been green on every CI run since, and the
+> red→green boundary lines up with that commit (run 30852879659 red at the
+> parent, 30937885670 green at the first push after).
+
+### ✅ Backend unit tests were dark in CI for 10 days — FOUND AND FIXED 2026-08-08
+
+> Found while auditing the entry above, which opens with the words "unit-tests
+> green". That was true when it was written and false by the time anyone read
+> it again — the entry described a red CI and named the wrong job.
+>
+> `backend/tests/test_ai_language_contract.py` (added `bb2ea71`, 2026-07-29)
+> built an assertion message as
+> `f"{src.count('t(\"aiLang')} aiLang labels"`. A backslash inside an f-string
+> **expression** is legal from Python 3.12 (PEP 701) and a `SyntaxError` before
+> it. Local dev runs 3.14 and never blinked; CI pins **3.11**
+> (`.github/workflows/ci.yml:30`), where pytest raised at COLLECTION time:
+>
+> ```
+> collected 555 items / 1 error
+> E   SyntaxError: f-string expression part cannot include a backslash
+> !!!! Interrupted: 1 error during collection !!!!
+> ```
+>
+> So **zero** backend tests ran in CI from 07-29 to 08-08 — including through
+> the 0.1.27, 0.1.28 and 0.2.0 cuts. Nothing shipped broken (the suites were run
+> locally every time, where they pass), but the CI safety net was not there.
+>
+> Fixed by hoisting the count into a local. Two things worth keeping:
+> - **A syntax error in one test file silently disables every other one.** Not
+>   "that file fails" — collection aborts and the whole job dies.
+> - **A local/CI interpreter gap makes a whole class of error invisible.** A
+>   sweep of all 106 backend files found no other instance. `ast.parse(...,
+>   feature_version=(3,11))` does NOT detect this — it accepts the known-bad
+>   snippet on 3.14, so any checker built on it must self-test first or it will
+>   report a clean sweep it cannot actually see. A token-stream scan does work.
+>
+> Now that the job runs again, CI itself is the guard for the next one.
+
+### ⬜ Separate the polluting game events from PostHog project 152466
+Split back out on 2026-08-08 into the heading it originally had — it was
+swallowed into the e2e-CI entry by `8d38b1a` and spent five weeks as an
+orphaned paragraph under an unrelated title, which is a good way for an item to
+never be done. PostHog project 152466 receives a game's events
+(`match_started`, `lobby_viewed`); the org still has exactly one project, so no
+separation has happened. Mitigating: the pollution was a single burst on
+2026-06-19 (15 events in about an hour) and has not recurred in the seven weeks
+since, so this is low priority — but the shared key is still in place, so it
+can recur without warning.
+
+Original entry (for history):
 GitHub Actions CI: unit-tests green, **e2e-tests failing ~24/48 on every push
 for a month** (Ali only noticed via the 07-03 email). Last green run =
 06-03 21:35; first red = 06-03 21:49 → commit `76b6317` ("refresh announcements
@@ -451,8 +668,6 @@ added since June (quota loadQuota etc.) if any still throw. Verify locally
 with `npx playwright test` before pushing. Not urgent (product unaffected —
 unit tests + manual verification carried the last month) but a red CI on every
 push trains us to ignore CI, which is dangerous.
-PostHog project 152466 also receives a game's events (`match_started`,
-`lobby_viewed`, …). Separate into its own project so OutMass analytics stay clean.
 
 ---
 
