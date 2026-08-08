@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "Anmelden"
   },
+  "repliesOffBannerText": {
+    "message": "Follow-ups erkennen nicht, wer bereits geantwortet hat. Aktiviere die Antworterkennung, damit sie niemanden mehr anschreiben, der schon geantwortet hat."
+  },
+  "repliesOffBannerCta": {
+    "message": "Aktivieren"
+  },
+  "repliesOnConfirmed": {
+    "message": "Antworterkennung ist aktiv. Follow-ups überspringen jetzt alle, die antworten."
+  },
   "reauthFailed": {
     "message": "Anmeldung fehlgeschlagen: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "Anmeldung läuft noch? Wenn Ihre Organisation für neue Apps eine Administratorgenehmigung verlangt, weist Microsoft auf diesem Bildschirm darauf hin."
-  }}
+  }
+}

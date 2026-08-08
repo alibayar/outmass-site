@@ -2,7 +2,21 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.1.28 — 2026-08-08
+## v0.2.0 — 2026-08-08
+
+A minor version rather than another patch, because two things behave
+differently rather than merely better: some contact lists that used to load
+are now refused (see below — and re-saving fixes them for good), and the
+panel gained a permission it can ask for on its own.
+
+- **OutMass can now turn reply detection back on by itself.** Reply detection
+  needs Microsoft's permission to see your inbox, and until now that
+  permission could only be granted at sign-in — if it was missing there was
+  no way to fix it from inside OutMass, and nothing told you it was missing.
+  The panel now says so plainly and can ask for that one permission on its
+  own, without signing you in again. Nothing changes if you already granted
+  it, which today is everyone: this is groundwork for asking for less at
+  sign-in, and you will see that change announced when it happens.
 
 - **The panel opens itself the first time you reach Outlook.** After installing, you no longer have to hunt for the round OutMass button in the corner — open Outlook once and the campaign panel is already there. It happens exactly once; after that the panel opens only when you ask for it.
 - **A slow sign-in no longer gets told it failed.** If the Microsoft window stayed open for five minutes, OutMass used to say "sign-in timed out, please try again" — untrue, because that window is still open and still works. It now tells you both options, in your own language (the message was English-only before).

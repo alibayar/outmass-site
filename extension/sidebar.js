@@ -119,6 +119,70 @@
     }
   }
 
+  // ── Reply-detection banner ──
+  //
+  // Mail.Read is leaving the first-sign-in ask: "Read your mail" is the most
+  // alarming line on a consent screen shown to someone who has not sent a
+  // single email yet, and it exists only for reply detection — a feature that
+  // cannot matter before the first campaign.
+  //
+  // The catch is that declining it fails SILENTLY. Follow-ups keep going to
+  // people who already answered, and Reports shows a 0.0% reply rate, which
+  // reads as a result rather than a missing permission. That is why this
+  // banner had to exist before the flag could be flipped: without it, the
+  // narrow ask would just make the product quietly worse for anyone who says
+  // no, with nothing in the panel to say why or offer a way back.
+  //
+  // Lower precedence than every reauth state — a broken session has to be
+  // fixed first, and two banners stacked is noise.
+  function updateRepliesBanner(hasMailRead, reauthShowing) {
+    var banner = document.getElementById("replies-off-banner");
+    if (!banner) return;
+    // `false` and nothing else. An older backend that does not return the
+    // field, a failed poll, or a user whose row predates the split must all
+    // read as "fine" — showing this to someone who DOES have the scope would
+    // send them to Microsoft to grant a permission they already granted.
+    var show = hasMailRead === false && !reauthShowing;
+    banner.style.display = show ? "flex" : "none";
+  }
+
+  var repliesBtn = document.getElementById("replies-off-btn");
+  if (repliesBtn) {
+    repliesBtn.addEventListener("click", function () {
+      repliesBtn.disabled = true;
+      repliesBtn.textContent = "…";
+      track("signin_clicked", { context: "replies_off_banner", scope: "mail_read" });
+      var hintTimer = showSigninHintAfter(60000);
+      chrome.runtime.sendMessage({ type: "MS_LOGIN_MAIL_READ" }, function (resp) {
+        clearSigninHint(hintTimer);
+        repliesBtn.disabled = false;
+        repliesBtn.textContent = t("repliesOffBannerCta");
+        if (chrome.runtime.lastError) {
+          alert(t("extUpdatedReload"));
+          return;
+        }
+        if (resp && resp.error) {
+          var ac = resp.errorCode;
+          alert(ac === "consent_declined" ? t("authErrorConsent")
+              : ac === "auth_page_failed" ? t("authErrorPageLoad")
+              : ac === "auth_window_already_open" ? t("authWindowAlreadyOpen")
+              : ac === "auth_timeout" ? t("authTimeout")
+              : t("reauthFailed", [resp.error]));
+          return;
+        }
+        // Confirm rather than just hiding the banner. A permission screen the
+        // user just clicked through, followed by a banner silently vanishing,
+        // leaves them unsure whether anything happened.
+        chrome.runtime.sendMessage({ type: "GET_SETTINGS" }, function (r) {
+          var data = r && (r.data || r);
+          var granted = !(data && data.has_mail_read_scope === false);
+          updateRepliesBanner(granted ? true : false, false);
+          if (granted) alert(t("repliesOnConfirmed"));
+        });
+      });
+    });
+  }
+
   // ── Pending sign-in hint ──
   //
   // The 5-minute auth ceiling releases the UI but says nothing while the user
@@ -280,15 +344,23 @@
         var neverSignedIn = !(s && s.backendJwt) && !sessionExpired;
         var requiresReauth = false;
         var summary = null;
+        // undefined until the poll says otherwise — see updateRepliesBanner:
+        // only an explicit false may show the banner.
+        var hasMailRead;
         if (resp && !resp.error) {
           var data = resp.data || resp;
           requiresReauth = !!(data && data.requires_reauth);
           summary = data.announcements_summary;
+          hasMailRead = data && data.has_mail_read_scope;
         }
         // Apply the reauth banner FIRST, then the announcement signal, so the
         // strip's precedence check (reauth > offline > announcement) reads the
         // freshly-applied banner state rather than the previous poll's.
         updateReauthBanner(requiresReauth, sessionExpired, neverSignedIn);
+        updateRepliesBanner(
+          hasMailRead,
+          !!(requiresReauth || sessionExpired || neverSignedIn)
+        );
         // Piggyback the announcement signal on the existing settings poll.
         updateAnnouncementSignal(summary);
       });

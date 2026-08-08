@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "登录"
   },
+  "repliesOffBannerText": {
+    "message": "跟进邮件无法判断谁已经回复。开启回复检测后，跟进将不再打扰已回复的人。"
+  },
+  "repliesOffBannerCta": {
+    "message": "开启"
+  },
+  "repliesOnConfirmed": {
+    "message": "回复检测已开启。跟进邮件将跳过已回复的收件人。"
+  },
   "reauthFailed": {
     "message": "登录失败: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "还在登录吗？如果贵单位要求新应用须经管理员批准，Microsoft 会在该页面上说明。"
-  }}
+  }
+}

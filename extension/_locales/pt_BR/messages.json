@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "Entrar"
   },
+  "repliesOffBannerText": {
+    "message": "Os follow-ups não sabem quem já respondeu. Ative a detecção de respostas para que parem de cobrar quem já respondeu."
+  },
+  "repliesOffBannerCta": {
+    "message": "Ativar"
+  },
+  "repliesOnConfirmed": {
+    "message": "Detecção de respostas ativada. Os follow-ups vão pular quem responder."
+  },
   "reauthFailed": {
     "message": "Falha ao entrar: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "Ainda entrando? Se a sua organização exige aprovação do administrador para novos aplicativos, a Microsoft avisa nessa tela."
-  }}
+  }
+}

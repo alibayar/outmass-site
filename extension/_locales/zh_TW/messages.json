@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "登入"
   },
+  "repliesOffBannerText": {
+    "message": "跟進郵件無法判斷誰已經回覆。開啟回覆偵測後，跟進就不會再打擾已回覆的人。"
+  },
+  "repliesOffBannerCta": {
+    "message": "開啟"
+  },
+  "repliesOnConfirmed": {
+    "message": "回覆偵測已開啟。跟進郵件將略過已回覆的收件者。"
+  },
   "reauthFailed": {
     "message": "登入失敗：$ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "還在登入嗎？如果貴單位規定新應用程式須經管理員核准，Microsoft 會在該畫面上說明。"
-  }}
+  }
+}

@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "Iniciar sessão"
   },
+  "repliesOffBannerText": {
+    "message": "Os seguimentos não sabem quem já respondeu. Ative a deteção de respostas para deixarem de insistir com quem já respondeu."
+  },
+  "repliesOffBannerCta": {
+    "message": "Ativar"
+  },
+  "repliesOnConfirmed": {
+    "message": "Deteção de respostas ativada. Os seguimentos passam a ignorar quem responder."
+  },
   "reauthFailed": {
     "message": "Falha ao iniciar sessão: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "Ainda a iniciar sessão? Se a sua organização exige aprovação do administrador para novas aplicações, a Microsoft indica-o nesse ecrã."
-  }}
+  }
+}

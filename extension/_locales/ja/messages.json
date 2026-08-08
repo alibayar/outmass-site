@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "サインイン"
   },
+  "repliesOffBannerText": {
+    "message": "フォローアップは誰がすでに返信したかを判別できません。返信検出をオンにすると、返信済みの相手への追客を停止します。"
+  },
+  "repliesOffBannerCta": {
+    "message": "オンにする"
+  },
+  "repliesOnConfirmed": {
+    "message": "返信検出をオンにしました。フォローアップは返信した相手をスキップします。"
+  },
   "reauthFailed": {
     "message": "サインイン失敗: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "サインインは進行中ですか？組織が新しいアプリに管理者の承認を必要とする場合、Microsoft がその画面で通知します。"
-  }}
+  }
+}

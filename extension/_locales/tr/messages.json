@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "Giriş yap"
   },
+  "repliesOffBannerText": {
+    "message": "Takip e-postaları kimin yanıt verdiğini göremiyor. Yanıt algılamayı açarsan cevap verenlerin peşinden gitmeyi bırakırlar."
+  },
+  "repliesOffBannerCta": {
+    "message": "Aç"
+  },
+  "repliesOnConfirmed": {
+    "message": "Yanıt algılama açık. Takipler artık yanıt verenleri atlayacak."
+  },
   "reauthFailed": {
     "message": "Giriş başarısız: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "Giriş sürüyor mu? Kurumunuz yeni uygulamalar için yönetici onayı istiyorsa Microsoft bunu o ekranda belirtir."
-  }}
+  }
+}

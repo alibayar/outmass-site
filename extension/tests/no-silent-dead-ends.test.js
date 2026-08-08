@@ -145,6 +145,39 @@ function run() {
     "that hides every user's campaigns would look like a quiet week"
   );
 
+  // ── Mail.Read: the recovery path that has to exist before the flag flips ──
+  //
+  // Declining Mail.Read fails SILENTLY: follow-ups keep chasing people who
+  // already answered and Reports shows a 0.0% reply rate, which reads as a
+  // result rather than a missing permission. The panel banner is the only
+  // thing that names it and offers a way back, and the server-side flag is
+  // what decides who lands in that state — so if the banner regresses, the
+  // flip becomes a silent downgrade for every new user.
+  check(
+    /var show = hasMailRead === false && !reauthShowing;/.test(sidebar),
+    "the reply-detection banner no longer tests for an EXPLICIT false. A " +
+    "truthy check shows it whenever the field is missing — an older backend, " +
+    "a failed poll, a pre-split row — sending users who already granted " +
+    "Mail.Read to Microsoft to grant it again"
+  );
+  check(
+    sidebar.includes("MS_LOGIN_MAIL_READ"),
+    "the banner's CTA no longer starts the Mail.Read consent flow, so the " +
+    "banner states a problem it cannot fix"
+  );
+  check(
+    background.includes("MS_LOGIN_MAIL_READ") &&
+      background.includes("include_mail_read=true"),
+    "the service worker no longer asks Microsoft for Mail.Read, so the " +
+    "consent screen would grant nothing and the banner would never clear"
+  );
+  check(
+    /var key = includeOneDrive \? "onedrive" : includeMailRead \? "mailread"/.test(background),
+    "the Mail.Read flow shares a single-flight key with another scope — a " +
+    "user granting Mail.Read would silently join a flow asking for something " +
+    "else and get a window that grants the wrong permission"
+  );
+
   return { name: "no-silent-dead-ends", failures };
 }
 

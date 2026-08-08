@@ -873,6 +873,18 @@
   "reauthBannerCta": {
     "message": "Sign in"
   },
+  "repliesOffBannerText": {
+    "message": "Follow-ups cannot tell who already replied. Turn on reply detection so they stop chasing people who answered.",
+    "description": "Banner shown when the user signed in without the Mail.Read scope, so reply detection cannot run."
+  },
+  "repliesOffBannerCta": {
+    "message": "Turn on",
+    "description": "Button that starts the Mail.Read consent flow."
+  },
+  "repliesOnConfirmed": {
+    "message": "Reply detection is on. Follow-ups will now skip anyone who replies.",
+    "description": "Shown after the Mail.Read consent flow succeeds."
+  },
   "reauthFailed": {
     "message": "Sign-in failed: $ERROR$",
     "placeholders": {
@@ -1089,4 +1101,5 @@
   },
   "authStillWorking": {
     "message": "Still signing in? If your organisation requires admin approval for new apps, Microsoft will say so on that screen."
-  }}
+  }
+}

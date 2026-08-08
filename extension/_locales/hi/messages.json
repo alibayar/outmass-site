@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "साइन इन"
   },
+  "repliesOffBannerText": {
+    "message": "फ़ॉलो-अप यह नहीं जान पाते कि किसने पहले ही जवाब दे दिया है। जवाब पहचान चालू करें ताकि वे जवाब देने वालों को दोबारा न लिखें।"
+  },
+  "repliesOffBannerCta": {
+    "message": "चालू करें"
+  },
+  "repliesOnConfirmed": {
+    "message": "जवाब पहचान चालू है। फ़ॉलो-अप अब जवाब देने वालों को छोड़ देंगे।"
+  },
   "reauthFailed": {
     "message": "साइन इन विफल: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "साइन-इन जारी है? अगर आपके संगठन में नए ऐप्स के लिए एडमिन की मंज़ूरी ज़रूरी है, तो Microsoft उसी स्क्रीन पर यह बताएगा।"
-  }}
+  }
+}

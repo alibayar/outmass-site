@@ -282,8 +282,12 @@ function _newAuthAttemptId() {
   }
 }
 
-function startMSLogin(includeOneDrive) {
-  var key = includeOneDrive ? "onedrive" : "signin";
+function startMSLogin(includeOneDrive, includeMailRead) {
+  // Three flights, three keys. They must not share one: a user who is
+  // granting Mail.Read from the Reports banner while a plain sign-in is
+  // somehow open should get their own window, not silently join a flow
+  // asking for different scopes.
+  var key = includeOneDrive ? "onedrive" : includeMailRead ? "mailread" : "signin";
   var existing = _authFlightByKey[key];
   if (existing) {
     var age = Date.now() - (_authFlightStartedAt[key] || 0);
@@ -328,7 +332,7 @@ function startMSLogin(includeOneDrive) {
     delete _authFlightHinted[key];
   }
 
-  var flight = _startMSLoginInner(includeOneDrive);
+  var flight = _startMSLoginInner(includeOneDrive, includeMailRead);
   _authFlightByKey[key] = flight;
   _authFlightStartedAt[key] = Date.now();
   // Only the flight that OWNS the key may clear it — a zombie settling late
@@ -345,8 +349,9 @@ function startMSLogin(includeOneDrive) {
   return flight;
 }
 
-async function _startMSLoginInner(includeOneDrive) {
-  log("Starting MS OAuth flow (Web)...", includeOneDrive ? "with OneDrive scope" : "");
+async function _startMSLoginInner(includeOneDrive, includeMailRead) {
+  log("Starting MS OAuth flow (Web)...",
+    includeOneDrive ? "with OneDrive scope" : includeMailRead ? "with Mail.Read scope" : "");
 
   const attemptId = _newAuthAttemptId();
   const startedAt = Date.now();
@@ -369,6 +374,7 @@ async function _startMSLoginInner(includeOneDrive) {
 
   track("oauth_started", {
     with_onedrive: !!includeOneDrive,
+    with_mail_read: !!includeMailRead,
     attempt_id: attemptId,
     attempt_no: attemptNo,
   });
@@ -395,6 +401,14 @@ async function _startMSLoginInner(includeOneDrive) {
     encodeURIComponent(attemptId);
   if (includeOneDrive) {
     authUrl += "&include_onedrive=true";
+  }
+  // Same incremental-consent mechanism, for the scope that reply detection
+  // needs. Microsoft shows a screen for Mail.Read alone — the send scopes
+  // are already granted — which is the entire reason it can be asked for
+  // later instead of at first sign-in, where "Read your mail" is the most
+  // alarming line on the screen for someone who has not sent anything yet.
+  if (includeMailRead) {
+    authUrl += "&include_mail_read=true";
   }
 
   return new Promise((resolve) => {
@@ -437,7 +451,9 @@ async function _startMSLoginInner(includeOneDrive) {
       // Catch the popup this call is about to create, so a later re-click
       // can focus it (see _armAuthWindowWatch). Armed per launch: the
       // auto-retry path re-launches and gets a NEW window.
-      _armAuthWindowWatch(includeOneDrive ? "onedrive" : "signin");
+      _armAuthWindowWatch(
+        includeOneDrive ? "onedrive" : includeMailRead ? "mailread" : "signin"
+      );
       chrome.identity.launchWebAuthFlow(
         { url: authUrl, interactive: true },
         handleResult
@@ -1222,6 +1238,14 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       backendFetch(
         "/api/onedrive/browse?folder_id=" + encodeURIComponent(folderId)
       ).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
+    case "MS_LOGIN_MAIL_READ":
+      // Turns reply detection back on for a user who signed in without
+      // Mail.Read. Same incremental consent as OneDrive above.
+      startMSLogin(false, true).then(function (result) {
         sendResponse(result);
       });
       return true;

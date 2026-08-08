@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "Se connecter"
   },
+  "repliesOffBannerText": {
+    "message": "Les relances ne savent pas qui a déjà répondu. Activez la détection des réponses pour qu'elles cessent de relancer ceux qui ont répondu."
+  },
+  "repliesOffBannerCta": {
+    "message": "Activer"
+  },
+  "repliesOnConfirmed": {
+    "message": "Détection des réponses activée. Les relances ignoreront désormais ceux qui répondent."
+  },
   "reauthFailed": {
     "message": "Connexion échouée : $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "Connexion toujours en cours ? Si votre organisation exige l'approbation d'un administrateur pour les nouvelles applications, Microsoft l'indiquera sur cet écran."
-  }}
+  }
+}

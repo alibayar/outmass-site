@@ -873,6 +873,15 @@
   "reauthBannerCta": {
     "message": "تسجيل الدخول"
   },
+  "repliesOffBannerText": {
+    "message": "رسائل المتابعة لا تعرف من ردّ بالفعل. فعّل اكتشاف الردود حتى تتوقف عن مراسلة من ردّ عليك."
+  },
+  "repliesOffBannerCta": {
+    "message": "تفعيل"
+  },
+  "repliesOnConfirmed": {
+    "message": "تم تفعيل اكتشاف الردود. ستتخطى رسائل المتابعة كل من يرد."
+  },
   "reauthFailed": {
     "message": "فشل تسجيل الدخول: $ERROR$",
     "placeholders": {
@@ -1089,4 +1098,5 @@
   },
   "authStillWorking": {
     "message": "هل ما زال تسجيل الدخول جاريًا؟ إذا كانت مؤسستك تشترط موافقة المسؤول على التطبيقات الجديدة، فسيوضح Microsoft ذلك في تلك الشاشة."
-  }}
+  }
+}
