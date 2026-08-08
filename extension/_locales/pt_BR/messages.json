@@ -709,6 +709,27 @@
   "csvErrEncoding": {
     "message": "Este arquivo não está salvo como UTF-8, por isso os caracteres não podem ser lidos corretamente. No Excel: Arquivo > Salvar como > escolha 'CSV UTF-8 (delimitado por vírgulas)' e envie esse arquivo."
   },
+  "csvEncodingTitle": {
+    "message": "Não conseguimos identificar a codificação deste arquivo"
+  },
+  "csvEncodingBody": {
+    "message": "Escolha o idioma dos nomes que estão nele. Confira a prévia abaixo — se os nomes parecerem errados, escolha outro."
+  },
+  "csvEncodingPreview": {
+    "message": "Prévia"
+  },
+  "csvEncodingUse": {
+    "message": "Usar este"
+  },
+  "csvEncodingCancel": {
+    "message": "Cancelar"
+  },
+  "csvEncodingHint": {
+    "message": "Ou salve o arquivo no Excel como “CSV UTF-8” e envie de novo — assim isso não aparece mais."
+  },
+  "csvEncodingUnreadable": {
+    "message": "Essa leitura não gera uma tabela utilizável."
+  },
   "csvErrNotCsv": {
     "message": "Esse arquivo não é um CSV. No Excel: Arquivo > Salvar como > escolha 'CSV UTF-8 (delimitado por vírgulas)' e arraste o arquivo salvo para cá."
   },

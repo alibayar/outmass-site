@@ -993,6 +993,169 @@
       return null;
     }
 
+    // ── Encoding picker ──
+    //
+    // Reached only when decodeCsvBuffer refuses, which it does whenever it
+    // cannot place a file from the user's own language. That covers Turkish,
+    // Polish, Baltic, Vietnamese and Western European lists, and it is not a
+    // gap that a cleverer rule closes: every byte of a windows-1250 file is
+    // a defined character in windows-1252 and vice versa, so nothing in the
+    // bytes can choose between them.
+    //
+    // The preview is the whole design. It turns a question nobody can answer
+    // ("which codepage is this?") into one anybody can answer by looking
+    // ("do these names look right?"). The dropdown re-decodes live, so the
+    // user watches Ayþe become Ayşe.
+    //
+    // Options are labelled with ENDONYMS — Polski, Türkçe, Русский — which
+    // need no translation and read correctly in every locale. A Polish user
+    // scanning for "Polski" finds it faster than for "Central European", and
+    // it keeps 14 strings out of 14 locale files.
+    var ENCODING_OPTIONS = [
+      { label: "English, Deutsch, Français, Español, Italiano", enc: "windows-1252" },
+      { label: "Polski, Čeština, Magyar, Slovenčina", enc: "windows-1250" },
+      { label: "Türkçe", enc: "windows-1254" },
+      { label: "Русский, Українська, Български", enc: "windows-1251" },
+      { label: "Lietuvių, Latviešu, Eesti", enc: "windows-1257" },
+      { label: "Tiếng Việt", enc: "windows-1258" },
+      { label: "Ελληνικά", enc: "windows-1253" },
+      { label: "עברית", enc: "windows-1255" },
+      { label: "العربية, فارسی", enc: "windows-1256" },
+      { label: "ไทย", enc: "windows-874" },
+      { label: "简体中文", enc: "gb18030" },
+      { label: "繁體中文", enc: "big5" },
+      { label: "日本語", enc: "shift_jis" },
+      { label: "한국어", enc: "euc-kr" },
+    ];
+
+    // Decode with one named encoding and no heuristics at all. The picker
+    // has something decodeCsvBuffer never has — a human who knows the
+    // answer — so every guard that exists to protect against a bad guess
+    // would only get in the way here.
+    function decodeCsvBufferAs(buf, encoding) {
+      try {
+        var text = new TextDecoder(encoding).decode(buf);
+        if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+        return text;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function openEncodingPicker(buf, diag) {
+      var dlg = document.getElementById("csv-encoding-dialog");
+      var select = document.getElementById("csv-encoding-select");
+      var preview = document.getElementById("csv-encoding-preview");
+      var useBtn = document.getElementById("csv-encoding-use");
+      var cancelBtn = document.getElementById("csv-encoding-cancel");
+      if (!dlg || !select || !preview || !useBtn || !cancelBtn) {
+        // Markup missing (an old sidebar.html left behind by a partial
+        // update): fall back to the message this replaced rather than
+        // dropping the file silently.
+        alert(t("csvErrEncoding"));
+        return;
+      }
+
+      select.innerHTML = "";
+      ENCODING_OPTIONS.forEach(function (opt) {
+        var o = document.createElement("option");
+        o.value = opt.enc;
+        o.textContent = opt.label;
+        select.appendChild(o);
+      });
+
+      function renderPreview() {
+        var text = decodeCsvBufferAs(buf, select.value);
+        preview.innerHTML = "";
+        if (text === null) {
+          preview.textContent = t("csvEncodingUnreadable");
+          useBtn.disabled = true;
+          return;
+        }
+        var lines = text.split(/\r?\n/).filter(function (l) { return l.trim(); });
+        if (lines.length < 2) {
+          preview.textContent = t("csvEncodingUnreadable");
+          useBtn.disabled = true;
+          return;
+        }
+        useBtn.disabled = false;
+        // First few data rows, first two columns. textContent throughout —
+        // this is a customer's file and it must never become markup.
+        lines.slice(1, 6).forEach(function (line) {
+          var cells = parseCSVLine(line);
+          var row = document.createElement("div");
+          row.className = "csv-encoding-row";
+          var a = document.createElement("span");
+          a.textContent = cells[0] || "";
+          var b = document.createElement("span");
+          b.className = "csv-encoding-dim";
+          b.textContent = cells[1] || "";
+          row.appendChild(a);
+          row.appendChild(b);
+          preview.appendChild(row);
+        });
+      }
+
+      select.onchange = renderPreview;
+
+      function close() {
+        dlg.style.display = "none";
+        select.onchange = null;
+        useBtn.onclick = null;
+        cancelBtn.onclick = null;
+      }
+
+      cancelBtn.onclick = function () {
+        close();
+        track("csv_encoding_cancelled", { csv_tried: diag.tried });
+      };
+
+      useBtn.onclick = function () {
+        var enc = select.value;
+        var text = decodeCsvBufferAs(buf, enc);
+        if (text === null) return;
+        close();
+        track("csv_encoding_chosen", {
+          csv_encoding: enc,
+          csv_suggested: diag.suggested || "",
+          csv_took_suggestion: enc === diag.suggested,
+        });
+        ingestCsvText(text, enc, diag, true);
+      };
+
+      dlg.style.display = "flex";
+      renderPreview();
+
+      // Ask the server for a suggestion and pre-select it. Measured on a
+      // 51-file corpus: on exactly this population — the files our own rules
+      // refuse — charset-normalizer names the right encoding 8 times out of
+      // 9, which turns most of these into one click.
+      //
+      // A suggestion and nothing more. Its own confidence score does not
+      // separate its right answers from its wrong ones, so it may never
+      // decide unsupervised; it moves the cursor, the user confirms against
+      // the preview. And only the first 64 KB is sent, because that is all
+      // the server looks at anyway.
+      try {
+        var sample = new Uint8Array(buf.slice(0, 64 * 1024));
+        var bin = "";
+        for (var i = 0; i < sample.length; i++) bin += String.fromCharCode(sample[i]);
+        chrome.runtime.sendMessage(
+          { type: "DETECT_CSV_ENCODING", sample: btoa(bin) },
+          function (resp) {
+            if (chrome.runtime.lastError) return;
+            var enc = resp && resp.encoding;
+            if (!enc || dlg.style.display === "none") return;
+            var known = ENCODING_OPTIONS.some(function (o) { return o.enc === enc; });
+            if (!known) return;
+            diag.suggested = enc;
+            select.value = enc;
+            renderPreview();
+          }
+        );
+      } catch (e) { /* offline or blocked — the list still works */ }
+    }
+
     var reader = new FileReader();
     // A read can fail outright — a file on a disconnected network share, a
     // USB stick pulled mid-read, a permissions change. Without this the
@@ -1006,25 +1169,36 @@
       // The decoder fills `diag` with ratios about what it saw — never file
       // content, never a name. Reported on BOTH outcomes on purpose: the
       // rejections are the interesting half, because they are the population
-      // the encoding picker would serve, and today we cannot tell whether
-      // that is one user a month or twenty.
+      // the encoding picker serves.
       var diag = {};
-      var decoded = decodeCsvBuffer(e.target.result, csvLanguageEvidence(), diag);
-      // A.3: reject files no candidate encoding can decode cleanly. The
-      // alert names the concrete fix (Excel's "CSV UTF-8" save option).
+      var buf = e.target.result;
+      var decoded = decodeCsvBuffer(buf, csvLanguageEvidence(), diag);
       if (!decoded) {
-        alert(t("csvErrEncoding"));
-        track("csv_upload_failed", {
-          error_code: "invalid_encoding",
+        // Not a dead end any more. The decoder refuses whenever it cannot
+        // place a file from the user's own language, which is correct — the
+        // Latin codepages cannot be told apart by inspection, and a wrong
+        // one is undetectable and ends up as a mangled name in a sent
+        // email. But the information needed to choose is not in the bytes;
+        // it is in the user's head. So ask, and show them the answer.
+        track("csv_encoding_prompted", {
           csv_tried: diag.tried,
           csv_nonascii_pct: diag.nonascii,
           csv_cjk_run: diag.cjk_run,
           csv_script_fit_pct: diag.script_fit,
           csv_script_run: diag.script_run,
         });
+        openEncodingPicker(buf, diag);
         return;
       }
-      var text = decoded.text;
+      ingestCsvText(decoded.text, decoded.encoding, diag, false);
+    };
+
+    // Everything from here on is encoding-agnostic: it takes decoded text.
+    // Split out of reader.onload so the picker's "Use this" lands in exactly
+    // the same place as an automatic decode, rather than a parallel path
+    // that drifts.
+    function ingestCsvText(rawText, encodingLabel, diag, userChose) {
+      var text = rawText;
       // A.3: strip UTF-8 BOM if the decoder left one
       if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
       csvRawText = text; // keep (normalized, now-UTF-8) raw CSV for backend upload
@@ -1102,7 +1276,7 @@
         recipient_count: rows.length,
         duplicates_removed: dupCount,
         empty_email_skipped: emptyEmailCount,
-        csv_encoding: decoded.encoding,
+        csv_encoding: encodingLabel,
         // The same ratios as the failure path, so accepted and rejected
         // files can be compared on one axis. A gb18030 accept with
         // csv_cjk_run barely at 2 is the shape to watch: that is the
@@ -1111,9 +1285,13 @@
         csv_nonascii_pct: diag.nonascii,
         csv_cjk_run: diag.cjk_run,
         csv_script_fit_pct: diag.script_fit,
-          csv_script_run: diag.script_run,
+        csv_script_run: diag.script_run,
+        // Whether a human named this encoding. The whole point of the
+        // picker is that these two populations are different, and after a
+        // few weeks this says how different.
+        csv_encoding_chosen_by_user: !!userChose,
       });
-    };
+    }
     reader.readAsArrayBuffer(file);
   }
 

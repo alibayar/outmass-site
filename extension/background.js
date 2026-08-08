@@ -1242,6 +1242,37 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "DETECT_CSV_ENCODING":
+      // A second opinion for a CSV the sidebar's own rules refused. Only the
+      // first 64 KB is ever sent — that is all the server samples, and it
+      // keeps a customer's contact list from crossing the wire in full for
+      // a question that a slice answers just as well.
+      //
+      // Any failure is answered with "no opinion" rather than an error: the
+      // picker works without a suggestion, it just costs the user one more
+      // click, and a network fault must not turn into a dialog they cannot
+      // dismiss.
+      (async function () {
+        try {
+          // `silent: true` — a 401 here must not wipe the session. This runs
+          // while the user is staring at an upload dialog, and dropping them
+          // to a sign-in screen over an optional suggestion would be a far
+          // worse bug than having no suggestion.
+          const r = await backendFetch("/campaigns/detect-encoding", {
+            method: "POST",
+            body: { sample_b64: message.sample || "" },
+            silent: true,
+          });
+          const data = r && (r.data || r);
+          sendResponse({
+            encoding: r && !r.error && data && data.encoding ? data.encoding : null,
+          });
+        } catch (e) {
+          sendResponse({ encoding: null });
+        }
+      })();
+      return true;
+
     case "MS_LOGIN_MAIL_READ":
       // Turns reply detection back on for a user who signed in without
       // Mail.Read. Same incremental consent as OneDrive above.

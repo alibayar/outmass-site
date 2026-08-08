@@ -696,6 +696,27 @@
   "csvErrEncoding": {
     "message": "Bu dosya UTF-8 olarak kaydedilmemis; karakterler dogru okunamiyor. Excel'de: Dosya > Farkli Kaydet > 'CSV UTF-8 (Virgulle ayrilmis)' secin ve o dosyayi yukleyin."
   },
+  "csvEncodingTitle": {
+    "message": "Bu dosyanın hangi karakter kümesiyle yazıldığını anlayamadık"
+  },
+  "csvEncodingBody": {
+    "message": "İçindeki isimlerin dilini seç. Aşağıdaki önizlemeye bak — isimler bozuk görünüyorsa başka birini seç."
+  },
+  "csvEncodingPreview": {
+    "message": "Önizleme"
+  },
+  "csvEncodingUse": {
+    "message": "Bunu kullan"
+  },
+  "csvEncodingCancel": {
+    "message": "Vazgeç"
+  },
+  "csvEncodingHint": {
+    "message": "Ya da dosyayı Excel'de “CSV UTF-8” olarak yeniden kaydedip tekrar yükle — o zaman bu hiç çıkmaz."
+  },
+  "csvEncodingUnreadable": {
+    "message": "Bu okumayla kullanılabilir bir tablo çıkmıyor."
+  },
   "csvErrNotCsv": {
     "message": "Bu dosya CSV değil. Excel'de: Dosya > Farklı Kaydet > 'CSV UTF-8 (virgülle ayrılmış)' seçin, sonra kaydettiğiniz dosyayı buraya sürükleyin."
   },

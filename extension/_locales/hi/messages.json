@@ -696,6 +696,27 @@
   "csvErrEncoding": {
     "message": "यह फ़ाइल UTF-8 में सहेजी नहीं गई है, इसलिए अक्षर सही से पढ़े नहीं जा सकते। Excel में: File > Save As > 'CSV UTF-8 (Comma delimited)' चुनें, फिर वह फ़ाइल अपलोड करें।"
   },
+  "csvEncodingTitle": {
+    "message": "हम पता नहीं लगा सके कि यह फ़ाइल किस एन्कोडिंग में है"
+  },
+  "csvEncodingBody": {
+    "message": "इसमें मौजूद नामों की भाषा चुनें। नीचे दिया पूर्वावलोकन देखें — अगर नाम गलत दिखें तो दूसरी भाषा चुनें।"
+  },
+  "csvEncodingPreview": {
+    "message": "पूर्वावलोकन"
+  },
+  "csvEncodingUse": {
+    "message": "यही उपयोग करें"
+  },
+  "csvEncodingCancel": {
+    "message": "रद्द करें"
+  },
+  "csvEncodingHint": {
+    "message": "या फ़ाइल को Excel में “CSV UTF-8” के रूप में दोबारा सहेजकर अपलोड करें — फिर यह कभी नहीं आएगा।"
+  },
+  "csvEncodingUnreadable": {
+    "message": "इस पठन से उपयोग योग्य तालिका नहीं बनती।"
+  },
   "csvErrNotCsv": {
     "message": "यह फ़ाइल CSV नहीं है। Excel में: File > Save As > 'CSV UTF-8 (Comma delimited)' चुनें, फिर सहेजी गई फ़ाइल यहाँ खींचें।"
   },

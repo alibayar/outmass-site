@@ -32,10 +32,12 @@ RUSSIAN = ["Иван Петров", "Анна Смирнова", "Дмитрий
 
 
 def _post(client, body):
+    import base64
+
     return client.post(
         "/campaigns/detect-encoding",
-        content=body,
-        headers={"Authorization": "Bearer test", "Content-Type": "application/octet-stream"},
+        json={"sample_b64": base64.b64encode(body).decode("ascii")},
+        headers={"Authorization": "Bearer test"},
     )
 
 
@@ -139,32 +141,42 @@ def test_an_encoding_the_browser_cannot_use_becomes_null(client, auth_bypass, mo
     assert "cp775" not in resp.text
 
 
-def test_only_a_sample_is_examined(client, auth_bypass):
-    """64 KB, not the whole file.
+def test_a_sample_is_enough_to_place_the_file(client, auth_bypass):
+    """64 KB decides it, which is why the client only sends that much.
 
-    Measured on a 5 MB list: 2521 ms for the whole thing, 19 ms for 64 KB,
-    same answer. The slow version is also a denial-of-service invitation on
-    an authenticated endpoint that accepts arbitrary bytes.
+    Measured on a 5 MB list: 2521 ms for the whole file, 19 ms for 64 KB,
+    same answer. The slow version would also be a denial-of-service
+    invitation on an authenticated endpoint taking arbitrary bytes.
     """
     from routers.campaigns import _DETECT_SAMPLE_BYTES
 
-    big = _csv(POLISH, "windows-1250") * 2000
-    assert len(big) > _DETECT_SAMPLE_BYTES * 4
-    resp = _post(client, big)
+    sample = (_csv(POLISH, "windows-1250") * 2000)[:_DETECT_SAMPLE_BYTES]
+    resp = _post(client, sample)
     assert resp.status_code == 200
     body = resp.json()
     assert body["encoding"] == "windows-1250"
     assert body["sampled_bytes"] <= _DETECT_SAMPLE_BYTES
 
 
-def test_oversize_body_is_rejected_before_detection(client, auth_bypass):
-    from config import MAX_CSV_SIZE_BYTES
+def test_oversize_sample_is_rejected_before_detection(client, auth_bypass):
+    """The client slices to 64 KB before sending; anything larger is either a
+    bug or someone probing. Either way it does not get decoded."""
+    from routers.campaigns import _DETECT_SAMPLE_BYTES
 
-    resp = _post(client, b"x" * (MAX_CSV_SIZE_BYTES + 1))
+    resp = _post(client, b"x" * (_DETECT_SAMPLE_BYTES + 1))
     assert resp.status_code == 413
 
 
-def test_empty_body_is_a_400(client, auth_bypass):
+def test_a_body_that_is_not_base64_is_a_400(client, auth_bypass):
+    resp = client.post(
+        "/campaigns/detect-encoding",
+        json={"sample_b64": "not base64 at all !!!"},
+        headers={"Authorization": "Bearer test"},
+    )
+    assert resp.status_code == 400
+
+
+def test_empty_sample_is_a_400(client, auth_bypass):
     assert _post(client, b"").status_code == 400
 
 
@@ -201,9 +213,10 @@ def test_the_response_carries_no_file_content(client, auth_bypass):
 def test_it_requires_authentication(client):
     """An unauthenticated decode oracle that accepts arbitrary bytes is not
     something to leave open."""
+    import base64
+
     resp = client.post(
         "/campaigns/detect-encoding",
-        content=_csv(POLISH, "windows-1250"),
-        headers={"Content-Type": "application/octet-stream"},
+        json={"sample_b64": base64.b64encode(_csv(POLISH, "windows-1250")).decode("ascii")},
     )
     assert resp.status_code in (401, 403, 422)

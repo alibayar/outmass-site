@@ -696,6 +696,27 @@
   "csvErrEncoding": {
     "message": "このファイルは UTF-8 で保存されていないため、文字を正しく読み取れません。Excel で「ファイル > 名前を付けて保存 > CSV UTF-8（コンマ区切り）」を選び、そのファイルをアップロードしてください。"
   },
+  "csvEncodingTitle": {
+    "message": "このファイルの文字コードを判別できませんでした"
+  },
+  "csvEncodingBody": {
+    "message": "ファイル内の名前の言語を選んでください。下のプレビューを確認し、名前が文字化けしていれば別の言語を選んでください。"
+  },
+  "csvEncodingPreview": {
+    "message": "プレビュー"
+  },
+  "csvEncodingUse": {
+    "message": "これを使う"
+  },
+  "csvEncodingCancel": {
+    "message": "キャンセル"
+  },
+  "csvEncodingHint": {
+    "message": "または Excel で「CSV UTF-8」として保存し直してアップロードすると、以後この画面は出ません。"
+  },
+  "csvEncodingUnreadable": {
+    "message": "この文字コードでは表として読み取れません。"
+  },
   "csvErrNotCsv": {
     "message": "このファイルは CSV ではありません。Excel で「ファイル > 名前を付けて保存」から「CSV UTF-8 (コンマ区切り)」を選び、保存したファイルをここにドラッグしてください。"
   },

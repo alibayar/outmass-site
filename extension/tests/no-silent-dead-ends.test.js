@@ -178,6 +178,40 @@ function run() {
     "else and get a window that grants the wrong permission"
   );
 
+  // ── The encoding picker: the dead end it replaced, and the XSS it must not become ──
+  check(
+    sidebar.includes("openEncodingPicker(buf, diag)"),
+    "a CSV the decoder refuses no longer reaches the picker. That branch was " +
+    "an alert and a dropped file — the exact dead end two confirmed losses " +
+    "walked into"
+  );
+  check(
+    !/if \(!decoded\) \{\s*alert\(/.test(sidebar),
+    "the refusal branch is back to a bare alert, so the file is dropped with " +
+    "no way forward"
+  );
+  check(
+    /preview\.innerHTML = ""/.test(sidebar) &&
+      !/preview\.innerHTML\s*=\s*[^"'\s]/.test(sidebar),
+    "the encoding preview is being built with innerHTML from file content. " +
+    "That content is a customer's CSV — it renders as markup in the panel"
+  );
+  check(
+    sidebar.includes("a.textContent = cells[0]"),
+    "the preview no longer writes cells with textContent"
+  );
+  check(
+    /var known = ENCODING_OPTIONS\.some/.test(sidebar),
+    "the server's suggestion is applied without checking it is one of the " +
+    "offered options — a label the picker cannot show would leave the select " +
+    "and the decode disagreeing about what the user chose"
+  );
+  check(
+    background.includes("DETECT_CSV_ENCODING") && background.includes("silent: true"),
+    "the detection call is no longer silent. A 401 while the user stares at " +
+    "the upload dialog would wipe their session over an OPTIONAL suggestion"
+  );
+
   return { name: "no-silent-dead-ends", failures };
 }
 

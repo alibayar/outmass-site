@@ -1439,3 +1439,62 @@ body {
 .sending-as-email { font-weight:600; color:#323130; word-break:break-all; }
 .sending-as-change { background:none; border:none; color:#0078d4; font-size:12px; cursor:pointer; padding:0; text-decoration:underline; font-family:inherit; }
 .sending-as-change:hover { color:#106ebe; }
+
+/* ── CSV encoding picker ──
+   Shown only when the decoder refuses. Overlays the panel because the upload
+   is blocked on this answer: letting the user carry on composing behind it
+   would mean building a campaign on a list that never loaded. */
+.csv-encoding-dialog {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 16px;
+}
+.csv-encoding-box {
+  background: #fff;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 460px;
+  width: 100%;
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.csv-encoding-box h3 { margin: 0 0 8px; font-size: 15px; color: #323130; }
+.csv-encoding-box p { margin: 0 0 14px; font-size: 13px; color: #605e5c; line-height: 1.45; }
+.csv-encoding-box select { width: 100%; padding: 8px; font-size: 14px; }
+.csv-encoding-preview-label {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: #605e5c;
+}
+/* The preview is the whole point of the dialog, so it gets the room. */
+.csv-encoding-preview {
+  border: 1px solid #edebe9;
+  border-radius: 4px;
+  padding: 8px;
+  min-height: 72px;
+  font-size: 13px;
+  background: #faf9f8;
+  color: #323130;
+  overflow-x: auto;
+}
+.csv-encoding-row {
+  display: flex;
+  gap: 10px;
+  padding: 2px 0;
+  white-space: nowrap;
+}
+.csv-encoding-dim { color: #a19f9d; }
+.csv-encoding-actions {
+  display: flex;
+  gap: 8px;
+  justify-content: flex-end;
+  margin-top: 16px;
+}
+.csv-encoding-hint { margin: 12px 0 0; font-size: 12px; color: #a19f9d; }

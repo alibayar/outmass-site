@@ -696,6 +696,27 @@
   "csvErrEncoding": {
     "message": "Este archivo no esta guardado como UTF-8; los caracteres no se pueden leer correctamente. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y sube ese archivo."
   },
+  "csvEncodingTitle": {
+    "message": "No pudimos determinar la codificación de este archivo"
+  },
+  "csvEncodingBody": {
+    "message": "Elige el idioma de los nombres que contiene. Revisa la vista previa — si los nombres se ven mal, elige otro."
+  },
+  "csvEncodingPreview": {
+    "message": "Vista previa"
+  },
+  "csvEncodingUse": {
+    "message": "Usar este"
+  },
+  "csvEncodingCancel": {
+    "message": "Cancelar"
+  },
+  "csvEncodingHint": {
+    "message": "O vuelve a guardar el archivo en Excel como “CSV UTF-8” y súbelo otra vez — así no volverá a aparecer."
+  },
+  "csvEncodingUnreadable": {
+    "message": "Con esa lectura no sale una tabla utilizable."
+  },
   "csvErrNotCsv": {
     "message": "Ese archivo no es un CSV. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y arrastra aquí el archivo guardado."
   },

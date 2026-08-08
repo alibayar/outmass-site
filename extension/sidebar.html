@@ -33,6 +33,26 @@
     </button>
   </div>
 
+
+  <!-- Shown only when the decoder refuses, which it does whenever it cannot
+       place a file from the user's own language. The preview is the design:
+       "which codepage is this?" is unanswerable, "do these names look right?"
+       is not. Options carry endonyms so they need no translation. -->
+  <div class="csv-encoding-dialog" id="csv-encoding-dialog" style="display:none;">
+    <div class="csv-encoding-box">
+      <h3 data-i18n="csvEncodingTitle">We could not tell how this file is written</h3>
+      <p data-i18n="csvEncodingBody">Pick the language of the names in it. Check the preview below — if the names look wrong, pick another.</p>
+      <select id="csv-encoding-select"></select>
+      <div class="csv-encoding-preview-label" data-i18n="csvEncodingPreview">Preview</div>
+      <div class="csv-encoding-preview" id="csv-encoding-preview"></div>
+      <div class="csv-encoding-actions">
+        <button id="csv-encoding-cancel" class="btn-secondary" data-i18n="csvEncodingCancel">Cancel</button>
+        <button id="csv-encoding-use" class="btn-primary" data-i18n="csvEncodingUse">Use this</button>
+      </div>
+      <p class="csv-encoding-hint" data-i18n="csvEncodingHint">Or re-save the file in Excel as "CSV UTF-8" and upload it again — then this never comes up.</p>
+    </div>
+  </div>
+
   <!-- Reply detection is off because the user signed in without Mail.Read.
        Deliberately NOT folded into the reauth banner above: that one means
        "you cannot use OutMass until you sign in", this one means "one feature

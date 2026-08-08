@@ -696,6 +696,27 @@
   "csvErrEncoding": {
     "message": "Diese Datei ist nicht als UTF-8 gespeichert; Zeichen koennen nicht korrekt gelesen werden. In Excel: Datei > Speichern unter > 'CSV UTF-8 (durch Trennzeichen getrennt)' waehlen und diese Datei hochladen."
   },
+  "csvEncodingTitle": {
+    "message": "Wir konnten nicht erkennen, in welchem Zeichensatz diese Datei vorliegt"
+  },
+  "csvEncodingBody": {
+    "message": "Wählen Sie die Sprache der Namen in der Datei. Prüfen Sie die Vorschau unten — wenn die Namen falsch aussehen, wählen Sie eine andere."
+  },
+  "csvEncodingPreview": {
+    "message": "Vorschau"
+  },
+  "csvEncodingUse": {
+    "message": "Diese verwenden"
+  },
+  "csvEncodingCancel": {
+    "message": "Abbrechen"
+  },
+  "csvEncodingHint": {
+    "message": "Oder speichern Sie die Datei in Excel als „CSV UTF-8“ und laden Sie sie erneut hoch — dann tritt das nie wieder auf."
+  },
+  "csvEncodingUnreadable": {
+    "message": "Damit ergibt sich keine brauchbare Tabelle."
+  },
   "csvErrNotCsv": {
     "message": "Das ist keine CSV-Datei. In Excel: Datei > Speichern unter > 'CSV UTF-8 (Trennzeichen-getrennt)' auswählen und die gespeicherte Datei hierher ziehen."
   },

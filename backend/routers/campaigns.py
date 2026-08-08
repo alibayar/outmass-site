@@ -8,6 +8,7 @@ POST /campaigns/{id}/send         → start sending
 """
 
 import asyncio
+import base64
 import csv
 import io
 import logging
@@ -449,38 +450,52 @@ _WHATWG_LABELS = {
 _DETECT_SAMPLE_BYTES = 64 * 1024
 
 
+class DetectEncodingRequest(BaseModel):
+    # base64 of the FIRST 64 KB, not the file. The client slices before it
+    # sends because the server samples anyway, so there is no reason for a
+    # customer's whole contact list to cross the wire for a question a slice
+    # answers identically (measured: 19 ms vs 2521 ms on 5 MB, same answer).
+    #
+    # base64 rather than a raw body because backendFetch — the extension's
+    # single authenticated request path, with the sticky host failover, the
+    # 20s timeout and the sliding-JWT refresh — JSON-stringifies every body.
+    # Bending that one function for this one caller would be the wrong trade.
+    sample_b64: str
+
+
 @router.post("/detect-encoding")
 async def detect_encoding(
-    request: Request,
+    body: DetectEncodingRequest,
     user: dict = Depends(get_current_user),
 ):
     """Second opinion on a CSV the extension could not decode.
 
-    Takes raw bytes, returns a WHATWG label the browser can pass straight to
-    TextDecoder, or null.
+    Returns a WHATWG label the browser can hand straight to TextDecoder, or
+    null.
 
-    The bytes are a customer's contact list — real names, real addresses. They
-    are read into memory, sampled, and dropped. Nothing here logs, stores,
-    hashes or forwards them, and the response deliberately carries no content
-    from the file, only the label and how much was examined. Anything added
-    to this function later must keep that true.
+    The bytes are a customer's contact list — real names, real addresses.
+    They are decoded into memory, sampled, and dropped. Nothing here logs,
+    stores, hashes or forwards them, and the response carries the label and a
+    byte count and nothing else. Anything added later must keep that true.
     """
-    raw = await request.body()
+    try:
+        raw = base64.b64decode(body.sample_b64 or "", validate=True)
+    except Exception:  # noqa: BLE001
+        raise HTTPException(status_code=400, detail="sample_b64 is not valid base64")
     if not raw:
-        raise HTTPException(status_code=400, detail="Empty body")
-    if len(raw) > MAX_CSV_SIZE_BYTES:
+        raise HTTPException(status_code=400, detail="Empty sample")
+    if len(raw) > _DETECT_SAMPLE_BYTES:
         raise HTTPException(
             status_code=413,
-            detail=f"CSV exceeds {MAX_CSV_SIZE_BYTES // (1024 * 1024)} MB limit",
+            detail=f"Sample exceeds {_DETECT_SAMPLE_BYTES // 1024} KB",
         )
 
-    sample = raw[:_DETECT_SAMPLE_BYTES]
+    sample = raw
     # Cut back to the last line break so a half-read multi-byte character at
     # the boundary cannot skew the verdict.
-    if len(sample) < len(raw):
-        nl = sample.rfind(b"\n")
-        if nl > 0:
-            sample = sample[:nl]
+    nl = sample.rfind(b"\n")
+    if nl > 0:
+        sample = sample[:nl]
 
     try:
         from charset_normalizer import from_bytes

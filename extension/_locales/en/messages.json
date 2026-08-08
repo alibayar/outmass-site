@@ -709,6 +709,34 @@
   "csvErrEncoding": {
     "message": "This file isn't saved as UTF-8, so its characters can't be read correctly. In Excel: File > Save As > choose 'CSV UTF-8 (Comma delimited)', then upload that file."
   },
+  "csvEncodingTitle": {
+    "message": "We could not tell how this file is written",
+    "description": "Title of the dialog shown when no candidate encoding could decode the CSV."
+  },
+  "csvEncodingBody": {
+    "message": "Pick the language of the names in it. Check the preview below — if the names look wrong, pick another.",
+    "description": "Explains that the user should pick the language of the names and check the preview."
+  },
+  "csvEncodingPreview": {
+    "message": "Preview",
+    "description": "Label above the decoded sample rows."
+  },
+  "csvEncodingUse": {
+    "message": "Use this",
+    "description": "Confirms the selected encoding and loads the file."
+  },
+  "csvEncodingCancel": {
+    "message": "Cancel",
+    "description": "Closes the dialog without loading the file."
+  },
+  "csvEncodingHint": {
+    "message": "Or re-save the file in Excel as “CSV UTF-8” and upload it again — then this never comes up.",
+    "description": "Points at the permanent fix — saving as CSV UTF-8 in Excel."
+  },
+  "csvEncodingUnreadable": {
+    "message": "That reading does not produce a usable table.",
+    "description": "Shown in the preview when the selected encoding yields no usable table."
+  },
   "csvErrNotCsv": {
     "message": "That file isn't a CSV. In Excel: File > Save As > choose 'CSV UTF-8 (Comma delimited)', then drag the saved file here."
   },

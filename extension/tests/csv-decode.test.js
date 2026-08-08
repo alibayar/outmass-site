@@ -366,6 +366,34 @@ function run() {
   check(decode(c1Buf, ["ru-RU"]) === null,
     "a C1 control means the wrong codepage — must reject");
 
+  // ── 14. Every picker option must be a label the browser accepts ──
+  // The picker is the last resort: the user has told us the answer and this
+  // is where it gets used. An option whose label TextDecoder rejects would
+  // let them choose their own language and receive nothing — the one failure
+  // the whole dialog exists to prevent. Executable rather than a source
+  // assertion, because "is this a valid label" is a question only the
+  // runtime can answer, and Node and Chrome disagree on some of them
+  // (cp932 works in one and not the other, which is how this was found).
+  const optionBlock = SRC.match(/var ENCODING_OPTIONS = \[[\s\S]*?\n {4}\];/);
+  check(!!optionBlock, "ENCODING_OPTIONS is gone — the picker has no choices");
+  if (optionBlock) {
+    const labels = [...optionBlock[0].matchAll(/enc:\s*"([^"]+)"/g)].map((m) => m[1]);
+    check(labels.length >= 10,
+      `only ${labels.length} encodings offered — the Latin family alone needs five`);
+    for (const enc of labels) {
+      let ok = true;
+      try { new TextDecoder(enc); } catch (e) { ok = false; }
+      check(ok, `picker offers "${enc}", which TextDecoder rejects — a user ` +
+        "choosing their own language would get nothing back");
+    }
+    // And the ones the automatic chain refuses must actually be on offer,
+    // or the dialog cannot serve the population it was built for.
+    for (const needed of ["windows-1250", "windows-1252", "windows-1254", "windows-1257"]) {
+      check(labels.includes(needed),
+        `${needed} is missing from the picker — those users still have no way through`);
+    }
+  }
+
   return { name: "csv-decode", failures };
 }
 

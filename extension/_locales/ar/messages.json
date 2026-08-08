@@ -696,6 +696,27 @@
   "csvErrEncoding": {
     "message": "هذا الملف غير محفوظ بترميز UTF-8 لذا يتعذر قراءة الأحرف بشكل صحيح. في Excel: ملف > حفظ باسم > اختر 'CSV UTF-8' ثم ارفع هذا الملف."
   },
+  "csvEncodingTitle": {
+    "message": "تعذّر علينا تحديد ترميز هذا الملف"
+  },
+  "csvEncodingBody": {
+    "message": "اختر لغة الأسماء الموجودة فيه. راجع المعاينة أدناه — إذا بدت الأسماء خاطئة، اختر لغة أخرى."
+  },
+  "csvEncodingPreview": {
+    "message": "معاينة"
+  },
+  "csvEncodingUse": {
+    "message": "استخدام هذا"
+  },
+  "csvEncodingCancel": {
+    "message": "إلغاء"
+  },
+  "csvEncodingHint": {
+    "message": "أو أعد حفظ الملف في Excel بصيغة “CSV UTF-8” ثم ارفعه مرة أخرى — عندها لن يظهر هذا مجددًا."
+  },
+  "csvEncodingUnreadable": {
+    "message": "هذه القراءة لا تنتج جدولًا صالحًا للاستخدام."
+  },
   "csvErrNotCsv": {
     "message": "هذا الملف ليس من نوع CSV. في Excel: ملف > حفظ باسم > اختر 'CSV UTF-8 (محدد بفواصل)'، ثم اسحب الملف المحفوظ إلى هنا."
   },
