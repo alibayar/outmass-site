@@ -37,7 +37,7 @@ const path = require("path");
 const SRC = fs.readFileSync(path.join(__dirname, "..", "sidebar.js"), "utf8");
 
 function makeDecoder() {
-  const m = SRC.match(/function decodeCsvBuffer\(buf, langs\) \{[\s\S]*?\n {4}\}/);
+  const m = SRC.match(/function decodeCsvBuffer\(buf, langs, diag\) \{[\s\S]*?\n {4}\}/);
   if (!m) {
     throw new Error(
       "Could not extract decodeCsvBuffer from sidebar.js — if the function " +
@@ -201,6 +201,35 @@ function run() {
     "Hebrew file for a Hebrew user");
   check((decode(enc(GREEK, "windows-1253"), ["el-GR"]) || {}).encoding === "windows-1253",
     "Greek file for a Greek user");
+
+  // ── 5b. gb18030 and big5 must prove they are reading CJK ──
+  // They have been terminal catch-alls since 0.1.24, gated only on "no
+  // U+FFFD". That accepted European files with DATA LOSS, not just mojibake:
+  // gb18030 pairs a single high byte with the following ASCII letter, so
+  // "Łukasz" came out as "kasz" — the u was eaten — and the changelog
+  // claimed those users were being asked to re-save instead.
+  //
+  // The gate is a run of 2+ ADJACENT CJK characters, and it has to be
+  // adjacency rather than a ratio. Measured: Polish is 5.8% non-ASCII and
+  // 83% CJK-block, the diluted Chinese file below is 1.3% non-ASCII — a
+  // ratio rule accepts the wrong one and rejects the right one.
+  for (const [label, buf] of [
+    ["Polish cp1250", enc(POLISH, "windows-1250")],
+    ["German cp1252", enc(GERMAN, "windows-1252")],
+  ]) {
+    for (const langs of [["en-US"], ["pl-PL"], ["de-DE"]]) {
+      const out = decode(buf, langs);
+      check(!out || out.encoding !== "gb18030",
+        `${label} under ${langs[0]} must not be swallowed by gb18030 ` +
+        `(got ${out && out.encoding})`);
+    }
+  }
+  const diluted = decode(fx("gbk-diluted.csv"), ["en-US"]);
+  check(diluted && diluted.encoding === "gb18030",
+    `a real Chinese list that is only 1.3% non-ASCII must still decode, got ` +
+    `${diluted && diluted.encoding} — this is the case a ratio rule breaks`);
+  check(diluted && diluted.text.includes("张伟") && diluted.text.includes("李娜"),
+    "the two Chinese names in the diluted list must be intact");
 
   // ── 6. No Latin codepage, ever. This is the blocker the review found ──
   // windows-1250/1252/1254/1257/1258 accept literally any byte sequence, and

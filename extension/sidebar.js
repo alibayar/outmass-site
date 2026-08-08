@@ -694,7 +694,7 @@
     //
     // `langs` is ordered evidence about who the user is: the panel's own
     // Interface Language setting first, then the browser UI language.
-    function decodeCsvBuffer(buf, langs) {
+    function decodeCsvBuffer(buf, langs, diag) {
       // Excel writes the SYSTEM codepage, so which decoders we try is a
       // question about who the user is. Two confirmed losses: a user in
       // Poland running a ru-locale browser, rejected once and gone
@@ -812,6 +812,50 @@
         };
       }
 
+      // Longest run of adjacent CJK characters. This is what tells a real
+      // Chinese file from a European one that gb18030 merely swallowed.
+      //
+      // gb18030 and big5 have been terminal catch-alls since 0.1.24, gated
+      // only on "no U+FFFD" — far weaker than it sounds. A Polish or German
+      // list has single high bytes, which gb18030 pairs with the FOLLOWING
+      // ASCII letter: one ideograph comes out and that letter is EATEN.
+      // "Łukasz" decoded to "kasz" — data loss, not mojibake, and the
+      // changelog claimed those users were asked to re-save instead.
+      //
+      // Measured across ten fixtures on 2026-08-08:
+      //
+      //                              non-ASCII  CJK%  longest run
+      //   gbk.csv (real Chinese)          7.7%   100      2
+      //   diluted GBK (2 CJK names)       0.9%   100      2
+      //   Polish cp1250                   5.8%    83      1
+      //   German cp1252                   8.8%   100      1
+      //
+      // A ratio rule would have been wrong in BOTH directions: it accepts
+      // Polish at 5.8% and rejects the diluted Chinese list at 0.9%. Real
+      // CJK names and words are two or more characters side by side; the
+      // false ideographs a Latin file produces stand alone between ASCII
+      // letters. That difference is the whole test.
+      function maxCjkRun(text) {
+        var best = 0;
+        var run = 0;
+        for (var j = 0; j < text.length; j++) {
+          var c = text.charCodeAt(j);
+          var cjk =
+            (c >= 0x3000 && c <= 0x30ff) || // CJK punctuation and kana
+            (c >= 0x3400 && c <= 0x4dbf) || // unified ext A
+            (c >= 0x4e00 && c <= 0x9fff) || // unified
+            (c >= 0xf900 && c <= 0xfaff) || // compatibility
+            (c >= 0xff00 && c <= 0xffef);   // fullwidth forms
+          if (cjk) {
+            run++;
+            if (run > best) best = run;
+          } else {
+            run = 0;
+          }
+        }
+        return best;
+      }
+
       function decode(enc) {
         try {
           return new TextDecoder(enc).decode(buf);
@@ -820,23 +864,43 @@
         }
       }
 
+      // Diagnostics for telemetry: ratios only, never file content and never
+      // a name. These are what will say, in a month, whether the rejections
+      // this function produces are rare enough to leave alone or common
+      // enough to deserve the encoding picker.
+      var d = diag || {};
+      d.tried = candidates.join(",");
+      d.chosen = "";
+      d.nonascii = -1;
+      d.cjk_run = -1;
+      d.script_fit = -1;
+
       for (var i = 0; i < candidates.length; i++) {
         var enc = candidates[i];
         var text = decode(enc);
         if (text === null || text.indexOf("\uFFFD") >= 0) continue;
+        if (d.nonascii < 0) {
+          d.nonascii = Math.round(100 * shares(text, null).nonAscii);
+        }
         if (SCRIPT_RANGE[enc]) {
           // WHATWG fills these tables' undefined slots with C1 controls
           // (U+0080-U+009F); real text never contains one, so their
           // presence proves the table is wrong.
           if (/[\u0080-\u009F]/.test(text)) continue;
           var s = shares(text, SCRIPT_RANGE[enc]);
+          d.script_fit = Math.round(100 * s.inScript);
           // The 5% floor matters as much as the 70%. In a file that is 96%
           // ASCII, "all the non-ASCII characters are Cyrillic" means four
           // accented letters happened to land in that block — no evidence
           // at all. Without it, windows-1251 claimed a Western list (3.8%
           // non-ASCII) and made José into Josщ.
           if (s.nonAscii < 0.05 || s.inScript < 0.7) continue;
+        } else if (enc !== "utf-8") {
+          var run = maxCjkRun(text);
+          if (run > d.cjk_run) d.cjk_run = run;
+          if (run < 2) continue;
         }
+        d.chosen = enc;
         return { text: text, encoding: enc };
       }
       return null;
@@ -852,12 +916,24 @@
       track("csv_upload_failed", { error_code: "read_failed" });
     };
     reader.onload = function (e) {
-      var decoded = decodeCsvBuffer(e.target.result, csvLanguageEvidence());
+      // The decoder fills `diag` with ratios about what it saw — never file
+      // content, never a name. Reported on BOTH outcomes on purpose: the
+      // rejections are the interesting half, because they are the population
+      // the encoding picker would serve, and today we cannot tell whether
+      // that is one user a month or twenty.
+      var diag = {};
+      var decoded = decodeCsvBuffer(e.target.result, csvLanguageEvidence(), diag);
       // A.3: reject files no candidate encoding can decode cleanly. The
       // alert names the concrete fix (Excel's "CSV UTF-8" save option).
       if (!decoded) {
         alert(t("csvErrEncoding"));
-        track("csv_upload_failed", { error_code: "invalid_encoding" });
+        track("csv_upload_failed", {
+          error_code: "invalid_encoding",
+          csv_tried: diag.tried,
+          csv_nonascii_pct: diag.nonascii,
+          csv_cjk_run: diag.cjk_run,
+          csv_script_fit_pct: diag.script_fit,
+        });
         return;
       }
       var text = decoded.text;
@@ -939,6 +1015,14 @@
         duplicates_removed: dupCount,
         empty_email_skipped: emptyEmailCount,
         csv_encoding: decoded.encoding,
+        // The same ratios as the failure path, so accepted and rejected
+        // files can be compared on one axis. A gb18030 accept with
+        // csv_cjk_run barely at 2 is the shape to watch: that is the
+        // adjacency rule working at its margin.
+        csv_tried: diag.tried,
+        csv_nonascii_pct: diag.nonascii,
+        csv_cjk_run: diag.cjk_run,
+        csv_script_fit_pct: diag.script_fit,
       });
     };
     reader.readAsArrayBuffer(file);

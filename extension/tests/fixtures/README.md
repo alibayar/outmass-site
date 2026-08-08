@@ -15,6 +15,10 @@ cases = {
     'utf8-bom.csv':  ('utf-8-sig', 'name,email\n张伟,zhang@example.com\n'),
     'ascii.csv':     ('ascii',     'name,email\nJohn Smith,john@example.com\n'),
     'gbk.csv':       ('gbk',       'name,email\n张伟,zhang@example.com\n李娜,lina@example.com\n'),
+    # Mostly-ASCII list with only two Chinese names — 1.3% non-ASCII. Proves
+    # the gb18030 gate keys on ADJACENT CJK, not on a ratio: a ratio rule
+    # would reject this real Chinese file while accepting a Polish one.
+    'gbk-diluted.csv': ('gbk',     'name,company,city,email\n张伟,Acme Corporation Limited,Beijing,zhang@example.com\nJohn Smith,Widgets Incorporated,London,john@example.com\nMaria Garcia,Global Trading Company,Madrid,maria@example.com\n李娜,Sunrise Technology Group,Shanghai,lina@example.com\nAnna Brown,Southern Logistics Inc,Bristol,anna@example.com\n'),
     'big5.csv':      ('big5',      'name,email\n張偉,zhang@example.com\n陳美玲,chen@example.com\n'),
     'shift_jis.csv': ('shift_jis', 'name,email\n田中太郎,tanaka@example.com\n'),
     'cp1251.csv':    ('cp1251',    'name,email\nИван Петров,ivan@example.com\n'),
