@@ -717,6 +717,9 @@
   "csvEncodingUnreadable": {
     "message": "इस पठन से उपयोग योग्य तालिका नहीं बनती।"
   },
+  "csvEncodingNoEvidence": {
+    "message": "दिख रही पंक्तियाँ इन विकल्पों के बीच नहीं बदलतीं — पुष्टि के लिए हम पर्याप्त नहीं दिखा सकते।"
+  },
   "csvErrNotCsv": {
     "message": "यह फ़ाइल CSV नहीं है। Excel में: File > Save As > 'CSV UTF-8 (Comma delimited)' चुनें, फिर सहेजी गई फ़ाइल यहाँ खींचें।"
   },

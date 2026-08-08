@@ -197,8 +197,44 @@ function run() {
     "That content is a customer's CSV — it renders as markup in the panel"
   );
   check(
-    sidebar.includes("a.textContent = cells[0]"),
+    /span\.textContent = cell;/.test(sidebar),
     "the preview no longer writes cells with textContent"
+  );
+  // The preview is the only safeguard the picker has, and its first draft
+  // was blind: it rendered columns 0 and 1, so a file laid out
+  // id,email,name,company showed two pure-ASCII columns that decode
+  // identically under all 14 options. The user would have been confirming
+  // against a preview that could not change — worse than no preview,
+  // because it looks like verification.
+  check(
+    /if \(hasNonAscii\(cells\[ci\]\)\) shown\.push/.test(sidebar),
+    "the encoding preview no longer selects cells by whether they contain " +
+    "non-ASCII — it is showing columns that are identical under every option"
+  );
+  check(
+    /if \(!rows\.length\) \{[\s\S]{0,400}?useBtn\.disabled = true;/.test(sidebar),
+    "the confirm button stays enabled when the preview found nothing to " +
+    "show. A user cannot judge a choice they cannot see, so the button must " +
+    "not invite them to"
+  );
+  // One dialog element set, many uploads. A response for a previous file
+  // must not repaint the current one — the preview would then be describing
+  // a different file at the moment the user confirms.
+  check(
+    /myGeneration !== _pickerGeneration/.test(sidebar),
+    "the detection response no longer checks it belongs to the dialog that " +
+    "is open. A late reply for file A would repaint file B's preview and " +
+    "move its dropdown, and Use this would decode B with A's encoding"
+  );
+  check(
+    /if \(userTouchedSelect\) return;/.test(sidebar),
+    "a suggestion arriving after the user has chosen by hand overrules them"
+  );
+  check(
+    (sidebar.match(/csvInput\.value = ""/g) || []).length >= 3,
+    "cancelling the encoding dialog no longer clears the file input, so " +
+    "re-picking the SAME file does nothing — which is exactly what the " +
+    "dialog's own advice (re-save it and upload again) tells them to do"
   );
   check(
     /var known = ENCODING_OPTIONS\.some/.test(sidebar),

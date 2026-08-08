@@ -728,6 +728,11 @@
     return result;
   }
 
+  // Monotonic ticket for the encoding dialog. The dialog is one set of DOM
+  // nodes reused by every upload, so a response for a previous file must be
+  // able to recognise that it is no longer wanted.
+  var _pickerGeneration = 0;
+
   var CSV_MAX_BYTES = 5 * 1024 * 1024; // 5 MB (backend enforces same limit)
 
   // Ordered evidence for the CSV decoder, most authoritative first.
@@ -1043,6 +1048,9 @@
     }
 
     function openEncodingPicker(buf, diag) {
+      // Cleared here too: the user may abandon the dialog by any route, and
+      // re-picking the identical file has to work.
+      if (csvInput) csvInput.value = "";
       var dlg = document.getElementById("csv-encoding-dialog");
       var select = document.getElementById("csv-encoding-select");
       var preview = document.getElementById("csv-encoding-preview");
@@ -1064,6 +1072,13 @@
         select.appendChild(o);
       });
 
+      function hasNonAscii(str) {
+        for (var i = 0; i < str.length; i++) {
+          if (str.charCodeAt(i) > 0x7f) return true;
+        }
+        return false;
+      }
+
       function renderPreview() {
         var text = decodeCsvBufferAs(buf, select.value);
         preview.innerHTML = "";
@@ -1078,35 +1093,92 @@
           useBtn.disabled = true;
           return;
         }
+
+        // Show the cells that actually CHANGE when the dropdown changes.
+        //
+        // The first draft rendered columns 0 and 1 of the first five rows,
+        // which is blind exactly where it matters: in a file laid out
+        // id,email,name,company the names sit at index 2, and columns 0-1 are
+        // pure ASCII. ASCII decodes byte-identically under all 14 options, so
+        // the preview would have been pixel-identical for every choice — the
+        // user confirming against nothing at all, with the confirm button
+        // lit. The preview is the only safeguard this feature has; a preview
+        // that cannot show the difference is worse than none, because it
+        // looks like verification.
+        //
+        // So: find the rows and columns carrying non-ASCII under the current
+        // decode, and show those.
+        var rows = [];
+        for (var li = 1; li < lines.length && rows.length < 5; li++) {
+          var cells = parseCSVLine(lines[li]);
+          var shown = [];
+          for (var ci = 0; ci < cells.length; ci++) {
+            if (hasNonAscii(cells[ci])) shown.push(cells[ci]);
+          }
+          if (shown.length) rows.push(shown.slice(0, 3));
+        }
+
+        if (!rows.length) {
+          // Nothing in the sample differs between encodings, so there is
+          // nothing for the user to judge. Refuse the confirmation rather
+          // than let them approve a decision they cannot see. Reachable when
+          // the non-ASCII sits past the first few hundred rows.
+          preview.textContent = t("csvEncodingNoEvidence");
+          useBtn.disabled = true;
+          return;
+        }
+
         useBtn.disabled = false;
-        // First few data rows, first two columns. textContent throughout —
-        // this is a customer's file and it must never become markup.
-        lines.slice(1, 6).forEach(function (line) {
-          var cells = parseCSVLine(line);
+        // textContent throughout — this is a customer's file and it must
+        // never become markup.
+        rows.forEach(function (cells) {
           var row = document.createElement("div");
           row.className = "csv-encoding-row";
-          var a = document.createElement("span");
-          a.textContent = cells[0] || "";
-          var b = document.createElement("span");
-          b.className = "csv-encoding-dim";
-          b.textContent = cells[1] || "";
-          row.appendChild(a);
-          row.appendChild(b);
+          cells.forEach(function (cell, idx) {
+            var span = document.createElement("span");
+            if (idx > 0) span.className = "csv-encoding-dim";
+            span.textContent = cell;
+            row.appendChild(span);
+          });
           preview.appendChild(row);
         });
       }
 
-      select.onchange = renderPreview;
+      // The dialog is a single set of DOM nodes reused by every upload, while
+      // renderPreview and `buf` are per-upload closures. That is the whole
+      // hazard: a detection response for file A, landing while file B's
+      // dialog is open, would repaint A's rows into B's preview and move B's
+      // dropdown — and then Use this decodes B with the label chosen for A.
+      // The preview would be showing a different file at the exact moment of
+      // confirmation. So each opening takes a ticket, and a response is only
+      // honoured if its ticket is still the one on the counter.
+      _pickerGeneration += 1;
+      var myGeneration = _pickerGeneration;
+      var userTouchedSelect = false;
+
+      select.onchange = function () {
+        userTouchedSelect = true;
+        renderPreview();
+      };
 
       function close() {
         dlg.style.display = "none";
         select.onchange = null;
         useBtn.onclick = null;
         cancelBtn.onclick = null;
+        // Retire the ticket, so a response still in flight for THIS dialog
+        // cannot repaint it after it has gone.
+        if (_pickerGeneration === myGeneration) _pickerGeneration += 1;
       }
 
       cancelBtn.onclick = function () {
         close();
+        // An <input type="file"> only fires change when the selection
+        // CHANGES, so leaving the old value here means re-picking the same
+        // file does nothing at all — and "re-save it and upload again" is
+        // the dialog's own advice, given about a file whose name has not
+        // changed. Clearing it makes that advice work.
+        if (csvInput) csvInput.value = "";
         track("csv_encoding_cancelled", { csv_tried: diag.tried });
       };
 
@@ -1145,7 +1217,15 @@
           function (resp) {
             if (chrome.runtime.lastError) return;
             var enc = resp && resp.encoding;
-            if (!enc || dlg.style.display === "none") return;
+            if (!enc) return;
+            // Not my dialog any more — cancelled, confirmed, or replaced by a
+            // later upload. Say nothing.
+            if (myGeneration !== _pickerGeneration) return;
+            if (dlg.style.display === "none") return;
+            // The user got there first. A suggestion arriving after a human
+            // has chosen must not overrule them; it is a hint for people who
+            // have not decided yet.
+            if (userTouchedSelect) return;
             var known = ENCODING_OPTIONS.some(function (o) { return o.enc === enc; });
             if (!known) return;
             diag.suggested = enc;

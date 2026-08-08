@@ -717,6 +717,9 @@
   "csvEncodingUnreadable": {
     "message": "Cette lecture ne donne pas de tableau exploitable."
   },
+  "csvEncodingNoEvidence": {
+    "message": "Les lignes visibles ne changent pas d'une option à l'autre — nous ne pouvons pas vous en montrer assez pour confirmer."
+  },
   "csvErrNotCsv": {
     "message": "Ce fichier n'est pas un CSV. Dans Excel : Fichier > Enregistrer sous > choisissez « CSV UTF-8 (délimité par des virgules) », puis faites glisser le fichier enregistré ici."
   },

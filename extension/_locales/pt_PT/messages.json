@@ -730,6 +730,9 @@
   "csvEncodingUnreadable": {
     "message": "Essa leitura não produz uma tabela utilizável."
   },
+  "csvEncodingNoEvidence": {
+    "message": "As linhas visíveis não mudam entre estas opções — não conseguimos mostrar o suficiente para confirmar."
+  },
   "csvErrNotCsv": {
     "message": "Esse ficheiro não é um CSV. No Excel: Ficheiro > Guardar como > escolha 'CSV UTF-8 (delimitado por vírgulas)' e arraste o ficheiro guardado para aqui."
   },

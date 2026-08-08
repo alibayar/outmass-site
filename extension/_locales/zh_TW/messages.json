@@ -730,6 +730,9 @@
   "csvEncodingUnreadable": {
     "message": "以這個編碼讀取無法得到可用的表格。"
   },
+  "csvEncodingNoEvidence": {
+    "message": "看得到的列在這些選項之間沒有差別——我們無法顯示足夠的內容讓你確認。"
+  },
   "csvErrNotCsv": {
     "message": "這個檔案不是 CSV。在 Excel 中：檔案 > 另存新檔 > 選擇「CSV UTF-8 (逗號分隔)」，然後將儲存後的檔案拖曳到這裡。"
   },

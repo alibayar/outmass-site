@@ -717,6 +717,9 @@
   "csvEncodingUnreadable": {
     "message": "按此编码读取无法得到可用的表格。"
   },
+  "csvEncodingNoEvidence": {
+    "message": "可以看到的行在这些选项之间没有区别——我们无法展示足够的内容供你确认。"
+  },
   "csvErrNotCsv": {
     "message": "该文件不是 CSV 文件。在 Excel 中：文件 > 另存为 > 选择“CSV UTF-8(逗号分隔)”，然后把保存后的文件拖到这里。"
   },

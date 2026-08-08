@@ -717,6 +717,9 @@
   "csvEncodingUnreadable": {
     "message": "Damit ergibt sich keine brauchbare Tabelle."
   },
+  "csvEncodingNoEvidence": {
+    "message": "Die sichtbaren Zeilen ändern sich zwischen diesen Optionen nicht — wir können Ihnen zu wenig zeigen, um das zu bestätigen."
+  },
   "csvErrNotCsv": {
     "message": "Das ist keine CSV-Datei. In Excel: Datei > Speichern unter > 'CSV UTF-8 (Trennzeichen-getrennt)' auswählen und die gespeicherte Datei hierher ziehen."
   },

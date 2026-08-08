@@ -717,6 +717,9 @@
   "csvEncodingUnreadable": {
     "message": "Bu okumayla kullanılabilir bir tablo çıkmıyor."
   },
+  "csvEncodingNoEvidence": {
+    "message": "Görebildiğimiz satırlar bu seçenekler arasında değişmiyor — onaylaman için yeterince gösteremiyoruz."
+  },
   "csvErrNotCsv": {
     "message": "Bu dosya CSV değil. Excel'de: Dosya > Farklı Kaydet > 'CSV UTF-8 (virgülle ayrılmış)' seçin, sonra kaydettiğiniz dosyayı buraya sürükleyin."
   },

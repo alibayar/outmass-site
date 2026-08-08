@@ -717,6 +717,9 @@
   "csvEncodingUnreadable": {
     "message": "この文字コードでは表として読み取れません。"
   },
+  "csvEncodingNoEvidence": {
+    "message": "表示できる行はどの選択肢でも同じです — 確認していただくのに十分なものをお見せできません。"
+  },
   "csvErrNotCsv": {
     "message": "このファイルは CSV ではありません。Excel で「ファイル > 名前を付けて保存」から「CSV UTF-8 (コンマ区切り)」を選び、保存したファイルをここにドラッグしてください。"
   },

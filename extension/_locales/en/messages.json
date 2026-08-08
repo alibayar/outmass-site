@@ -737,6 +737,10 @@
     "message": "That reading does not produce a usable table.",
     "description": "Shown in the preview when the selected encoding yields no usable table."
   },
+  "csvEncodingNoEvidence": {
+    "message": "None of the rows we can see change between these choices — we cannot show you enough to confirm.",
+    "description": "Shown in the encoding preview when no visible cell contains a non-ASCII character, so no choice can be judged. The confirm button is disabled alongside it."
+  },
   "csvErrNotCsv": {
     "message": "That file isn't a CSV. In Excel: File > Save As > choose 'CSV UTF-8 (Comma delimited)', then drag the saved file here."
   },
