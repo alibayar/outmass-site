@@ -884,41 +884,42 @@
         };
       }
 
-      // Longest run of adjacent CJK characters. This is what tells a real
-      // Chinese file from a European one that gb18030 merely swallowed.
+      // Longest run of adjacent characters from a script. THE test in this
+      // function, and the only one that ever discriminated.
       //
-      // gb18030 and big5 have been terminal catch-alls since 0.1.24, gated
-      // only on "no U+FFFD" — far weaker than it sounds. A Polish or German
-      // list has single high bytes, which gb18030 pairs with the FOLLOWING
-      // ASCII letter: one ideograph comes out and that letter is EATEN.
-      // "Łukasz" decoded to "kasz" — data loss, not mojibake, and the
-      // changelog claimed those users were asked to re-save instead.
+      // Real writing comes in runs: names and words are two or more
+      // characters of the same script side by side. A file misread through
+      // the wrong table produces isolated characters marooned between ASCII
+      // letters — one per diacritic. Measured 2026-08-08:
       //
-      // Measured across ten fixtures on 2026-08-08:
+      //                                   non-ASCII  inScript  longest run
+      //   real Chinese (gbk.csv)               7.7%      100%        2
+      //   diluted GBK, 2 CJK names             0.9%      100%        2
+      //   real Russian (cp1251)               43.1%      100%        8
+      //   real Greek (cp1253)                 48.7%      100%       12
+      //   Polish cp1250 read as cp1251         6.1%      100%        1
+      //   German cp1252 read as cp1251         8.1%      100%        1
+      //   Polish cp1250 read as gb18030        5.8%       83%        1
       //
-      //                              non-ASCII  CJK%  longest run
-      //   gbk.csv (real Chinese)          7.7%   100      2
-      //   diluted GBK (2 CJK names)       0.9%   100      2
-      //   Polish cp1250                   5.8%    83      1
-      //   German cp1252                   8.8%   100      1
+      // Note what the first two columns do NOT do. inScript is 100% on both
+      // sides — windows-1251 maps nearly the whole high range into Cyrillic,
+      // so a German list scores as perfect Cyrillic as a Russian one. And a
+      // volume threshold is wrong in both directions at once: it accepts
+      // Polish at 6.1% while rejecting the real Chinese list at 0.9%.
       //
-      // A ratio rule would have been wrong in BOTH directions: it accepts
-      // Polish at 5.8% and rejects the diluted Chinese list at 0.9%. Real
-      // CJK names and words are two or more characters side by side; the
-      // false ideographs a Latin file produces stand alone between ASCII
-      // letters. That difference is the whole test.
-      function maxCjkRun(text) {
+      // The run is the whole test, and it is the same test for both decoder
+      // families — gb18030/big5 swallowing a Latin list and windows-1251
+      // swallowing one are the same failure wearing different clothes.
+      function maxRunIn(text, ranges) {
         var best = 0;
         var run = 0;
         for (var j = 0; j < text.length; j++) {
           var c = text.charCodeAt(j);
-          var cjk =
-            (c >= 0x3000 && c <= 0x30ff) || // CJK punctuation and kana
-            (c >= 0x3400 && c <= 0x4dbf) || // unified ext A
-            (c >= 0x4e00 && c <= 0x9fff) || // unified
-            (c >= 0xf900 && c <= 0xfaff) || // compatibility
-            (c >= 0xff00 && c <= 0xffef);   // fullwidth forms
-          if (cjk) {
+          var inScript = false;
+          for (var r = 0; r < ranges.length; r++) {
+            if (c >= ranges[r][0] && c <= ranges[r][1]) { inScript = true; break; }
+          }
+          if (inScript) {
             run++;
             if (run > best) best = run;
           } else {
@@ -927,6 +928,14 @@
         }
         return best;
       }
+
+      var CJK_RANGES = [
+        [0x3000, 0x30ff], // CJK punctuation and kana
+        [0x3400, 0x4dbf], // unified ext A
+        [0x4e00, 0x9fff], // unified
+        [0xf900, 0xfaff], // compatibility
+        [0xff00, 0xffef], // fullwidth forms
+      ];
 
       function decode(enc) {
         try {
@@ -946,6 +955,7 @@
       d.nonascii = -1;
       d.cjk_run = -1;
       d.script_fit = -1;
+      d.script_run = -1;
 
       for (var i = 0; i < candidates.length; i++) {
         var enc = candidates[i];
@@ -961,14 +971,19 @@
           if (/[\u0080-\u009F]/.test(text)) continue;
           var s = shares(text, SCRIPT_RANGE[enc]);
           d.script_fit = Math.round(100 * s.inScript);
-          // The 5% floor matters as much as the 70%. In a file that is 96%
-          // ASCII, "all the non-ASCII characters are Cyrillic" means four
-          // accented letters happened to land in that block — no evidence
-          // at all. Without it, windows-1251 claimed a Western list (3.8%
-          // non-ASCII) and made José into Josщ.
-          if (s.nonAscii < 0.05 || s.inScript < 0.7) continue;
+          var scriptRun = maxRunIn(text, [SCRIPT_RANGE[enc]]);
+          if (scriptRun > d.script_run) d.script_run = scriptRun;
+          // A run of two, exactly as for gb18030. This replaced a 5%
+          // volume floor that was wrong the same way a volume rule is
+          // always wrong here: it let a German list through at 8.1% and
+          // would have rejected a mostly-English list carrying one real
+          // Russian name. inScript stays as a cheap second opinion — it
+          // catches a table that is not even producing the right block —
+          // but it decides nothing on its own, because it reads 100% for
+          // a German list under windows-1251.
+          if (scriptRun < 2 || s.inScript < 0.7) continue;
         } else if (enc !== "utf-8") {
-          var run = maxCjkRun(text);
+          var run = maxRunIn(text, CJK_RANGES);
           if (run > d.cjk_run) d.cjk_run = run;
           if (run < 2) continue;
         }
@@ -1005,6 +1020,7 @@
           csv_nonascii_pct: diag.nonascii,
           csv_cjk_run: diag.cjk_run,
           csv_script_fit_pct: diag.script_fit,
+          csv_script_run: diag.script_run,
         });
         return;
       }
@@ -1095,6 +1111,7 @@
         csv_nonascii_pct: diag.nonascii,
         csv_cjk_run: diag.cjk_run,
         csv_script_fit_pct: diag.script_fit,
+          csv_script_run: diag.script_run,
       });
     };
     reader.readAsArrayBuffer(file);

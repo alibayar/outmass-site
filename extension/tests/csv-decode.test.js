@@ -22,10 +22,18 @@
  *     codepage added for one locale may steal it from another.
  *  3. A script codepage is used only when it comes from this user's own
  *     languages AND is the only one of them that fits.
- *  4. No Latin codepage is ever used. They cannot be checked, so a wrong
- *     one is undetectable; those users keep 0.1.27's rejection.
- *  5. For EVERY accepted decode the ASCII email column survives byte-exact.
- *  6. Undecodable input returns null, and never throws.
+ *  4. No Latin codepage is ever used, and no script codepage may claim a
+ *     Latin file either — both are refused outright. A wrong table is
+ *     undetectable by inspection, so the changelog promises those users a
+ *     refusal rather than a guess, and these assertions are what make that
+ *     promise true.
+ *  5. Every decode a codepage claims must show that script in RUNS. Real
+ *     writing does; a diacritic misread through the wrong table stands alone
+ *     between ASCII letters. Neither a volume threshold nor an in-block
+ *     ratio separates them — both read identically on a German list under
+ *     windows-1251.
+ *  6. For EVERY accepted decode the ASCII email column survives byte-exact.
+ *  7. Undecodable input returns null, and never throws.
  *
  * Fixtures: tests/fixtures/*.csv — regenerate with the python one-liner in
  * fixtures/README.md if the set ever needs to change.
@@ -246,10 +254,47 @@ function run() {
   ];
   for (const [label, buf, langs] of latinCases) {
     const out = decode(buf, langs);
-    const e = out && out.encoding;
-    check(!e || !/^windows-125[0247]$|^windows-1258$/.test(e),
-      `${label} must never be claimed by a Latin codepage (got ${e})`);
+    check(out === null, (
+      `${label} must be REFUSED, got ${out && out.encoding}. Not "claimed by ` +
+      `something harmless" — refused. The changelog tells these users we would ` +
+      `rather not guess than put a mangled name in an email, and a decode by ` +
+      `any table at all makes that untrue`
+    ));
   }
+
+  // The same rule that stops gb18030 swallowing them stops windows-1251 too.
+  // A script codepage scored 100% inScript on a German list — the tables map
+  // nearly the whole high range into their own block — so only the run test
+  // separates them: real writing comes in runs, a misread diacritic stands
+  // alone between ASCII letters.
+  for (const [label, text, cp] of [
+    ["Polish", POLISH, "windows-1250"],
+    ["German", GERMAN, "windows-1252"],
+    ["Turkish", TURKISH, "windows-1254"],
+  ]) {
+    for (const langs of [["ru-RU"], ["el-GR"], ["he-IL"], ["ar-SA"]]) {
+      const out = decode(enc(text, cp), langs);
+      check(out === null,
+        `a ${label} list must not be read as ${langs[0]}'s script ` +
+        `(got ${out && out.encoding})`);
+    }
+  }
+
+  // ...while a real file in that script still decodes, including one that is
+  // mostly ASCII. A volume floor used to guard this branch and it rejected
+  // exactly this shape.
+  const dilutedCyrillic = enc(
+    "name,company,city,email\n" +
+    "Иван Петров,Acme Corporation Limited,Moscow,ivan@example.com\n" +
+    "John Smith,Widgets Incorporated,London,john@example.com\n" +
+    "Anna Brown,Southern Logistics Inc,Bristol,anna@example.com\n",
+    "windows-1251"
+  );
+  const dc = decode(dilutedCyrillic, ["ru-RU"]);
+  check(dc && dc.encoding === "windows-1251",
+    `a mostly-ASCII list with one Russian name must decode, got ${dc && dc.encoding}`);
+  check(dc && dc.text.includes("Иван Петров"),
+    "the Russian name in the diluted list must be intact");
 
   // ── 7. A file in a script the user does not claim ──
   // These tables map nearly the whole high range into their own block, so a

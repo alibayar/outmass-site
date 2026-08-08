@@ -874,7 +874,7 @@
     "message": "Anmelden"
   },
   "repliesOffBannerText": {
-    "message": "Follow-ups erkennen nicht, wer bereits geantwortet hat. Aktiviere die Antworterkennung, damit sie niemanden mehr anschreiben, der schon geantwortet hat."
+    "message": "Follow-ups erkennen nicht, wer bereits geantwortet hat. Aktivieren Sie die Antworterkennung, damit sie niemanden mehr anschreiben, der schon geantwortet hat."
   },
   "repliesOffBannerCta": {
     "message": "Aktivieren"
