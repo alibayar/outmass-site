@@ -1052,12 +1052,31 @@ def expire_manual_promos():
                 "plan": grant.get("previous_plan") or "free",
                 "manual_promo_until": None,
             }
-            stashed = grant.get("previous_stripe_subscription_id")
-            if stashed:
-                # Put the link back. Harmless even when the subscription is
-                # dead: daily_report counts a payer as paid plan AND a
-                # subscription id, and the plan has just gone back to free.
-                payload["stripe_subscription_id"] = stashed
+            # users.stripe_subscription_id is deliberately NOT written back.
+            #
+            # The stash exists so the id is never lost — it lives in the
+            # grant record permanently, and stripe_customer_id is never
+            # cleared, so Stripe itself stays one query away. But the column
+            # means "this user's CURRENT subscription", and since
+            # grant_manual_promo refuses to run over a live one, every
+            # stashed id is one an operator confirmed DEAD. Restoring it
+            # would put a false value into a live field, and six readers
+            # believe that field:
+            #
+            #   * account.py:122 blocks account deletion on (paid plan AND
+            #     a subscription id) — a restored dead id can lock a user
+            #     out of deleting their own account, telling them to cancel
+            #     a subscription that does not exist;
+            #   * daily_report counts a real payer as paid plan AND a
+            #     subscription id, so it would report revenue nobody pays;
+            #   * daily_report's gift count keys off the same column being
+            #     NULL, so both halves of the split go wrong at once;
+            #   * create_checkout treats it as "existing subscriber" and
+            #     burns a Stripe retrieve on every future upgrade;
+            #   * inactivity_nudge targets on it;
+            #   * grant_manual_promo refuses when it is set, so the next
+            #     gift to this customer would need the confirmation dance
+            #     again for a subscription already known to be dead.
         else:
             # Granted before migration 026, so there is no record of what to
             # restore. Fall back to the behaviour it was granted under.
@@ -1092,8 +1111,12 @@ def expire_manual_promos():
                 "previous_plan": user.get("plan"),
                 "manual_promo_until": str(until),
                 "restored_to": payload.get("plan"),
-                "subscription_id_restored": bool(
-                    payload.get("stripe_subscription_id")
+                # The stashed id stays in the grant record rather than going
+                # back on the user row; carry it here so the audit trail can
+                # answer "which subscription did this account once have?"
+                # without a second lookup.
+                "stashed_subscription_id": (
+                    grant.get("previous_stripe_subscription_id") if grant else None
                 ),
                 "grant_id": grant.get("id") if grant else None,
             },

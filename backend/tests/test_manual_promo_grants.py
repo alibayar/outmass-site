@@ -155,12 +155,16 @@ def _grant(*, uid, granted="starter", previous="free", stashed=None, status="act
 # ── The core promise: what the grant took, expiry gives back ──
 
 
-def test_expiry_restores_the_stashed_subscription_id(fake_db):
-    """The whole reason the table exists.
+def test_stashed_id_is_kept_in_the_grant_and_NOT_written_back(fake_db):
+    """The stash preserves the id; the user row must not get it back.
 
-    Faisal's case: a dead Stripe subscription id had to be cleared so the
-    promo could ever expire. If it does not come back, the only link
-    between the user row and their Stripe subscription is gone for good.
+    users.stripe_subscription_id means "this user's CURRENT subscription",
+    and grant_manual_promo refuses to run over a live one — so every stashed
+    id is one an operator confirmed dead. Writing it back would put a false
+    value into a field six readers trust, the worst of them account.py:122,
+    which blocks account deletion on (paid plan AND a subscription id): a
+    user could be told to cancel a subscription that does not exist before
+    they may delete their own account.
     """
     from workers import scheduled_worker
 
@@ -173,10 +177,14 @@ def test_expiry_restores_the_stashed_subscription_id(fake_db):
 
     assert r["reverted"] == 1
     payload = users.update_calls[0]
-    assert payload["stripe_subscription_id"] == "sub_dead_123"
+    assert "stripe_subscription_id" not in payload, (
+        "a dead subscription id was written back onto the live user row"
+    )
     assert payload["plan"] == "free"
     assert payload["manual_promo_until"] is None
     assert grants.rows[0]["status"] == "restored"
+    # Preserved, which was the whole point of the table.
+    assert grants.rows[0]["previous_stripe_subscription_id"] == "sub_dead_123"
 
 
 def test_expiry_restores_the_recorded_plan_not_hardcoded_free(fake_db):
@@ -196,10 +204,9 @@ def test_expiry_restores_the_recorded_plan_not_hardcoded_free(fake_db):
     assert users.update_calls[0]["plan"] == "starter"
 
 
-def test_null_stash_does_not_write_the_column(fake_db):
-    """A user who never subscribed has NULL stashed. Writing that back is
-    a no-op, but including the key would let a future edit clobber a real
-    id — so the payload must simply not carry it."""
+def test_expiry_never_writes_the_subscription_column_at_all(fake_db):
+    """Whether or not anything was stashed, the column is left alone. The
+    promo cleared it and it stays cleared; the archive is the grant row."""
     from workers import scheduled_worker
 
     users = _RecordingUsers(rows=[_user(uid="u3", plan="starter", expires_days=-1)])
@@ -290,17 +297,18 @@ def test_grant_lookup_failure_still_expires_the_promo(fake_db):
     assert users.update_calls[0]["plan"] == "free"
 
 
-def test_two_users_do_not_get_each_others_subscriptions(fake_db):
-    """The failure mode the filtered fake exists to catch."""
+def test_two_users_do_not_get_each_others_restore_targets(fake_db):
+    """The failure mode the filtered fake exists to catch: one user's grant
+    must never decide another user's plan."""
     from workers import scheduled_worker
 
     users = _RecordingUsers(rows=[
-        _user(uid="ua", plan="starter", expires_days=-1),
-        _user(uid="ub", plan="starter", expires_days=-1),
+        _user(uid="ua", plan="pro", expires_days=-1),
+        _user(uid="ub", plan="pro", expires_days=-1),
     ])
     grants = _FakeGrants([
-        _grant(uid="ua", stashed="sub_A"),
-        _grant(uid="ub", stashed="sub_B"),
+        _grant(uid="ua", granted="pro", previous="starter", stashed="sub_A"),
+        _grant(uid="ub", granted="pro", previous="free", stashed="sub_B"),
     ])
     fake_db.set_table("users", users)
     fake_db.set_table("manual_promo_grants", grants)
@@ -308,8 +316,11 @@ def test_two_users_do_not_get_each_others_subscriptions(fake_db):
     scheduled_worker.expire_manual_promos()
 
     by_id = dict(zip(users.updated_ids, users.update_calls))
-    assert by_id["ua"]["stripe_subscription_id"] == "sub_A"
-    assert by_id["ub"]["stripe_subscription_id"] == "sub_B"
+    assert by_id["ua"]["plan"] == "starter"
+    assert by_id["ub"]["plan"] == "free"
+    # And each stash stayed with its own grant.
+    stashes = {g["user_id"]: g["previous_stripe_subscription_id"] for g in grants.rows}
+    assert stashes == {"ua": "sub_A", "ub": "sub_B"}
 
 
 def test_checkout_landing_mid_batch_is_not_overwritten(fake_db):

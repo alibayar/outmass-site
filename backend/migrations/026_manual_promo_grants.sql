@@ -10,6 +10,16 @@
 -- and put it back later" — which is another way of saying it would not have
 -- been put back.
 --
+-- NOTE the stash is an ARCHIVE, not something the expiry writes back. The
+-- column means "this user's CURRENT subscription", and since this function
+-- refuses to run over a live one (see the guard below), every stashed id is
+-- one an operator confirmed dead. Putting a dead id back would be a false
+-- value in a live field — and account.py blocks account deletion on (paid
+-- plan AND a subscription id), so it could stop someone deleting their own
+-- account over a subscription that does not exist. The id is preserved
+-- here, stripe_customer_id is never cleared, and Stripe stays one query
+-- away; that is what "do not lose it" needed.
+--
 -- The load-bearing detail is in scheduled_worker.expire_manual_promos:
 --
 --     # Never touch a real paying customer.
@@ -169,8 +179,9 @@ BEGIN
     SET plan                   = p_plan,
         manual_promo_until     = grant_row.expires_at,
         -- Cleared so the expiry beat can see this row (see the comment at
-        -- the top). The original value is now in the grant record above,
-        -- and the beat puts it back.
+        -- the top). The original value is archived in the grant record
+        -- above and stays there — expiry does NOT write it back, because
+        -- by then it is a confirmed-dead id and the column means "current".
         stripe_subscription_id = NULL,
         plan_updated_at        = now()
     WHERE id = u.id;
