@@ -230,6 +230,37 @@ def _request_host(request: Request) -> str:
     # client-facing one. Port and case are noise for a breakdown.
     return raw.split(",")[0].strip().split(":")[0].lower()[:80]
 
+
+# Hosts that cannot exist in production. 'testserver' is FastAPI TestClient's
+# default; the rest are local development.
+_NON_PRODUCTION_HOSTS = frozenset(
+    {"testserver", "localhost", "127.0.0.1", "0.0.0.0", "::1"}
+)
+
+
+def _is_reportable_host(host: str) -> bool:
+    """Whether an event from this host belongs in the production funnel.
+
+    conftest.py already blanks POSTHOG_API_KEY before importing anything, so
+    `pytest` cannot emit. That guard lived entirely in the TEST HARNESS
+    though, and on 2026-08-06 a one-off script that drove the app through
+    TestClient outside pytest — an adversarial review probing the fragment
+    sanitizer — inherited a real key from the developer's .env and wrote 19
+    ms_auth_failed events into the live project. Their payloads were the
+    probe strings: `<script>alert(1)</script>`, `😀💣`, a bidi override, a
+    fake support phone number. They sat in the sign-in funnel looking like
+    real users failing to sign in.
+
+    So the check moves into the code, where it protects any caller rather
+    than only the one that remembers to import the fixture.
+
+    An exact denylist, not a pattern: a real hostname must never be dropped,
+    because a lost event is a real user we can no longer account for. These
+    five cannot reach the deployed backend, so there are no false positives
+    to trade against.
+    """
+    return host not in _NON_PRODUCTION_HOSTS
+
 _AADSTS_RE = re.compile(r"AADSTS\d+")
 
 
@@ -263,7 +294,7 @@ def _track_ms_auth_failed(
     to 2026-07-31 carried that one label, with in-window times up to 18
     minutes — nobody deliberates that long over a consent screen.
     """
-    if not POSTHOG_API_KEY:
+    if not POSTHOG_API_KEY or not _is_reportable_host(host):
         return
     try:
         data = _decode_state(state) or {}
@@ -558,7 +589,8 @@ async def login_redirect(
     # picker) — the window most likely lost behind another window. That is
     # the one state we previously could not distinguish from "window never
     # opened", and it is what the 2026-08-03 rage-uninstall came down to.
-    if POSTHOG_API_KEY:
+    _win_host = _request_host(request)
+    if POSTHOG_API_KEY and _is_reportable_host(_win_host):
         try:
             posthog.capture(
                 distinct_id=safe_aid or "anonymous_auth_window",
@@ -572,7 +604,7 @@ async def login_redirect(
                     # from "user riding the railway fallback because their
                     # network filters the primary" — the fork the 2026-08-05
                     # investigation could only close with Railway screenshots.
-                    "host": _request_host(request),
+                    "host": _win_host,
                 },
             )
         except Exception:
@@ -832,7 +864,8 @@ async def auth_callback(
     # Tag this person's install source (chrome vs edge store) in PostHog so any
     # metric can be broken down by store — no extension change needed, the ext id
     # rides along with every login. Best-effort; must never block the redirect.
-    if POSTHOG_API_KEY:
+    _login_host = _request_host(request)
+    if POSTHOG_API_KEY and _is_reportable_host(_login_host):
         try:
             _src = _install_source(ext_from_state)
             posthog.capture(
@@ -842,7 +875,7 @@ async def auth_callback(
                     "install_source": _src,
                     "ext_id": ext_from_state or "",
                     "plan": user.get("plan", "free"),
-                    "host": _request_host(request),
+                    "host": _login_host,
                     "$set": {"install_source": _src},
                 },
             )

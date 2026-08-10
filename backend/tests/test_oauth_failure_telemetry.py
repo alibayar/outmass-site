@@ -151,6 +151,12 @@ def test_callback_error_redirect_is_reported(client, fake_db):
          patch("routers.auth.posthog.capture") as cap:
         resp = client.get(
             "/auth/callback",
+            # Microsoft redirects to the registered redirect_uri, so a real
+            # callback always lands on one of our public domains. Since
+            # 2026-08-10 the capture sites refuse hosts that cannot exist in
+            # production, and TestClient's default 'testserver' is one of
+            # them — see test_telemetry_host_guard.py.
+            headers={"host": "api.getoutmass.com"},
             params={
                 "error": "access_denied",
                 "error_description": "AADSTS65004: User declined to consent.",
@@ -185,6 +191,7 @@ def test_login_redirect_reports_the_window_opening(client, fake_db):
         resp = client.get(
             "/auth/login",
             params={"ext": EXT, "aid": "abc123DEF456"},
+            headers={"host": "api.getoutmass.com"},
             follow_redirects=False,
         )
 

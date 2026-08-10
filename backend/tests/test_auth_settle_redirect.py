@@ -363,7 +363,14 @@ def _callback_error(client, state):
     }
     if state is not None:
         params["state"] = state
-    return client.get("/auth/callback", params=params)
+    # A real callback arrives at one of our two public domains — Microsoft
+    # redirects to the registered redirect_uri, never to TestClient's default
+    # 'testserver'. The host has to be realistic since 2026-08-10, when the
+    # telemetry capture sites started refusing hosts that cannot exist in
+    # production (see test_telemetry_host_guard.py for why).
+    return client.get(
+        "/auth/callback", params=params, headers={"host": "api.getoutmass.com"}
+    )
 
 
 def test_error_page_is_served_as_200(client):
