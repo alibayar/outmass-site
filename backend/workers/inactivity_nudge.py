@@ -40,8 +40,25 @@ from workers.celery_app import celery
 logger = logging.getLogger(__name__)
 
 
-STORE_URL = "https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm"
 SUPPORT_EMAIL = "support@getoutmass.com"
+
+# There is deliberately no store URL here any more.
+#
+# It used to be the Chrome Web Store link, sent to everyone. We cannot tell
+# a Chrome install from an Edge one at this point: install_source is captured
+# for PostHog (auth.py) but never stored on the users row, so the worker has
+# nothing to branch on — and Edge is a real channel, so an Edge customer
+# would have been pointed at the wrong store.
+#
+# The 30-day mail no longer needs one at all: inactivity is not uninstalling,
+# and the recipient most likely still has the extension (2026-08-10: the one
+# customer this would have reached had been silent for 33 days and had
+# nonetheless auto-updated through four releases to 0.2.0). Telling them to
+# reinstall describes something that did not happen.
+#
+# The later tiers say "the browser store you installed it from" instead: no
+# link, but nothing that can be wrong either. Put a link back only once
+# install_source lives on the user row.
 
 
 # ── Tier definitions ──
@@ -58,27 +75,36 @@ class _Tier:
 
 
 def _html_tier1(name: str | None, days: int) -> str:
-    """30-day heads-up. Warm, no pressure."""
+    """30-day heads-up. Warm, no pressure — and it ASKS.
+
+    The first version offered two doors, keep or cancel, and never asked why
+    they stopped. For a product with a handful of paying customers that is
+    the most expensive omission in the whole sequence: the answer is worth
+    more than the subscription. Someone who tried it hard for one day and
+    never returned hit something, and only they know what.
+    """
     greeting = f"Hi {name}," if name else "Hi,"
     return (
         "<div style='font-family:sans-serif;max-width:540px;margin:auto;color:#323130;'>"
         "<h2 style='color:#0078d4;'>Still using OutMass?</h2>"
         f"<p>{greeting}</p>"
-        f"<p>We noticed you haven't opened OutMass in about {days} days. "
-        "Just a quick heads-up: your paid subscription is still active and "
-        "continues to be billed each month, regardless of whether you use "
-        "the extension.</p>"
-        "<p><b>If you're still planning to use OutMass</b>, no action needed — "
-        f'you can <a href="{STORE_URL}">reinstall it here</a> if you removed it.</p>'
-        "<p><b>If you don't need it anymore</b>, you can cancel anytime:</p>"
+        f"<p>We noticed you haven't used OutMass in about {days} days. "
+        "A heads-up rather than a nudge: your paid subscription is still "
+        "active and still billed each month, whether or not you open it.</p>"
+        "<p><b>If you still plan to use it</b>, there's nothing to do — open "
+        "Outlook on the web and the OutMass panel is where you left it.</p>"
+        "<p><b>If something got in the way</b>, tell us what it was. Just "
+        "reply to this email. That is genuinely the most useful thing you "
+        "can send us, and a person reads every one.</p>"
+        "<p><b>If you don't need it anymore</b>, you can stop paying today:</p>"
         "<ul style='padding-left:22px;'>"
-        "<li>Open the OutMass sidebar → <em>Account</em> → <em>Manage Subscription</em>, or</li>"
-        f'<li>Email us at <a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a> '
-        "and we'll cancel + refund the current period.</li>"
+        "<li>Open the OutMass panel → <em>Account</em> → <em>Manage Subscription</em>, or</li>"
+        f'<li>Reply here, or write to <a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>'
+        " — we'll cancel it and refund the current period.</li>"
         "</ul>"
         "<p style='color:#888;font-size:12px;margin-top:28px;'>"
         "You're receiving this because you have an active paid OutMass "
-        "subscription. This is a one-time nudge per inactive period.</p>"
+        "subscription. This is a one-time note per inactive period.</p>"
         "<p style='color:#888;font-size:12px;'>— The OutMass team</p>"
         "</div>"
     )
@@ -94,10 +120,13 @@ def _html_tier2(name: str | None, days: int) -> str:
         f"<p>You haven't logged into OutMass in around {days} days. "
         "Your paid subscription has continued to renew during this time. "
         "We don't want you paying for something you're not getting value from.</p>"
-        "<p><b>Two simple options:</b></p>"
+        "<p><b>Three ways this can go:</b></p>"
         "<ul style='padding-left:22px;'>"
-        f'<li><b>Keep it</b> — <a href="{STORE_URL}">reinstall OutMass</a> '
-        "(if needed) and we'll stop emailing you as soon as you log in.</li>"
+        f'<li><b>Keep it</b> — open the OutMass panel in Outlook on '
+        "the web, or reinstall it from the browser store you got it from. "
+        "These emails stop as soon as you sign in.</li>"
+        "<li><b>Tell us what went wrong</b> — reply to this email. If "
+        "something blocked you, we would much rather fix it than lose you.</li>"
         "<li><b>Cancel it</b> \u2014 reply to this email or contact "
         f'<a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>'
         " and we'll cancel the subscription plus refund the current "
@@ -112,24 +141,40 @@ def _html_tier2(name: str | None, days: int) -> str:
 
 
 def _html_tier3(name: str | None, days: int) -> str:
-    """90-day final outreach. Commits to manual follow-up."""
+    """90-day final note. Promises nothing it cannot keep.
+
+    The first version said a member of the team would contact them
+    personally. There is one person here, and a promise of manual outreach
+    is the kind that quietly goes unkept — the failure mode this whole
+    sequence exists to avoid.
+
+    "We will write to you once more" was the proposed replacement, but this
+    IS the last tier: there is nothing after 90 days, so that would have
+    been the same unkeepable shape in gentler words. Saying the emails stop
+    here is both true and kinder — it tells them the nagging ends.
+    """
     greeting = f"Hi {name}," if name else "Hi,"
     return (
         "<div style='font-family:sans-serif;max-width:540px;margin:auto;color:#323130;'>"
         "<h2 style='color:#0078d4;'>OutMass — a final check-in</h2>"
         f"<p>{greeting}</p>"
         f"<p>It's been about {days} days since you last used OutMass. "
-        "We've reached out twice already and we don't want to keep "
-        "charging you for something you clearly aren't using.</p>"
-        "<p>Over the next few days, a member of our team will <b>contact "
-        "you personally</b> to confirm whether you'd like to cancel your "
-        "subscription and receive a prorated refund.</p>"
-        "<p>If you'd like to skip that and handle it now, just reply to "
-        f'this email or write to <a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>.</p>'
-        "<p>Or, if you just haven't had time to use OutMass yet, "
-        f'<a href="{STORE_URL}">reinstall it</a>'
-        " and these emails stop automatically.</p>"
-        "<p style='color:#888;font-size:12px;margin-top:28px;'>— The OutMass team</p>"
+        "We've written twice already, and we don't want to keep charging "
+        "you for something you aren't using.</p>"
+        "<p><b>To stop paying</b>, reply to this email or write to "
+        f'<a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>'
+        " — we'll cancel the subscription and refund the current period, "
+        "prorated.</p>"
+        "<p><b>If something stopped you from using it</b>, we'd still like "
+        "to know what. One line in a reply is enough, and it is worth more "
+        "to us than the subscription.</p>"
+        "<p><b>If you just haven't got to it yet</b>, open the OutMass panel "
+        "in Outlook on the web and these emails stop on their own.</p>"
+        "<p style='color:#888;font-size:12px;margin-top:28px;'>"
+        "This is the last automatic email we'll send about this. Your "
+        "subscription stays exactly as it is unless you tell us otherwise."
+        "</p>"
+        "<p style='color:#888;font-size:12px;'>— The OutMass team</p>"
         "</div>"
     )
 

@@ -194,14 +194,53 @@ def test_email_tone_is_warm_not_dunning():
                 f"{build.__name__} contains dunning language: {bad}"
 
 
-def test_tier1_mentions_reinstall_path():
+def test_tier1_does_not_assume_they_uninstalled():
+    """Inverted 2026-08-10. The trigger is INACTIVITY, not uninstalling, and
+    telling someone to reinstall describes something that did not happen —
+    the one customer this would have reached had been silent 33 days and had
+    auto-updated through four releases to 0.2.0 in the meantime. The 30-day
+    note points at the panel they already have."""
     from workers.inactivity_nudge import _html_tier1
-    assert "reinstall" in _html_tier1("X", 30).lower()
+
+    html = _html_tier1("X", 30).lower()
+    assert "reinstall" not in html
+    assert "outlook" in html, "it must say where to find the panel instead"
 
 
-def test_tier3_promises_personal_outreach():
-    """The 90-day email is the bridge to manual operator intervention
-    — it must commit to personal contact so the user isn't blindsided."""
+def test_no_tier_hardcodes_a_browser_store():
+    """install_source is captured for PostHog but never stored on the user
+    row, so the worker cannot tell a Chrome install from an Edge one. A
+    hardcoded Chrome link would send Edge customers to the wrong store —
+    and Edge is a live channel."""
+    from workers.inactivity_nudge import _html_tier1, _html_tier2, _html_tier3
+
+    for build in (_html_tier1, _html_tier2, _html_tier3):
+        html = build("X", 45).lower()
+        assert "chromewebstore" not in html, f"{build.__name__} hardcodes Chrome"
+        assert "microsoftedge" not in html, f"{build.__name__} hardcodes Edge"
+
+
+def test_every_tier_asks_what_went_wrong():
+    """The first version offered keep-or-cancel and never asked why they
+    stopped. With a handful of paying customers that answer is worth more
+    than the subscription, and only they have it."""
+    from workers.inactivity_nudge import _html_tier1, _html_tier2, _html_tier3
+
+    for build in (_html_tier1, _html_tier2, _html_tier3):
+        html = build("X", 45).lower()
+        assert "reply" in html, f"{build.__name__} gives them no way to answer"
+        asks = any(p in html for p in
+                   ("got in the way", "went wrong", "stopped you"))
+        assert asks, f"{build.__name__} never asks what stopped them"
+
+
+def test_tier3_promises_no_follow_up_it_cannot_keep():
+    """Inverted 2026-08-10. It used to commit to a person contacting them.
+    There is one person here, and 90 days is the LAST tier — so both "we
+    will call you" and "we will write once more" are promises with nothing
+    behind them. It now says the emails stop, which is true."""
     from workers.inactivity_nudge import _html_tier3
-    html = _html_tier3("Bob", 90)
-    assert "personally" in html.lower() or "personal" in html.lower()
+
+    html = _html_tier3("Bob", 90).lower()
+    assert "contact you personally" not in html
+    assert "last automatic email" in html
