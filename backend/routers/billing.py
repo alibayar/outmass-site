@@ -882,11 +882,37 @@ def _handle_dispute_created(db, dispute: dict) -> None:
     # Update our DB — drop plan to free regardless of Stripe cancel
     # success, because the user is disputing the relationship.
     if user_row:
-        db.table("users").update({
-            "plan": "free",
+        dispute_update = {
             "stripe_subscription_id": None,
             "plan_updated_at": datetime.now(timezone.utc).isoformat(),
-        }).eq("id", user_row["id"]).execute()
+        }
+
+        # A manual promo outranks a chargeback on the SUBSCRIPTION, because
+        # they are about different money. The gift was granted by us, for
+        # free, usually as an apology; disputing a card charge says nothing
+        # about it. The other two downgrade paths — subscription.deleted and
+        # subscription.updated — were shielded on 2026-08-08 and this one was
+        # missed, which would have made a chargeback the one remaining way to
+        # silently revoke a promise we made in writing.
+        #
+        # The subscription id is still cleared and the Stripe cancel still
+        # runs: what the customer paid for genuinely ends. Only the gift
+        # survives, and only until its own expiry.
+        # customer_id from the charge, not user_row — the lookup above does
+        # not select stripe_customer_id, so reading it off the row would
+        # always be None and the shield would never fire.
+        shielded = _promo_shield(db, customer_id or "")
+        if shielded and shielded.get("id") == user_row["id"]:
+            _retarget_grant_to_free(db, user_row["id"])
+            logger.info(
+                "Dispute for user %s — plan held by manual promo until %s",
+                user_row["id"],
+                shielded.get("manual_promo_until"),
+            )
+        else:
+            dispute_update["plan"] = "free"
+
+        db.table("users").update(dispute_update).eq("id", user_row["id"]).execute()
 
         audit.emit(
             "subscription_canceled",

@@ -585,6 +585,68 @@ def test_shielded_cancellation_does_not_downgrade(fake_db):
     assert grants.rows[0]["previous_plan"] == "free"
 
 
+def test_a_chargeback_does_not_revoke_a_manual_promo(fake_db):
+    """The last unshielded downgrade path, found 2026-08-10.
+
+    subscription.deleted and subscription.updated were shielded on 08-08 and
+    this one was missed, which left a chargeback as the one remaining way to
+    silently revoke a gift promised in writing. They are about different
+    money: the promo was granted by us, for free, usually as an apology, and
+    disputing a card charge says nothing about it.
+    """
+    from routers import billing
+
+    users = _RecordingUsers(rows=[{
+        "id": "u-disp", "email": "disp@example.com",
+        "stripe_customer_id": "cus_disp", "stripe_subscription_id": None,
+        "plan": "starter", "manual_promo_until": _ts(+40),
+    }])
+    grants = _FakeGrants([_grant(uid="u-disp", previous="starter")])
+    fake_db.set_table("users", users)
+    fake_db.set_table("manual_promo_grants", grants)
+
+    dispute = {"id": "dp_1", "charge": "ch_1", "customer": "cus_disp",
+               "amount": 900, "reason": "fraudulent"}
+
+    with patch("stripe.Charge.retrieve", return_value={"customer": "cus_disp"}), \
+         patch("stripe.Subscription.delete"), \
+         patch("routers.billing._telegram_alert"):
+        billing._handle_dispute_created(fake_db, dispute)
+
+    assert not any(c.get("plan") == "free" for c in users.update_calls), (
+        "a chargeback revoked a manual promo"
+    )
+    # The subscription link still goes: what they PAID for genuinely ends.
+    assert any("stripe_subscription_id" in c for c in users.update_calls)
+    # And the restore target moves, so expiry does not hand back a paid plan.
+    assert grants.rows[0]["previous_plan"] == "free"
+
+
+def test_a_chargeback_from_a_real_subscriber_still_downgrades(fake_db):
+    """The shield must not become a hole. Someone carrying a live
+    subscription id is a real subscriber — the promo, if any, was superseded
+    — and a chargeback from them ends the relationship."""
+    from routers import billing
+
+    users = _RecordingUsers(rows=[{
+        "id": "u-real", "email": "real@example.com",
+        "stripe_customer_id": "cus_real", "stripe_subscription_id": "sub_live",
+        "plan": "pro", "manual_promo_until": None,
+    }])
+    fake_db.set_table("users", users)
+    fake_db.set_table("manual_promo_grants", _FakeGrants([]))
+
+    dispute = {"id": "dp_2", "charge": "ch_2", "customer": "cus_real",
+               "amount": 900, "reason": "fraudulent"}
+
+    with patch("stripe.Charge.retrieve", return_value={"customer": "cus_real"}), \
+         patch("stripe.Subscription.delete"), \
+         patch("routers.billing._telegram_alert"):
+        billing._handle_dispute_created(fake_db, dispute)
+
+    assert any(c.get("plan") == "free" for c in users.update_calls)
+
+
 def test_unshielded_cancellation_still_downgrades(fake_db):
     """The shield must not become a hole: no promo, normal downgrade."""
     from fastapi.testclient import TestClient
