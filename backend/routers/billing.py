@@ -24,6 +24,7 @@ from config import (
     STRIPE_PORTAL_CONFIG_ID,
     STRIPE_STARTER_PRICE_ID,
     STRIPE_PRO_PRICE_ID,
+    STRIPE_TEAM_PRICE_ID,
     STRIPE_SECRET_KEY,
     STRIPE_WEBHOOK_SECRET,
     FREE_PLAN_MONTHLY_LIMIT,
@@ -266,6 +267,72 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
 _SETTLED_PAYMENT_STATUSES = ("paid", "no_payment_required")
 
 
+# What a subscription resolves to when we cannot read which price it bought.
+#
+# Both plan lookups used to default to "pro". That is the most expensive
+# possible guess: any price id that was not byte-identical to
+# STRIPE_STARTER_PRICE_ID — a second currency, an annual tier, a NEW starter
+# price minted by a price change (Stripe prices are immutable, so a raise
+# means a new id) — delivered 10,000 emails a month for Starter money.
+# Silently, and in the customer's favour, so nobody would ever report it.
+#
+# The lowest paid tier is the right default instead. Under-delivering to
+# someone who paid is a support ticket they will open within a day;
+# over-delivering is revenue we never see and never hear about. Between two
+# failures, prefer the one the customer will tell you about.
+_UNKNOWN_PRICE_PLAN = "starter"
+
+
+def _price_to_plan() -> dict:
+    """Stripe price id -> plan name.
+
+    Built per call rather than at import so tests (and a future env reload)
+    see current values.
+
+    Empty ids are dropped deliberately: an unset env var must never become a
+    key, or a subscription whose price we failed to read — which arrives here
+    as "" — would resolve to whatever that blank happened to map to.
+    """
+    pairs = (
+        (STRIPE_STARTER_PRICE_ID, "starter"),
+        (STRIPE_PRO_PRICE_ID, "pro"),
+        # There is no "team" tier in monthly_limit_for_plan, so a Team
+        # subscription can only be delivered as Pro. create_checkout never
+        # sells it — this matters solely if one is created by hand in Stripe,
+        # and mapping it explicitly beats alerting on something deliberate.
+        (STRIPE_TEAM_PRICE_ID, "pro"),
+    )
+    return {pid: plan for pid, plan in pairs if pid}
+
+
+def _plan_for_price(price_id: str, context: str) -> str:
+    """The plan a Stripe price sells; alerts and falls back when unknown.
+
+    An unrecognised price is not a code bug, it is a DASHBOARD action: adding
+    a price in Stripe needs no deploy, so this path can open without anything
+    passing through review. It has to be loud.
+    """
+    plan = _price_to_plan().get(price_id or "")
+    if plan:
+        return plan
+
+    logger.error(
+        "Unrecognised Stripe price %r (%s) — defaulting to %s",
+        price_id,
+        context,
+        _UNKNOWN_PRICE_PLAN,
+    )
+    _telegram_alert(
+        "🔴 OutMass: unknown Stripe price\n\n"
+        f"Price: {price_id or '(none read)'}\n"
+        f"Where: {context}\n\n"
+        f"Granted {_UNKNOWN_PRICE_PLAN} as the safe default. If this price is "
+        "real (a new currency, an annual tier, a price change), add it to "
+        "_price_to_plan in billing.py and fix this customer's plan by hand."
+    )
+    return _UNKNOWN_PRICE_PLAN
+
+
 def _activate_from_checkout_session(db, session: dict, background_tasks) -> None:
     """Grant the plan bought in a completed, PAID checkout session.
 
@@ -315,15 +382,45 @@ def _activate_from_checkout_session(db, session: dict, background_tasks) -> None
         )
 
     # Determine plan from the price ID in the subscription
-    plan = "pro"
+    plan = _UNKNOWN_PRICE_PLAN
     if subscription_id:
         try:
             sub = stripe.Subscription.retrieve(subscription_id)
-            sub_price_id = sub["items"]["data"][0]["price"]["id"] if sub["items"]["data"] else ""
-            if sub_price_id == STRIPE_STARTER_PRICE_ID:
-                plan = "starter"
+            items = (sub.get("items") or {}).get("data") or []
+            sub_price_id = items[0]["price"]["id"] if items else ""
+            plan = _plan_for_price(
+                sub_price_id, f"checkout session {session.get('id')}"
+            )
         except Exception:
-            pass
+            # The retrieve failed, so we know they paid but not for what.
+            # This used to `pass` onto a "pro" default — a Stripe outage
+            # handed out the top tier.
+            logger.exception(
+                "Could not read subscription %s to determine plan", subscription_id
+            )
+            _telegram_alert(
+                "🔴 OutMass: could not read a new subscription\n\n"
+                f"Subscription: {subscription_id}\n"
+                f"Session: {session.get('id')}\n\n"
+                f"They paid, but Stripe did not tell us for what. Granted "
+                f"{_UNKNOWN_PRICE_PLAN}; check the subscription and fix the "
+                "plan by hand if it was the higher tier."
+            )
+    else:
+        # create_checkout only ever opens subscription-mode sessions, so a
+        # completed one without a subscription id is anomalous — and it is
+        # the same situation as a failed retrieve: money arrived, the plan
+        # is unknowable. It used to resolve silently to "pro".
+        logger.error(
+            "checkout.session.completed with no subscription id (session %s)",
+            session.get("id"),
+        )
+        _telegram_alert(
+            "🔴 OutMass: checkout completed with no subscription\n\n"
+            f"Session: {session.get('id')}\n"
+            f"User: {user_id}\n\n"
+            f"Granted {_UNKNOWN_PRICE_PLAN}. Check what they actually bought."
+        )
 
     update_payload = {
         "plan": plan,
@@ -554,13 +651,18 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             if status in ("active", "trialing"):
                 # Determine plan from subscription price
                 try:
-                    sub_price_id = data_object["items"]["data"][0]["price"]["id"] if data_object.get("items", {}).get("data") else ""
-                    if sub_price_id == STRIPE_STARTER_PRICE_ID:
-                        update_data["plan"] = "starter"
-                    else:
-                        update_data["plan"] = "pro"
-                except (KeyError, IndexError):
-                    update_data["plan"] = "pro"
+                    items = (data_object.get("items") or {}).get("data") or []
+                    sub_price_id = items[0]["price"]["id"] if items else ""
+                    update_data["plan"] = _plan_for_price(
+                        sub_price_id, f"subscription.updated for {customer_id}"
+                    )
+                except (KeyError, IndexError, TypeError):
+                    # Malformed event. Same reasoning as the checkout path:
+                    # the old code defaulted to "pro" here too.
+                    logger.exception(
+                        "Malformed subscription.updated payload for %s", customer_id
+                    )
+                    update_data["plan"] = _UNKNOWN_PRICE_PLAN
             elif status in ("canceled", "unpaid", "past_due"):
                 # A manual promo outranks a dead subscription. The gift was
                 # promised in writing for a fixed window; a cancellation for

@@ -152,8 +152,13 @@ def _post_checkout_event(client, users_tbl, subscription=None):
         },
     }
     fake_sub = {"items": {"data": [{"price": {"id": "price_whatever"}}]}}
+    # This test is about a PRO purchase, so the price has to BE the Pro
+    # price. Until 2026-08-10 the fixture got away with an arbitrary id
+    # because anything unrecognised fell through to "pro" — which was the
+    # bug, encoded in the fixture.
     with patch("routers.billing.stripe.Webhook.construct_event", return_value=event), \
          patch("routers.billing.stripe.Subscription.retrieve", return_value=fake_sub), \
+         patch("routers.billing.STRIPE_PRO_PRICE_ID", "price_whatever"), \
          patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"):
         resp = client.post(
             "/billing/webhook",
@@ -178,7 +183,11 @@ def test_checkout_completed_resets_counters_and_anchors_today(client, fake_db):
     assert captured["emails_sent_this_month"] == 0
     assert captured["ai_generations_this_month"] == 0  # AI period resets too
     assert captured["month_reset_date"] == datetime.now(timezone.utc).date().isoformat()
-    assert captured["plan"] == "pro"
+    # No subscription id on the session, so the plan is genuinely unknowable.
+    # It resolves to the lowest paid tier and alerts an operator, rather than
+    # to "pro" as it silently did until 2026-08-10 — under-delivering to
+    # someone who paid gets reported within a day; over-delivering never does.
+    assert captured["plan"] == "starter"
 
 
 def test_checkout_replay_does_not_refill_quota(client, fake_db):

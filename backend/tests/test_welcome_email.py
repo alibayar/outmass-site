@@ -163,8 +163,12 @@ def _post_checkout(client, users_tbl, subscription):
         },
     }
     fake_sub = {"items": {"data": [{"price": {"id": "price_whatever"}}]}}
+    # A Pro purchase needs the Pro price id. The fixture used to rely on
+    # unrecognised ids falling through to "pro"; that fallthrough was the
+    # bug fixed on 2026-08-10.
     with patch("routers.billing.stripe.Webhook.construct_event", return_value=event), \
          patch("routers.billing.stripe.Subscription.retrieve", return_value=fake_sub), \
+         patch("routers.billing.STRIPE_PRO_PRICE_ID", "price_whatever"), \
          patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"), \
          patch("routers.billing.welcome_email.send_upgrade_email") as send:
         resp = client.post(
