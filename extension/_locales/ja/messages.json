@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "サインインは進行中ですか？組織が新しいアプリに管理者の承認を必要とする場合、Microsoft がその画面で通知します。"
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "Microsoft の画面で許可が拒否されました。もう一度サインインして、OutMass がお客様に代わって送信できるよう「承諾」を選んでください。"
+  },
+  "authMsConsentRequired": {
+    "message": "OutMass が送信するには、Microsoft でお客様の許可が必要です。もう一度サインインして、表示される許可内容を承諾してください。"
+  },
+  "authMsAdminConsentRequired": {
+    "message": "OutMass のご利用には、組織の IT 管理者による承認が必要です。管理者に承認を依頼するか、個人用の Outlook.com アカウントでサインインしてください。"
+  },
+  "authMsUserNotAssigned": {
+    "message": "IT 管理者がお客様のアカウントに OutMass へのアクセスを許可していません。管理者に割り当てを依頼してください。"
+  },
+  "authMsOtherTenant": {
+    "message": "そのアカウントは別の組織のものです。Outlook でお使いのアカウントでサインインしてください。"
+  },
+  "authMsConditionalAccess": {
+    "message": "組織のセキュリティポリシーによって、このサインインがブロックされました。IT 管理者に許可を依頼してください。"
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft が追加の確認手順を求めています。確認を完了してから、もう一度サインインしてください。"
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass はお客様の組織ではまだ利用できません。IT 管理者に追加を依頼してください。"
+  },
+  "authMsMisconfigured": {
+    "message": "サインインの設定が当社側で誤っています。support@getoutmass.com までご連絡ください。こちらで修正します。"
+  },
+  "authMsOurFault": {
+    "message": "Microsoft が拒否したのは当社のアプリであり、お客様のアカウントではありません。これは当社が修正すべき問題です — support@getoutmass.com までご連絡ください。"
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft 側で問題が発生しました。1 分ほど待ってから、もう一度お試しください。"
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft が現在混み合っています。1 分ほどしてから、もう一度お試しください。"
+  },
+  "authMsUnknownCode": {
+    "message": "これまでに例のない理由でサインインに失敗しました。もう一度お試しください。解消しない場合は support@getoutmass.com までご連絡ください。こちらで調べます。"
+  },
+  "authMsNoReason": {
+    "message": "Microsoft はサインインを完了せず、理由も示しませんでした。もう一度お試しください。解消しない場合は support@getoutmass.com までご連絡ください。"
   }
 }

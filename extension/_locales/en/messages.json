@@ -1133,5 +1133,47 @@
   },
   "authStillWorking": {
     "message": "Still signing in? If your organisation requires admin approval for new apps, Microsoft will say so on that screen."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "Permission was declined on the Microsoft screen. Sign in again and choose Accept so OutMass can send on your behalf."
+  },
+  "authMsConsentRequired": {
+    "message": "Microsoft needs your permission before OutMass can send. Sign in again and accept the permissions it lists."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "Your organization requires an IT administrator to approve OutMass before you can use it. Ask your admin to approve it, or sign in with a personal Outlook.com account."
+  },
+  "authMsUserNotAssigned": {
+    "message": "Your IT administrator has not given your account access to OutMass. Ask them to assign it to you."
+  },
+  "authMsOtherTenant": {
+    "message": "That account belongs to a different organization. Sign in with the account you use for Outlook."
+  },
+  "authMsConditionalAccess": {
+    "message": "Your organization's security policy blocked this sign-in. Your IT administrator can allow it."
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft needs an extra verification step. Complete it, then sign in again."
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass is not available in your organization yet. Your IT administrator needs to add it."
+  },
+  "authMsMisconfigured": {
+    "message": "Sign-in is misconfigured on our side. Please contact support@getoutmass.com and we will fix it."
+  },
+  "authMsOurFault": {
+    "message": "Microsoft rejected our app, not your account. This is ours to fix — please contact support@getoutmass.com."
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft had a problem on their side. Wait a minute and try again."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft is busy right now. Try again in a minute."
+  },
+  "authMsUnknownCode": {
+    "message": "Sign-in failed for a reason we have not seen before. Try again — if it keeps happening, contact support@getoutmass.com and we will look into it."
+  },
+  "authMsNoReason": {
+    "message": "Microsoft did not complete the sign-in and did not say why. Try again — if it keeps happening, contact support@getoutmass.com."
   }
 }

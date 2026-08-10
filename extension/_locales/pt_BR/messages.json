@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "Ainda entrando? Se a sua organização exige aprovação do administrador para novos aplicativos, a Microsoft avisa nessa tela."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "A permissão foi recusada na tela da Microsoft. Entre novamente e escolha Aceitar para que o OutMass possa enviar em seu nome."
+  },
+  "authMsConsentRequired": {
+    "message": "A Microsoft precisa da sua permissão antes que o OutMass possa enviar. Entre novamente e aceite as permissões listadas."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "Sua organização exige que um administrador de TI aprove o OutMass antes do uso. Peça ao seu administrador para aprovar, ou entre com uma conta pessoal do Outlook.com."
+  },
+  "authMsUserNotAssigned": {
+    "message": "Seu administrador de TI ainda não liberou o OutMass para a sua conta. Peça a ele para atribuir o aplicativo a você."
+  },
+  "authMsOtherTenant": {
+    "message": "Essa conta pertence a outra organização. Entre com a conta que você usa no Outlook."
+  },
+  "authMsConditionalAccess": {
+    "message": "A política de segurança da sua organização bloqueou este login. Seu administrador de TI pode liberar o acesso."
+  },
+  "authMsMfaRequired": {
+    "message": "A Microsoft pede uma verificação adicional. Conclua essa verificação e entre novamente."
+  },
+  "authMsAppNotInTenant": {
+    "message": "O OutMass ainda não está disponível na sua organização. Seu administrador de TI precisa adicioná-lo."
+  },
+  "authMsMisconfigured": {
+    "message": "O login está configurado incorretamente do nosso lado. Escreva para support@getoutmass.com que nós corrigimos."
+  },
+  "authMsOurFault": {
+    "message": "A Microsoft recusou o nosso aplicativo, não a sua conta. O problema é nosso — escreva para support@getoutmass.com."
+  },
+  "authMsMicrosoftError": {
+    "message": "A Microsoft teve um problema do lado dela. Espere um minuto e tente novamente."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "A Microsoft está sobrecarregada no momento. Tente novamente em um minuto."
+  },
+  "authMsUnknownCode": {
+    "message": "O login falhou por um motivo que nunca vimos antes. Tente novamente — se continuar acontecendo, escreva para support@getoutmass.com que nós investigamos."
+  },
+  "authMsNoReason": {
+    "message": "A Microsoft não concluiu o login e não informou o motivo. Tente novamente — se continuar acontecendo, escreva para support@getoutmass.com."
   }
 }

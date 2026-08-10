@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "Anmeldung läuft noch? Wenn Ihre Organisation für neue Apps eine Administratorgenehmigung verlangt, weist Microsoft auf diesem Bildschirm darauf hin."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "Die Berechtigung wurde auf dem Microsoft-Bildschirm abgelehnt. Melden Sie sich erneut an und wählen Sie Akzeptieren, damit OutMass in Ihrem Namen senden kann."
+  },
+  "authMsConsentRequired": {
+    "message": "Microsoft benötigt Ihre Berechtigung, bevor OutMass senden kann. Melden Sie sich erneut an und akzeptieren Sie die dort aufgeführten Berechtigungen."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "Ihre Organisation verlangt, dass ein IT-Administrator OutMass genehmigt, bevor Sie es nutzen können. Bitten Sie Ihren Administrator um die Genehmigung, oder melden Sie sich mit einem privaten Outlook.com-Konto an."
+  },
+  "authMsUserNotAssigned": {
+    "message": "Ihr IT-Administrator hat Ihrem Konto noch keinen Zugriff auf OutMass erteilt. Bitten Sie ihn, OutMass Ihrem Konto zuzuweisen."
+  },
+  "authMsOtherTenant": {
+    "message": "Dieses Konto gehört zu einer anderen Organisation. Melden Sie sich mit dem Konto an, das Sie für Outlook verwenden."
+  },
+  "authMsConditionalAccess": {
+    "message": "Die Sicherheitsrichtlinie Ihrer Organisation hat diese Anmeldung blockiert. Ihr IT-Administrator kann sie freigeben."
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft verlangt einen zusätzlichen Bestätigungsschritt. Schließen Sie ihn ab und melden Sie sich dann erneut an."
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass ist in Ihrer Organisation noch nicht verfügbar. Ihr IT-Administrator muss es hinzufügen."
+  },
+  "authMsMisconfigured": {
+    "message": "Die Anmeldung ist auf unserer Seite falsch konfiguriert. Bitte kontaktieren Sie support@getoutmass.com, wir beheben das."
+  },
+  "authMsOurFault": {
+    "message": "Microsoft hat unsere App abgelehnt, nicht Ihr Konto. Das müssen wir beheben — bitte kontaktieren Sie support@getoutmass.com."
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft hatte ein Problem auf seiner Seite. Warten Sie eine Minute und versuchen Sie es erneut."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft ist gerade ausgelastet. Versuchen Sie es in einer Minute erneut."
+  },
+  "authMsUnknownCode": {
+    "message": "Die Anmeldung ist aus einem Grund fehlgeschlagen, den wir bisher nicht kennen. Versuchen Sie es erneut — wenn es weiterhin passiert, kontaktieren Sie support@getoutmass.com, wir sehen uns das an."
+  },
+  "authMsNoReason": {
+    "message": "Microsoft hat die Anmeldung nicht abgeschlossen und keinen Grund genannt. Versuchen Sie es erneut — wenn es weiterhin passiert, kontaktieren Sie support@getoutmass.com."
   }
 }

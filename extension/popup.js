@@ -196,6 +196,14 @@
   // support / a personal account instead of showing a raw error string.
   function friendlyAuthError(resp) {
     var code = resp && resp.errorCode;
+    // The backend's classification outranks everything below it: it read
+    // Microsoft's actual response, while the codes underneath are inferred
+    // from Chrome's wrapper or from the sentence itself. It also covers
+    // classes we never had names for — a tenant block and a user's own
+    // refusal both used to arrive here as consent_declined.
+    if (resp && resp.msCode) {
+      return msAuthMessage(resp.msCode, resp.error || t("popupUnknownError"));
+    }
     if (code === "consent_declined") return t("authErrorConsent");
     if (code === "auth_page_failed") return t("authErrorPageLoad");
     if (code === "auth_window_already_open") return t("authWindowAlreadyOpen");

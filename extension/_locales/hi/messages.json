@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "साइन-इन जारी है? अगर आपके संगठन में नए ऐप्स के लिए एडमिन की मंज़ूरी ज़रूरी है, तो Microsoft उसी स्क्रीन पर यह बताएगा।"
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "Microsoft स्क्रीन पर अनुमति अस्वीकार कर दी गई। दोबारा साइन इन करें और “स्वीकार करें” (Accept) चुनें, ताकि OutMass आपकी ओर से ईमेल भेज सके।"
+  },
+  "authMsConsentRequired": {
+    "message": "OutMass के ईमेल भेजने से पहले Microsoft को आपकी अनुमति चाहिए। दोबारा साइन इन करें और वहाँ दिखाई गई अनुमतियाँ स्वीकार करें।"
+  },
+  "authMsAdminConsentRequired": {
+    "message": "आपके संगठन में OutMass का उपयोग करने से पहले किसी IT एडमिन की मंज़ूरी ज़रूरी है। अपने एडमिन से इसे मंज़ूरी देने के लिए कहें, या व्यक्तिगत Outlook.com खाते से साइन इन करें।"
+  },
+  "authMsUserNotAssigned": {
+    "message": "आपके IT एडमिन ने आपके खाते को OutMass का एक्सेस नहीं दिया है। उनसे यह एक्सेस देने के लिए कहें।"
+  },
+  "authMsOtherTenant": {
+    "message": "वह खाता किसी दूसरे संगठन का है। उसी खाते से साइन इन करें जिसे आप Outlook के लिए इस्तेमाल करते हैं।"
+  },
+  "authMsConditionalAccess": {
+    "message": "आपके संगठन की सुरक्षा नीति ने इस साइन-इन को रोक दिया। आपका IT एडमिन इसकी अनुमति दे सकता है — उनसे संपर्क करें।"
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft को एक अतिरिक्त सत्यापन चरण चाहिए। उसे पूरा करें, फिर दोबारा साइन इन करें।"
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass अभी आपके संगठन में उपलब्ध नहीं है। अपने IT एडमिन से इसे जोड़ने के लिए कहें।"
+  },
+  "authMsMisconfigured": {
+    "message": "साइन-इन की सेटिंग हमारी तरफ़ ग़लत है। कृपया support@getoutmass.com से संपर्क करें, हम इसे ठीक कर देंगे।"
+  },
+  "authMsOurFault": {
+    "message": "Microsoft ने हमारे ऐप को अस्वीकार किया, आपके खाते को नहीं। यह हमें ठीक करना है — कृपया support@getoutmass.com से संपर्क करें।"
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft की तरफ़ कोई समस्या आई। एक मिनट रुकें और फिर से प्रयास करें।"
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft अभी व्यस्त है। एक मिनट बाद फिर से प्रयास करें।"
+  },
+  "authMsUnknownCode": {
+    "message": "साइन-इन ऐसी वजह से विफल हुआ जो हमने पहले नहीं देखी। फिर से प्रयास करें — अगर यह बार-बार हो, तो support@getoutmass.com से संपर्क करें, हम इसकी जाँच करेंगे।"
+  },
+  "authMsNoReason": {
+    "message": "Microsoft ने साइन-इन पूरा नहीं किया और वजह भी नहीं बताई। फिर से प्रयास करें — अगर यह बार-बार हो, तो support@getoutmass.com से संपर्क करें।"
   }
 }

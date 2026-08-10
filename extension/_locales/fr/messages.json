@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "Connexion toujours en cours ? Si votre organisation exige l'approbation d'un administrateur pour les nouvelles applications, Microsoft l'indiquera sur cet écran."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "L'autorisation a été refusée sur l'écran Microsoft. Reconnectez-vous et choisissez « Accepter » pour qu'OutMass puisse envoyer en votre nom."
+  },
+  "authMsConsentRequired": {
+    "message": "Microsoft a besoin de votre autorisation avant qu'OutMass puisse envoyer. Reconnectez-vous et acceptez les autorisations affichées."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "Votre organisation exige qu'un administrateur informatique approuve OutMass avant que vous puissiez l'utiliser. Demandez à votre administrateur de l'approuver, ou connectez-vous avec un compte Outlook.com personnel."
+  },
+  "authMsUserNotAssigned": {
+    "message": "Votre administrateur informatique n'a pas donné à votre compte l'accès à OutMass. Demandez-lui de vous l'attribuer."
+  },
+  "authMsOtherTenant": {
+    "message": "Ce compte appartient à une autre organisation. Connectez-vous avec le compte que vous utilisez pour Outlook."
+  },
+  "authMsConditionalAccess": {
+    "message": "La politique de sécurité de votre organisation a bloqué cette connexion. Votre administrateur informatique peut l'autoriser."
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft demande une étape de vérification supplémentaire. Effectuez-la, puis reconnectez-vous."
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass n'est pas encore disponible dans votre organisation. Votre administrateur informatique doit l'ajouter."
+  },
+  "authMsMisconfigured": {
+    "message": "La connexion est mal configurée de notre côté. Écrivez à support@getoutmass.com et nous corrigerons le problème."
+  },
+  "authMsOurFault": {
+    "message": "Microsoft a rejeté notre application, pas votre compte. C'est à nous de régler cela — écrivez à support@getoutmass.com."
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft a rencontré un problème de son côté. Patientez une minute, puis réessayez."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft est surchargé pour le moment. Réessayez dans une minute."
+  },
+  "authMsUnknownCode": {
+    "message": "La connexion a échoué pour une raison que nous n'avons jamais rencontrée. Réessayez — si cela persiste, écrivez à support@getoutmass.com et nous examinerons le problème."
+  },
+  "authMsNoReason": {
+    "message": "Microsoft n'a pas terminé la connexion et n'a pas indiqué pourquoi. Réessayez — si cela persiste, écrivez à support@getoutmass.com."
   }
 }

@@ -545,6 +545,11 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
         // is exactly what that user needs. Consent walls are the single
         // biggest sign-in leak we have measured.
         var settled = String(errorMsg);
+        // The backend's own name for this failure class, added 2026-08-10.
+        // It saw Microsoft's actual response; everything below is inference
+        // from the sentence it produced. Absent when the backend predates
+        // the change, which is why the sniffing stays.
+        var msCode = params.get("mcode") || "";
         // errorCode is set ONLY for classes that have localized guidance —
         // friendlyAuthError falls through to the raw string for anything
         // else, so an unmapped code would just look handled without being.
@@ -554,13 +559,20 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
           /consent/i.test(settled);
         // The AADSTS number is the stable grouping key regardless.
         var aadsts = (settled.match(/AADSTS\d+/) || [null])[0];
-        finish(isConsent ? { error: settled, errorCode: "consent_declined" } : { error: settled });
+        var result = { error: settled };
+        if (msCode) result.msCode = msCode;
+        if (isConsent) result.errorCode = "consent_declined";
+        finish(result);
         track(
           "oauth_failed",
           failureContext({
             reason: "backend_error",
             code: settled.slice(0, 64),
             aadsts: aadsts,
+            // Correlates the client's view with ms_auth_failed's `meaning`,
+            // so a funnel breakdown no longer has to parse an English
+            // sentence to know what happened.
+            mcode: msCode,
           })
         );
         return;

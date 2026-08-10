@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "还在登录吗？如果贵单位要求新应用须经管理员批准，Microsoft 会在该页面上说明。"
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "授权在 Microsoft 页面上被拒绝了。请重新登录并选择“接受”，OutMass 才能代您发送邮件。"
+  },
+  "authMsConsentRequired": {
+    "message": "OutMass 需要先获得您在 Microsoft 的授权才能发送。请重新登录，并接受页面上列出的权限。"
+  },
+  "authMsAdminConsentRequired": {
+    "message": "您的组织要求先由 IT 管理员批准 OutMass，您才能使用。请让管理员批准，或改用个人 Outlook.com 账户登录。"
+  },
+  "authMsUserNotAssigned": {
+    "message": "您的 IT 管理员尚未为您的账户开通 OutMass 的访问权限。请让管理员为您分配。"
+  },
+  "authMsOtherTenant": {
+    "message": "该账户属于另一个组织。请改用您平时登录 Outlook 的那个账户。"
+  },
+  "authMsConditionalAccess": {
+    "message": "您所在组织的安全策略阻止了此次登录。请联系 IT 管理员放行。"
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft 需要您完成一步额外验证。完成后请重新登录。"
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass 尚未在您的组织中启用。请让 IT 管理员添加。"
+  },
+  "authMsMisconfigured": {
+    "message": "登录配置在我们这边设置错了。请联系 support@getoutmass.com，我们会修复。"
+  },
+  "authMsOurFault": {
+    "message": "Microsoft 拒绝的是我们的应用，不是您的账户。这是我们的问题，由我们来解决——请联系 support@getoutmass.com。"
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft 那边出了问题。请等一分钟后重试。"
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft 服务器现在很忙。请过一分钟再试。"
+  },
+  "authMsUnknownCode": {
+    "message": "登录失败，原因我们此前没有遇到过。请重试——如果一直如此，请联系 support@getoutmass.com，我们会去查明原因。"
+  },
+  "authMsNoReason": {
+    "message": "Microsoft 没有完成登录，也没有说明原因。请重试——如果一直如此，请联系 support@getoutmass.com。"
   }
 }

@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "Ainda a iniciar sessão? Se a sua organização exige aprovação do administrador para novas aplicações, a Microsoft indica-o nesse ecrã."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "A permissão foi recusada no ecrã da Microsoft. Inicie sessão novamente e escolha Aceitar para que o OutMass possa enviar em seu nome."
+  },
+  "authMsConsentRequired": {
+    "message": "A Microsoft precisa da sua permissão antes de o OutMass poder enviar. Inicie sessão novamente e aceite as permissões apresentadas."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "A sua organização exige que um administrador aprove o OutMass antes de o poder utilizar. Peça ao seu administrador que o aprove. Em alternativa, inicie sessão com uma conta pessoal do Outlook.com."
+  },
+  "authMsUserNotAssigned": {
+    "message": "O seu administrador ainda não deu à sua conta acesso ao OutMass. Peça-lhe que atribua esse acesso."
+  },
+  "authMsOtherTenant": {
+    "message": "Essa conta pertence a outra organização. Inicie sessão com a conta que utiliza no Outlook."
+  },
+  "authMsConditionalAccess": {
+    "message": "A política de segurança da sua organização bloqueou este início de sessão. O seu administrador pode autorizá-lo."
+  },
+  "authMsMfaRequired": {
+    "message": "A Microsoft pede um passo de verificação adicional. Conclua-o e inicie sessão novamente."
+  },
+  "authMsAppNotInTenant": {
+    "message": "O OutMass ainda não está disponível na sua organização. O seu administrador tem de o adicionar."
+  },
+  "authMsMisconfigured": {
+    "message": "O início de sessão está mal configurado do nosso lado. Escreva para support@getoutmass.com que nós corrigimos."
+  },
+  "authMsOurFault": {
+    "message": "A Microsoft rejeitou a nossa aplicação, não a sua conta. O problema é nosso — escreva para support@getoutmass.com."
+  },
+  "authMsMicrosoftError": {
+    "message": "A Microsoft teve um problema do lado dela. Espere um minuto e tente novamente."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "A Microsoft está sobrecarregada neste momento. Tente novamente dentro de um minuto."
+  },
+  "authMsUnknownCode": {
+    "message": "O início de sessão falhou por um motivo que ainda não conhecemos. Tente novamente — se continuar a acontecer, escreva para support@getoutmass.com que nós investigamos."
+  },
+  "authMsNoReason": {
+    "message": "A Microsoft não concluiu o início de sessão e não indicou porquê. Tente novamente — se continuar a acontecer, escreva para support@getoutmass.com."
   }
 }

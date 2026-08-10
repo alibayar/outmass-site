@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "還在登入嗎？如果貴單位規定新應用程式須經管理員核准，Microsoft 會在該畫面上說明。"
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "在 Microsoft 的畫面上授權遭到拒絕。請重新登入並選擇「接受」，OutMass 才能代您寄送郵件。"
+  },
+  "authMsConsentRequired": {
+    "message": "Microsoft 需要您先授權，OutMass 才能寄送郵件。請重新登入，並同意畫面上列出的權限。"
+  },
+  "authMsAdminConsentRequired": {
+    "message": "貴組織規定 OutMass 須經 IT 管理員核准才能使用。請向貴組織的 IT 管理員申請核准，或改用個人的 Outlook.com 帳戶登入。"
+  },
+  "authMsUserNotAssigned": {
+    "message": "貴組織的 IT 管理員尚未開放您的帳戶使用 OutMass。請向他們申請，把 OutMass 指派給您。"
+  },
+  "authMsOtherTenant": {
+    "message": "這個帳戶屬於另一個組織。請改用您平常使用 Outlook 的那個帳戶登入。"
+  },
+  "authMsConditionalAccess": {
+    "message": "貴組織的安全性原則封鎖了這次登入。請聯絡貴組織的 IT 管理員——他們可以放行。"
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft 需要多一道驗證步驟。請先完成驗證，再重新登入。"
+  },
+  "authMsAppNotInTenant": {
+    "message": "貴組織目前還沒有提供 OutMass。請向貴組織的 IT 管理員申請新增。"
+  },
+  "authMsMisconfigured": {
+    "message": "登入設定在我們這邊有誤。請聯絡 support@getoutmass.com，我們會修正。"
+  },
+  "authMsOurFault": {
+    "message": "Microsoft 拒絕的是我們的應用程式，不是您的帳戶。這是我們該修正的問題——請聯絡 support@getoutmass.com。"
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft 那邊發生了問題。請稍等一分鐘再試一次。"
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft 目前忙碌中。請過一分鐘再試一次。"
+  },
+  "authMsUnknownCode": {
+    "message": "這次登入失敗的原因我們沒有見過。請再試一次——如果一直發生，請聯絡 support@getoutmass.com，我們會查明原因。"
+  },
+  "authMsNoReason": {
+    "message": "Microsoft 沒有完成登入，也沒有說明原因。請再試一次——如果一直發生，請聯絡 support@getoutmass.com。"
   }
 }

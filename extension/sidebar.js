@@ -163,7 +163,10 @@
         }
         if (resp && resp.error) {
           var ac = resp.errorCode;
-          alert(ac === "consent_declined" ? t("authErrorConsent")
+          // resp.msCode is the backend's own name for the failure — it read
+          // Microsoft's response rather than inferring from Chrome's wrapper.
+          alert(resp.msCode ? msAuthMessage(resp.msCode, resp.error)
+              : ac === "consent_declined" ? t("authErrorConsent")
               : ac === "auth_page_failed" ? t("authErrorPageLoad")
               : ac === "auth_window_already_open" ? t("authWindowAlreadyOpen")
               : ac === "auth_timeout" ? t("authTimeout")
@@ -223,7 +226,10 @@
         reauthBtn.textContent = t("reauthBannerCta");
         if (resp && resp.error) {
           var ac = resp.errorCode;
-          alert(ac === "consent_declined" ? t("authErrorConsent")
+          // See the note on the replies-banner path above: the backend's own
+          // class wins when it sent one.
+          alert(resp.msCode ? msAuthMessage(resp.msCode, resp.error)
+              : ac === "consent_declined" ? t("authErrorConsent")
               : ac === "auth_page_failed" ? t("authErrorPageLoad")
               : ac === "auth_window_already_open" ? t("authWindowAlreadyOpen")
               : ac === "auth_timeout" ? t("authTimeout")

@@ -144,6 +144,63 @@ function t(key, subs) {
   return key;
 }
 
+/**
+ * Microsoft sign-in failure classes, as named by the backend.
+ *
+ * The auth settle fragment carries two fields: `error` (an English sentence)
+ * and `mcode` (this vocabulary). The sentence exists because every client
+ * shipped up to 0.2.0 renders the fragment verbatim and cannot be changed;
+ * the code exists so a newer client can say the same thing in the user's own
+ * panel language, which the server cannot do — it does not know that
+ * language, and guessing it from Accept-Language is the mistake the CSV
+ * decoder made.
+ *
+ * Two pairs deliberately share a key: a missing client secret and an
+ * unregistered redirect URI are both "we misconfigured this", and the two
+ * app-rejection classes are both "our fault, not yours". The user does not
+ * need our taxonomy, only the sentence — the distinction survives in
+ * telemetry, which is where it is useful.
+ *
+ * Kept in sync with backend/routers/auth.py's _SETTLE_MESSAGES by
+ * extension/tests/ms-auth-codes.test.js, which reads both files. A class
+ * added on the server without an entry here would silently show English
+ * forever.
+ */
+var MS_AUTH_MESSAGE_KEYS = {
+  user_declined_consent: "authMsUserDeclinedConsent",
+  consent_required: "authMsConsentRequired",
+  admin_consent_required: "authMsAdminConsentRequired",
+  user_not_assigned_to_app: "authMsUserNotAssigned",
+  account_from_other_tenant: "authMsOtherTenant",
+  blocked_by_conditional_access: "authMsConditionalAccess",
+  mfa_required: "authMsMfaRequired",
+  app_not_found_in_tenant: "authMsAppNotInTenant",
+  client_secret_missing: "authMsMisconfigured",
+  redirect_uri_not_registered: "authMsMisconfigured",
+  app_registration_rejected: "authMsOurFault",
+  app_not_authorized: "authMsOurFault",
+  microsoft_server_error: "authMsMicrosoftError",
+  microsoft_unavailable: "authMsMicrosoftBusy",
+  unclassified_code: "authMsUnknownCode",
+  no_code_from_microsoft: "authMsNoReason",
+};
+
+/**
+ * The localized sentence for a backend failure class, or the server's own
+ * English one when we have nothing better.
+ *
+ * Note t() returns the KEY itself when a lookup misses, not "" — so a
+ * locale that has not been updated yet would otherwise put a raw
+ * identifier like "authMsOurFault" in front of the user. Falling back to
+ * the server sentence keeps them reading English rather than debris.
+ */
+function msAuthMessage(mcode, fallbackSentence) {
+  var key = MS_AUTH_MESSAGE_KEYS[mcode];
+  if (!key) return fallbackSentence;
+  var msg = t(key);
+  return msg && msg !== key ? msg : fallbackSentence;
+}
+
 function applyI18n() {
   // Translate textContent
   document.querySelectorAll("[data-i18n]").forEach(function (el) {

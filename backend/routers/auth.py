@@ -709,6 +709,7 @@ async def auth_callback(
             error_description or error,
             state=state,
             fragment=_ms_settle_code(classified, fallback=error),
+            mcode=classified.get("meaning"),
         )
 
     if not code:
@@ -806,6 +807,7 @@ async def auth_callback(
             err.get("error_description") or "Token exchange failed",
             state=state,
             fragment=_ms_settle_code(classified, fallback="server_error"),
+            mcode=classified.get("meaning"),
         )
 
     tokens = token_resp.json()
@@ -1175,7 +1177,10 @@ def _settle_fragment(message: str) -> str:
 
 
 def _error_page(
-    message: str, state: str | None = None, fragment: str | None = None
+    message: str,
+    state: str | None = None,
+    fragment: str | None = None,
+    mcode: str | None = None,
 ) -> HTMLResponse:
     """HTML error page shown in the auth popup when sign-in fails.
 
@@ -1222,11 +1227,28 @@ def _error_page(
     )
     settle_ext = _decode_state_ext(state)
     if settle_ext:
+        # `error` is the sentence; `mcode` is the machine name for the same
+        # failure. Two fields rather than one because the clients already in
+        # the field cannot be changed: 0.1.26 through 0.2.0 read the fragment
+        # with URLSearchParams, take `error`, and render it verbatim. They
+        # ignore an unknown key, so adding one is invisible to them.
+        #
+        # A newer client reads `mcode` instead and looks up a sentence in the
+        # user's own panel language — which the server cannot do, because it
+        # does not know that language and guessing from Accept-Language is
+        # the mistake the CSV decoder made. An mcode the client does not
+        # recognise falls back to `error`, so a class added on the server
+        # never leaves anyone with a blank.
+        #
+        # mcode is closed vocabulary (our own meaning table) and therefore
+        # cannot carry the free text the 2026-08-06 review found leaking
+        # through the message.
+        settle_params = {"error": _settle_fragment(fragment or "")}
+        if mcode and mcode in _SETTLE_MESSAGES:
+            settle_params["mcode"] = mcode
         settle_url = (
             f"https://{settle_ext}.chromiumapp.org/auth#"
-            + urllib.parse.urlencode(
-                {"error": _settle_fragment(fragment or "")}
-            )
+            + urllib.parse.urlencode(settle_params)
         )
         footer = "<p>This window will return to OutMass in a few seconds.</p>"
         settle_script = (

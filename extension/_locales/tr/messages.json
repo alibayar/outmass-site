@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "Giriş sürüyor mu? Kurumunuz yeni uygulamalar için yönetici onayı istiyorsa Microsoft bunu o ekranda belirtir."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "Microsoft ekranında izin reddedildi. Tekrar giriş yapın ve OutMass'in sizin adınıza gönderebilmesi için \"Kabul et\"i seçin."
+  },
+  "authMsConsentRequired": {
+    "message": "Microsoft, OutMass gönderim yapmadan önce izninizi istiyor. Tekrar giriş yapın ve ekranda listelenen izinleri kabul edin."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "Kurumunuz, OutMass'i kullanabilmeniz için önce bir BT yöneticisinin onaylamasını istiyor. Yöneticinizden onaylamasını isteyin ya da kişisel bir Outlook.com hesabıyla giriş yapın."
+  },
+  "authMsUserNotAssigned": {
+    "message": "BT yöneticiniz hesabınıza OutMass erişimi vermemiş. Yöneticinizden erişimi hesabınıza tanımlamasını isteyin."
+  },
+  "authMsOtherTenant": {
+    "message": "Bu hesap farklı bir kuruma ait. Outlook'ta kullandığınız hesapla giriş yapın."
+  },
+  "authMsConditionalAccess": {
+    "message": "Kurumunuzun güvenlik politikası bu girişi engelledi. BT yöneticiniz buna izin verebilir."
+  },
+  "authMsMfaRequired": {
+    "message": "Microsoft ek bir doğrulama adımı istiyor. Bu adımı tamamlayın, sonra tekrar giriş yapın."
+  },
+  "authMsAppNotInTenant": {
+    "message": "OutMass kurumunuzda henüz kullanılamıyor. BT yöneticinizin eklemesi gerekiyor."
+  },
+  "authMsMisconfigured": {
+    "message": "Giriş yapılandırması bizim tarafımızda hatalı. Lütfen support@getoutmass.com ile iletişime geçin, bunu düzeltelim."
+  },
+  "authMsOurFault": {
+    "message": "Microsoft, hesabınızı değil, bizim uygulamamızı reddetti. Bunu düzeltmek bize düşüyor — lütfen support@getoutmass.com ile iletişime geçin."
+  },
+  "authMsMicrosoftError": {
+    "message": "Microsoft tarafında bir sorun oluştu. Bir dakika bekleyip tekrar deneyin."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "Microsoft şu anda yoğun. Bir dakika sonra tekrar deneyin."
+  },
+  "authMsUnknownCode": {
+    "message": "Giriş, daha önce karşılaşmadığımız bir nedenle başarısız oldu. Tekrar deneyin — sorun sürerse support@getoutmass.com ile iletişime geçin, inceleyelim."
+  },
+  "authMsNoReason": {
+    "message": "Microsoft, girişi tamamlamadı ve nedenini bildirmedi. Tekrar deneyin — sorun sürerse support@getoutmass.com ile iletişime geçin."
   }
 }

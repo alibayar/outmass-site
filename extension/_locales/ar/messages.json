@@ -1122,5 +1122,47 @@
   },
   "authStillWorking": {
     "message": "هل ما زال تسجيل الدخول جاريًا؟ إذا كانت مؤسستك تشترط موافقة المسؤول على التطبيقات الجديدة، فسيوضح Microsoft ذلك في تلك الشاشة."
+  },
+  "authMsUserDeclinedConsent": {
+    "message": "تم رفض الإذن في شاشة Microsoft. سجّل الدخول مجدداً واختر «قبول» حتى يتمكن OutMass من الإرسال نيابةً عنك."
+  },
+  "authMsConsentRequired": {
+    "message": "يحتاج Microsoft إلى إذنك قبل أن يتمكن OutMass من الإرسال. سجّل الدخول مجدداً ووافق على الأذونات المعروضة."
+  },
+  "authMsAdminConsentRequired": {
+    "message": "تشترط مؤسستك موافقة المسؤول على OutMass قبل أن تتمكن من استخدامه. اطلب من المسؤول لديك الموافقة عليه، أو سجّل الدخول بحساب Outlook.com شخصي."
+  },
+  "authMsUserNotAssigned": {
+    "message": "لم يمنح المسؤول لديك حسابك حق الوصول إلى OutMass. اطلب منه تعيين التطبيق لحسابك."
+  },
+  "authMsOtherTenant": {
+    "message": "هذا الحساب يتبع مؤسسة أخرى. سجّل الدخول بالحساب الذي تستخدمه مع Outlook."
+  },
+  "authMsConditionalAccess": {
+    "message": "حظرت سياسة الأمان في مؤسستك تسجيل الدخول هذا. اطلب من المسؤول لديك السماح به."
+  },
+  "authMsMfaRequired": {
+    "message": "يطلب Microsoft خطوة تحقق إضافية. أكملها ثم سجّل الدخول مجدداً."
+  },
+  "authMsAppNotInTenant": {
+    "message": "لم يُضَف OutMass إلى مؤسستك بعد. اطلب من المسؤول لديك إضافته."
+  },
+  "authMsMisconfigured": {
+    "message": "الخطأ في إعدادات تسجيل الدخول لدينا نحن. راسلنا على support@getoutmass.com وسنصلحه."
+  },
+  "authMsOurFault": {
+    "message": "رفض Microsoft تطبيقنا، لا حسابك. الإصلاح مسؤوليتنا نحن — راسلنا على support@getoutmass.com وسنتولى الأمر."
+  },
+  "authMsMicrosoftError": {
+    "message": "حدثت مشكلة لدى Microsoft. انتظر دقيقة ثم أعد المحاولة."
+  },
+  "authMsMicrosoftBusy": {
+    "message": "خوادم Microsoft مزدحمة حالياً. أعد المحاولة بعد دقيقة."
+  },
+  "authMsUnknownCode": {
+    "message": "فشل تسجيل الدخول لسبب لم نصادفه من قبل. أعد المحاولة — وإن تكرر الأمر، فراسلنا على support@getoutmass.com وسنبحث فيه."
+  },
+  "authMsNoReason": {
+    "message": "لم يُكمل Microsoft تسجيل الدخول ولم يوضح السبب. أعد المحاولة — وإن تكرر الأمر، فراسلنا على support@getoutmass.com وسنتابعه معك."
   }
 }

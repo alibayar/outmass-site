@@ -9,6 +9,9 @@
  *   locale-variants     — script/regional purity (zh Simplified, pt_BR vs pt_PT)
  *   uninstall-stage     — funnel stage ladder carried on the uninstall URL
  *   no-silent-dead-ends — rejection branches on the main journey must report
+ *   ms-auth-codes       — every failure class the backend can send has a
+ *                         panel sentence in every locale (crosses into
+ *                         backend/routers/auth.py to compare both sides)
  *
  * A suite's run() may be sync or async — the result is awaited either way.
  *
@@ -24,6 +27,7 @@ const suites = [
   require("./uninstall-stage.test.js"),
   require("./no-silent-dead-ends.test.js"),
   require("./analytics-race.test.js"),
+  require("./ms-auth-codes.test.js"),
 ];
 
 async function main() {
