@@ -194,6 +194,37 @@ def test_email_tone_is_warm_not_dunning():
                 f"{build.__name__} contains dunning language: {bad}"
 
 
+def test_sender_name_is_a_person_not_the_feedback_desk():
+    """These emails ask the customer to reply and say a person reads every
+    one. MAILERSEND_FROM_NAME defaults to "OutMass Feedback" — correct for
+    the feedback form, which mails US, and corrosive here: the ask is not
+    credible over an automation-desk name."""
+    import re
+
+    from unittest.mock import patch
+
+    from workers import inactivity_nudge
+
+    captured = {}
+
+    def fake_post(url, headers=None, json=None, timeout=None):
+        captured.update(json or {})
+        class _R:
+            status_code = 200
+        return _R()
+
+    with patch.object(inactivity_nudge, "MAILERSEND_API_KEY", "key"), \
+         patch.object(inactivity_nudge.httpx, "post", fake_post):
+        inactivity_nudge._send_email("x@y.com", "s", "<p>h</p>")
+
+    assert captured["from"]["name"] == "Ali from OutMass"
+    src = open(inactivity_nudge.__file__, encoding="utf-8").read()
+    assert not re.search(r'"name":\s*MAILERSEND_FROM_NAME', src), (
+        "the sender name is back on the shared config value, which the "
+        "feedback path owns"
+    )
+
+
 def test_tier1_does_not_assume_they_uninstalled():
     """Inverted 2026-08-10. The trigger is INACTIVITY, not uninstalling, and
     telling someone to reinstall describes something that did not happen —
