@@ -215,6 +215,52 @@ _AADSTS_MEANINGS = {
 }
 
 
+# OAuth-level error values that describe the APPLICATION or Microsoft, never
+# the person. Consulted when the AADSTS code is absent or unknown to us.
+#
+# This exists because of a real reading failure on 2026-08-10. A user was
+# turned away with AADSTS650051 — a code Microsoft does not publish in its
+# own error reference — alongside `error=invalid_client`. Our classifier saw
+# only the unknown code, filed it as "unclassified", and the user was told
+# "please try again". The `invalid_client` next to it said plainly that the
+# rejection was about our app registration, not about them, and nothing read
+# it.
+_APP_LEVEL_ERRORS = {
+    "invalid_client": "app_registration_rejected",
+    "unauthorized_client": "app_not_authorized",
+    "server_error": "microsoft_server_error",
+    "temporarily_unavailable": "microsoft_unavailable",
+}
+
+
+# Which side a failure belongs to. This is the property the funnel was
+# missing: "did we lose them, did their IT lose them, or did they choose to
+# leave" are three different problems with three different fixes, and until
+# now they arrived as one undifferentiated pile of consent_declined.
+#
+# 'unknown' is a real answer, not a dumping ground — it means Microsoft
+# denied the request without telling us which, and the honest thing is to
+# count those separately rather than let them inflate the user-declined
+# number.
+_MEANING_ATTRIBUTION = {
+    "user_declined_consent": "user",
+    "consent_required": "user",
+    "mfa_required": "user",
+    "admin_consent_required": "tenant",
+    "user_not_assigned_to_app": "tenant",
+    "blocked_by_conditional_access": "tenant",
+    "app_not_found_in_tenant": "tenant",
+    "account_from_other_tenant": "tenant",
+    "app_registration_rejected": "app",
+    "app_not_authorized": "app",
+    "client_secret_missing": "app",
+    "redirect_uri_not_registered": "app",
+    "bad_request_method": "app",
+    "microsoft_server_error": "microsoft",
+    "microsoft_unavailable": "microsoft",
+}
+
+
 def _request_host(request: Request) -> str:
     """Which public hostname served this request.
 
@@ -274,10 +320,33 @@ def _classify_ms_error(error: str | None, description: str | None) -> dict:
     desc = description or ""
     match = _AADSTS_RE.search(desc)
     code = match.group(0) if match else None
+    err = (error or "unknown")[:64]
+
+    # Resolution order, most specific first:
+    #   1. an AADSTS code we have a meaning for
+    #   2. the OAuth error value, when the code is missing OR unknown to us
+    #   3. two DISTINCT unknowns
+    #
+    # Step 2 matters: AADSTS650051 is not in Microsoft's published reference,
+    # but the `invalid_client` beside it says exactly whose problem it is.
+    #
+    # Step 3 splits what used to be one bucket. "we do not recognise this
+    # code" and "Microsoft never sent a code" are different states: the
+    # first is a gap in our table that a support ticket can close, the
+    # second means the denial itself was unexplained. Merging them made the
+    # largest slice of our sign-in losses unreadable.
+    meaning = _AADSTS_MEANINGS.get(code or "")
+    if not meaning:
+        meaning = _APP_LEVEL_ERRORS.get(err)
+    if not meaning:
+        meaning = "unclassified_code" if code else "no_code_from_microsoft"
+
     return {
-        "error": (error or "unknown")[:64],
+        "error": err,
         "aadsts": code,
-        "meaning": _AADSTS_MEANINGS.get(code or "", "unclassified"),
+        "meaning": meaning,
+        # Which side this belongs to — user, tenant, app, microsoft, unknown.
+        "attributed_to": _MEANING_ATTRIBUTION.get(meaning, "unknown"),
     }
 
 
@@ -933,6 +1002,13 @@ _OAUTH_ERROR_CODES = frozenset(
         "request_not_supported",
         "request_uri_not_supported",
         "registration_not_supported",
+        # Token-endpoint codes per RFC 6749 §5.2. `invalid_client` is not
+        # supposed to appear on the authorize leg, but Microsoft sent one on
+        # 2026-08-10 alongside an undocumented AADSTS number, and it was the
+        # only part of that response that said whose problem it was.
+        "invalid_client",
+        "invalid_grant",
+        "unsupported_grant_type",
     }
 )
 
@@ -972,6 +1048,29 @@ _SETTLE_MESSAGES = {
         "Your IT admin must add OutMass to your org",
     "client_secret_missing":
         "Sign-in is misconfigured. Please contact us",
+    # ── added 2026-08-10, from the classes the funnel could not name ──
+    #
+    # Note the sanitizer alphabet is [A-Za-z0-9 .,:()-]: no `@`, so no email
+    # address can survive here, and no apostrophes. "Contact us" has to
+    # stand on its own.
+    "app_registration_rejected":
+        "This is our fault, not yours. Please report it",
+    "app_not_authorized":
+        "This is our fault, not yours. Please report it",
+    "microsoft_server_error":
+        "Microsoft had an error. Wait a minute and retry",
+    "microsoft_unavailable":
+        "Microsoft is busy right now. Retry in a minute",
+    # A code exists but is not in our table. "Retry" is the honest first
+    # step for a cause we cannot name, and the code travels with it in
+    # parentheses so a support reply can start from something real.
+    "unclassified_code":
+        "Sign-in failed. Retry, then send us this code",
+    # Microsoft denied the request without saying which reason. We genuinely
+    # cannot tell a refusal from a tenant block here, so the sentence must
+    # not pretend to: no blame, and two steps rather than one.
+    "no_code_from_microsoft":
+        "Sign-in did not complete. Retry or contact us",
     "redirect_uri_not_registered":
         "Sign-in is misconfigured. Please contact us",
 }
@@ -1001,6 +1100,28 @@ def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
     aadsts = classified.get("aadsts") or ""
     raw_meaning = classified.get("meaning") or ""
     meaning = raw_meaning.replace("_", " ")
+
+    # A named meaning outranks the presence of a code. Since 2026-08-10 a
+    # meaning can come from the OAuth `error` value alone — `invalid_client`
+    # with no AADSTS number is still a definite statement that the rejection
+    # was about our app — and that user deserves the same sentence as one
+    # whose rejection arrived with a number attached.
+    #
+    # The RFC code still rides along in parentheses, exactly as an AADSTS
+    # number does. Dropping it was the first version of this change, and a
+    # test caught it: without a number, that word is the ONLY class signal
+    # the client can report back, so collapsing every no-code failure into
+    # one identical string would have made them ungroupable at the very
+    # moment we were trying to tell them apart.
+    if not aadsts and raw_meaning in _SETTLE_MESSAGES:
+        base = _SETTLE_MESSAGES[raw_meaning]
+        rfc = (fallback or "").strip().lower()
+        if rfc in _OAUTH_ERROR_CODES:
+            composed = f"{base} ({rfc.replace('_', ' ')})"
+            if len(composed) <= 64:
+                return _settle_fragment(composed)
+        return _settle_fragment(base)
+
     if aadsts:
         # Every client in the field renders this string verbatim: 0.1.26 and
         # 0.1.27 both resolve the flight with `{ error: errorMsg }` and no
@@ -1021,7 +1142,12 @@ def _ms_settle_code(classified: dict, fallback: str | None = None) -> str:
             if len(composed) <= 64:
                 return composed
             return _SETTLE_MESSAGES[raw_meaning]
-        if meaning and meaning != "unclassified":
+        # Reached only by a meaning that is in _AADSTS_MEANINGS but has no
+        # sentence yet (e.g. bad_request_method). Both "unknown" meanings
+        # now carry sentences, so this is no longer where they land — the
+        # old `!= "unclassified"` test here referred to a value that can no
+        # longer be produced.
+        if meaning:
             return f"{aadsts}: {meaning}"[:64]
         return f"Sign-in failed ({aadsts}), please try again"[:64]
     code = (fallback or "").strip().lower()

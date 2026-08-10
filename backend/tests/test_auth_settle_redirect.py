@@ -147,7 +147,12 @@ def test_the_error_query_param_cannot_smuggle_free_text(client):
     )
     url = _settle_url_of(resp.text)
     assert "bob" not in url and "corp-internal" not in url and "Contoso" not in url
-    assert "Sign-in+failed%2C+please+try+again" in url
+    # The point of this test is that NOTHING from the caller survives — the
+    # exact replacement sentence is incidental. It changed on 2026-08-10 when
+    # "Microsoft denied without saying why" stopped sharing a bucket with
+    # "we do not know this code"; the fallback now names two next steps
+    # instead of only "try again".
+    assert "Sign-in+did+not+complete.+Retry+or+contact+us" in url
 
     ok = client.get(
         "/auth/callback",

@@ -42,7 +42,11 @@ def test_extracts_the_aadsts_code_and_names_the_common_ones():
 def test_unknown_aadsts_code_is_still_reported_by_number():
     out = _classify_ms_error("access_denied", "AADSTS99999: Something new.")
     assert out["aadsts"] == "AADSTS99999"
-    assert out["meaning"] == "unclassified", "unknown codes must not be dropped"
+    # Renamed on 2026-08-10: plain "unclassified" also swallowed the case
+    # where Microsoft sent NO code at all, and merging those two made the
+    # biggest slice of sign-in losses unreadable. See
+    # test_auth_error_attribution.py.
+    assert out["meaning"] == "unclassified_code", "unknown codes must not be dropped"
 
 
 def test_missing_description_does_not_crash():
