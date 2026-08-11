@@ -18,9 +18,27 @@
  * over the panel, making every tab and toggle unclickable (Playwright then
  * times out waiting for an actionable element) and polluting screenshots.
  */
-export function installChromeStub() {
+/**
+ * `seed` parameterises the two things the sidebar's auth state is derived
+ * from: what is in storage, and what GET_SETTINGS answers. Without it every
+ * test runs in the default never-signed-in state, which is fine for most of
+ * the suite but makes the reconnect and session-expired banners untestable —
+ * and those are exactly the states the first-sign-in consent line must NOT
+ * appear in.
+ *
+ * Playwright passes it through `page.addInitScript(installChromeStub, seed)`.
+ * Callers that pass nothing keep the previous behaviour exactly.
+ */
+export function installChromeStub(seed?: {
+  store?: Record<string, unknown>;
+  settings?: Record<string, unknown>;
+}) {
   const noop = () => {};
-  const store: Record<string, unknown> = { onboardingDone: true };
+  const store: Record<string, unknown> = {
+    onboardingDone: true,
+    ...((seed && seed.store) || {}),
+  };
+  const settings = (seed && seed.settings) || null;
   // Every sidebar event goes out as sendMessage({type:"TRACK", ...}), so
   // recording them here is how a test can assert that a failure path REPORTS
   // itself. Without this, a branch that silently does nothing and a branch
@@ -38,6 +56,10 @@ export function installChromeStub() {
         const m = msg as { type?: string };
         if (m && m.type === "TRACK") {
           (window as unknown as { __outmassTracked: unknown[] }).__outmassTracked.push(msg);
+        }
+        if (m && m.type === "GET_SETTINGS" && settings) {
+          if (typeof cb === "function") cb({ data: settings });
+          return;
         }
         if (typeof cb === "function") cb(undefined);
       },

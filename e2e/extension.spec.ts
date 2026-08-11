@@ -8,6 +8,7 @@
  */
 
 import { test, expect } from "@playwright/test";
+import fs from "fs";
 import path from "path";
 import { installChromeStub } from "./chrome-stub";
 
@@ -212,4 +213,121 @@ test("a dropped file with no extension is rejected loudly, not silently", async 
   await dropFile(page, "contacts");
 
   expect(dialogs).toEqual(["csvErrNotCsv"]);
+});
+
+/**
+ * The consent explainer in the panel.
+ *
+ * 0.2.0 auto-opens this panel on first run, so a new user may never open the
+ * popup — where the only honest description of what Microsoft is about to
+ * ask has lived since 0.1.26. The panel showed them a bare "Sign in with
+ * Microsoft to start sending." and a button.
+ *
+ * The funnel says that step is where they go: in the first four days of
+ * 0.2.0, twelve people started auth and six finished it.
+ *
+ * It belongs to a FIRST sign-in only. Someone reconnecting has already read
+ * Microsoft's consent screen and decided, so repeating it there would just
+ * lengthen an urgent banner. These three tests pin exactly that split.
+ */
+test.describe("first-sign-in consent explainer", () => {
+  const CONSENT = "#reauth-banner-consent";
+
+  test("a user who has never signed in sees why Microsoft will ask", async ({
+    page,
+  }) => {
+    // The default stub store has no backendJwt and no sessionExpired, which
+    // is precisely the never-signed-in state.
+    await expect(page.locator("#reauth-banner")).toBeVisible();
+    await expect(page.locator(CONSENT)).toBeVisible();
+    await expect(page.locator(CONSENT)).toHaveAttribute(
+      "data-i18n",
+      "popupConsentExplainer",
+    );
+  });
+
+  test("the Sign in button stays on its own line beside the message", async ({
+    page,
+  }) => {
+    // The banner is a flex row; the explainer only works because it wraps to
+    // a row of its own. If it ever shared the first row it would squeeze the
+    // button, which is the one thing in the banner that must stay reachable.
+    //
+    // Measured against the REAL sentence, not what the harness renders. The
+    // stub's chrome.i18n.getMessage returns "", so t() falls through to
+    // returning the key and applyI18n paints "popupConsentExplainer" — 22
+    // characters, one line. The shipped string is four lines at this width,
+    // and one line is not the geometry worth asserting.
+    // The real panel is 380px wide (#outmass-sidebar-wrapper in
+    // styles/content.css). Playwright's default viewport is 1280, where the
+    // English sentence fits on ONE line and this assertion would be checking
+    // a geometry no user ever sees — which is exactly what the first version
+    // of this test did.
+    await page.setViewportSize({ width: 380, height: 700 });
+
+    // Read on the Node side: a file:// page cannot fetch its own siblings.
+    const real = JSON.parse(
+      fs.readFileSync(
+        path.resolve("extension/_locales/en/messages.json"),
+        "utf-8",
+      ),
+    ).popupConsentExplainer.message as string;
+    expect(real.length).toBeGreaterThan(150);
+
+    // Let the page settle FIRST. initI18n().then(applyI18n) resolves on its
+    // own schedule and repaints every [data-i18n] node; the first version of
+    // this test wrote the text before that landed, applyI18n put the key
+    // back, and the measurement silently went back to one line.
+    const btn = page.locator("#reauth-banner-btn");
+    await expect(btn).toBeVisible();
+    await expect(page.locator(CONSENT)).toBeVisible();
+
+    const measured = await page.evaluate((text) => {
+      const el = document.getElementById("reauth-banner-consent")!;
+      el.textContent = text;
+      const b = el.getBoundingClientRect();
+      const btnRect = document
+        .getElementById("reauth-banner-btn")!
+        .getBoundingClientRect();
+      // Read back in the same turn nothing else can run in, so the numbers
+      // and the text they describe cannot drift apart.
+      return {
+        len: el.textContent!.length,
+        top: b.top, height: b.height,
+        btnBottom: btnRect.bottom, btnWidth: btnRect.width,
+      };
+    }, real);
+
+    // The measurement described the real sentence, not the key placeholder.
+    expect(measured.len).toBe(real.length);
+    // Below the button, not beside it.
+    expect(measured.top).toBeGreaterThanOrEqual(measured.btnBottom);
+    // And genuinely wrapping to several lines at this width.
+    expect(measured.height).toBeGreaterThan(30);
+    // The button keeps its full width; nothing squeezed it.
+    expect(measured.btnWidth).toBeGreaterThan(60);
+  });
+
+  test("a reconnecting user is not told again what Microsoft asks", async ({
+    page,
+  }) => {
+    await page.addInitScript(installChromeStub, {
+      store: { backendJwt: "jwt-token" },
+      settings: { requires_reauth: true },
+    });
+    await page.reload();
+
+    await expect(page.locator("#reauth-banner")).toBeVisible();
+    await expect(page.locator(CONSENT)).toBeHidden();
+  });
+
+  test("an expired session is not told again either", async ({ page }) => {
+    await page.addInitScript(installChromeStub, {
+      store: { backendJwt: "jwt-token", sessionExpired: true },
+    });
+    await page.reload();
+
+    await expect(page.locator("#reauth-banner")).toBeVisible();
+    await expect(page.locator(CONSENT)).toBeHidden();
+  });
 });

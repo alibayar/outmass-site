@@ -80,9 +80,29 @@ body {
   align-items: center;
   justify-content: space-between;
   gap: 12px;
+  /* Lets the first-sign-in consent line drop to its own row instead of
+     squeezing the Sign in button off the edge. */
+  flex-wrap: wrap;
   border-bottom: 1px solid rgba(0, 0, 0, 0.08);
 }
 .reauth-banner-text { flex: 1; line-height: 1.35; }
+/* The consent line takes a full row of its own under the text + button,
+   which is what flex-wrap plus a 100% basis buys. The other two banner
+   states never render it, so their single-row layout is untouched. */
+.reauth-banner-consent {
+  flex-basis: 100%;
+  /* Releases the automatic minimum that stops a flex item shrinking below
+     its content — cheap insurance for the longest translations (de, ru) at
+     the real 380px panel width. */
+  min-width: 0;
+  margin: 8px 0 0;
+  font-size: 11.5px;
+  line-height: 1.45;
+  /* Subordinate to the instruction above it — this is the reason, not the
+     ask. Kept at .92 rather than lower: it sits on an amber gradient and
+     anything fainter stops meeting contrast. */
+  opacity: 0.92;
+}
 .reauth-banner-btn {
   background: #fff;
   color: #b45309;

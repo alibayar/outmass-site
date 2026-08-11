@@ -107,15 +107,33 @@
     var show = !!(requiresMsReauth || sessionExpired || neverSignedIn);
     banner.style.display = show ? "flex" : "none";
     if (!show) return;
+    // Session-expired takes precedence if several are true — it's the
+    // more immediate, always-recoverable case.
+    var state = sessionExpired
+      ? "expired"
+      : requiresMsReauth ? "reconnect" : "first";
+
     var textEl = banner.querySelector(".reauth-banner-text");
     if (textEl) {
-      // Session-expired takes precedence if several are true — it's the
-      // more immediate, always-recoverable case.
-      textEl.textContent = sessionExpired
+      textEl.textContent = state === "expired"
         ? t("sessionExpiredBannerText")
-        : requiresMsReauth
+        : state === "reconnect"
           ? t("reauthBannerText")
           : t("signInFirstBannerText");
+    }
+
+    // The consent explainer belongs to a FIRST sign-in only. Someone
+    // reconnecting or re-authenticating has already seen Microsoft's consent
+    // screen and decided; repeating what it will ask only lengthens a banner
+    // whose whole job is to be acted on and dismissed.
+    //
+    // "first" implies neverSignedIn — the banner is shown at all only when
+    // one of the three is true, and this branch is reached only when the
+    // other two are false. Testing the derived state rather than re-testing
+    // neverSignedIn keeps one source of truth for the precedence.
+    var consentEl = document.getElementById("reauth-banner-consent");
+    if (consentEl) {
+      consentEl.style.display = state === "first" ? "block" : "none";
     }
   }
 
