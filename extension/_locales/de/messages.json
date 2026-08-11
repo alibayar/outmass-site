@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "Microsoft hat die Anmeldung nicht abgeschlossen und keinen Grund genannt. Versuchen Sie es erneut — wenn es weiterhin passiert, kontaktieren Sie support@getoutmass.com."
+  },
+  "campaignPausedReauth": {
+    "message": "Pausiert — melden Sie sich erneut bei Outlook an, dann läuft diese Kampagne von selbst weiter."
   }
 }

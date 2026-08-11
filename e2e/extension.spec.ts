@@ -355,3 +355,53 @@ for (const tab of ["campaign", "reports", "settings", "account"]) {
     await expectNoHorizontalOverflow(page);
   });
 }
+
+/**
+ * A campaign stopped by a dead Microsoft token must say so.
+ *
+ * scheduled_worker marks it 'failed_auth'. Until 2026-08-11 nothing read
+ * that back: the row showed a name, a date and zero counters, identical to
+ * an ordinary campaign that had sent nothing. The backend now returns it to
+ * the queue on the next reconnect, so the note says that rather than only
+ * naming the state — a status the user cannot act on is the same as no
+ * status.
+ */
+test.describe("paused campaign", () => {
+  const CAMPAIGNS = [
+    { id: "c1", name: "Stalled outreach", status: "failed_auth",
+      sent_count: 0, open_count: 0, click_count: 0,
+      created_at: "2026-08-01T10:00:00Z" },
+    { id: "c2", name: "Normal campaign", status: "sent",
+      sent_count: 10, open_count: 4, click_count: 1,
+      created_at: "2026-08-02T10:00:00Z" },
+  ];
+
+  test.beforeEach(async ({ page }) => {
+    await page.addInitScript(installChromeStub, { campaigns: CAMPAIGNS });
+    await page.reload();
+    await page.click('[data-tab="reports"]');
+  });
+
+  test("the stalled campaign carries a note, the healthy one does not", async ({
+    page,
+  }) => {
+    const notes = page.locator(".campaign-row-paused");
+    await expect(notes).toHaveCount(1);
+    // The row it belongs to, not just "somewhere on the page".
+    const row = page.locator(".campaign-row", { hasText: "Stalled outreach" });
+    await expect(row.locator(".campaign-row-paused")).toBeVisible();
+  });
+
+  test("the note is translated, not hardcoded English", async ({ page }) => {
+    // The stub's chrome.i18n returns nothing, so t() falls back to the key.
+    // Seeing the key here is proof the string goes through i18n at all —
+    // hardcoded English would read as a sentence and pass unnoticed.
+    await expect(page.locator(".campaign-row-paused")).toHaveText(
+      "campaignPausedReauth",
+    );
+  });
+
+  test("it still fits the panel", async ({ page }) => {
+    await expectNoHorizontalOverflow(page, "paused campaign: ");
+  });
+});

@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "A Microsoft não concluiu o login e não informou o motivo. Tente novamente — se continuar acontecendo, escreva para support@getoutmass.com."
+  },
+  "campaignPausedReauth": {
+    "message": "Pausada — entre no Outlook novamente e esta campanha continua sozinha."
   }
 }

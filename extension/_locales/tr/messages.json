@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "Microsoft, girişi tamamlamadı ve nedenini bildirmedi. Tekrar deneyin — sorun sürerse support@getoutmass.com ile iletişime geçin."
+  },
+  "campaignPausedReauth": {
+    "message": "Duraklatıldı — Outlook'a yeniden giriş yapın, kampanya kendiliğinden devam eder."
   }
 }

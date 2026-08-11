@@ -560,11 +560,35 @@ body {
   color: #323130;
 }
 
+/* Amber to match the reconnect banner, because it is the same problem and
+   the same fix. A full-width line rather than a chip: the sentence has to
+   fit an instruction, and a 380px panel has no room for one beside the
+   counters. */
+.campaign-row-paused {
+  margin: 4px 0 2px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  background: #fff4e5;
+  border: 1px solid #f5d5a8;
+  color: #8a5a00;
+  font-size: 11.5px;
+  line-height: 1.4;
+}
+
 .campaign-row-meta {
   font-size: 11px;
   color: #605e5c;
   margin-top: 2px;
   display: flex;
+  /* Five items — date, count, two rates, the archive button. With real
+     translations this fits a 380px panel in all 10 locales checked; it
+     overflows by ~120px only when the labels render as their i18n KEYS
+     ("reportsOpenRate" for "Open "), which t() does on a missing
+     translation. Wrapping is one line of insurance for that case and
+     changes nothing while the row fits — the gap is deliberately left
+     alone, since there is no bug here to justify moving everyone's
+     spacing. */
+  flex-wrap: wrap;
   gap: 12px;
 }
 

@@ -1175,5 +1175,8 @@
   },
   "authMsNoReason": {
     "message": "Microsoft did not complete the sign-in and did not say why. Try again — if it keeps happening, contact support@getoutmass.com."
+  },
+  "campaignPausedReauth": {
+    "message": "Paused — sign in to Outlook again and this campaign resumes on its own."
   }
 }

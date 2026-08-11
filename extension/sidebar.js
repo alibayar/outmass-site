@@ -2862,8 +2862,19 @@
           var row = document.createElement("div");
           row.className = "campaign-row";
           var archiveLabel = _reportsArchived ? t("btnUnarchive") : t("btnArchive");
+          // A campaign stopped by a dead Microsoft token used to look exactly
+          // like an ordinary one that had sent nothing: the row shows a name,
+          // a date and counters, and no status at all. The backend puts it
+          // back in the queue on the next reconnect, so this says that rather
+          // than only naming the state — a status the user cannot act on is
+          // the same as no status.
+          var pausedNote = c.status === "failed_auth"
+            ? '<div class="campaign-row-paused">' +
+                escapeHtml(t("campaignPausedReauth")) + '</div>'
+            : '';
           row.innerHTML =
             '<div class="campaign-row-name">' + escapeHtml(c.name) + '</div>' +
+            pausedNote +
             '<div class="campaign-row-meta">' +
               '<span>' + date + '</span>' +
               '<span>' + sent + t("reportsSentSuffix") + '</span>' +

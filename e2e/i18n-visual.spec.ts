@@ -43,6 +43,19 @@ const LOCALES = [
  * Since chrome.i18n is unavailable in file:// context, we simulate the override
  * by inlining the locale's messages and patching the t() function.
  */
+// Campaign rows are where the Reports tab's real width lives. With an empty
+// list the tab is two buttons and a heading, so the overflow check below was
+// measuring nothing — and the row it does not measure overflowed a 380px
+// panel by ~120px for every user who had campaigns.
+const SEED_CAMPAIGNS = [
+  { id: "c1", name: "Stalled outreach", status: "failed_auth",
+    sent_count: 0, open_count: 0, click_count: 0,
+    created_at: "2026-08-01T10:00:00Z" },
+  { id: "c2", name: "Normal campaign", status: "sent",
+    sent_count: 120, open_count: 48, click_count: 12,
+    created_at: "2026-08-02T10:00:00Z" },
+];
+
 async function loadLocaleAndApply(page: any, locale: string) {
   const messagesPath = path.resolve(`extension/_locales/${locale}/messages.json`);
   const messages = JSON.parse(fs.readFileSync(messagesPath, "utf-8"));
@@ -50,7 +63,7 @@ async function loadLocaleAndApply(page: any, locale: string) {
   // Without this the page has no `chrome`, the sidebar script dies at init,
   // and no tab handler ever binds — every test here that clicks a tab then
   // times out. (Same root cause that kept CI red from 2026-06-03.)
-  await page.addInitScript(installChromeStub);
+  await page.addInitScript(installChromeStub, { campaigns: SEED_CAMPAIGNS });
 
   await page.addInitScript((msgs: any) => {
     // Override i18n BEFORE scripts run
@@ -91,6 +104,13 @@ test.describe("i18n visual regression", () => {
       await loadLocaleAndApply(page, locale.code);
       for (const tab of ["campaign", "reports", "settings", "account"]) {
         if (tab !== "campaign") await page.click(`[data-tab="${tab}"]`);
+        // Reports loads its rows through a sendMessage callback. Measuring
+        // straight after the click measured an EMPTY list, which is how the
+        // first version of this passed while the campaign row overflowed by
+        // ~120px in every locale.
+        if (tab === "reports") {
+          await page.locator(".campaign-row").first().waitFor();
+        }
         await expectNoHorizontalOverflow(page, `${locale.code} ${tab}: `);
       }
     });

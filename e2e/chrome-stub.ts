@@ -32,6 +32,7 @@
 export function installChromeStub(seed?: {
   store?: Record<string, unknown>;
   settings?: Record<string, unknown>;
+  campaigns?: unknown[];
 }) {
   const noop = () => {};
   const store: Record<string, unknown> = {
@@ -39,6 +40,7 @@ export function installChromeStub(seed?: {
     ...((seed && seed.store) || {}),
   };
   const settings = (seed && seed.settings) || null;
+  const campaigns = (seed && seed.campaigns) || null;
   // Every sidebar event goes out as sendMessage({type:"TRACK", ...}), so
   // recording them here is how a test can assert that a failure path REPORTS
   // itself. Without this, a branch that silently does nothing and a branch
@@ -59,6 +61,10 @@ export function installChromeStub(seed?: {
         }
         if (m && m.type === "GET_SETTINGS" && settings) {
           if (typeof cb === "function") cb({ data: settings });
+          return;
+        }
+        if (m && m.type === "GET_CAMPAIGNS" && campaigns) {
+          if (typeof cb === "function") cb({ data: { campaigns } });
           return;
         }
         if (typeof cb === "function") cb(undefined);

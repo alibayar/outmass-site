@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "Microsoft n'a pas terminé la connexion et n'a pas indiqué pourquoi. Réessayez — si cela persiste, écrivez à support@getoutmass.com."
+  },
+  "campaignPausedReauth": {
+    "message": "En pause — reconnectez-vous à Outlook et cette campagne reprendra d'elle-même."
   }
 }

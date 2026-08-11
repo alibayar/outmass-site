@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "Microsoft 没有完成登录，也没有说明原因。请重试——如果一直如此，请联系 support@getoutmass.com。"
+  },
+  "campaignPausedReauth": {
+    "message": "已暂停 — 重新登录 Outlook，此营销活动会自动继续。"
   }
 }

@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "لم يُكمل Microsoft تسجيل الدخول ولم يوضح السبب. أعد المحاولة — وإن تكرر الأمر، فراسلنا على support@getoutmass.com وسنتابعه معك."
+  },
+  "campaignPausedReauth": {
+    "message": "متوقفة مؤقتًا — سجّل الدخول إلى Outlook مرة أخرى وستُستأنف هذه الحملة تلقائيًا."
   }
 }

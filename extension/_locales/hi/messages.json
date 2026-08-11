@@ -1164,5 +1164,8 @@
   },
   "authMsNoReason": {
     "message": "Microsoft ने साइन-इन पूरा नहीं किया और वजह भी नहीं बताई। फिर से प्रयास करें — अगर यह बार-बार हो, तो support@getoutmass.com से संपर्क करें।"
+  },
+  "campaignPausedReauth": {
+    "message": "रुकी हुई — Outlook में दोबारा साइन इन करें, यह अभियान अपने आप फिर शुरू हो जाएगा।"
   }
 }
