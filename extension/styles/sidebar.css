@@ -345,6 +345,14 @@ body {
 
 .template-select {
   flex: 1;
+  /* A <select> is a flex item with min-width:auto, so it refuses to shrink
+     below the width of its longest option — and "-- Select template --" plus
+     Save plus Delete does not fit in 380px. The row overflowed instead,
+     leaving the Delete button 53px past the panel edge. Releasing the
+     automatic minimum lets the select take what is left, which is what
+     flex:1 was asking for all along. Long template names now truncate
+     inside the control rather than pushing the buttons out of reach. */
+  min-width: 0;
   padding: 6px 8px;
   border: 1px solid #c8c6c4;
   border-radius: 4px;
@@ -1130,6 +1138,14 @@ body {
   align-items: center;
   margin-bottom: 8px;
   gap: 8px;
+  /* Defensive, not a reported bug: with real translations this row fits in
+     all 14 locales. It overflows by 4px only when the labels render as their
+     i18n KEYS — "reportsTabActive" is much longer than "Active" — which t()
+     does by design on a missing translation, as a visible hint that i18n
+     failed. locale-consistency makes that unlikely, and all three are nowrap
+     buttons, so the alternative to wrapping is pushing Export All off the
+     edge. One line, no magic numbers. */
+  flex-wrap: wrap;
 }
 .reports-subtabs {
   display: flex;

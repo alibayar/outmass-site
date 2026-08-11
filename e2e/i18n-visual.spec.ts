@@ -15,6 +15,7 @@ import { test, expect } from "@playwright/test";
 import path from "path";
 import fs from "fs";
 import { installChromeStub } from "./chrome-stub";
+import { expectNoHorizontalOverflow } from "./overflow";
 
 const SIDEBAR_URL = `file:///${path.resolve("extension/sidebar.html").replace(/\\/g, "/")}`;
 const SCREENSHOT_DIR = path.resolve("e2e/screenshots");
@@ -79,6 +80,21 @@ async function loadLocaleAndApply(page: any, locale: string) {
 
 test.describe("i18n visual regression", () => {
   for (const locale of LOCALES) {
+
+    // The labels that just fit in English are longer in German and Russian.
+    // #btn-export-list was 4px past the edge in English before 2026-08-11,
+    // which is the margin a translation erases.
+    test(`${locale.name} (${locale.code}) - nothing overflows the panel`, async ({
+      page,
+    }) => {
+      await page.setViewportSize({ width: 380, height: 900 });
+      await loadLocaleAndApply(page, locale.code);
+      for (const tab of ["campaign", "reports", "settings", "account"]) {
+        if (tab !== "campaign") await page.click(`[data-tab="${tab}"]`);
+        await expectNoHorizontalOverflow(page, `${locale.code} ${tab}: `);
+      }
+    });
+
     test(`${locale.name} (${locale.code}) — Campaign tab`, async ({ page }) => {
       await page.setViewportSize({ width: 380, height: 900 });
       await loadLocaleAndApply(page, locale.code);

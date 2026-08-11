@@ -11,6 +11,7 @@ import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
 import { installChromeStub } from "./chrome-stub";
+import { expectNoHorizontalOverflow } from "./overflow";
 
 const SIDEBAR_URL = `file:///${path.resolve("extension/sidebar.html").replace(/\\/g, "/")}`;
 
@@ -331,3 +332,26 @@ test.describe("first-sign-in consent explainer", () => {
     await expect(page.locator(CONSENT)).toBeHidden();
   });
 });
+
+/**
+ * Nothing may stick out of the panel sideways.
+ *
+ * The panel is 380px and does not scroll horizontally in any useful sense —
+ * a control past the right edge is a control the user has to fight for. This
+ * went unnoticed because the suite ran at Playwright's default 1280px, where
+ * every row has room to spare; #btn-delete-template sat 53px past the edge
+ * at the real width for as long as anyone has measured.
+ *
+ * Reported with the offending elements named, because "body is 53px too
+ * wide" on its own sends you hunting.
+ */
+for (const tab of ["campaign", "reports", "settings", "account"]) {
+  test(`nothing hangs off the side of the panel - ${tab} tab`, async ({
+    page,
+  }) => {
+    // Per tab, because the inactive ones are display:none and measure as
+    // zero - a row that overflows in Settings is invisible from Campaign.
+    if (tab !== "campaign") await page.click(`[data-tab="${tab}"]`);
+    await expectNoHorizontalOverflow(page);
+  });
+}
