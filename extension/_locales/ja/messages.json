@@ -1166,6 +1166,6 @@
     "message": "Microsoft はサインインを完了せず、理由も示しませんでした。もう一度お試しください。解消しない場合は support@getoutmass.com までご連絡ください。"
   },
   "campaignPausedReauth": {
-    "message": "一時停止中 — Outlook に再度サインインすると、このキャンペーンは自動的に再開します。"
+    "message": "一時停止中 — Outlook との接続の有効期限が切れました。再度サインインして、このキャンペーンを再開できる状態にしてください。"
   }
 }

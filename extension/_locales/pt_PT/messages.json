@@ -1166,6 +1166,6 @@
     "message": "A Microsoft não concluiu o início de sessão e não indicou porquê. Tente novamente — se continuar a acontecer, escreva para support@getoutmass.com."
   },
   "campaignPausedReauth": {
-    "message": "Em pausa — inicie sessão no Outlook novamente e esta campanha continua sozinha."
+    "message": "Em pausa — a sua ligação ao Outlook expirou. Inicie sessão novamente para reativar esta campanha."
   }
 }

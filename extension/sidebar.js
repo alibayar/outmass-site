@@ -2864,10 +2864,15 @@
           var archiveLabel = _reportsArchived ? t("btnUnarchive") : t("btnArchive");
           // A campaign stopped by a dead Microsoft token used to look exactly
           // like an ordinary one that had sent nothing: the row shows a name,
-          // a date and counters, and no status at all. The backend puts it
-          // back in the queue on the next reconnect, so this says that rather
-          // than only naming the state — a status the user cannot act on is
-          // the same as no status.
+          // a date and counters, and no status at all.
+          //
+          // The note deliberately does NOT promise the campaign resumes by
+          // itself. It renders for any failed_auth row, and the backend
+          // refuses to revive anything older than AUTH_RESUME_MAX_AGE_DAYS,
+          // so that promise would be false exactly where the user is least
+          // able to check it. Signing in again is what is always true, and
+          // for a recent campaign the automatic resume is then a good
+          // surprise rather than a broken promise.
           var pausedNote = c.status === "failed_auth"
             ? '<div class="campaign-row-paused">' +
                 escapeHtml(t("campaignPausedReauth")) + '</div>'

@@ -155,3 +155,60 @@ def test_the_batch_size_is_shared_with_the_send_now_path():
         assert not re.search(r">= *\d+ *:\s*\n\s*user_model\.increment_sent_count",
                              src), f"{module} hardcodes a batch size"
     assert QUOTA_CHARGE_BATCH > 0
+
+
+# ── The batch charge must not be able to un-send a delivered recipient ──
+
+
+def test_a_failing_quota_write_does_not_defer_a_delivered_contact(fake_db):
+    """Found by the 0.2.1 release review. The batch charge sits inside the
+    per-contact try whose except calls mark_failed(..., "deferred") — and
+    mark_sent has already committed by then. Letting the charge raise into
+    that except rewinds a recipient Graph accepted, which puts them back in
+    get_resumable_contacts and gets them emailed a second time."""
+    from workers import scheduled_worker
+
+    deferred = []
+    charges = []
+
+    def _explode(uid, n):
+        charges.append(n)
+        raise RuntimeError("users row write failed")
+
+    with patch("models.campaign.get_due_scheduled_campaigns",
+               return_value=[_campaign()]), \
+         patch("models.user.get_by_id", return_value=dict(FAKE_STARTER_USER)), \
+         patch("workers.scheduled_worker.get_fresh_access_token", return_value="tok"), \
+         patch("models.contact.get_resumable_contacts",
+               side_effect=[_contacts(N), []]), \
+         patch("models.contact.mark_sent"), \
+         patch("models.contact.mark_failed",
+               side_effect=lambda cid, status="failed": deferred.append((cid, status))), \
+         patch("models.campaign.increment_stat"), \
+         patch("models.campaign.update_campaign"), \
+         patch("models.user.increment_sent_count", side_effect=_explode), \
+         patch("workers.scheduled_worker._send_email",
+               return_value={"success": True}), \
+         patch("workers.scheduled_worker.time.sleep"):
+        scheduled_worker.process_scheduled_campaigns()
+
+    assert charges, "the batch charge never ran, so this proves nothing"
+    assert deferred == [], (
+        f"a quota-write failure marked delivered contacts failed: {deferred}"
+    )
+
+
+def test_mark_failed_refuses_to_rewind_a_sent_contact(fake_db):
+    """The one-line guard that closes the whole class, including the
+    pre-existing send-now loop: whatever goes wrong after a send, a contact
+    already marked 'sent' must never become resumable again."""
+    from pathlib import Path
+
+    src = (Path(__file__).resolve().parents[1] / "models" / "contact.py").read_text(
+        encoding="utf-8"
+    )
+    marker = src[src.index("def mark_failed"):]
+    marker = marker[:marker.index("\ndef ", 1)] if "\ndef " in marker[1:] else marker
+    assert '.neq("status", "sent")' in marker, (
+        "mark_failed can rewind a delivered contact into the resumable set"
+    )

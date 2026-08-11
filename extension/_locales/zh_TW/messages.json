@@ -1166,6 +1166,6 @@
     "message": "Microsoft 沒有完成登入，也沒有說明原因。請再試一次——如果一直發生，請聯絡 support@getoutmass.com。"
   },
   "campaignPausedReauth": {
-    "message": "已暫停 — 重新登入 Outlook，此行銷活動會自動繼續。"
+    "message": "已暫停 — 您的 Outlook 連線已過期。請重新登入，讓此行銷活動恢復運行。"
   }
 }

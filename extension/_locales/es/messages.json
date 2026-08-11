@@ -1166,6 +1166,6 @@
     "message": "Microsoft no completó el inicio de sesión y no indicó el motivo. Vuelva a intentarlo — si sigue ocurriendo, escriba a support@getoutmass.com."
   },
   "campaignPausedReauth": {
-    "message": "En pausa — vuelve a iniciar sesión en Outlook y esta campaña continuará sola."
+    "message": "En pausa — tu conexión con Outlook caducó. Inicia sesión de nuevo para reactivar esta campaña."
   }
 }

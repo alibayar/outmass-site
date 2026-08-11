@@ -175,9 +175,22 @@ def mark_failed(contact_id: str, status: str = "failed"):
     """
     if status not in _FAILABLE_STATUSES:
         return
-    get_db().table("contacts").update(
-        {"status": status}
-    ).eq("id", contact_id).execute()
+    (
+        get_db()
+        .table("contacts")
+        .update({"status": status})
+        .eq("id", contact_id)
+        # A contact Graph has already accepted must never be rewound. Every
+        # send loop marks the contact 'sent' and then does more work — stats,
+        # quota — inside the same try, so a failure in that later work lands
+        # in an except that calls this function for a recipient who HAS been
+        # emailed. Rewinding them to 'deferred' puts them back in
+        # get_resumable_contacts, and the auto-resume beat then mails them a
+        # second time with no user action. The status filter makes that
+        # impossible at the one place all four loops funnel through.
+        .neq("status", "sent")
+        .execute()
+    )
 
 
 def mark_suppressed(contact_id: str):

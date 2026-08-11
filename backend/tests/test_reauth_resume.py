@@ -2,8 +2,10 @@
 
 Until 2026-08-11 it did not. scheduled_worker marks a campaign 'failed_auth'
 when the refresh token is permanently dead, get_due_scheduled_campaigns
-selects status='scheduled', and nothing anywhere read 'failed_auth' back —
-two writes, zero reads across backend/ and extension/. So the campaign left
+selects status='scheduled', and nothing anywhere read 'failed_auth' back.
+The first version of this file said "two writes" — there are THREE, and the
+A/B one was missed because the grep that found them piped through
+`grep -v test` while the line reads ab_test["campaign_id"]. So the campaign left
 the queue for ever, its recipients never heard from the customer, and the
 reconnect email told them it had merely "paused".
 
@@ -89,7 +91,7 @@ def _run(db, user_id="u-1"):
 def test_a_recent_stranded_campaign_goes_back_in_the_queue(alert):
     campaigns = _FilteringTable([
         {"id": "c1", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(2)},
+         "scheduled_for": _iso(2), "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -103,7 +105,7 @@ def test_a_recent_stranded_campaign_goes_back_in_the_queue(alert):
 def test_follow_ups_are_recovered_the_same_way(alert):
     follow_ups = _FilteringTable([
         {"id": "f1", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(1)},
+         "scheduled_for": _iso(1), "archived": False},
     ])
     db = _DB(campaigns=_FilteringTable([]), follow_ups=follow_ups)
 
@@ -123,7 +125,7 @@ def test_an_old_stranded_campaign_is_left_alone_and_reported(alert):
     exists to fix."""
     campaigns = _FilteringTable([
         {"id": "c-old", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(60)},
+         "scheduled_for": _iso(60), "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -142,7 +144,7 @@ def test_a_row_with_no_schedule_is_treated_as_too_old(alert):
     recipients; the cost of a wrong skip is an operator alert."""
     campaigns = _FilteringTable([
         {"id": "c-null", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": None},
+         "scheduled_for": None, "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -158,7 +160,7 @@ def test_the_window_is_read_from_config(alert):
     window — pinning this stops the bound quietly becoming decorative."""
     campaigns = _FilteringTable([
         {"id": "c30", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(30)},
+         "scheduled_for": _iso(30), "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -179,7 +181,7 @@ def test_a_multi_day_campaign_is_judged_on_its_rolled_schedule(alert):
     campaigns = _FilteringTable([
         {"id": "c-drip", "user_id": "u-1", "status": "failed_auth",
          "scheduled_for": _iso(1), "daily_send_cap": 50,
-         "created_at": _iso(40)},
+         "created_at": _iso(40), "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -196,7 +198,7 @@ def test_resuming_never_touches_the_daily_cap_or_the_schedule(alert):
     but only while this stays a status-only write."""
     campaigns = _FilteringTable([
         {"id": "c-drip", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(3), "daily_send_cap": 50},
+         "scheduled_for": _iso(3), "daily_send_cap": 50, "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -215,9 +217,9 @@ def test_resuming_never_touches_the_daily_cap_or_the_schedule(alert):
 def test_only_this_user_and_only_stranded_rows_are_touched(alert):
     campaigns = _FilteringTable([
         {"id": "mine", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(1)},
+         "scheduled_for": _iso(1), "archived": False},
         {"id": "theirs", "user_id": "u-2", "status": "failed_auth",
-         "scheduled_for": _iso(1)},
+         "scheduled_for": _iso(1), "archived": False},
         {"id": "draft", "user_id": "u-1", "status": "draft",
          "scheduled_for": _iso(1)},
         {"id": "done", "user_id": "u-1", "status": "sent",
@@ -244,14 +246,14 @@ def test_a_database_failure_cannot_break_the_reconnect(alert):
             raise RuntimeError("supabase down")
 
     assert _run(_Exploding()) == {
-        "campaigns": 0, "followups": 0, "skipped_old": 0
+        "campaigns": 0, "followups": 0, "ab_tests": 0, "skipped_old": 0
     }
 
 
 def test_a_failing_alert_channel_cannot_break_it_either():
     campaigns = _FilteringTable([
         {"id": "c-old", "user_id": "u-1", "status": "failed_auth",
-         "scheduled_for": _iso(90)},
+         "scheduled_for": _iso(90), "archived": False},
     ])
     db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]))
 
@@ -264,7 +266,7 @@ def test_a_failing_alert_channel_cannot_break_it_either():
 
 def test_no_user_id_is_a_no_op(alert):
     assert _run(_DB(), user_id="") == {
-        "campaigns": 0, "followups": 0, "skipped_old": 0
+        "campaigns": 0, "followups": 0, "ab_tests": 0, "skipped_old": 0
     }
 
 
@@ -291,3 +293,71 @@ def test_both_reconnect_paths_call_it():
     assert len(calls) == 2, (
         f"expected the resume call in both reconnect paths, found {len(calls)}"
     )
+
+
+# ── Found by the 0.2.1 release review ──
+
+
+def test_an_archived_campaign_is_never_revived(alert):
+    """Archive is the ONLY control on a paused row — there is no
+    cancel-campaign endpoint. While failed_auth was terminal, archiving was
+    an effective stop; once reconnecting revives things, sending a list the
+    user deliberately filed away is the exact surprise the age bound exists
+    to prevent."""
+    campaigns = _FilteringTable([
+        {"id": "c-live", "user_id": "u-1", "status": "failed_auth",
+         "scheduled_for": _iso(1), "archived": False},
+        {"id": "c-shelved", "user_id": "u-1", "status": "failed_auth",
+         "scheduled_for": _iso(1), "archived": True},
+    ])
+    db = _DB(campaigns=campaigns, follow_ups=_FilteringTable([]),
+             ab_tests=_FilteringTable([]))
+
+    result = _run(db)
+
+    assert result["campaigns"] == 1
+    by_id = {r["id"]: r["status"] for r in campaigns.rows}
+    assert by_id == {"c-live": "scheduled", "c-shelved": "failed_auth"}
+
+
+def test_an_ab_test_stranded_by_a_dead_token_gets_its_winner_phase_back(alert):
+    """evaluate_ab_tests writes failed_auth to BOTH ab_tests and campaigns.
+    Recovering only the campaign leaves the winner phase unreachable for
+    ever, because evaluate_ab_tests re-queries status='awaiting_winner'.
+
+    This write site was missed when the module was written: the grep that
+    found them piped through `grep -v test`, and the line reads
+    ab_test["campaign_id"] — the variable name matched a filter meant for
+    test FILES."""
+    ab = _FilteringTable([
+        {"id": "ab-1", "user_id": "u-1", "status": "failed_auth",
+         "created_at": _iso(2)},
+    ])
+    db = _DB(campaigns=_FilteringTable([]), follow_ups=_FilteringTable([]),
+             ab_tests=ab)
+
+    result = _run(db)
+
+    assert result["ab_tests"] == 1
+    assert ab.rows[0]["status"] == "awaiting_winner", (
+        "back to the winner phase, not 'sent' — the strand happens before "
+        "any winner-phase send and contacts are still pending"
+    )
+
+
+def test_an_ab_test_is_judged_on_created_at_not_scheduled_for(alert):
+    """An A/B campaign is always a send-now campaign, so scheduled_for is
+    NULL. Judging it the same way as a scheduled campaign would file every
+    single one as stale and recover none of them."""
+    ab = _FilteringTable([
+        {"id": "ab-old", "user_id": "u-1", "status": "failed_auth",
+         "created_at": _iso(60)},
+    ])
+    db = _DB(campaigns=_FilteringTable([]), follow_ups=_FilteringTable([]),
+             ab_tests=ab)
+
+    result = _run(db)
+
+    assert result["ab_tests"] == 0
+    assert result["skipped_old"] == 1
+    assert ab.rows[0]["status"] == "failed_auth"

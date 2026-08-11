@@ -4,6 +4,7 @@ Celery beat task: processes due follow-ups every hour.
 Uses stored refresh tokens to get fresh MS access tokens.
 """
 
+import logging
 import re
 import time
 import urllib.parse
@@ -18,6 +19,8 @@ from config import (
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
+
+logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
 from workers.celery_app import celery
 
@@ -104,10 +107,20 @@ def process_followups():
                     # list, and a deploy mid-loop would otherwise leave every
                     # delivered follow-up uncharged.
                     if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
-                        user_model.increment_sent_count(
-                            user["id"], sent_count - quota_charged
-                        )
-                        quota_charged = sent_count
+                        # Own try — see scheduled_worker. The enclosing
+                        # except counts a failure, and a quota-write error
+                        # must not make a delivered follow-up look failed.
+                        try:
+                            user_model.increment_sent_count(
+                                user["id"], sent_count - quota_charged
+                            )
+                            quota_charged = sent_count
+                        except Exception:  # noqa: BLE001
+                            logger.warning(
+                                "batch quota charge failed; deferring to the "
+                                "end-of-loop flush",
+                                exc_info=True,
+                            )
                 except Exception:
                     failed_count += 1
 
@@ -116,9 +129,21 @@ def process_followups():
         campaign_model.increment_stat(
             followup["campaign_id"], "sent_count", sent_count
         )
+        # Wrapped for the same reason as the in-loop batches, one level up:
+        # this runs per campaign inside the beat's for-loop, so an unhandled
+        # error here would abort every remaining campaign in the run, not
+        # just lose one charge.
         if sent_count > quota_charged:
-            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
-            quota_charged = sent_count
+            try:
+                user_model.increment_sent_count(
+                    user["id"], sent_count - quota_charged
+                )
+                quota_charged = sent_count
+            except Exception:  # noqa: BLE001
+                logger.warning(
+                    "final quota flush failed for user %s (%s uncharged sends)",
+                    user["id"], sent_count - quota_charged, exc_info=True,
+                )
         # Only mark 'sent' if something actually went out (or there was nothing
         # to fail). If EVERY send failed, leave the follow-up pending so the
         # next hourly run retries it instead of falsely reporting 'sent' while

@@ -2,6 +2,63 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.2.1 — 2026-08-11
+
+A patch release. Two things you will notice, one thing you will not: OutMass
+asks Microsoft for less than it used to, explains what Microsoft is about to
+ask before you get there, and no longer leaves a stopped campaign looking
+like one that simply never sent.
+
+- **OutMass no longer asks to read Microsoft's login site.** The install
+  screen listed permission for `login.microsoftonline.com` and
+  `graph.microsoft.com` — two sites OutMass never actually contacts. Sending
+  happens on the server, and signing in uses Chrome's own sign-in window,
+  which needs no permission from you. Both are gone, so the list Chrome shows
+  you at install is shorter and truer.
+
+- **The panel now says what Microsoft is about to ask for.** Since 0.2.0 the
+  panel opens by itself the first time you reach Outlook, which meant many
+  people arrived at Microsoft's permission screen having read nothing about
+  it. Before you sign in, the panel now explains in one sentence what OutMass
+  will be allowed to do and what it will not — the same wording that has been
+  in the toolbar popup, in your own language. It appears only on a first
+  sign-in; reconnecting does not repeat it.
+
+- **A campaign stopped by an expired Outlook connection now says so.** If
+  your Microsoft authorisation expired while a scheduled campaign was waiting
+  to go out, that campaign stopped — and in Reports it looked identical to
+  one that had simply not sent anything. It now says it is paused and that
+  signing in to Outlook again is what puts it back in play. For a recent
+  campaign that then happens by itself (below); an older one is left for us
+  to look at rather than sent behind your back.
+
+- **Two controls no longer hang off the edge of the panel.** The Delete
+  button next to the template list sat outside the panel in French and in
+  several other languages, forcing the panel to scroll sideways to reach it.
+
+### Behind the scenes (backend — affects all extension versions)
+
+- **A scheduled campaign stopped by an expired connection is no longer lost.**
+  It used to be set aside permanently: signing in again cleared the warning
+  but never brought the campaign back, and nothing in Reports said what had
+  happened, so the recipients simply never heard from you. Reconnecting now
+  returns those campaigns, follow-ups and A/B tests to the queue, and they go
+  out on the usual schedule — a campaign that spreads over several days picks
+  up at its normal daily pace rather than sending everything at once.
+  Anything older than a week, and anything you have archived, is deliberately
+  left alone rather than surprising a list that has gone stale.
+
+- **A failed renewal no longer takes your plan away on the first attempt.**
+  When a subscription payment failed, the plan dropped to Free immediately —
+  even though the card is retried for about two weeks and often succeeds.
+  Your plan now stays until the subscription actually ends.
+
+- **Your monthly usage is counted as a campaign sends, not only at the end.**
+  If a send was interrupted halfway — a deploy, a restart — the emails that
+  had already gone out were not counted against your quota. Accurate either
+  way now, and a hiccup while counting can no longer make a delivered
+  recipient look unsent and get them a second copy.
+
 ## v0.2.0 — 2026-08-08
 
 A minor version rather than another patch, because two things behave

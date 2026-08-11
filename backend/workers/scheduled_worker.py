@@ -6,6 +6,7 @@ Celery beat tasks:
 - proactively checks user token health once per day
 """
 
+import logging
 import re
 import time
 import urllib.parse
@@ -24,6 +25,8 @@ from config import (
     SEND_DELAY_SECONDS,
     STARTER_PLAN_MONTHLY_LIMIT,
 )
+
+logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
 from utils.send_classify import _classify_failure
 from workers.celery_app import celery
@@ -176,10 +179,24 @@ def process_scheduled_campaigns():
                         # Same reasoning, and the same constant, as the
                         # send-now path in routers/campaigns.py.
                         if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
-                            user_model.increment_sent_count(
-                                user["id"], sent_count - quota_charged
-                            )
-                            quota_charged = sent_count
+                            # Its own try. This sits inside the per-contact
+                            # try whose except marks the contact 'deferred' —
+                            # and mark_sent has ALREADY committed by now, so
+                            # letting a quota-write failure reach that except
+                            # would rewind a delivered recipient and get them
+                            # emailed twice. Leaving quota_charged unadvanced
+                            # is correct: the end-of-loop flush recharges it.
+                            try:
+                                user_model.increment_sent_count(
+                                    user["id"], sent_count - quota_charged
+                                )
+                                quota_charged = sent_count
+                            except Exception:  # noqa: BLE001
+                                logger.warning(
+                                    "batch quota charge failed; deferring to "
+                                    "the end-of-loop flush",
+                                    exc_info=True,
+                                )
                     else:
                         contact_model.mark_failed(
                             contact["id"], _classify_failure(result.get("status_code"))
@@ -193,9 +210,21 @@ def process_scheduled_campaigns():
                 time.sleep(SEND_DELAY_SECONDS)
 
         # Whatever the batches have not covered yet.
+        # Wrapped for the same reason as the in-loop batches, one level up:
+        # this runs per campaign inside the beat's for-loop, so an unhandled
+        # error here would abort every remaining campaign in the run, not
+        # just lose one charge.
         if sent_count > quota_charged:
-            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
-            quota_charged = sent_count
+            try:
+                user_model.increment_sent_count(
+                    user["id"], sent_count - quota_charged
+                )
+                quota_charged = sent_count
+            except Exception:  # noqa: BLE001
+                logger.warning(
+                    "final quota flush failed for user %s (%s uncharged sends)",
+                    user["id"], sent_count - quota_charged, exc_info=True,
+                )
 
         # Daily-cap campaigns: if resumable contacts remain after today's
         # batch, advance the schedule 24h and go back to 'scheduled' — the
@@ -480,10 +509,24 @@ def evaluate_ab_tests():
                         # above: a mid-loop SIGKILL would otherwise leave
                         # every already-'sent' contact uncharged.
                         if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
-                            user_model.increment_sent_count(
-                                user["id"], sent_count - quota_charged
-                            )
-                            quota_charged = sent_count
+                            # Its own try. This sits inside the per-contact
+                            # try whose except marks the contact 'deferred' —
+                            # and mark_sent has ALREADY committed by now, so
+                            # letting a quota-write failure reach that except
+                            # would rewind a delivered recipient and get them
+                            # emailed twice. Leaving quota_charged unadvanced
+                            # is correct: the end-of-loop flush recharges it.
+                            try:
+                                user_model.increment_sent_count(
+                                    user["id"], sent_count - quota_charged
+                                )
+                                quota_charged = sent_count
+                            except Exception:  # noqa: BLE001
+                                logger.warning(
+                                    "batch quota charge failed; deferring to "
+                                    "the end-of-loop flush",
+                                    exc_info=True,
+                                )
                     else:
                         # A failed send must mark the contact (so Resume can
                         # retry it) and flip the campaign to 'partial' — never
@@ -499,9 +542,21 @@ def evaluate_ab_tests():
 
                 time.sleep(SEND_DELAY_SECONDS)
 
+        # Wrapped for the same reason as the in-loop batches, one level up:
+        # this runs per campaign inside the beat's for-loop, so an unhandled
+        # error here would abort every remaining campaign in the run, not
+        # just lose one charge.
         if sent_count > quota_charged:
-            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
-            quota_charged = sent_count
+            try:
+                user_model.increment_sent_count(
+                    user["id"], sent_count - quota_charged
+                )
+                quota_charged = sent_count
+            except Exception:  # noqa: BLE001
+                logger.warning(
+                    "final quota flush failed for user %s (%s uncharged sends)",
+                    user["id"], sent_count - quota_charged, exc_info=True,
+                )
         ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
         # 'partial' (not 'sent') when any send failed, so the Resume button
         # surfaces and the still-pending/deferred contacts can be retried.

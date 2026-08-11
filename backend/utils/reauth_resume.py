@@ -4,7 +4,7 @@ When a scheduled campaign runs and the refresh token is permanently dead,
 scheduled_worker marks the campaign 'failed_auth' (and followup_worker does
 the same to follow-ups). Before 2026-08-11 that was the end of it:
 get_due_scheduled_campaigns selects status='scheduled', nothing anywhere read
-'failed_auth' back — grep found two writes and zero reads — and reconnecting
+'failed_auth' back — three write sites, zero reads — and reconnecting
 did not bring it back. The campaign sat dead for ever and its recipients
 never heard from the customer.
 
@@ -61,7 +61,7 @@ def resume_auth_stranded_work(user_id: str) -> dict:
     """Best-effort. Called from both reconnect paths; must never be able to
     break a sign-in, because a sign-in that fails is worse than a campaign
     that stays paused."""
-    result = {"campaigns": 0, "followups": 0, "skipped_old": 0}
+    result = {"campaigns": 0, "followups": 0, "ab_tests": 0, "skipped_old": 0}
     if not user_id:
         return result
 
@@ -75,13 +75,22 @@ def resume_auth_stranded_work(user_id: str) -> dict:
         stale_all: list[tuple[str, dict]] = []
 
         for table, key in (("campaigns", "campaigns"), ("follow_ups", "followups")):
-            rows = (
+            q = (
                 db.table(table)
                 .select("id, scheduled_for")
                 .eq("user_id", user_id)
                 .eq("status", _STRANDED)
-                .execute()
-            ).data or []
+            )
+            if table == "campaigns":
+                # Archive is the ONLY control on a paused row — there is no
+                # cancel-campaign endpoint — so a user who decides the list
+                # has gone stale archives it. While failed_auth was terminal
+                # that was an effective stop; now that reconnecting revives
+                # things, sending a campaign the user filed away would be the
+                # exact surprise this module's bound exists to prevent.
+                # follow_ups has no archived column.
+                q = q.eq("archived", False)
+            rows = (q.execute()).data or []
             fresh, stale = _split(rows, cutoff)
             for row in fresh:
                 db.table(table).update({"status": _LIVE}).eq(
@@ -89,6 +98,51 @@ def resume_auth_stranded_work(user_id: str) -> dict:
                 ).execute()
             result[key] = len(fresh)
             stale_all.extend((table, r) for r in stale)
+
+        # A/B campaigns strand in TWO tables: evaluate_ab_tests writes
+        # failed_auth to ab_tests AND to the campaign row. Recovering only
+        # the campaign leaves the winner phase permanently unreachable,
+        # because evaluate_ab_tests re-queries status='awaiting_winner' and
+        # nothing ever puts it back.
+        #
+        # This was missed when the module was written because the grep that
+        # found the write sites piped through `grep -v test` — and the line
+        # reads `ab_test["campaign_id"], {"status": "failed_auth"}`, so the
+        # variable name matched the filter meant for test FILES. Three write
+        # sites, not the two the docstring claimed.
+        #
+        # Judged on created_at: an A/B campaign is always a send-now
+        # campaign, so its scheduled_for is NULL and the freshness split
+        # would file every one of them as stale.
+        # select("*") rather than naming created_at: ab_tests is not created
+        # by any migration in this repo — it was made directly in Supabase —
+        # so the column set cannot be verified from here, and naming a column
+        # that does not exist is a PostgREST error that the outer except would
+        # swallow, leaving A/B recovery silently doing nothing. With "*" the
+        # query always succeeds; a missing created_at then reads as None and
+        # _split files the row as stale, which alerts an operator instead of
+        # surprise-sending. Wrong in the safe direction, and never quiet.
+        ab_rows = (
+            db.table("ab_tests")
+            .select("*")
+            .eq("user_id", user_id)
+            .eq("status", _STRANDED)
+            .execute()
+        ).data or []
+        ab_fresh, ab_stale = _split(
+            [{"id": r["id"], "scheduled_for": r.get("created_at")} for r in ab_rows],
+            cutoff,
+        )
+        for row in ab_fresh:
+            # Back to the winner phase, not to 'sent': the strand happens
+            # BEFORE any winner-phase send, contacts are still pending, and
+            # the next evaluate_ab_tests beat re-picks the winner and writes
+            # the campaign row's final status itself.
+            db.table("ab_tests").update({"status": "awaiting_winner"}).eq(
+                "id", row["id"]
+            ).execute()
+        result["ab_tests"] = len(ab_fresh)
+        stale_all.extend(("ab_tests", r) for r in ab_stale)
 
         result["skipped_old"] = len(stale_all)
 
