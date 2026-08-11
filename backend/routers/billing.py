@@ -663,7 +663,32 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                         "Malformed subscription.updated payload for %s", customer_id
                     )
                     update_data["plan"] = _UNKNOWN_PRICE_PLAN
-            elif status in ("canceled", "unpaid", "past_due"):
+            elif status == "past_due":
+                # NOT a downgrade. past_due means Stripe is still collecting:
+                # Smart Retries run for about two weeks (Faisal's ran 10
+                # attempts from 07-25 to 08-08) and the customer's card may
+                # yet succeed. Taking the plan away on the first failed
+                # renewal punishes someone Stripe still counts as a paying
+                # subscriber, and it did: solutionsweekly dropped to free on
+                # 08-10 with an invoice due 09-08, and Faisal spent his last
+                # fourteen days as a customer capped at the free tier while
+                # we kept trying to charge him.
+                #
+                # Only plan_updated_at moves, which is the marker an operator
+                # reads to tell "handler ran" from "event never arrived".
+                #
+                # Safe because retry exhaustion ENDS the subscription:
+                # Stripe's failed-payment setting cancels it, which arrives
+                # as customer.subscription.deleted and downgrades above. If
+                # that setting is ever changed to "leave the subscription
+                # as-is", nothing would ever downgrade and this branch needs
+                # a time limit.
+                logger.info(
+                    "Subscription past_due for customer %s — plan held while "
+                    "Stripe retries",
+                    customer_id,
+                )
+            elif status in ("canceled", "unpaid"):
                 # A manual promo outranks a dead subscription. The gift was
                 # promised in writing for a fixed window; a cancellation for
                 # the subscription that died BEFORE it must not revoke it.
