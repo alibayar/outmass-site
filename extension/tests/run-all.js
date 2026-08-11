@@ -28,6 +28,7 @@ const suites = [
   require("./no-silent-dead-ends.test.js"),
   require("./analytics-race.test.js"),
   require("./ms-auth-codes.test.js"),
+  require("./manifest-permissions.test.js"),
 ];
 
 async function main() {
