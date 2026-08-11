@@ -19,6 +19,7 @@ from config import (
     GRAPH_API_BASE,
     OUTBOUND_HTTP_TIMEOUT,
     PRO_PLAN_MONTHLY_LIMIT,
+    QUOTA_CHARGE_BATCH,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
     STARTER_PLAN_MONTHLY_LIMIT,
@@ -127,6 +128,7 @@ def process_scheduled_campaigns():
         campaign_model.update_campaign(campaign["id"], {"status": "sending"})
 
         sent_count = 0
+        quota_charged = 0
         errors = []
 
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
@@ -163,6 +165,21 @@ def process_scheduled_campaigns():
                         contact_model.mark_sent(contact["id"])
                         campaign_model.increment_stat(campaign["id"], "sent_count")
                         sent_count += 1
+                        # Charge the quota in batches as we go, not once
+                        # at the end. The end is not guaranteed to arrive: a
+                        # Railway deploy or an OOM kills this task mid-loop,
+                        # and every recipient already marked 'sent' was then
+                        # free — the durable per-contact state said they went
+                        # out while the counter said they never did. A
+                        # SIGKILL runs no handler, so no except block can fix
+                        # it; only having already written the number can.
+                        # Same reasoning, and the same constant, as the
+                        # send-now path in routers/campaigns.py.
+                        if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
+                            user_model.increment_sent_count(
+                                user["id"], sent_count - quota_charged
+                            )
+                            quota_charged = sent_count
                     else:
                         contact_model.mark_failed(
                             contact["id"], _classify_failure(result.get("status_code"))
@@ -175,7 +192,10 @@ def process_scheduled_campaigns():
 
                 time.sleep(SEND_DELAY_SECONDS)
 
-        user_model.increment_sent_count(user["id"], sent_count)
+        # Whatever the batches have not covered yet.
+        if sent_count > quota_charged:
+            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+            quota_charged = sent_count
 
         # Daily-cap campaigns: if resumable contacts remain after today's
         # batch, advance the schedule 24h and go back to 'scheduled' — the
@@ -419,6 +439,7 @@ def evaluate_ab_tests():
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
         sent_count = 0
+        quota_charged = 0
         errors = []
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in remaining:
@@ -455,6 +476,14 @@ def evaluate_ab_tests():
                         contact_model.mark_sent(contact["id"])
                         campaign_model.increment_stat(ab_test["campaign_id"], "sent_count")
                         sent_count += 1
+                        # Batched for the same reason as the campaign loop
+                        # above: a mid-loop SIGKILL would otherwise leave
+                        # every already-'sent' contact uncharged.
+                        if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
+                            user_model.increment_sent_count(
+                                user["id"], sent_count - quota_charged
+                            )
+                            quota_charged = sent_count
                     else:
                         # A failed send must mark the contact (so Resume can
                         # retry it) and flip the campaign to 'partial' — never
@@ -470,7 +499,9 @@ def evaluate_ab_tests():
 
                 time.sleep(SEND_DELAY_SECONDS)
 
-        user_model.increment_sent_count(user["id"], sent_count)
+        if sent_count > quota_charged:
+            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+            quota_charged = sent_count
         ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
         # 'partial' (not 'sent') when any send failed, so the Resume button
         # surfaces and the still-pending/deferred contacts can be retried.

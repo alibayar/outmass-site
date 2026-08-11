@@ -14,6 +14,7 @@ from config import (
     BACKEND_URL,
     GRAPH_API_BASE,
     OUTBOUND_HTTP_TIMEOUT,
+    QUOTA_CHARGE_BATCH,
     RATE_LIMIT_WAIT_SECONDS,
     SEND_DELAY_SECONDS,
 )
@@ -80,6 +81,7 @@ def process_followups():
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
         sent_count = 0
+        quota_charged = 0
         failed_count = 0
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in contacts:
@@ -98,6 +100,14 @@ def process_followups():
                         unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
                     sent_count += 1
+                    # Batched: a follow-up run can cover a whole campaign's
+                    # list, and a deploy mid-loop would otherwise leave every
+                    # delivered follow-up uncharged.
+                    if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
+                        user_model.increment_sent_count(
+                            user["id"], sent_count - quota_charged
+                        )
+                        quota_charged = sent_count
                 except Exception:
                     failed_count += 1
 
@@ -106,7 +116,9 @@ def process_followups():
         campaign_model.increment_stat(
             followup["campaign_id"], "sent_count", sent_count
         )
-        user_model.increment_sent_count(user["id"], sent_count)
+        if sent_count > quota_charged:
+            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+            quota_charged = sent_count
         # Only mark 'sent' if something actually went out (or there was nothing
         # to fail). If EVERY send failed, leave the follow-up pending so the
         # next hourly run retries it instead of falsely reporting 'sent' while
