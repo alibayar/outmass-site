@@ -168,7 +168,11 @@ Herhangi biri \*\*hayır\*\* ise \*\*push atma\*\*, kullanıcıya geri dön.
 
 3\. \*\*Rate limiting zorunlu\*\* — spam değil, batch gönderim
 
-4\. \*\*Freemium gate\*\*: 50 email/ay ücreti Supabase'den kontrol et
+4\. \*\*Freemium gate\*\*: kotayı Supabase'den kontrol et. \*\*Sayıyı buraya yazma\*\* —
+tek kaynak `backend/config.py`: free 250, starter 2.500, pro 10.000 (hepsi env ile
+ezilebilir, `monthly_limit_for_plan()` üzerinden okunur). Burada "50" yazdığı için
+2026-08-11'de bir müşteri etkisi yanlış hesaplandı; sayı değişince bu dosya
+güncellenmemişti.
 
 5\. \*\*MV3 uyumu\*\* — XMLHttpRequest değil fetch, background script değil service worker
 

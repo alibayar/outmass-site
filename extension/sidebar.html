@@ -260,7 +260,12 @@
     <!-- Quota -->
     <div class="quota-bar">
       <div class="quota-text">
-        <span id="quota-text">50/50 emails remaining (Free Plan)</span>
+        <!-- Placeholder only: sidebar.js overwrites this with the server's
+             real numbers via t("quotaDefault"). It used to read "50/50",
+             which stopped being true when the free tier went to 250 and
+             showed every free user a wrong figure until the fetch landed.
+             Carrying no number means it cannot go stale again. -->
+        <span id="quota-text" data-i18n="reportsLoading">Loading...</span>
         <button class="quota-info-btn" id="quota-info-btn" data-i18n-title="quotaInfoTitle" title="About email limits" aria-label="info">i</button>
       </div>
       <div class="quota-track">

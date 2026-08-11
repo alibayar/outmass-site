@@ -186,6 +186,7 @@ backend/
 - Email gonderim: MS Graph API (kullanicinin kendi hesabindan)
 - Tracking: 1x1 pixel (open) + link redirect (click)
 - Rate limiting: her email arasi 1sn, 429 → 60sn retry
-- Freemium: 50 email/ay (free), sinirsiz (pro)
+- Freemium: 250 email/ay (free), 2.500 (starter), 10.000 (pro) — tek kaynak
+  `backend/config.py` (`FREE_PLAN_MONTHLY_LIMIT` vd.), hepsi env ile ezilebilir
 - MVP: sync send (Celery opsiyonel)
 - Console log prefix'leri: `[OutMass-CS]`, `[OutMass-BG]`, `[OutMass-Sidebar]`
