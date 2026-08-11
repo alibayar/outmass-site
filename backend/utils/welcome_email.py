@@ -20,7 +20,12 @@ import logging
 
 import httpx
 
-from config import MAILERSEND_API_KEY, MAILERSEND_FROM_EMAIL, monthly_limit_for_plan
+from config import (
+    MAILERSEND_API_KEY,
+    MAILERSEND_FROM_EMAIL,
+    MAILERSEND_PERSON_FROM_NAME,
+    monthly_limit_for_plan,
+)
 
 logger = logging.getLogger("outmass.welcome")
 
@@ -32,7 +37,7 @@ def _dispatch(email: str, subject: str, text: str, html: str) -> bool:
     if not MAILERSEND_API_KEY or not email:
         return False
     payload = {
-        "from": {"email": MAILERSEND_FROM_EMAIL, "name": "Ali from OutMass"},
+        "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": email}],
         "reply_to": {"email": SUPPORT_EMAIL, "name": "OutMass Support"},
         "subject": subject,

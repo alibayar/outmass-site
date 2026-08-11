@@ -32,6 +32,7 @@ from config import (
     INACTIVITY_NUDGE_ENABLED,
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
+    MAILERSEND_PERSON_FROM_NAME,
 )
 from models import audit
 from workers.celery_app import celery
@@ -217,13 +218,10 @@ def _send_email(email: str, subject: str, html: str) -> bool:
     if not MAILERSEND_API_KEY or not email:
         return False
     payload = {
-        # The sender name is fixed here rather than read from
-        # MAILERSEND_FROM_NAME, whose default is "OutMass Feedback" — right
-        # for the feedback form (which mails US) and wrong for this, which
-        # asks the customer to reply and tells them a person reads every
-        # one. That sentence is not credible over an automation-desk name.
-        # welcome_email.py fixes its own name for the same reason.
-        "from": {"email": MAILERSEND_FROM_EMAIL, "name": "Ali from OutMass"},
+        # Not MAILERSEND_FROM_NAME — see the rationale on the constant in
+        # config.py. Short version: that one belongs to the feedback form,
+        # which mails US.
+        "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": email}],
         "subject": subject,
         "html": html,

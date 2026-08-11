@@ -16,7 +16,7 @@ from config import (
     BACKEND_URL,
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
-    MAILERSEND_FROM_NAME,
+    MAILERSEND_PERSON_FROM_NAME,
     MS_GRAPH_FIRST_SIGNIN_SCOPES,
     MS_GRAPH_ONEDRIVE_SCOPES,
     MS_GRAPH_SCOPES,
@@ -55,7 +55,7 @@ def _send_reauth_email(user_email: str, user_name: str | None, reason: str) -> N
         "</div>"
     )
     payload = {
-        "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_FROM_NAME},
+        "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": user_email}],
         "subject": "Reconnect OutMass to Outlook",
         "html": html,

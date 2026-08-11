@@ -17,7 +17,7 @@ from config import (
     BACKEND_URL,
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
-    MAILERSEND_FROM_NAME,
+    MAILERSEND_PERSON_FROM_NAME,
 )
 from models import audit
 from models import user_archive
@@ -66,7 +66,7 @@ def _send_deletion_confirmation_email(
         "</div>"
     )
     payload = {
-        "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_FROM_NAME},
+        "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": email}],
         "subject": "Your OutMass account has been deleted",
         "html": html,

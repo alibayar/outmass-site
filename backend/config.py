@@ -186,6 +186,22 @@ MAILERSEND_FROM_EMAIL = os.getenv("MAILERSEND_FROM_EMAIL", "support@getoutmass.c
 MAILERSEND_FROM_NAME = os.getenv("MAILERSEND_FROM_NAME", "OutMass Feedback")
 MAILERSEND_TO_EMAIL = os.getenv("MAILERSEND_TO_EMAIL", "support@getoutmass.com")
 
+# Sender name for mail that goes TO a customer.
+#
+# Deliberately a second name rather than a reuse of MAILERSEND_FROM_NAME
+# above, because the two have opposite audiences: that one labels the
+# feedback form, which mails US, and "OutMass Feedback" is right there. On
+# anything a customer receives it reads as an automation desk — and every
+# one of these emails asks the customer to reply ("reply to this email and
+# we'll look into it", "if you need help cancelling, reply"). An ask for a
+# reply is not credible over a no-reply-shaped name.
+#
+# Not env-overridable on purpose. It is a voice decision, not deployment
+# config, and per-service Railway variables have drifted on us three times
+# in one week — a name that differs between web and worker would be worse
+# than no variable at all.
+MAILERSEND_PERSON_FROM_NAME = "Ali from OutMass"
+
 # ── Inactivity nudge / auto-cancel (Phases 5-6) ──
 #
 # Paid users who stop logging in represent both a support risk
