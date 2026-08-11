@@ -9,8 +9,16 @@ ekaynimos investigation). Now:
   - create-checkout emits `checkout_session_created` (PostHog)
   - checkout.session.expired webhook emits `checkout_abandoned`
   - `checkout_abandoned` rides the daily report's INFO list
+  - a settled checkout emits `checkout_completed` (2026-08-11)
 
 The webhook handler is telemetry-only: it must never change user state.
+
+Every request below carries a PRODUCTION Host header on purpose. Billing
+telemetry is host-guarded since 2026-08-11 — TestClient's default
+"testserver" is on the denylist — so a test that omitted it would silently
+assert nothing. Driving a reportable host keeps the guard inside the path
+under test rather than patched around it; the block itself is pinned by
+test_a_test_host_cannot_write_into_the_funnel.
 """
 from unittest.mock import MagicMock, patch
 
@@ -29,7 +37,7 @@ def _post_expired(client, session_obj, posthog_key="phc_test"):
         resp = client.post(
             "/billing/webhook",
             content=b"{}",
-            headers={"stripe-signature": "sig"},
+            headers={"stripe-signature": "sig", "host": "api.getoutmass.com"},
         )
     return resp, capture
 
@@ -156,7 +164,7 @@ def test_payment_failed_fires_telegram_alert(client, fake_db):
         resp = client.post(
             "/billing/webhook",
             content=b"{}",
-            headers={"stripe-signature": "sig"},
+            headers={"stripe-signature": "sig", "host": "api.getoutmass.com"},
         )
 
     assert resp.status_code == 200
@@ -412,7 +420,11 @@ def test_create_checkout_emits_session_created_and_plan_metadata(
              "routers.billing.stripe.checkout.Session.create",
              return_value=fake_session,
          ) as create:
-        resp = client.post("/billing/create-checkout", json={"plan": "starter"})
+        resp = client.post(
+            "/billing/create-checkout",
+            json={"plan": "starter"},
+            headers={"host": "api.getoutmass.com"},
+        )
 
     assert resp.status_code == 200
     assert resp.json()["checkout_url"] == "https://checkout.stripe.com/pay/cs_new"
@@ -427,3 +439,147 @@ def test_create_checkout_emits_session_created_and_plan_metadata(
     assert kwargs["event"] == "checkout_session_created"
     assert kwargs["properties"]["plan"] == "starter"
     assert kwargs["properties"]["session_id"] == "cs_new"
+
+
+# ── checkout_completed: the rung that was missing ──
+#
+# Every step up to the click was reported — installed, panel opened, signed
+# in, upgrade clicked, session created — and then the ladder stopped. Whether
+# the money actually arrived could only be answered in Stripe, which is how a
+# customer sitting on 'free' went unnoticed until a database query on
+# 2026-08-11.
+
+
+class _Users(FakeQueryBuilder):
+    """Records plan writes so a replay can be told from a first activation."""
+
+    def __init__(self, rows):
+        super().__init__(data=rows)
+        self.updates = []
+
+    def update(self, vals):
+        self.updates.append(dict(vals))
+        return super().update(vals)
+
+
+def _paid_session(**over):
+    s = {
+        "id": "cs_paid",
+        "metadata": {"user_id": "u-9", "plan": "starter"},
+        "customer": "cus_9",
+        "subscription": "sub_9",
+        "payment_status": "paid",
+    }
+    s.update(over)
+    return s
+
+
+def _post_completed(client, session_obj, event_type="checkout.session.completed",
+                    host="api.getoutmass.com", sub_price="price_starter"):
+    event = {"type": event_type, "data": {"object": session_obj}}
+    with patch("routers.billing.stripe.Webhook.construct_event", return_value=event), \
+         patch("routers.billing.STRIPE_WEBHOOK_SECRET", "whsec_test"), \
+         patch("routers.billing.STRIPE_STARTER_PRICE_ID", "price_starter"), \
+         patch("routers.billing.STRIPE_PRO_PRICE_ID", "price_pro"), \
+         patch("routers.billing.STRIPE_TEAM_PRICE_ID", ""), \
+         patch("routers.billing.POSTHOG_API_KEY", "phc_test"), \
+         patch("routers.billing.stripe.Subscription.retrieve",
+               return_value={"items": {"data": [{"price": {"id": sub_price}}]}}), \
+         patch("routers.billing.welcome_email.send_upgrade_email"), \
+         patch("routers.billing._telegram_alert"), \
+         patch("routers.billing.posthog.capture") as capture:
+        resp = client.post(
+            "/billing/webhook",
+            content=b"{}",
+            headers={"stripe-signature": "sig", "host": host},
+        )
+    return resp, capture
+
+
+def _completed_events(capture):
+    return [
+        c.kwargs for c in capture.call_args_list
+        if c.kwargs.get("event") == "checkout_completed"
+    ]
+
+
+def test_a_paid_checkout_reports_the_conversion(client, fake_db):
+    fake_db.set_table("users", _Users([{
+        "id": "u-9", "email": "payer@x.com", "plan": "free",
+        "stripe_subscription_id": None,
+    }]))
+
+    resp, capture = _post_completed(client, _paid_session())
+
+    assert resp.status_code == 200
+    events = _completed_events(capture)
+    assert len(events) == 1
+    props = events[0]["properties"]
+    assert props["plan"] == "starter"
+    assert props["payment_status"] == "paid"
+    # Same identity the server-side `login` event uses, which is what makes
+    # this stitch onto the person who clicked Upgrade rather than starting a
+    # second one nobody can join.
+    assert events[0]["distinct_id"] == "payer@x.com"
+
+
+def test_a_stripe_redelivery_does_not_report_a_second_sale(client, fake_db):
+    """Stripe retries webhooks for days and the dashboard has a Resend
+    button. The plan write is idempotent; a conversion COUNT is not."""
+    fake_db.set_table("users", _Users([{
+        "id": "u-9", "email": "payer@x.com", "plan": "starter",
+        # Already carrying this subscription = we processed it before.
+        "stripe_subscription_id": "sub_9",
+    }]))
+
+    _, capture = _post_completed(client, _paid_session())
+
+    assert _completed_events(capture) == []
+
+
+def test_a_delayed_bank_debit_reports_when_it_settles(client, fake_db):
+    """ACH authorises at checkout.session.completed and lands days later on
+    async_payment_succeeded. Carrying payment_status is what separates
+    "converted in 30 seconds" from "in three days"."""
+    fake_db.set_table("users", _Users([{
+        "id": "u-9", "email": "slow@x.com", "plan": "free",
+        "stripe_subscription_id": None,
+    }]))
+
+    _, capture = _post_completed(
+        client,
+        _paid_session(payment_status="paid"),
+        event_type="checkout.session.async_payment_succeeded",
+    )
+
+    events = _completed_events(capture)
+    assert len(events) == 1
+    assert events[0]["properties"]["payment_status"] == "paid"
+
+
+def test_an_unsettled_checkout_reports_nothing_yet(client, fake_db):
+    """checkout.session.completed for a bank debit is an authorisation, not a
+    payment. Reporting it as a conversion would inflate the funnel with money
+    that can still fail."""
+    fake_db.set_table("users", _Users([{
+        "id": "u-9", "email": "slow@x.com", "plan": "free",
+        "stripe_subscription_id": None,
+    }]))
+
+    _, capture = _post_completed(client, _paid_session(payment_status="unpaid"))
+
+    assert _completed_events(capture) == []
+
+
+def test_a_test_host_cannot_write_into_the_funnel(client, fake_db):
+    """The guard that made the rest of this file pass a Host header. On
+    2026-08-06 a script driving TestClient outside pytest wrote 19 fabricated
+    failures into the live project; a fabricated PAYMENT would be worse."""
+    fake_db.set_table("users", _Users([{
+        "id": "u-9", "email": "payer@x.com", "plan": "free",
+        "stripe_subscription_id": None,
+    }]))
+
+    _, capture = _post_completed(client, _paid_session(), host="testserver")
+
+    assert capture.call_args_list == []

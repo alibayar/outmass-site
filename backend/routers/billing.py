@@ -34,7 +34,7 @@ from config import (
 from database import get_db
 from models import user as user_model
 from utils import welcome_email
-from routers.auth import get_current_user
+from routers.auth import get_current_user, _request_host
 
 logger = logging.getLogger(__name__)
 
@@ -142,15 +142,26 @@ def _retarget_grant_to_free(db, user_id: str) -> None:
         logger.exception("failed to retarget promo grant for user %s", user_id)
 
 
-def _capture_billing_event(distinct_id: str, event: str, properties: dict) -> None:
+def _capture_billing_event(distinct_id: str, event: str, properties: dict,
+                           request_host: str) -> None:
     """Best-effort PostHog capture for checkout-funnel telemetry.
 
     Closes the gap between upgrade_button_clicked (extension) and the
     Stripe outcome: before this, an abandoned checkout was invisible in
     PostHog and only discoverable by digging through Stripe's API logs.
     Must never raise — billing flows don't depend on analytics.
+
+    Host-guarded since 2026-08-11, for the reason auth.py already was: on
+    08-06 a script driving TestClient outside pytest inherited a real
+    POSTHOG_API_KEY and wrote 19 fabricated failures into the live funnel.
+    The billing webhook is driven by tests the same way, and a fabricated
+    PAYMENT in the funnel would be worse than a fabricated failure.
     """
+    from routers.auth import _is_reportable_host
+
     if not POSTHOG_API_KEY or not distinct_id:
+        return
+    if not _is_reportable_host(request_host):
         return
     try:
         posthog.capture(distinct_id=distinct_id, event=event, properties=properties)
@@ -161,7 +172,11 @@ def _capture_billing_event(distinct_id: str, event: str, properties: dict) -> No
 # ─── 1. Create Checkout / Upgrade ──────────────────────────────────────────
 
 @router.post("/create-checkout")
-async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_current_user)):
+async def create_checkout(
+    body: CheckoutRequest,
+    request: Request,
+    user: dict = Depends(get_current_user),
+):
     """
     For Free users: create a new Stripe Checkout Session.
     For users with an active subscription: modify the existing subscription
@@ -253,6 +268,7 @@ async def create_checkout(body: CheckoutRequest, user: dict = Depends(get_curren
         user.get("email") or user["id"],
         "checkout_session_created",
         {"plan": body.plan, "session_id": session.id},
+        _request_host(request),
     )
 
     return {"checkout_url": session.url}
@@ -333,7 +349,8 @@ def _plan_for_price(price_id: str, context: str) -> str:
     return _UNKNOWN_PRICE_PLAN
 
 
-def _activate_from_checkout_session(db, session: dict, background_tasks) -> None:
+def _activate_from_checkout_session(db, session: dict, background_tasks,
+                                    request_host: str = "") -> None:
     """Grant the plan bought in a completed, PAID checkout session.
 
     Called from two events, because a card and a bank debit finish at
@@ -461,6 +478,33 @@ def _activate_from_checkout_session(db, session: dict, background_tasks) -> None
             plan,
         )
 
+    # The one funnel rung that was missing. Everything up to the click is
+    # reported — installed, panel opened, signed in, upgrade clicked,
+    # checkout session created — and then the ladder stopped, so "did they
+    # actually pay?" could only be answered in Stripe. On 2026-08-11 that
+    # cost a database query to notice a customer sitting on 'free'.
+    #
+    # Rides the same replay guard as the thank-you email and the quota
+    # re-anchor: `upgraded` is populated only on a first activation, so a
+    # Stripe redelivery cannot inflate the conversion count.
+    if upgraded:
+        _capture_billing_event(
+            upgraded.get("email") or user_id,
+            "checkout_completed",
+            {
+                "plan": plan,
+                # Cards settle at checkout.session.completed; ACH and other
+                # delayed methods land days later on
+                # async_payment_succeeded. Telling them apart is the
+                # difference between "converted in 30 seconds" and "in three
+                # days".
+                "payment_status": session.get("payment_status"),
+                "session_id": session.get("id"),
+                "$set": {"plan": plan},
+            },
+            request_host,
+        )
+
     logger.info(
         "User %s upgraded to %s (%s)",
         user_id,
@@ -472,6 +516,9 @@ def _activate_from_checkout_session(db, session: dict, background_tasks) -> None
 @router.post("/webhook")
 async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     """Verify and handle incoming Stripe webhook events."""
+    # Which public hostname served this. Passed to every telemetry call so a
+    # test driving this endpoint cannot write into the production funnel.
+    _webhook_host = _request_host(request)
     payload = await request.body()
     sig_header = request.headers.get("stripe-signature")
 
@@ -509,7 +556,9 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     if event_type == "checkout.session.completed":
         payment_status = data_object.get("payment_status")
         if payment_status in _SETTLED_PAYMENT_STATUSES:
-            _activate_from_checkout_session(db, data_object, background_tasks)
+            _activate_from_checkout_session(
+                db, data_object, background_tasks, _webhook_host
+            )
         else:
             # Nothing to do but wait for async_payment_succeeded. Logged
             # rather than silent so an ACH sign-up that never settles is
@@ -529,7 +578,9 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             "Delayed payment settled for checkout session %s",
             data_object.get("id"),
         )
-        _activate_from_checkout_session(db, data_object, background_tasks)
+        _activate_from_checkout_session(
+                db, data_object, background_tasks, _webhook_host
+            )
 
     # ── checkout.session.async_payment_failed ──
     # The debit bounced days after the customer thought they had bought.
@@ -557,6 +608,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                 "amount_total": data_object.get("amount_total"),
                 "currency": data_object.get("currency"),
             },
+            _webhook_host,
         )
         _telegram_alert(
             "🔴 OutMass delayed payment FAILED (bank debit bounced)\n\n"
@@ -600,6 +652,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                 "currency": data_object.get("currency"),
                 "session_id": data_object.get("id"),
             },
+            _webhook_host,
         )
         logger.info(
             "Checkout abandoned: %s (plan=%s, already_subscribed=%s)",
