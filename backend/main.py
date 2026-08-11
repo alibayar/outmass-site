@@ -116,6 +116,14 @@ app.include_router(account.router)
 app.include_router(onedrive.router)
 app.include_router(announcements.router)
 
+# ── Startup checks ──
+# Observe-only: logs and pings the operator, never refuses to boot. See
+# utils/config_guard.py for why a Stripe misconfiguration must not be able
+# to take down sign-in and sending.
+from utils.config_guard import run_startup_checks  # noqa: E402
+
+run_startup_checks()
+
 
 # ── Extension Error Reporting ──
 class ClientErrorReport(BaseModel):
