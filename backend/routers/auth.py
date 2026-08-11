@@ -890,6 +890,14 @@ async def auth_callback(
         "reauth_flagged_at": None,
     }).eq("id", user["id"]).execute()
 
+    # Whatever the dead token stranded goes back in the queue. Clearing the
+    # flag alone left 'failed_auth' campaigns and follow-ups dead for ever —
+    # nothing read that status back — while the reconnect email told the
+    # customer they had merely paused.
+    from utils.reauth_resume import resume_auth_stranded_work
+
+    resume_auth_stranded_work(user["id"])
+
     # Monthly reset check
     _check_monthly_reset(user)
 
@@ -1358,6 +1366,12 @@ async def microsoft_auth(
             "reauth_reason": None,
             "reauth_flagged_at": None,
         }).eq("id", user["id"]).execute()
+
+        # Mirrors the web callback: the work the dead token stranded goes
+        # back in the queue, not just the flag.
+        from utils.reauth_resume import resume_auth_stranded_work
+
+        resume_auth_stranded_work(user["id"])
 
     # Check monthly reset
     _check_monthly_reset(user)

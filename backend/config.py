@@ -224,6 +224,19 @@ INACTIVITY_AUTOCANCEL_ENABLED = _env_bool("INACTIVITY_AUTOCANCEL_ENABLED", False
 INACTIVITY_PAUSE_DAYS = int(os.getenv("INACTIVITY_PAUSE_DAYS", "60"))
 INACTIVITY_CANCEL_DAYS = int(os.getenv("INACTIVITY_CANCEL_DAYS", "90"))
 
+# How far back a send stranded by a dead Microsoft token may be resurrected
+# when the user reconnects. Measured on scheduled_for, which reads correctly
+# for BOTH campaign shapes: a one-shot carries the moment it was meant to go
+# out, and a daily-capped multi-day campaign rolls scheduled_for forward 24h
+# after every batch, so it carries the day it was last alive.
+#
+# Bounded because the codebase already learned this lesson once — see
+# _capped_in_last_quota_cycle: "a months-old abandoned partial must never
+# resurrect itself and surprise-send a stale list." Anything older than this
+# is left alone AND reported, so "nothing happened" and "deliberately skipped"
+# stay distinguishable.
+AUTH_RESUME_MAX_AGE_DAYS = int(os.getenv("AUTH_RESUME_MAX_AGE_DAYS", "7"))
+
 # ── Plan Limits (env-overridable — raise later in Railway, no code change) ──
 FREE_PLAN_MONTHLY_LIMIT = int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))
 STARTER_PLAN_MONTHLY_LIMIT = int(os.getenv("STARTER_PLAN_MONTHLY_LIMIT", "2500"))
