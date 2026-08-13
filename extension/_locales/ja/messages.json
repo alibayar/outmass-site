@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "一時停止中 — Outlook との接続の有効期限が切れました。再度サインインして、このキャンペーンを再開できる状態にしてください。"
+  },
+  "planPriceInterval": {
+    "message": "$1 / 月",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "月 $1 通",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "選択"
   }
 }

@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "Pausiert — Ihre Outlook-Verbindung ist abgelaufen. Melden Sie sich erneut an, um diese Kampagne wieder zu aktivieren."
+  },
+  "planPriceInterval": {
+    "message": "$1 / Monat",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "$1 E-Mails pro Monat",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "Wählen"
   }
 }

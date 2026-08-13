@@ -405,3 +405,111 @@ test.describe("paused campaign", () => {
     await expectNoHorizontalOverflow(page, "paused campaign: ");
   });
 });
+
+/**
+ * The plan picker.
+ *
+ * The Account tab used to show one "Upgrade Plan" button that opened Stripe
+ * Checkout for a hardcoded 'starter'. The price was invisible until the
+ * payment form, and Pro could not be bought from the panel at all. Two
+ * people reached Checkout in the first half of August and left without
+ * entering a card.
+ *
+ * The rule the picker encodes: a WRONG price is worse than no price. If the
+ * backend cannot read Stripe it sends no plans, and the old single button
+ * stays — which is also exactly what a pre-0.2.1 client sees.
+ */
+test.describe("plan picker", () => {
+  const PLANS = {
+    plan: "free",
+    emails_sent_this_month: 0,
+    limit: 250,
+    plans: [
+      { key: "starter", amount: 900, currency: "usd", interval: "month", limit: 2500 },
+      { key: "pro", amount: 1900, currency: "usd", interval: "month", limit: 10000 },
+    ],
+  };
+
+  async function openAccount(page, billing) {
+    await page.addInitScript(installChromeStub, {
+      store: { backendJwt: "jwt" },
+      settings: { email: "u@example.com", plan: "free", emails_sent_this_month: 0 },
+      billing,
+    });
+    await page.reload();
+    await page.click('[data-tab="account"]');
+  }
+
+  test("both plans are offered", async ({ page }) => {
+    await openAccount(page, PLANS);
+
+    const rows = page.locator(".plan-option");
+    await expect(rows).toHaveCount(2);
+    await expect(rows.nth(0).locator(".plan-option-name")).toHaveText("Starter");
+    await expect(rows.nth(1).locator(".plan-option-name")).toHaveText("Pro");
+    // Pro was unreachable from this panel before: the old button hardcoded
+    // 'starter', so the £19 tier could not be bought at all.
+    await expect(rows.nth(1).locator(".plan-option-btn")).toBeVisible();
+  });
+
+  test("the numbers reach the screen, formatted for the reader", async ({
+    page,
+  }) => {
+    // With real translations, not keys. The stub's chrome.i18n returns
+    // nothing, so t() falls back to the key and performs no placeholder
+    // substitution — a price assertion against that harness would pass on
+    // the string "planPriceInterval" and prove nothing about the number.
+    const messages = JSON.parse(
+      fs.readFileSync(
+        path.resolve("extension/_locales/en/messages.json"),
+        "utf-8",
+      ),
+    );
+    await page.addInitScript(installChromeStub, {
+      store: { backendJwt: "jwt" },
+      settings: { email: "u@example.com", plan: "free", emails_sent_this_month: 0 },
+      billing: PLANS,
+    });
+    await page.reload();
+    // AFTER the reload, not in an init script: i18n.js runs `var
+    // _i18nOverride = null` on load and would wipe an earlier assignment.
+    await page.evaluate((msgs) => {
+      (window as any)._i18nOverride = msgs;
+    }, messages);
+    await page.click('[data-tab="account"]');
+
+    const rows = page.locator(".plan-option");
+    await expect(rows.nth(0).locator(".plan-option-price")).toContainText("9");
+    await expect(rows.nth(1).locator(".plan-option-price")).toContainText("19");
+    // Grouped by Intl in the reader's locale — the digits are never written
+    // in this file, in sidebar.js, or in any of the 14 message files.
+    await expect(rows.nth(1).locator(".plan-option-quota")).toContainText("10,000");
+  });
+
+  test("the old single button gives way to the picker", async ({ page }) => {
+    await openAccount(page, PLANS);
+    await expect(page.locator("#account-plan-picker")).toBeVisible();
+    await expect(page.locator("#account-btn-upgrade")).toBeHidden();
+  });
+
+  test("no prices means the old button stays, not a blank price", async ({
+    page,
+  }) => {
+    await openAccount(page, { ...PLANS, plans: [] });
+    await expect(page.locator("#account-plan-picker")).toBeHidden();
+    await expect(page.locator("#account-btn-upgrade")).toBeVisible();
+  });
+
+  test("an older backend that sends no plans key behaves the same", async ({
+    page,
+  }) => {
+    await openAccount(page, { plan: "free", emails_sent_this_month: 0, limit: 250 });
+    await expect(page.locator("#account-plan-picker")).toBeHidden();
+    await expect(page.locator("#account-btn-upgrade")).toBeVisible();
+  });
+
+  test("it fits the panel", async ({ page }) => {
+    await openAccount(page, PLANS);
+    await expectNoHorizontalOverflow(page, "plan picker: ");
+  });
+});

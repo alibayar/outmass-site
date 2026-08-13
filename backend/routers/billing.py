@@ -1196,6 +1196,66 @@ async def billing_portal(user: dict = Depends(get_current_user)):
 
 # ─── 4. Billing Status ──────────────────────────────────────────────────────
 
+# ── Purchasable plans, each number read from its own source ──
+#
+# The panel used to show a bare "Upgrade Plan" button that opened Stripe
+# Checkout for a hardcoded 'starter'. A user who clicked it to find out the
+# price landed on a payment form, and Pro could not be bought from the panel
+# at all. Two people reached Checkout in the first half of August and left
+# without entering a card, which is the expected outcome of a button that
+# reads "show me the plans" and behaves like "pay now".
+#
+# Prices come from Stripe and limits from config.py, deliberately: writing
+# either of them a second time is how docs/terms.html spent months promising
+# a 50-email free tier. Nothing here holds a number of its own.
+_PLAN_CACHE: dict = {"at": None, "plans": None}
+_PLAN_CACHE_TTL_SECONDS = 3600
+
+
+def _purchasable_plans() -> list[dict]:
+    """Starter and Pro with live prices, or the last good answer.
+
+    On a Stripe failure this serves the cached catalogue rather than a
+    partial one: a pricing list missing a product is its own kind of wrong,
+    and a WRONG price is worse than no price at all — the caller falls back
+    to the old single button when this is empty.
+    """
+    now = datetime.now(timezone.utc)
+    cached = _PLAN_CACHE.get("plans")
+    at = _PLAN_CACHE.get("at")
+    if cached is not None and at is not None:
+        if (now - at).total_seconds() < _PLAN_CACHE_TTL_SECONDS:
+            return cached
+
+    wanted = (
+        ("starter", STRIPE_STARTER_PRICE_ID, STARTER_PLAN_MONTHLY_LIMIT),
+        ("pro", STRIPE_PRO_PRICE_ID, PRO_PLAN_MONTHLY_LIMIT),
+    )
+    plans = []
+    try:
+        for key, price_id, limit in wanted:
+            if not price_id:
+                raise RuntimeError(f"{key} price id is not configured")
+            price = stripe.Price.retrieve(price_id)
+            amount = price.get("unit_amount")
+            if amount is None:
+                raise RuntimeError(f"{key} price has no unit_amount")
+            plans.append({
+                "key": key,
+                "amount": amount,
+                "currency": price.get("currency") or "usd",
+                "interval": (price.get("recurring") or {}).get("interval", "month"),
+                "limit": limit,
+            })
+    except Exception:  # noqa: BLE001
+        logger.warning("Could not build the plan catalogue", exc_info=True)
+        return cached or []
+
+    _PLAN_CACHE["plans"] = plans
+    _PLAN_CACHE["at"] = now
+    return plans
+
+
 @router.get("/status")
 async def billing_status(user: dict = Depends(get_current_user)):
     """Return the user's current plan and monthly usage."""
@@ -1211,6 +1271,10 @@ async def billing_status(user: dict = Depends(get_current_user)):
         "plan": plan,
         "emails_sent_this_month": sent,
         "limit": limit,
+        # Additive: older clients ignore the key and keep their single
+        # Upgrade button. Empty when Stripe could not be read, which is the
+        # signal for the panel to fall back rather than show a guess.
+        "plans": _purchasable_plans(),
     }
 
 

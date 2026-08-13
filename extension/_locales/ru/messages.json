@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "Приостановлено — подключение к Outlook истекло. Войдите снова, чтобы вернуть кампанию в работу."
+  },
+  "planPriceInterval": {
+    "message": "$1 / месяц",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "$1 писем в месяц",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "Выбрать"
   }
 }

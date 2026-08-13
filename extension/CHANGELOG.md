@@ -32,6 +32,14 @@ like one that simply never sent.
   campaign that then happens by itself (below); an older one is left for us
   to look at rather than sent behind your back.
 
+- **You can now see what a plan costs before you reach the payment page.**
+  The Account tab used to show a single "Upgrade Plan" button that took you
+  straight to Stripe — so the only way to learn the price was to open a
+  payment form, and Pro could not be bought from the panel at all. Both
+  plans are now listed with their price and their monthly limit, and you
+  choose. The prices come from Stripe and the limits from the server, so
+  neither can drift out of date.
+
 - **Two controls no longer hang off the edge of the panel.** The Delete
   button next to the template list sat outside the panel in French and in
   several other languages, forcing the panel to scroll sideways to reach it.

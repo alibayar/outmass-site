@@ -1178,5 +1178,24 @@
   },
   "campaignPausedReauth": {
     "message": "Paused — your Outlook connection expired. Sign in again to put this campaign back in play."
+  },
+  "planPriceInterval": {
+    "message": "$1 / month",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "$1 emails a month",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "Choose"
   }
 }

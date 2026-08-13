@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "已暫停 — 您的 Outlook 連線已過期。請重新登入，讓此行銷活動恢復運行。"
+  },
+  "planPriceInterval": {
+    "message": "$1 / 月",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "每月 $1 封郵件",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "選擇"
   }
 }

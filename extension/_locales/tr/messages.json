@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "Duraklatıldı — Outlook bağlantınızın süresi doldu. Kampanyayı yeniden devreye almak için giriş yapın."
+  },
+  "planPriceInterval": {
+    "message": "aylık $1",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "ayda $1 e-posta",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "Seç"
   }
 }

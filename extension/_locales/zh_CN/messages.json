@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "已暂停 — 您的 Outlook 连接已过期。请重新登录，让此营销活动恢复运行。"
+  },
+  "planPriceInterval": {
+    "message": "$1 / 月",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "每月 $1 封邮件",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "选择"
   }
 }

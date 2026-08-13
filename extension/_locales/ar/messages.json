@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "متوقفة مؤقتًا — انتهت صلاحية اتصالك بـ Outlook. سجّل الدخول مرة أخرى لإعادة تفعيل هذه الحملة."
+  },
+  "planPriceInterval": {
+    "message": "$1 / شهريًا",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "$1 رسالة شهريًا",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "اختيار"
   }
 }

@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "En pausa — tu conexión con Outlook caducó. Inicia sesión de nuevo para reactivar esta campaña."
+  },
+  "planPriceInterval": {
+    "message": "$1 / mes",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "$1 correos al mes",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "Elegir"
   }
 }

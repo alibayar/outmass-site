@@ -1167,5 +1167,24 @@
   },
   "campaignPausedReauth": {
     "message": "रुकी हुई — आपका Outlook कनेक्शन समाप्त हो गया। इस अभियान को दोबारा सक्रिय करने के लिए साइन इन करें।"
+  },
+  "planPriceInterval": {
+    "message": "$1 / माह",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "planQuotaPerMonth": {
+    "message": "प्रति माह $1 ईमेल",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
+  },
+  "btnChoosePlan": {
+    "message": "चुनें"
   }
 }

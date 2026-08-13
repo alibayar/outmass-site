@@ -3330,12 +3330,114 @@
       if (data.plan === "free") {
         if (btnUpgrade) btnUpgrade.style.display = "block";
         if (btnPortal) btnPortal.style.display = "none";
+        // Only a free user can buy, so only a free user pays for the extra
+        // request. It replaces the button above if — and only if — it comes
+        // back with real prices.
+        renderPlanPicker();
       } else {
         if (btnUpgrade) btnUpgrade.style.display = "none";
         if (btnPortal) btnPortal.style.display = "block";
       }
 
       log("Account loaded");
+    });
+  }
+
+  // ── Plan picker ──
+  //
+  // Before this, the Account tab showed one "Upgrade Plan" button that opened
+  // Stripe Checkout for a hardcoded 'starter'. Two things were wrong with
+  // that: nobody could see the price without landing on a payment form, and
+  // Pro could not be bought from the panel at all. In the first half of
+  // August two people reached Checkout and left without entering a card,
+  // which is what a button reading "show me the plans" and behaving like
+  // "pay now" should be expected to produce.
+  //
+  // Every number here arrives from the server — price from Stripe, limit from
+  // config.py — and is formatted by Intl in the reader's own locale. Nothing
+  // numeric is written in this file or in any of the 14 message files.
+  function renderPlanPicker() {
+    var box = document.getElementById("account-plan-picker");
+    var btnUpgrade = document.getElementById("account-btn-upgrade");
+    if (!box) return;
+
+    chrome.runtime.sendMessage({ type: "GET_BILLING_STATUS" }, function (resp) {
+      var data = resp && (resp.data || resp);
+      var plans = data && data.plans;
+      // No plans means the backend could not read Stripe, or this is an
+      // older backend. Either way the single button stays — showing a price
+      // we are not sure of would be worse than showing none.
+      if (!plans || !plans.length) return;
+
+      var locale = getActiveLocale();
+      box.innerHTML = "";
+
+      plans.forEach(function (p) {
+        var money, quota;
+        try {
+          money = new Intl.NumberFormat(locale, {
+            style: "currency",
+            currency: (p.currency || "usd").toUpperCase(),
+          }).format((p.amount || 0) / 100);
+          quota = new Intl.NumberFormat(locale).format(p.limit || 0);
+        } catch (e) {
+          // A currency Intl cannot render must not produce a blank price.
+          return;
+        }
+
+        var row = document.createElement("div");
+        row.className = "plan-option";
+
+        var text = document.createElement("div");
+        text.className = "plan-option-text";
+
+        var name = document.createElement("div");
+        name.className = "plan-option-name";
+        name.textContent =
+          String(p.key || "").charAt(0).toUpperCase() + String(p.key || "").slice(1);
+
+        var price = document.createElement("div");
+        price.className = "plan-option-price";
+        price.textContent = t("planPriceInterval", [money]);
+
+        var limit = document.createElement("div");
+        limit.className = "plan-option-quota";
+        limit.textContent = t("planQuotaPerMonth", [quota]);
+
+        text.appendChild(name);
+        text.appendChild(price);
+        text.appendChild(limit);
+
+        var btn = document.createElement("button");
+        btn.className = "btn btn-primary plan-option-btn";
+        btn.textContent = t("btnChoosePlan");
+        btn.addEventListener("click", function () {
+          // Carries which plan, so the funnel can finally tell a Starter
+          // intent from a Pro one — the old event could not.
+          track("upgrade_button_clicked", {
+            context: "plan_picker",
+            plan: p.key,
+          });
+          chrome.runtime.sendMessage(
+            { type: "CREATE_CHECKOUT", plan: p.key },
+            function (r) {
+              if (r && r.data && r.data.checkout_url) {
+                window.open(r.data.checkout_url, "_blank");
+              } else {
+                alert(t("settingsCheckoutFailed"));
+              }
+            }
+          );
+        });
+
+        row.appendChild(text);
+        row.appendChild(btn);
+        box.appendChild(row);
+      });
+
+      if (!box.childNodes.length) return;
+      box.style.display = "block";
+      if (btnUpgrade) btnUpgrade.style.display = "none";
     });
   }
 

@@ -501,6 +501,12 @@
           </div>
         </div>
         <div class="settings-actions">
+          <!-- Filled from /billing/status's `plans`, which reads prices from
+               Stripe and limits from config.py. Hidden until it has real
+               numbers: a wrong price is worse than no price, so when the
+               backend cannot answer, the single button below stays as the
+               fallback — which is also what every pre-0.2.1 client sees. -->
+          <div id="account-plan-picker" style="display:none;"></div>
           <button class="btn btn-primary btn-block" id="account-btn-upgrade" data-i18n="btnUpgrade">Upgrade Plan</button>
           <button class="btn btn-secondary btn-block" id="account-btn-portal" data-i18n="btnManageSub" style="display:none;">Manage Subscription</button>
         </div>
