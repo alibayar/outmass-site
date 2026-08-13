@@ -1186,6 +1186,27 @@ def expire_manual_promos():
         if grant:
             _resolve_grant(db, grant["id"], "restored")
 
+        # A gift running out is still a plan change the user did not choose
+        # the timing of, and until now they discovered it by hitting the free
+        # cap. Different words from the payment-failure case on purpose:
+        # nothing failed here, and mentioning a card would be wrong.
+        #
+        # Only when the plan actually went DOWN — restoring someone to the
+        # paid plan they were already on is not news.
+        if payload.get("plan") == "free" and user.get("plan") != "free":
+            if user.get("email"):
+                try:
+                    from utils import welcome_email
+
+                    welcome_email.send_plan_dropped_email(
+                        user["email"], user.get("name"), "promo_ended"
+                    )
+                except Exception:  # noqa: BLE001
+                    logger.warning(
+                        "promo-expiry email failed for %s", user.get("id"),
+                        exc_info=True,
+                    )
+
         audit.emit(
             audit.EVENT_MANUAL_PROMO_EXPIRED,
             user_id=user["id"],

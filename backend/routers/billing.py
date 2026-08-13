@@ -122,6 +122,30 @@ def _promo_shield(db, customer_id: str) -> dict | None:
         return None
 
 
+def _user_for_customer(db, customer_id: str) -> dict | None:
+    """The user row behind a Stripe customer, or None.
+
+    Its own helper rather than reusing _promo_shield's query: that one
+    deliberately returns None for anyone NOT inside a promo, which is exactly
+    the population that needs to be told their plan dropped.
+    """
+    if not customer_id:
+        return None
+    try:
+        res = (
+            db.table("users")
+            .select("id, email, name")
+            .eq("stripe_customer_id", customer_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        return rows[0] if rows else None
+    except Exception:  # noqa: BLE001
+        logger.exception("could not read the user behind customer %s", customer_id)
+        return None
+
+
 def _retarget_grant_to_free(db, user_id: str) -> None:
     """Point the active grant's restore target at 'free'.
 
@@ -710,9 +734,47 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             else:
                 update_data["plan"] = "free"
 
+            # Read before the write, mirroring the thank-you email in
+            # _activate_from_checkout_session: the update does not touch
+            # email or name, but reading first keeps the notification
+            # independent of what the write leaves behind.
+            dropped = None if shielded else _user_for_customer(db, customer_id)
+
             db.table("users").update(update_data).eq(
                 "stripe_customer_id", customer_id
             ).execute()
+
+            # Tell them their plan changed — but only when they did not ask
+            # for it. Stripe distinguishes the two in cancellation_details:
+            # 'cancellation_requested' is the customer or us pressing cancel,
+            # and a "your plan has gone back to Free" message minutes after
+            # their own confirmation is noise, not service. Mary Bass would
+            # have received exactly that on 2026-08-12.
+            #
+            # Anything else — payment_failed, payment_disputed, or a reason
+            # Stripe did not give — is a plan the user lost without choosing
+            # to, which until now they discovered by hitting the free cap.
+            # One guard, not two: `dropped` above is already None for a
+            # shielded user, and a second `if not shielded` here would be a
+            # redundancy no mutation could distinguish — which is how a
+            # guard stops being load-bearing without anyone noticing.
+            if dropped:
+                reason = (
+                    (data_object.get("cancellation_details") or {}).get("reason")
+                    or ""
+                )
+                # `is not None`, not truthiness: BackgroundTasks is a
+                # list-like whose empty instance is falsy, so the obvious
+                # spelling silently skips the first task of every request.
+                if (reason != "cancellation_requested"
+                        and dropped.get("email")
+                        and background_tasks is not None):
+                        background_tasks.add_task(
+                            welcome_email.send_plan_dropped_email,
+                            dropped["email"],
+                            dropped.get("name"),
+                            "payment_failed",
+                        )
 
             if not shielded:
                 logger.info("Subscription deleted for customer %s", customer_id)

@@ -72,6 +72,10 @@ def _first_name(name: str | None) -> str:
 def send_welcome_email(email: str, name: str | None = None) -> bool:
     """Best-effort welcome email. Never raises. True = accepted by MailerSend."""
     first = _first_name(name)
+    # Read, not typed. This said "250 emails/month" in two places until
+    # 2026-08-13 — the same drift that left docs/terms.html promising a
+    # 50-email free tier for months after the code moved to 250.
+    free_quota = f"{monthly_limit_for_plan('free'):,}"
 
     subject = "Welcome to OutMass — your first campaign in 3 steps"
 
@@ -91,8 +95,8 @@ def send_welcome_email(email: str, name: str | None = None) -> bool:
         "3. Click Preview or send yourself a Test Send, then hit Send.\n"
         "   OutMass paces delivery and tracks opens, clicks and replies.\n"
         "\n"
-        "You start on the Free plan (250 emails/month) — you can upgrade\n"
-        "anytime from the panel when you need more.\n"
+        "You start on the Free plan (" + free_quota + " emails/month) — you can\n"
+        "upgrade anytime from the panel when you need more.\n"
         "\n"
         "Hit a snag or have a question? Just reply to this email — it comes\n"
         "straight to me and I usually answer within a few hours.\n"
@@ -130,7 +134,8 @@ def send_welcome_email(email: str, name: str | None = None) -> bool:
         "your own Outlook account. Here's your first campaign in 3 steps:</p>"
         + steps_html +
         '<p style="font-size:14px;line-height:1.6;">You start on the <strong>Free '
-        "plan</strong> (250 emails/month) — upgrade anytime from the panel when "
+        "plan</strong> (" + free_quota + " emails/month) — upgrade anytime from the "
+        "panel when "
         "you need more.</p>"
         '<p style="font-size:14px;line-height:1.6;">Hit a snag or have a '
         "question? <strong>Just reply to this email</strong> — it comes straight "
@@ -286,6 +291,85 @@ def send_upgrade_email(email: str, name: str | None, plan: str) -> bool:
         '<p style="font-size:14px;line-height:1.6;">Ali<br>'
         "Founder, OutMass<br>"
         '<a href="https://getoutmass.com" style="color:#0078d4;">getoutmass.com</a></p>'
+        "</div>"
+    )
+
+    return _dispatch(email, subject, text, html)
+
+
+def send_plan_dropped_email(email: str, name: str | None, reason: str) -> bool:
+    """Tell someone their plan went back to Free. Never raises.
+
+    Two ways to arrive here, and they are not the same message:
+
+      * ``payment_failed`` — Stripe spent about two weeks retrying the card
+        and gave up. They have already had Stripe's dunning emails (all five
+        customer-email toggles were switched on 2026-08-10), so this is the
+        END of a chain they know about, not news. Writing it as a surprise
+        would be strange.
+      * ``promo_ended`` — a plan we granted ran out. Nothing failed, and
+        saying anything about payment here would be wrong.
+
+    Deliberately NOT sent when the customer asked to cancel: they know, and
+    a second message minutes after their confirmation is noise. The webhook
+    reads Stripe's cancellation_details.reason to tell those apart.
+
+    The quota comes from monthly_limit_for_plan, never typed here.
+    docs/terms.html spent months promising a 50-email free tier because
+    somebody wrote a number into copy.
+    """
+    first = _first_name(name)
+    quota = f"{monthly_limit_for_plan('free'):,}"
+    promo = reason == "promo_ended"
+
+    subject = (
+        "Your OutMass plan has ended"
+        if promo
+        else "Your OutMass plan has gone back to Free"
+    )
+
+    opening = (
+        "The plan we set up for you has run its course, and your account is "
+        "back on Free."
+        if promo
+        else "Your subscription ended today. Stripe spent about two weeks "
+        "trying the card on file, and you'll have had its emails about that."
+    )
+
+    text = (
+        "Hi " + first + ",\n"
+        "\n"
+        + opening + "\n"
+        "\n"
+        "Free sends up to " + quota + " emails a month. Nothing was deleted —\n"
+        "your campaigns, templates and contacts are exactly where you left\n"
+        "them.\n"
+        "\n"
+        "If you'd like to carry on, open the OutMass panel and pick a plan.\n"
+        + ("" if promo else "A different card or payment method usually does it.\n")
+        + "\n"
+        "Questions, or something that didn't work? Just reply — it comes\n"
+        "straight to me.\n"
+        "\n"
+        "Ali\n"
+        "OutMass\n"
+    )
+
+    html = (
+        '<div style="font-family:sans-serif;max-width:540px;margin:auto;color:#323130;">'
+        '<h2 style="color:#0078d4;">' + subject + "</h2>"
+        "<p>Hi " + first + ",</p>"
+        '<p style="font-size:14px;line-height:1.6;">' + opening + "</p>"
+        '<p style="font-size:14px;line-height:1.6;">Free sends up to <strong>'
+        + quota + " emails a month</strong>. Nothing was deleted — your "
+        "campaigns, templates and contacts are exactly where you left them.</p>"
+        '<p style="font-size:14px;line-height:1.6;">If you\'d like to carry on, '
+        "open the OutMass panel and pick a plan."
+        + ("" if promo else " A different card or payment method usually does it.")
+        + "</p>"
+        '<p style="font-size:14px;line-height:1.6;">Questions, or something that '
+        "didn't work? <strong>Just reply</strong> — it comes straight to me.</p>"
+        '<p style="font-size:14px;line-height:1.6;">Ali<br>OutMass</p>'
         "</div>"
     )
 
