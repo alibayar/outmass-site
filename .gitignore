@@ -28,6 +28,11 @@ celerybeat-schedule*
 
 # Test artifacts
 test-results/
+
+# DMARC aggregate reports — operational data, one or two a day, and they name
+# sending IPs. The folder and its README stay tracked so the path exists.
+dmarc/*
+!dmarc/README.md
 playwright-report/
 
 # Claude

@@ -8,10 +8,12 @@ and DKIM *aligned to getoutmass.com* — fails silently when it fails. Nobody
 complains; mail just lands in spam.
 
 Usage:
-    python scripts/dmarc_report.py ~/Downloads/*.xml.gz
-    python scripts/dmarc_report.py ~/Downloads          # every report in a folder
+    python scripts/dmarc_report.py                 # everything in dmarc/
+    python scripts/dmarc_report.py path/to/dir     # or a folder you name
+    python scripts/dmarc_report.py report.xml.gz   # or one file
 
-Exits 1 if any message failed DMARC, so it can be run as a check rather than read.
+Exit 0: every message authenticated. 1: something sent as us did not.
+2: nothing was read — deliberately distinct from a clean run.
 """
 
 from __future__ import annotations
@@ -135,10 +137,19 @@ def summarise(path: Path) -> tuple[int, int, list[str]]:
     return messages, failures, warnings
 
 
+# Where the reports live once they have been dragged out of an email.
+INBOX = Path(__file__).resolve().parent.parent / "dmarc"
+
+
 def main(argv: list[str]) -> int:
     if not argv:
-        print(__doc__)
-        return 2
+        # No arguments reads the project's own folder rather than printing
+        # help. The daily use of this script is "did last night's mail
+        # authenticate", and that should not need an argument to answer.
+        if not INBOX.is_dir():
+            print(__doc__)
+            return 2
+        argv = [str(INBOX)]
 
     # A path given by name is one the caller means; anything found by scanning
     # a directory has to earn its place, because that directory is somebody's
