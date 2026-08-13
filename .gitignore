@@ -33,6 +33,11 @@ test-results/
 # sending IPs. The folder and its README stay tracked so the path exists.
 dmarc/*
 !dmarc/README.md
+
+# Files handed over for a single question — invoices, exports, screenshots.
+# Never a record; the record goes in docs/plans/.
+inbox/*
+!inbox/README.md
 playwright-report/
 
 # Claude
