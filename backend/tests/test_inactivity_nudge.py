@@ -178,20 +178,34 @@ def test_find_skips_when_stamp_is_current(fake_db):
 
 
 # ── Tone locks ──
+#
+# The copy moved to emails/strings/<lang>.json on 2026-08-14, so these render
+# through the catalog now. They are the same assertions: what the three tiers
+# must and must not say, in a product where the person receiving them is
+# paying us and has done nothing wrong.
+
+
+def _tier_texts(name="Alice", days=45, lang=None):
+    """Every tier's rendered words, subject included, lowercased."""
+    from emails import render
+    from workers.inactivity_nudge import TIERS
+
+    out = {}
+    for tier in TIERS:
+        msg = render(tier.template, lang=lang, name=name, days=days)
+        out[tier.name] = f"{msg.subject}\n{msg.text}\n{msg.html}".lower()
+    return out
 
 
 def test_email_tone_is_warm_not_dunning():
     """All three tiers must keep a warm, non-threatening tone.
     These go to paying customers who did nothing wrong — a future
     edit making them aggressive would break the trust compact."""
-    from workers.inactivity_nudge import _html_tier1, _html_tier2, _html_tier3
-
-    for build in (_html_tier1, _html_tier2, _html_tier3):
-        html = build("Alice", 45)
+    for tier_name, body in _tier_texts().items():
         for bad in ["you owe", "overdue", "final notice", "last chance",
                     "delinquent", "collection"]:
-            assert bad.lower() not in html.lower(), \
-                f"{build.__name__} contains dunning language: {bad}"
+            assert bad not in body, \
+                f"{tier_name} contains dunning language: {bad}"
 
 
 def test_sender_name_is_a_person_not_the_feedback_desk():
@@ -215,7 +229,7 @@ def test_sender_name_is_a_person_not_the_feedback_desk():
 
     with patch.object(inactivity_nudge, "MAILERSEND_API_KEY", "key"), \
          patch.object(inactivity_nudge.httpx, "post", fake_post):
-        inactivity_nudge._send_email("x@y.com", "s", "<p>h</p>")
+        inactivity_nudge._send_email("x@y.com", "s", "t", "<p>h</p>")
 
     assert captured["from"]["name"] == "Ali from OutMass"
     src = open(inactivity_nudge.__file__, encoding="utf-8").read()
@@ -231,38 +245,42 @@ def test_tier1_does_not_assume_they_uninstalled():
     the one customer this would have reached had been silent 33 days and had
     auto-updated through four releases to 0.2.0 in the meantime. The 30-day
     note points at the panel they already have."""
-    from workers.inactivity_nudge import _html_tier1
-
-    html = _html_tier1("X", 30).lower()
-    assert "reinstall" not in html
-    assert "outlook" in html, "it must say where to find the panel instead"
+    body = _tier_texts(name="X", days=30)["30d_nudge"]
+    assert "reinstall" not in body
+    assert "outlook" in body, "it must say where to find the panel instead"
 
 
 def test_no_tier_hardcodes_a_browser_store():
     """install_source is captured for PostHog but never stored on the user
     row, so the worker cannot tell a Chrome install from an Edge one. A
     hardcoded Chrome link would send Edge customers to the wrong store —
-    and Edge is a live channel."""
-    from workers.inactivity_nudge import _html_tier1, _html_tier2, _html_tier3
+    and Edge is a live channel.
 
-    for build in (_html_tier1, _html_tier2, _html_tier3):
-        html = build("X", 45).lower()
-        assert "chromewebstore" not in html, f"{build.__name__} hardcodes Chrome"
-        assert "microsoftedge" not in html, f"{build.__name__} hardcodes Edge"
+    Checked in EVERY language, unlike the wording locks around it: a URL is
+    the one thing a translator can add without knowing they have made a
+    decision, and the one thing nobody reviewing an unfamiliar script spots.
+    """
+    from emails import available_languages
+
+    for lang in available_languages():
+        for tier_name, body in _tier_texts(name="X", lang=lang).items():
+            assert "chromewebstore" not in body, (
+                f"{tier_name}/{lang} hardcodes Chrome"
+            )
+            assert "microsoftedge" not in body, (
+                f"{tier_name}/{lang} hardcodes Edge"
+            )
 
 
 def test_every_tier_asks_what_went_wrong():
     """The first version offered keep-or-cancel and never asked why they
     stopped. With a handful of paying customers that answer is worth more
     than the subscription, and only they have it."""
-    from workers.inactivity_nudge import _html_tier1, _html_tier2, _html_tier3
-
-    for build in (_html_tier1, _html_tier2, _html_tier3):
-        html = build("X", 45).lower()
-        assert "reply" in html, f"{build.__name__} gives them no way to answer"
-        asks = any(p in html for p in
+    for tier_name, body in _tier_texts(name="X").items():
+        assert "reply" in body, f"{tier_name} gives them no way to answer"
+        asks = any(p in body for p in
                    ("got in the way", "went wrong", "stopped you"))
-        assert asks, f"{build.__name__} never asks what stopped them"
+        assert asks, f"{tier_name} never asks what stopped them"
 
 
 def test_tier3_promises_no_follow_up_it_cannot_keep():
@@ -270,8 +288,6 @@ def test_tier3_promises_no_follow_up_it_cannot_keep():
     There is one person here, and 90 days is the LAST tier — so both "we
     will call you" and "we will write once more" are promises with nothing
     behind them. It now says the emails stop, which is true."""
-    from workers.inactivity_nudge import _html_tier3
-
-    html = _html_tier3("Bob", 90).lower()
-    assert "contact you personally" not in html
-    assert "last automatic email" in html
+    body = _tier_texts(name="Bob", days=90)["90d_warning"]
+    assert "contact you personally" not in body
+    assert "last automatic email" in body

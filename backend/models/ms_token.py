@@ -13,7 +13,6 @@ from postgrest.exceptions import APIError
 from config import (
     AZURE_CLIENT_ID,
     AZURE_CLIENT_SECRET,
-    BACKEND_URL,
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
     MAILERSEND_PERSON_FROM_NAME,
@@ -27,38 +26,27 @@ from database import get_db
 logger = logging.getLogger(__name__)
 
 
-def _send_reauth_email(user_email: str, user_name: str | None, reason: str) -> None:
+def _send_reauth_email(
+    user_email: str, user_name: str | None, reason: str, lang: str | None = None
+) -> None:
     """Best-effort MailerSend email telling the user to reconnect Outlook.
 
     Fires only once per flagging transition (caller gates on False→True).
     Silent on any failure — token flagging must not depend on email delivery.
+
+    Copy lives in emails/strings/<lang>.json; this function is the trigger.
     """
     if not MAILERSEND_API_KEY or not user_email:
         return
-    greeting = f"Hi {user_name}," if user_name else "Hi,"
-    reconnect_url = f"{BACKEND_URL.rstrip('/')}/"
-    html = (
-        "<div style='font-family:sans-serif;max-width:520px;margin:auto;color:#323130;'>"
-        "<h2 style='color:#0078d4;'>Action needed: reconnect Outlook</h2>"
-        f"<p>{greeting}</p>"
-        "<p>Your OutMass connection to Microsoft Outlook has expired. "
-        "Until you reconnect, any scheduled campaigns and follow-ups will "
-        "pause instead of sending.</p>"
-        "<p style='margin:28px 0;'>"
-        "<b>How to fix it:</b> open the OutMass sidebar in Outlook Web, "
-        "click the <em>Reconnect to Outlook</em> banner, and sign in again. "
-        "Takes about 10 seconds.</p>"
-        "<p style='color:#888;font-size:12px;'>"
-        f"Reason: {reason}. If you keep seeing this, reply to this email "
-        "and we'll look into it.</p>"
-        "<p style='color:#888;font-size:12px;'>— The OutMass team</p>"
-        "</div>"
-    )
+    from emails import render
+
+    msg = render("reauth", lang=lang, name=user_name, reason=reason)
     payload = {
         "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": user_email}],
-        "subject": "Reconnect OutMass to Outlook",
-        "html": html,
+        "subject": msg.subject,
+        "text": msg.text,
+        "html": msg.html,
     }
     try:
         httpx.post(

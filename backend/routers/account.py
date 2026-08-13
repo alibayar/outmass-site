@@ -14,7 +14,6 @@ from fastapi import APIRouter, Depends, HTTPException, Request
 from pydantic import BaseModel
 
 from config import (
-    BACKEND_URL,
     MAILERSEND_API_KEY,
     MAILERSEND_FROM_EMAIL,
     MAILERSEND_PERSON_FROM_NAME,
@@ -40,36 +39,24 @@ def _send_deletion_confirmation_email(
     email: str,
     name: str | None,
     archive_id: str,
+    lang: str | None = None,
 ) -> None:
     """Best-effort confirmation email. Fires AFTER the DB transaction,
     so a mail-delivery failure can't undo a successful deletion.
+
+    Copy lives in emails/strings/<lang>.json; this function is the trigger.
     """
     if not MAILERSEND_API_KEY or not email:
         return
-    greeting = f"Hi {name}," if name else "Hi,"
-    html = (
-        "<div style='font-family:sans-serif;max-width:540px;margin:auto;color:#323130;'>"
-        "<h2 style='color:#0078d4;'>Your OutMass account has been deleted</h2>"
-        f"<p>{greeting}</p>"
-        "<p>As you requested, your OutMass account and all associated "
-        "data (campaigns, contacts, templates, Microsoft authorization, "
-        "and settings) have been permanently removed.</p>"
-        "<p>Per our Privacy Policy, we retain an anonymised audit "
-        "record for 5 years to comply with fraud prevention and legal "
-        "obligations. This record contains only a hash of your email "
-        "address and aggregate counters &mdash; no content.</p>"
-        "<p><b>If you had an active paid subscription</b>, it is "
-        "managed separately through Stripe. If you need help cancelling "
-        "or getting a refund, reply to this email.</p>"
-        f"<p style='color:#888;font-size:11px;'>Archive reference: {archive_id}</p>"
-        "<p style='color:#888;font-size:12px;'>&mdash; The OutMass team</p>"
-        "</div>"
-    )
+    from emails import render
+
+    msg = render("account_deleted", lang=lang, name=name, archive_id=archive_id)
     payload = {
         "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": email}],
-        "subject": "Your OutMass account has been deleted",
-        "html": html,
+        "subject": msg.subject,
+        "text": msg.text,
+        "html": msg.html,
     }
     try:
         httpx.post(

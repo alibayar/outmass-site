@@ -140,7 +140,7 @@ def test_inactivity_email_is_sent_by_a_person():
     post = _Captured()
     with patch.object(inactivity_nudge, "MAILERSEND_API_KEY", "k"), \
          patch.object(inactivity_nudge.httpx, "post", post):
-        inactivity_nudge._send_email("u@example.com", "s", "<p>h</p>")
+        inactivity_nudge._send_email("u@example.com", "s", "t", "<p>h</p>")
 
     assert post.payload["from"]["name"] == MAILERSEND_PERSON_FROM_NAME
 
@@ -148,16 +148,24 @@ def test_inactivity_email_is_sent_by_a_person():
 # ── The reason the rule exists ──
 
 
-def test_the_emails_that_ask_for_a_reply_still_ask_for_one():
+@pytest.mark.parametrize(
+    "template,variables",
+    [
+        ("reauth", {"reason": "invalid_grant"}),
+        ("account_deleted", {"archive_id": "arch-1"}),
+    ],
+)
+def test_the_emails_that_ask_for_a_reply_still_ask_for_one(template, variables):
     """The sender-name fix is only worth anything because these emails
     invite a reply. If that invitation is ever edited out, the constant
     stops mattering and this test should be revisited rather than silently
-    left passing."""
-    from pathlib import Path
+    left passing.
 
-    root = Path(__file__).resolve().parents[1]
-    for module_path in ("models/ms_token.py", "routers/account.py"):
-        src = (root / module_path).read_text(encoding="utf-8")
-        assert "reply to this email" in src, (
-            f"{module_path} no longer asks the customer to reply"
-        )
+    Reads the rendered message rather than the source file: since 2026-08-14
+    the copy lives in emails/strings/, so a source scan would pass on a
+    module that had lost the sentence entirely.
+    """
+    from emails import render
+
+    msg = render(template, name="Sam", **variables)
+    assert "reply to this email" in msg.text.replace("\n", " ")

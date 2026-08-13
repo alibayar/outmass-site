@@ -19,6 +19,11 @@ Idempotency: each tier has its own *_sent_at column on users, and a
 row is skipped if the stamp is more recent than last_activity_at.
 When the user returns and goes inactive again, the stamp naturally
 goes stale and a fresh tier-1 nudge fires.
+
+The copy lives in emails/strings/<lang>.json and is rendered into both a
+text and an HTML part by emails.render — these three were HTML-only until
+2026-08-14, which is worse for spam scoring and shows up as an empty message
+in a text-only client.
 """
 
 import logging
@@ -34,15 +39,14 @@ from config import (
     MAILERSEND_FROM_EMAIL,
     MAILERSEND_PERSON_FROM_NAME,
 )
+from emails import SUPPORT_EMAIL, render  # noqa: F401 — SUPPORT_EMAIL re-exported
 from models import audit
 from workers.celery_app import celery
 
 logger = logging.getLogger(__name__)
 
 
-SUPPORT_EMAIL = "support@getoutmass.com"
-
-# There is deliberately no store URL here any more.
+# There is deliberately no store URL in these emails any more.
 #
 # It used to be the Chrome Web Store link, sent to everyone. We cannot tell
 # a Chrome install from an Edge one at this point: install_source is captured
@@ -69,139 +73,55 @@ class _Tier:
     name: str
     threshold_days: int
     stamp_column: str
-    subject: str
-    build_html: callable  # (name: str | None, days: int) -> str
+    #: Key into emails.catalog.TEMPLATES. Subject and body both come from
+    #: there, in whichever language the user reads.
+    template: str
     audit_event: str
 
 
-def _html_tier1(name: str | None, days: int) -> str:
-    """30-day heads-up. Warm, no pressure — and it ASKS.
-
-    The first version offered two doors, keep or cancel, and never asked why
-    they stopped. For a product with a handful of paying customers that is
-    the most expensive omission in the whole sequence: the answer is worth
-    more than the subscription. Someone who tried it hard for one day and
-    never returned hit something, and only they know what.
-    """
-    greeting = f"Hi {name}," if name else "Hi,"
-    return (
-        "<div style='font-family:sans-serif;max-width:540px;margin:auto;color:#323130;'>"
-        "<h2 style='color:#0078d4;'>Still using OutMass?</h2>"
-        f"<p>{greeting}</p>"
-        f"<p>We noticed you haven't used OutMass in about {days} days. "
-        "A heads-up rather than a nudge: your paid subscription is still "
-        "active and still billed each month, whether or not you open it.</p>"
-        "<p><b>If you still plan to use it</b>, there's nothing to do — open "
-        "Outlook on the web and the OutMass panel is where you left it.</p>"
-        "<p><b>If something got in the way</b>, tell us what it was. Just "
-        "reply to this email. That is genuinely the most useful thing you "
-        "can send us, and a person reads every one.</p>"
-        "<p><b>If you don't need it anymore</b>, you can stop paying today:</p>"
-        "<ul style='padding-left:22px;'>"
-        "<li>Open the OutMass panel → <em>Account</em> → <em>Manage Subscription</em>, or</li>"
-        f'<li>Reply here, or write to <a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>'
-        " — we'll cancel it and refund the current period.</li>"
-        "</ul>"
-        "<p style='color:#888;font-size:12px;margin-top:28px;'>"
-        "You're receiving this because you have an active paid OutMass "
-        "subscription. This is a one-time note per inactive period.</p>"
-        "<p style='color:#888;font-size:12px;'>— The OutMass team</p>"
-        "</div>"
-    )
-
-
-def _html_tier2(name: str | None, days: int) -> str:
-    """60-day firmer reminder. Still not a threat — explicit cancel path."""
-    greeting = f"Hi {name}," if name else "Hi,"
-    return (
-        "<div style='font-family:sans-serif;max-width:540px;margin:auto;color:#323130;'>"
-        "<h2 style='color:#0078d4;'>Still paying for OutMass without using it?</h2>"
-        f"<p>{greeting}</p>"
-        f"<p>You haven't logged into OutMass in around {days} days. "
-        "Your paid subscription has continued to renew during this time. "
-        "We don't want you paying for something you're not getting value from.</p>"
-        "<p><b>Three ways this can go:</b></p>"
-        "<ul style='padding-left:22px;'>"
-        f'<li><b>Keep it</b> — open the OutMass panel in Outlook on '
-        "the web, or reinstall it from the browser store you got it from. "
-        "These emails stop as soon as you sign in.</li>"
-        "<li><b>Tell us what went wrong</b> — reply to this email. If "
-        "something blocked you, we would much rather fix it than lose you.</li>"
-        "<li><b>Cancel it</b> \u2014 reply to this email or contact "
-        f'<a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>'
-        " and we'll cancel the subscription plus refund the current "
-        "billing period.</li>"
-        "</ul>"
-        "<p style='color:#888;font-size:12px;margin-top:28px;'>"
-        "If we don't hear back, we'll reach out one more time at the "
-        "90-day mark before taking any further action.</p>"
-        "<p style='color:#888;font-size:12px;'>— The OutMass team</p>"
-        "</div>"
-    )
-
-
-def _html_tier3(name: str | None, days: int) -> str:
-    """90-day final note. Promises nothing it cannot keep.
-
-    The first version said a member of the team would contact them
-    personally. There is one person here, and a promise of manual outreach
-    is the kind that quietly goes unkept — the failure mode this whole
-    sequence exists to avoid.
-
-    "We will write to you once more" was the proposed replacement, but this
-    IS the last tier: there is nothing after 90 days, so that would have
-    been the same unkeepable shape in gentler words. Saying the emails stop
-    here is both true and kinder — it tells them the nagging ends.
-    """
-    greeting = f"Hi {name}," if name else "Hi,"
-    return (
-        "<div style='font-family:sans-serif;max-width:540px;margin:auto;color:#323130;'>"
-        "<h2 style='color:#0078d4;'>OutMass — a final check-in</h2>"
-        f"<p>{greeting}</p>"
-        f"<p>It's been about {days} days since you last used OutMass. "
-        "We've written twice already, and we don't want to keep charging "
-        "you for something you aren't using.</p>"
-        "<p><b>To stop paying</b>, reply to this email or write to "
-        f'<a href="mailto:{SUPPORT_EMAIL}">{SUPPORT_EMAIL}</a>'
-        " — we'll cancel the subscription and refund the current period, "
-        "prorated.</p>"
-        "<p><b>If something stopped you from using it</b>, we'd still like "
-        "to know what. One line in a reply is enough, and it is worth more "
-        "to us than the subscription.</p>"
-        "<p><b>If you just haven't got to it yet</b>, open the OutMass panel "
-        "in Outlook on the web and these emails stop on their own.</p>"
-        "<p style='color:#888;font-size:12px;margin-top:28px;'>"
-        "This is the last automatic email we'll send about this. Your "
-        "subscription stays exactly as it is unless you tell us otherwise."
-        "</p>"
-        "<p style='color:#888;font-size:12px;'>— The OutMass team</p>"
-        "</div>"
-    )
-
+# Why these three read the way they do. The words moved to the string table
+# on 2026-08-14; the reasoning did not, and it is the reason nobody should
+# tidy them into something brisker.
+#
+#   30d — warm, no pressure, and it ASKS. The first version offered two
+#     doors, keep or cancel, and never asked why they stopped. For a product
+#     with a handful of paying customers that is the most expensive omission
+#     in the whole sequence: the answer is worth more than the subscription.
+#     Someone who tried it hard for one day and never returned hit
+#     something, and only they know what.
+#
+#   60d — firmer. Still not a threat: an explicit cancel path, and an
+#     explicit invitation to tell us what went wrong instead.
+#
+#   90d — promises nothing it cannot keep. The first version said a member
+#     of the team would contact them personally. There is one person here,
+#     and a promise of manual outreach is the kind that quietly goes unkept —
+#     the failure mode this whole sequence exists to avoid. "We will write to
+#     you once more" was the proposed replacement, but this IS the last tier:
+#     there is nothing after 90 days, so that would have been the same
+#     unkeepable shape in gentler words. Saying the emails stop here is both
+#     true and kinder — it tells them the nagging ends.
 
 TIERS = (
     _Tier(
         name="30d_nudge",
         threshold_days=INACTIVITY_NUDGE_DAYS,  # 30
         stamp_column="inactivity_nudge_sent_at",
-        subject="Still using OutMass?",
-        build_html=_html_tier1,
+        template="inactivity_30d_nudge",
         audit_event="inactivity_nudge_sent",
     ),
     _Tier(
         name="60d_warning",
         threshold_days=60,
         stamp_column="inactivity_warning_60d_sent_at",
-        subject="Still paying for OutMass without using it?",
-        build_html=_html_tier2,
+        template="inactivity_60d_warning",
         audit_event="inactivity_warning_60d_sent",
     ),
     _Tier(
         name="90d_warning",
         threshold_days=90,
         stamp_column="inactivity_warning_90d_sent_at",
-        subject="OutMass — a final check-in",
-        build_html=_html_tier3,
+        template="inactivity_90d_warning",
         audit_event="inactivity_warning_90d_sent",
     ),
 )
@@ -210,7 +130,7 @@ TIERS = (
 # ── Shared email dispatch ──
 
 
-def _send_email(email: str, subject: str, html: str) -> bool:
+def _send_email(email: str, subject: str, text: str, html: str) -> bool:
     """Returns True on successful send, False otherwise.
     Caller uses the return value to decide whether to stamp the
     sent-at timestamp; we don't stamp on failure so the beat task
@@ -224,6 +144,7 @@ def _send_email(email: str, subject: str, html: str) -> bool:
         "from": {"email": MAILERSEND_FROM_EMAIL, "name": MAILERSEND_PERSON_FROM_NAME},
         "to": [{"email": email}],
         "subject": subject,
+        "text": text,
         "html": html,
     }
     try:
@@ -252,7 +173,8 @@ def _find_inactive_paid_users(db, tier: _Tier) -> list[dict]:
     result = (
         db.table("users")
         .select(
-            f"id, email, name, last_activity_at, {tier.stamp_column}"
+            f"id, email, name, preferred_language, last_activity_at, "
+            f"{tier.stamp_column}"
         )
         .neq("plan", "free")
         .not_.is_("stripe_subscription_id", "null")
@@ -297,8 +219,13 @@ def _run_tier(tier: _Tier) -> dict:
         except Exception:  # noqa: BLE001
             days_inactive = tier.threshold_days
 
-        html = tier.build_html(user.get("name"), days_inactive)
-        if not _send_email(user.get("email"), tier.subject, html):
+        msg = render(
+            tier.template,
+            lang=user.get("preferred_language"),
+            name=user.get("name"),
+            days=days_inactive,
+        )
+        if not _send_email(user.get("email"), msg.subject, msg.text, msg.html):
             continue
 
         try:

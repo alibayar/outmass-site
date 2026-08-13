@@ -74,11 +74,20 @@ def test_send_welcome_never_raises():
 
 
 def test_first_name_fallback():
-    from utils.welcome_email import _first_name
+    """Greeting by first name only, with "there" when we have none.
 
-    assert _first_name("Mary Bass") == "Mary"
-    assert _first_name(None) == "there"
-    assert _first_name("   ") == "there"
+    The logic moved into emails.render on 2026-08-14 — a greeting is copy, and
+    "there" has to be translatable — so this asserts through the rendered
+    message rather than through a helper.
+    """
+    from emails import render
+
+    def greeting(name):
+        return render("welcome", name=name, free_quota="250").text.splitlines()[0]
+
+    assert greeting("Mary Bass") == "Hi Mary,"
+    assert greeting(None) == "Hi there,"
+    assert greeting("   ") == "Hi there,"
 
 
 # ── send_upgrade_email ──

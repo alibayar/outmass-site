@@ -91,13 +91,20 @@ def _render_all() -> dict:
                               "text": sent.get("text", ""), "html": sent.get("html", "")}
 
     # ── the three escalation tiers ──
+    #
+    # Rendered through the catalog rather than through _run_tier, which would
+    # need a database and a beat. What this still checks is the wiring that
+    # can actually break: that each tier's template key exists and takes the
+    # variables the worker passes it.
+    from emails import render as render_email
     from workers.inactivity_nudge import TIERS
 
     for tier in TIERS:
+        msg = render_email(tier.template, name="Ada", days=tier.threshold_days)
         out[f"inactivity_{tier.name}"] = {
-            "subject": tier.subject,
-            "text": "",
-            "html": tier.build_html("Ada", tier.threshold_days),
+            "subject": msg.subject,
+            "text": msg.text,
+            "html": msg.html,
         }
 
     return out
@@ -154,34 +161,47 @@ def test_the_quota_numbers_are_read_not_typed(rendered):
     )
 
 
-HTML_ONLY = {
-    "reauth", "account_deleted",
-    "inactivity_30d_nudge", "inactivity_60d_warning", "inactivity_90d_warning",
-}
+HTML_ONLY: set[str] = set()
+"""Empty, and it stays empty.
+
+It used to name five: reconnect, account-deleted, and all three inactivity
+tiers, none of which sent a text/plain part at all. A single-part HTML message
+scores worse with spam filters and renders as nothing in a text-only client —
+and we had just spent 2026-08-13 on SPF, DKIM and DMARC precisely because
+whether our mail arrives matters.
+
+Moving every template to one source (2026-08-14) gave all ten both parts for
+free, because both are now derived from the same body. This set is kept as the
+seam: if some future template can only be HTML, it has to be named here
+deliberately, in a diff someone reads.
+"""
 
 
-@pytest.mark.parametrize("key", sorted(HTML_ONLY))
-def test_the_html_only_templates_are_recorded_as_such(rendered, key):
-    """Five of the ten send no text/plain part at all.
-
-    Recorded rather than fixed here, because it is a real finding and not this
-    test's job: a message with no plain-text alternative scores worse with
-    spam filters and renders as nothing in a text-only client. We spent
-    2026-08-13 on SPF/DKIM/DMARC precisely because whether our mail arrives
-    matters — and half of it is single-part HTML.
-
-    When the localisation work gives these a text body, delete them from
-    HTML_ONLY and this test starts enforcing that they keep one.
-    """
-    assert rendered[key]["text"] == "", (
-        f"{key} now has a text part — remove it from HTML_ONLY so the check "
-        "flips from documenting the gap to defending the fix"
-    )
-
-
-def test_every_other_template_has_both_parts(rendered):
+def test_every_template_has_both_parts(rendered):
+    """The check that flipped from documenting the gap to defending the fix."""
     for key, parts in sorted(rendered.items()):
         if key in HTML_ONLY:
             continue
         assert parts["text"].strip(), f"{key} lost its plain-text part"
         assert parts["html"].strip(), f"{key} lost its HTML part"
+
+
+def test_no_template_is_silently_html_only(rendered):
+    assert not HTML_ONLY, (
+        "a template was added to HTML_ONLY — that is a deliberate decision to "
+        "send a message with no plain-text alternative, and it needs a reason "
+        "written next to it"
+    )
+
+
+def test_the_customer_name_cannot_inject_markup(rendered):
+    """Names come from a Microsoft profile, and the old templates dropped them
+    straight into an f-string inside <p>. Low severity — the only person who
+    could attack themselves is the recipient — but escaping is free now that
+    every value goes through one renderer, and it would not have been if
+    somebody later reused a name in an email to somebody else."""
+    from emails import render as render_email
+
+    msg = render_email("welcome", name="<script>x</script>", free_quota="250")
+    assert "<script>" not in msg.html
+    assert "&lt;script&gt;" in msg.html
