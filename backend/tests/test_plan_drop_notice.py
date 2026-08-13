@@ -221,3 +221,38 @@ def test_the_welcome_email_reads_the_free_limit_too():
     # reinstated literal cannot coincide with the assertion.
     assert "4,321" in captured["text"]
     assert "4,321" in captured["html"]
+
+
+def test_the_welcome_email_names_every_outlook_host_we_support():
+    """It listed only office.com and live.com. Microsoft is migrating people
+    to outlook.cloud.microsoft — which has been in the manifest since 0.1.23
+    and is where a cancelling customer's last recorded session was — so
+    somebody landing there and reading this would conclude they were in the
+    wrong place. The manifest is the source of truth for what we support."""
+    import json
+    from pathlib import Path
+
+    from utils import welcome_email
+
+    root = Path(__file__).resolve().parents[2]
+    manifest = json.loads(
+        (root / "extension" / "manifest.json").read_text(encoding="utf-8")
+    )
+    outlook_hosts = [
+        h.replace("https://", "").replace("/*", "")
+        for h in manifest["host_permissions"]
+        if "outlook" in h
+    ]
+    assert len(outlook_hosts) >= 3
+
+    captured = {}
+    with patch.object(welcome_email, "_dispatch",
+                      lambda e, s, t, h: captured.update(text=t, html=h) or True):
+        welcome_email.send_welcome_email("x@y.com", "Dana")
+
+    for host in outlook_hosts:
+        # office365.com is an alias users never type; the rest they do.
+        if host == "outlook.office365.com":
+            continue
+        assert host in captured["text"], f"the text never mentions {host}"
+        assert host in captured["html"], f"the html never mentions {host}"

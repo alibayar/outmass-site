@@ -105,9 +105,11 @@ def send_welcome_email(email: str, name: str | None = None) -> bool:
         "Founder, OutMass\n"
         "https://getoutmass.com\n"
         "\n"
-        "P.S. The panel lives in Outlook ON THE WEB (outlook.office.com or\n"
-        "outlook.live.com) — the Windows/Mac desktop app isn't supported. If\n"
-        "you don't see the round button, refresh your Outlook tab once.\n"
+        "P.S. The panel lives in Outlook ON THE WEB — in a browser tab, not\n"
+        "the Windows/Mac desktop app. Whichever address your account uses is\n"
+        "fine (outlook.office.com, outlook.live.com and\n"
+        "outlook.cloud.microsoft all work). If you don't see the round\n"
+        "button, refresh your Outlook tab once.\n"
     )
 
     steps_html = (
@@ -144,9 +146,11 @@ def send_welcome_email(email: str, name: str | None = None) -> bool:
         'Founder, OutMass<br>'
         '<a href="https://getoutmass.com" style="color:#0078d4;">getoutmass.com</a></p>'
         '<p style="font-size:12px;color:#797775;line-height:1.5;margin-top:18px;">'
-        "P.S. The panel lives in Outlook <em>on the web</em> (outlook.office.com "
-        "or outlook.live.com) — the Windows/Mac desktop app isn't supported. If "
-        "you don't see the round button, refresh your Outlook tab once.</p>"
+        "P.S. The panel lives in Outlook <em>on the web</em> — in a browser tab, "
+        "not the Windows/Mac desktop app. Whichever address your account uses is "
+        "fine (outlook.office.com, outlook.live.com and outlook.cloud.microsoft "
+        "all work). If you don't see the round button, refresh your Outlook tab "
+        "once.</p>"
         "</div>"
     )
 
