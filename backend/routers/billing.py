@@ -594,6 +594,7 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
             upgraded["email"],
             upgraded.get("name"),
             plan,
+            upgraded.get("preferred_language"),
         )
 
     # The one funnel rung that was missing. Everything up to the click is
@@ -875,6 +876,7 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
                             dropped["email"],
                             dropped.get("name"),
                             "payment_failed",
+                            dropped.get("preferred_language"),
                         )
 
             if not shielded:

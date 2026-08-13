@@ -117,12 +117,24 @@ async def get_current_user(
     response: Response,
     authorization: str = Header(...),
     x_extension_version: Annotated[str | None, Header()] = None,
+    x_ui_language: Annotated[str | None, Header()] = None,
 ) -> dict:
     """Dependency: extract and verify JWT from Authorization header.
 
     Also records the calling extension's version (sent via X-Extension-Version
     header). Both the activity timestamp and the version write are gated by
     a 15-minute rate-limiter inside maybe_touch_activity, so this is cheap.
+
+    X-UI-Language is the language the panel is rendering in, as computed by
+    getActiveLocale() in extension/i18n.js — the Settings override if the user
+    picked one, otherwise the browser. It rides an existing header rather than
+    a new endpoint because it has to arrive from every client without a
+    version gate: builds that predate it simply never send it, the column
+    stays NULL, and every email falls back to English exactly as today.
+
+    It is only ever the panel telling us what it is showing. Nothing here
+    reads Accept-Language, which describes the browser rather than the person
+    and would write Turkish to an English speaker in Istanbul.
 
     Sliding refresh: a VALID token past half its 24h life gets a fresh
     replacement in the X-Refresh-JWT response header. Active users
@@ -139,7 +151,11 @@ async def get_current_user(
     user = user_model.get_by_id(user_id)
     if not user:
         raise HTTPException(status_code=401, detail="User not found")
-    user_model.maybe_touch_activity(user, extension_version=x_extension_version)
+    user_model.maybe_touch_activity(
+        user,
+        extension_version=x_extension_version,
+        preferred_language=x_ui_language,
+    )
 
     iat = payload.get("iat")
     half_life_seconds = JWT_EXPIRATION_HOURS * 3600 / 2
@@ -873,7 +889,10 @@ async def auth_callback(
     # response; a mail hiccup must never break the OAuth redirect).
     if created:
         background_tasks.add_task(
-            welcome_email.send_welcome_email, user["email"], user.get("name")
+            welcome_email.send_welcome_email,
+            user["email"],
+            user.get("name"),
+            user.get("preferred_language"),
         )
 
     # Persist tokens for server-side refresh (worker, scheduled sending).
@@ -1351,7 +1370,10 @@ async def microsoft_auth(
     # First-ever sign-in → one-time welcome email (mirrors the web callback).
     if created:
         background_tasks.add_task(
-            welcome_email.send_welcome_email, user["email"], user.get("name")
+            welcome_email.send_welcome_email,
+            user["email"],
+            user.get("name"),
+            user.get("preferred_language"),
         )
 
     # Save refresh token for follow-up worker (async email sending)

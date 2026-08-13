@@ -157,7 +157,9 @@ async def delete_account(
     # internal try/except — we never want a mailer failure to surface
     # a 500 AFTER the user's data is already gone.
     try:
-        _send_deletion_confirmation_email(user_email, user_name, archive_id)
+        _send_deletion_confirmation_email(
+            user_email, user_name, archive_id, user.get("preferred_language")
+        )
     except Exception as e:  # noqa: BLE001
         logger.warning("Post-deletion email dispatch bubbled an exception: %s", e)
 

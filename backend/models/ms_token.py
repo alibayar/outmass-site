@@ -115,18 +115,20 @@ def _mark_requires_reauth(user_id: str, reason: str) -> None:
         db = get_db()
         existing = (
             db.table("users")
-            .select("requires_reauth, email, name")
+            .select("requires_reauth, email, name, preferred_language")
             .eq("id", user_id)
             .execute()
         )
         previously_flagged = False
         email = None
         name = None
+        lang = None
         if existing.data:
             row = existing.data[0]
             previously_flagged = bool(row.get("requires_reauth"))
             email = row.get("email")
             name = row.get("name")
+            lang = row.get("preferred_language")
 
         db.table("users").update({
             "requires_reauth": True,
@@ -136,7 +138,7 @@ def _mark_requires_reauth(user_id: str, reason: str) -> None:
         logger.warning("Flagged user %s as requires_reauth (%s)", user_id, reason)
 
         if not previously_flagged and email:
-            _send_reauth_email(email, name, reason)
+            _send_reauth_email(email, name, reason, lang)
     except Exception:  # noqa: BLE001 — never let token-refresh logging kill the caller
         logger.exception("Failed to mark user %s as requires_reauth", user_id)
 

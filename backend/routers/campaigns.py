@@ -847,6 +847,7 @@ async def send_campaign(
             quota_skipped,
             limit,
             next_reset.isoformat() if next_reset else None,
+            user.get("preferred_language"),
         )
 
     return {

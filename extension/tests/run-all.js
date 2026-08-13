@@ -14,6 +14,9 @@
  *                         backend/routers/auth.py to compare both sides)
  *   no-hardcoded-prices — no locale or markup holds a literal price, and the
  *                         Intl path that shows the real one still exists
+ *   ui-language-header  — the service worker and the panel agree on what
+ *                         language this is, and the backend reads the header
+ *                         they send (crosses into backend/routers/auth.py)
  *
  * A suite's run() may be sync or async — the result is awaited either way.
  *
@@ -32,6 +35,7 @@ const suites = [
   require("./ms-auth-codes.test.js"),
   require("./manifest-permissions.test.js"),
   require("./no-hardcoded-prices.test.js"),
+  require("./ui-language-header.test.js"),
 ];
 
 async function main() {

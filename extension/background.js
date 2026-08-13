@@ -672,8 +672,30 @@ function _backendBases() {
   return all;
 }
 
+/**
+ * The language the panel is rendering in, as a BCP-47 tag.
+ *
+ * Mirrors getActiveLocale() in i18n.js on purpose: that file is loaded by the
+ * sidebar and popup, never by this service worker, and importing it here to
+ * share one function would pull in the whole translation dictionary and its
+ * async init for the sake of two lines. tests/ui-language-header.test.js
+ * asserts the two agree on every input, because two implementations of one
+ * rule is exactly the shape that drifts.
+ *
+ * navigator.language is not consulted: chrome.i18n.getUILanguage() is always
+ * available in a service worker, so the branch would be unreachable.
+ */
+function _uiLanguageTag(override) {
+  var lang = override && override !== "auto" ? override : null;
+  if (!lang && typeof chrome !== "undefined" && chrome.i18n && chrome.i18n.getUILanguage) {
+    try { lang = chrome.i18n.getUILanguage(); } catch (e) {}
+  }
+  return (lang || "en").replace("_", "-");
+}
+
 async function backendFetch(endpoint, options) {
-  let storage = await chrome.storage.local.get(["backendJwt"]);
+  // uiLanguage rides along on a read we already do — no extra storage hit.
+  let storage = await chrome.storage.local.get(["backendJwt", "uiLanguage"]);
 
   if (!storage.backendJwt) {
     // auth_required routes this to the sidebar's sign-in banner + a
@@ -686,6 +708,10 @@ async function backendFetch(endpoint, options) {
     "Content-Type": "application/json",
     Authorization: "Bearer " + storage.backendJwt,
     "X-Extension-Version": chrome.runtime.getManifest().version,
+    // What language to write to this person in. The backend stores it on the
+    // user row when it changes and every outgoing email reads it; a build
+    // that never sends it leaves the column NULL, which means English.
+    "X-UI-Language": _uiLanguageTag(storage.uiLanguage),
     ...(options?.headers || {}),
   };
 

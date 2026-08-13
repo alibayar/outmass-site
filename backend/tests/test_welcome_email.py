@@ -190,14 +190,18 @@ def _post_checkout(client, users_tbl, subscription):
 
 def test_first_checkout_sends_upgrade_email(client, fake_db):
     users_tbl = FakeQueryBuilder(
-        data=[{"id": "u-42", "email": "payer@x.com", "name": "Pay Er"}]
+        data=[{
+            "id": "u-42", "email": "payer@x.com", "name": "Pay Er",
+            "preferred_language": "tr",
+        }]
     )  # no stored subscription id → first processing
     fake_db.set_table("users", users_tbl)
 
     resp, send = _post_checkout(client, users_tbl, subscription="sub_new")
 
     assert resp.status_code == 200
-    send.assert_called_once_with("payer@x.com", "Pay Er", "pro")
+    # Fourth argument is the language to write in, read off the user row.
+    send.assert_called_once_with("payer@x.com", "Pay Er", "pro", "tr")
 
 
 def test_checkout_replay_does_not_resend_upgrade_email(client, fake_db):
@@ -262,9 +266,17 @@ def _post_auth(client, created):
 
 
 def test_new_user_gets_welcome_email(client, fake_db):
+    """The language is None here, and that is the honest state of it.
+
+    A row created seconds ago has never sent us an X-UI-Language header, so
+    the welcome email — the one we send most — is the single template that
+    cannot yet be localised. Closing that means carrying the locale through
+    the OAuth state parameter, which is an auth-flow change and not this one.
+    Pinned rather than glossed so the gap stays visible.
+    """
     resp, send = _post_auth(client, created=True)
     assert resp.status_code == 200
-    send.assert_called_once_with("test@example.com", "Test User")
+    send.assert_called_once_with("test@example.com", "Test User", None)
 
 
 def test_existing_user_gets_no_welcome_email(client, fake_db):

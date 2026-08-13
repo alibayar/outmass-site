@@ -1205,7 +1205,10 @@ def expire_manual_promos():
                     from utils import welcome_email
 
                     welcome_email.send_plan_dropped_email(
-                        user["email"], user.get("name"), "promo_ended"
+                        user["email"],
+                        user.get("name"),
+                        "promo_ended",
+                        user.get("preferred_language"),
                     )
                 except Exception:  # noqa: BLE001
                     logger.warning(

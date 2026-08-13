@@ -133,13 +133,51 @@ def _is_valid_version(v: str | None) -> str | None:
     return candidate[:_MAX_VERSION_LEN]
 
 
-def maybe_touch_activity(user: dict, extension_version: str | None = None) -> None:
-    """Bump last_activity_at if stale, and/or update last_seen_extension_version
-    if it changed.
+_MAX_LANGUAGE_LEN = 16  # matches the CHECK added by migration 030
+
+
+def _is_valid_language(v: str | None) -> str | None:
+    """Sanitize a BCP-47 tag: letters, digits and hyphens, 2–16 chars.
+
+    Rejects rather than truncates, for the same reason _is_valid_version
+    does: a truncated tag is a tag that looks fine and means something else.
+    The database has its own 16-char CHECK, and a write it rejects would
+    surface as an exception inside the auth dependency on every request from
+    that user — so the guard has to be here too, not only there.
+
+    Deliberately NOT a whitelist of supported locales. That list lives in
+    extension/_locales, and a tag we do not recognise falls back to English
+    in emails/__init__.py, which is the same outcome a rejected write gives
+    with fewer moving parts — and this way we can SEE that somebody wants a
+    language we do not have.
+    """
+    if not v or not isinstance(v, str):
+        return None
+    candidate = v.strip()
+    if not 2 <= len(candidate) <= _MAX_LANGUAGE_LEN:
+        return None
+    if not all(c.isascii() and (c.isalnum() or c == "-") for c in candidate):
+        return None
+    return candidate
+
+
+def maybe_touch_activity(
+    user: dict,
+    extension_version: str | None = None,
+    preferred_language: str | None = None,
+) -> None:
+    """Bump last_activity_at if stale, and/or update
+    last_seen_extension_version and preferred_language if they changed.
 
     Called from the auth dependency on every authenticated request. Mutates
     the passed-in dict so downstream handlers see the fresh values without
     a re-fetch.
+
+    Language rides the changed-value path rather than the 15-minute timer,
+    like the version does: it changes approximately never, so a write costs
+    nothing, and gating it on the timer would mean somebody who switched
+    language in Settings could get an email in the old one for another
+    quarter of an hour.
     """
     activity_fresh = _is_activity_fresh(user.get("last_activity_at"))
     cleaned_version = _is_valid_version(extension_version)
@@ -147,8 +185,13 @@ def maybe_touch_activity(user: dict, extension_version: str | None = None) -> No
         cleaned_version is not None
         and cleaned_version != user.get("last_seen_extension_version")
     )
+    cleaned_language = _is_valid_language(preferred_language)
+    language_changed = (
+        cleaned_language is not None
+        and cleaned_language != user.get("preferred_language")
+    )
 
-    if activity_fresh and not version_changed:
+    if activity_fresh and not version_changed and not language_changed:
         return
 
     updates: dict = {}
@@ -159,6 +202,9 @@ def maybe_touch_activity(user: dict, extension_version: str | None = None) -> No
     if version_changed:
         updates["last_seen_extension_version"] = cleaned_version
         user["last_seen_extension_version"] = cleaned_version
+    if language_changed:
+        updates["preferred_language"] = cleaned_language
+        user["preferred_language"] = cleaned_language
 
     if not updates:
         return
