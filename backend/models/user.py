@@ -233,16 +233,49 @@ def increment_sent_count(
     send_telemetry.report_emails_sent(user_id, count, reason, email, extra)
 
 
+def _month_shift(base: date, months: int, day: int) -> date:
+    """`base`'s month plus N months, on `day`, clamped to that month's length.
+
+    The clamp is right — Jan 31 + 1 month has to be Feb 28 — and it is also
+    lossy, which is the whole reason `day` is a separate argument rather than
+    read off `base`. See _anchor_day.
+    """
+    total = base.month - 1 + months
+    year = base.year + total // 12
+    month = total % 12 + 1
+    last_day = calendar.monthrange(year, month)[1]
+    return date(year, month, min(day, last_day))
+
+
 def _add_months(d: date, months: int) -> date:
     """`d` plus N calendar months, clamping the day to the target month's
     length (Jan 31 + 1mo → Feb 28/29) — mirrors how Stripe anchors monthly
     billing. Always call with the ORIGINAL anchor date so the day doesn't
     drift after a clamp (Jan 31 + 2mo = Mar 31, not Mar 28)."""
-    total = d.month - 1 + months
-    year = d.year + total // 12
-    month = total % 12 + 1
-    last_day = calendar.monthrange(year, month)[1]
-    return date(year, month, min(d.day, last_day))
+    return _month_shift(d, months, d.day)
+
+
+def _anchor_day(user: dict, reset_date: date) -> int:
+    """The calendar day this user's quota month really starts on.
+
+    month_reset_date holds the CLAMPED date for the current period, and
+    check_monthly_reset used to compute the next one from it — so a 31st
+    anchor became a 28th in February and stayed a 28th forever after, costing
+    that customer three days of quota month every year. The docstring on
+    _add_months warns to "always call with the ORIGINAL anchor date"; its
+    caller was the one place that could not, because the original was not
+    stored anywhere.
+
+    Migration 029 stores it. NULL means a row written before that migration
+    or by an older code path, and falling back to the clamped day is exactly
+    the pre-029 behaviour — no worse than it already was.
+    """
+    stored = user.get("month_reset_anchor_day")
+    try:
+        day = int(stored)
+    except (TypeError, ValueError):
+        return reset_date.day
+    return day if 1 <= day <= 31 else reset_date.day
 
 
 def next_reset_date(user: dict) -> date | None:
@@ -257,7 +290,11 @@ def next_reset_date(user: dict) -> date | None:
         return None
     if isinstance(reset_date, str):
         reset_date = date.fromisoformat(reset_date)
-    return _add_months(reset_date, 1)
+    # The real anchor, not the clamped one. This date is quoted to the user
+    # in the quota-cap email; telling a 31st-anchor customer their sends
+    # resume on the 28th and then not resuming them is worse than saying
+    # nothing.
+    return _month_shift(reset_date, 1, _anchor_day(user, reset_date))
 
 
 def check_monthly_reset(user: dict, today: date | None = None):
@@ -281,16 +318,39 @@ def check_monthly_reset(user: dict, today: date | None = None):
     if today is None:
         today = datetime.now(timezone.utc).date()
 
-    if today < _add_months(reset_date, 1):
+    anchor_day = _anchor_day(user, reset_date)
+    due = _month_shift(reset_date, 1, anchor_day)
+    if today < due:
         return  # still inside the current quota month
+
+    # A subscription Stripe is about to end today must not roll over first.
+    #
+    # This function compares DATES and runs from the scheduled-campaign beat,
+    # so on the anniversary it fires within minutes of 00:00 UTC. Stripe ends
+    # a cancelling subscription at the subscription's creation TIME that day —
+    # usually hours later. Rolling over in the gap hands a full bonus quota
+    # month to the one person we already know is leaving.
+    #
+    # Bounded to the due day alone, deliberately. If customer.subscription
+    # .deleted never arrives — a lost webhook, or they un-cancelled in the
+    # portal and we were not told — then tomorrow this rolls over as usual.
+    # Withholding for a few hours is the fix; withholding forever would be a
+    # paying customer stuck at zero quota with no way to see why.
+    if today == due and user.get("cancel_at_period_end"):
+        logger.info(
+            "user %s reaches their anchor today with a cancelling "
+            "subscription; holding the rollover until it ends",
+            user.get("id"),
+        )
+        return
 
     # Advance in whole months FROM THE ORIGINAL anchor (day preserved even
     # across a long absence): anchor the 25th + first login two periods later
     # → new anchor is still a 25th, of the most recent elapsed period.
     months = 1
-    while _add_months(reset_date, months + 1) <= today:
+    while _month_shift(reset_date, months + 1, anchor_day) <= today:
         months += 1
-    new_anchor = _add_months(reset_date, months)
+    new_anchor = _month_shift(reset_date, months, anchor_day)
 
     get_db().table("users").update(
         {

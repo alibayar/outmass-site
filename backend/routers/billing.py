@@ -812,6 +812,13 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             update_data = {
                 "stripe_subscription_id": None,
                 "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+                # The cancellation it warned about has happened, so the flag
+                # has done its job. Leaving it set would make
+                # check_monthly_reset hold their FREE quota rollover one day
+                # a month, every month, for a subscription that ended long
+                # ago — a stuck counter with no visible cause, which is the
+                # shape of defect this whole day has been about.
+                "cancel_at_period_end": False,
             }
 
             shielded = _promo_shield(db, customer_id)
@@ -881,6 +888,19 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         if customer_id and status:
             update_data = {
                 "plan_updated_at": datetime.now(timezone.utc).isoformat(),
+                # Recorded on every subscription.updated, whatever the status.
+                # Stripe sends this event for the portal toggle that sets a
+                # cancellation and for the one that undoes it, so writing it
+                # unconditionally is what keeps the flag honest in both
+                # directions — and it touches no quota field, which is the
+                # rule this handler already documents below.
+                #
+                # check_monthly_reset reads it so a customer whose
+                # subscription ends later today does not roll over into one
+                # last free quota month at 00:00 UTC first.
+                "cancel_at_period_end": bool(
+                    data_object.get("cancel_at_period_end")
+                ),
             }
 
             if status in ("active", "trialing"):
