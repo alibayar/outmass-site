@@ -971,7 +971,8 @@ async def _run_campaign_send(
                         # process dies, at one extra write per 25 sends.
                         if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
                             user_model.increment_sent_count(
-                                user["id"], sent_count - quota_charged
+                                user["id"], sent_count - quota_charged,
+                                reason="send_now", email=user.get("email"),
                             )
                             quota_charged = sent_count
                     else:
@@ -993,7 +994,10 @@ async def _run_campaign_send(
 
         # Whatever the batches have not covered yet.
         if sent_count > quota_charged:
-            user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+            user_model.increment_sent_count(
+                user["id"], sent_count - quota_charged,
+                reason="send_now", email=user.get("email"),
+            )
             quota_charged = sent_count
         quota_counted = True
 
@@ -1060,7 +1064,10 @@ async def _run_campaign_send(
         # to still be running.
         try:
             if not quota_counted and sent_count > quota_charged:
-                user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+                user_model.increment_sent_count(
+                    user["id"], sent_count - quota_charged,
+                    reason="send_now", email=user.get("email"),
+                )
                 quota_charged = sent_count
         except Exception:  # noqa: BLE001
             pass
@@ -1080,7 +1087,10 @@ async def _run_campaign_send(
         )
         try:
             if not quota_counted and sent_count > quota_charged:
-                user_model.increment_sent_count(user["id"], sent_count - quota_charged)
+                user_model.increment_sent_count(
+                    user["id"], sent_count - quota_charged,
+                    reason="send_now", email=user.get("email"),
+                )
                 quota_charged = sent_count
             # ALWAYS 'partial', never 'scheduled'. This function only ever runs
             # the send-NOW path (queued as a background task from /send), so

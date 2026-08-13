@@ -203,7 +203,12 @@ def test_clean_send_charges_quota_exactly_once(client, fake_db, auth_bypass):
                            headers={"Authorization": "Bearer t"})
 
     assert resp.status_code == 200
-    inc.assert_called_once_with(FAKE_USER["id"], 3)
+    # Once, for exactly three — and labelled, so the send is visible in
+    # analytics against the customer who made it rather than only in the
+    # counter (see utils/send_telemetry.py).
+    inc.assert_called_once_with(
+        FAKE_USER["id"], 3, reason="send_now", email=FAKE_USER["email"]
+    )
 
 
 def test_limit_exceeded_message_is_english(client, fake_db):

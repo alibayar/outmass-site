@@ -188,7 +188,9 @@ def process_scheduled_campaigns():
                             # is correct: the end-of-loop flush recharges it.
                             try:
                                 user_model.increment_sent_count(
-                                    user["id"], sent_count - quota_charged
+                                    user["id"], sent_count - quota_charged,
+                                    reason="scheduled", email=user.get("email"),
+                                    extra={"daily_capped": daily_cap > 0},
                                 )
                                 quota_charged = sent_count
                             except Exception:  # noqa: BLE001
@@ -217,7 +219,9 @@ def process_scheduled_campaigns():
         if sent_count > quota_charged:
             try:
                 user_model.increment_sent_count(
-                    user["id"], sent_count - quota_charged
+                    user["id"], sent_count - quota_charged,
+                    reason="scheduled", email=user.get("email"),
+                    extra={"daily_capped": daily_cap > 0},
                 )
                 quota_charged = sent_count
             except Exception:  # noqa: BLE001
@@ -518,7 +522,8 @@ def evaluate_ab_tests():
                             # is correct: the end-of-loop flush recharges it.
                             try:
                                 user_model.increment_sent_count(
-                                    user["id"], sent_count - quota_charged
+                                    user["id"], sent_count - quota_charged,
+                                    reason="ab_winner", email=user.get("email"),
                                 )
                                 quota_charged = sent_count
                             except Exception:  # noqa: BLE001
@@ -549,7 +554,8 @@ def evaluate_ab_tests():
         if sent_count > quota_charged:
             try:
                 user_model.increment_sent_count(
-                    user["id"], sent_count - quota_charged
+                    user["id"], sent_count - quota_charged,
+                    reason="ab_winner", email=user.get("email"),
                 )
                 quota_charged = sent_count
             except Exception:  # noqa: BLE001

@@ -7,6 +7,7 @@ import logging
 from datetime import date, datetime, timedelta, timezone
 
 from database import get_db
+from utils import send_telemetry
 
 logger = logging.getLogger(__name__)
 
@@ -167,12 +168,30 @@ def maybe_touch_activity(user: dict, extension_version: str | None = None) -> No
         logger.exception("maybe_touch_activity failed for user %s", user.get("id"))
 
 
-def increment_sent_count(user_id: str, count: int = 1):
-    """Increment the user's sent counters atomically.
+def increment_sent_count(
+    user_id: str,
+    count: int = 1,
+    *,
+    reason: str = "unspecified",
+    email: str | None = None,
+    extra: dict | None = None,
+):
+    """Increment the user's sent counters atomically, and say so out loud.
 
     Maintains TWO counters: emails_sent_this_month (the quota counter,
     reset each billing-anchored month) and emails_sent_total (lifetime,
     never reset — the operator's tracking metric).
+
+    It is also the one function every send path in this codebase passes
+    through, which is why the send telemetry lives here rather than at the
+    eleven call sites. Instrumenting the call sites would mean the next send
+    path someone adds is invisible until they remember — and "invisible until
+    someone remembers" is the whole defect this reporting exists to close.
+
+    `reason` and `email` are keyword-only so that no existing positional call
+    breaks. A caller that omits `reason` still produces an event, logged as
+    unlabelled rather than dropped: a send we cannot categorise beats a send
+    we cannot see.
     """
     # C-05: Use RPC for atomic increment to prevent race conditions.
     # Migration 021 makes the RPC bump both counters.
@@ -205,6 +224,13 @@ def increment_sent_count(user_id: str, count: int = 1):
             get_db().table("users").update(
                 {"emails_sent_this_month": user.get("emails_sent_this_month", 0) + count}
             ).eq("id", user_id).execute()
+
+    # Last, and unable to raise. Every caller wraps this function in a try
+    # whose except deliberately leaves `quota_charged` unadvanced so a later
+    # flush recharges it (workers/scheduled_worker.py:189-199). A telemetry
+    # error thrown AFTER the counter has been written would therefore charge
+    # the same emails to the customer's quota twice.
+    send_telemetry.report_emails_sent(user_id, count, reason, email, extra)
 
 
 def _add_months(d: date, months: int) -> date:

@@ -50,7 +50,7 @@ def test_clean_send_lands_on_sent_and_charges_quota_once():
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
          patch("models.user.increment_sent_count",
-               side_effect=lambda uid, n: increments.append(n)), \
+               side_effect=lambda uid, n, **kw: increments.append(n)), \
          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)), \
          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
         asyncio.run(campaigns_router._run_campaign_send(
@@ -126,7 +126,7 @@ def test_cancelled_mid_send_still_charges_the_recipients_that_went_out():
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
          patch("models.user.increment_sent_count",
-               side_effect=lambda uid, n: increments.append(n)), \
+               side_effect=lambda uid, n, **kw: increments.append(n)), \
          patch("routers.campaigns._send_single_email",
                new=AsyncMock(side_effect=_ok_then_cancelled)), \
          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
@@ -171,7 +171,7 @@ def test_quota_is_charged_in_batches_so_a_kill_cannot_lose_the_lot():
         return {"success": True}
 
     with patch("models.contact.mark_sent"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.user.increment_sent_count",
-               side_effect=lambda uid, n: increments.append(n)),          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
+               side_effect=lambda uid, n, **kw: increments.append(n)),          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
         asyncio.run(campaigns_router._run_campaign_send(
             campaign_id="camp-batched",
             campaign={"id": "camp-batched", "subject": "Hi", "body": "Hello",
@@ -227,7 +227,7 @@ def test_a_kill_after_the_first_batch_still_leaves_that_batch_charged():
         )
 
     with patch("models.contact.mark_sent"),          patch("models.contact.mark_failed"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.user.increment_sent_count",
-               side_effect=lambda uid, n: increments.append(n)),          patch("routers.campaigns._send_single_email",
+               side_effect=lambda uid, n, **kw: increments.append(n)),          patch("routers.campaigns._send_single_email",
                new=AsyncMock(side_effect=_ok_then_die)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
         try:
             asyncio.run(_run())

@@ -112,7 +112,8 @@ def process_followups():
                         # must not make a delivered follow-up look failed.
                         try:
                             user_model.increment_sent_count(
-                                user["id"], sent_count - quota_charged
+                                user["id"], sent_count - quota_charged,
+                                reason="followup", email=user.get("email"),
                             )
                             quota_charged = sent_count
                         except Exception:  # noqa: BLE001
@@ -136,7 +137,8 @@ def process_followups():
         if sent_count > quota_charged:
             try:
                 user_model.increment_sent_count(
-                    user["id"], sent_count - quota_charged
+                    user["id"], sent_count - quota_charged,
+                    reason="followup", email=user.get("email"),
                 )
                 quota_charged = sent_count
             except Exception:  # noqa: BLE001
