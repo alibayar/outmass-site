@@ -1,7 +1,7 @@
 {
   "common.greeting": "Hi ${name},",
   "common.greeting_anon": "Hi,",
-  "common.somebody": "there",
+  "common.greeting_anon_warm": "Hi there,",
   "common.signature_ali": "Ali",
   "common.signature_founder": "Founder, OutMass",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",

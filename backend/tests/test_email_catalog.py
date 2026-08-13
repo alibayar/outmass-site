@@ -170,6 +170,33 @@ def test_an_unknown_language_is_english_not_an_error(given):
     assert msg.subject == _english()["reauth.subject"]
 
 
+def _panel_locales() -> list[str]:
+    root = _BACKEND.parent / "extension" / "_locales"
+    return sorted(p.name for p in root.iterdir() if p.is_dir() and p.name != "en")
+
+
+@pytest.mark.parametrize("locale", _panel_locales())
+def test_every_language_the_panel_speaks_has_email_copy(locale):
+    """Crosses into extension/_locales, like the panel suite crosses into
+    routers/auth.py.
+
+    Someone reading the product in Japanese and being emailed in English is
+    the exact failure this whole piece of work exists to remove — and adding a
+    fourteenth panel language without a string table here would reintroduce it
+    silently, because the fallback is English and English never errors.
+
+    Not one file per panel locale: zh_CN resolves to zh (both Simplified) and
+    zh_HK/zh_MO to zh_TW. What has to hold is that the RESOLVED table is a
+    translation, which is what this asserts.
+    """
+    english = _english()
+    theirs = strings_for(locale)
+    assert theirs["welcome.subject"] != english["welcome.subject"], (
+        f"the panel speaks {locale} but emails/strings has nothing for it, so "
+        f"every email to those users would silently be in English"
+    )
+
+
 def test_a_regional_tag_falls_back_to_its_base_language():
     """pt-BR when only a generic pt exists, and vice versa. Tested through the
     resolver rather than through a file that may not exist yet."""

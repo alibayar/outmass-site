@@ -28,6 +28,15 @@ DEFAULT_LANG = "en"
 #: edit per language file.
 SUPPORT_EMAIL = "support@getoutmass.com"
 
+#: Base languages that read right to left. Arabic is the only one we ship;
+#: the others are here so adding Hebrew or Persian is a string table and not
+#: a code change plus a bug report about upside-down punctuation.
+RTL_LANGUAGES = {"ar", "he", "fa", "ur"}
+
+
+def is_rtl(lang: str | None) -> bool:
+    return _normalise(lang).split("_")[0] in RTL_LANGUAGES
+
 
 def available_languages() -> list[str]:
     return sorted(p.stem for p in _STRINGS_DIR.glob("*.json"))
@@ -52,6 +61,15 @@ def _load(name: str) -> dict:
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+#: Regions whose base-language fallback would land on the wrong script.
+#:
+#: "zh" here is Simplified, which is right for the mainland and for a bare
+#: "zh", and wrong for Hong Kong and Macau — they read Traditional, and
+#: falling back on the base language alone would hand them the other script.
+#: The panel has the same three Chinese locales for the same reason.
+_REGION_ALIASES = {"zh_HK": "zh_TW", "zh_MO": "zh_TW"}
+
+
 @lru_cache(maxsize=None)
 def strings_for(lang: str | None) -> dict:
     """English, overlaid with whatever the requested language actually has.
@@ -66,7 +84,7 @@ def strings_for(lang: str | None) -> dict:
         return merged
     # "pt_BR" first, then "pt": a Brazilian file if we have one, the generic
     # Portuguese one if we do not.
-    for candidate in (tag, tag.split("_")[0]):
+    for candidate in (tag, _REGION_ALIASES.get(tag, ""), tag.split("_")[0]):
         overlay = _load(candidate)
         if overlay:
             merged.update(overlay)
@@ -120,13 +138,16 @@ def render(
     elif tpl.anon_greeting:
         greeting = (P, "common.greeting_anon")
     else:
-        greeting = (P, "common.greeting")
-        first = strings["common.somebody"]
+        # A whole greeting, not a word slotted into one. English can write
+        # "Hi ${name}," with name="there"; Turkish and Japanese cannot, and
+        # forcing them to would produce a sentence with a placeholder-shaped
+        # hole in it. Each language writes both anonymous greetings itself.
+        greeting = (P, "common.greeting_anon_warm")
 
     variables = {"name": first, "support_email": SUPPORT_EMAIL, **variables}
 
     blocks = [(H, tpl.heading), greeting, *tpl.blocks]
-    text, html = render_blocks(blocks, strings, variables)
+    text, html = render_blocks(blocks, strings, variables, rtl=is_rtl(lang))
 
     from emails.render import _substitute  # local: internal helper
 

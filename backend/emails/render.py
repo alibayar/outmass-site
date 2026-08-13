@@ -68,11 +68,24 @@ TEXT_WIDTH = 72
 # two different font stacks, and an <h2> that was brand blue in five templates
 # and black in the other five. Which one a customer got depended on which file
 # the message happened to live in.
-_SHELL_OPEN = (
-    '<div style="font-family:-apple-system,BlinkMacSystemFont,\'Segoe UI\','
-    'Roboto,sans-serif;max-width:560px;margin:0 auto;color:#323130;">'
+_SHELL_STYLE = (
+    "font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,"
+    "sans-serif;max-width:560px;margin:0 auto;color:#323130;"
 )
 _SHELL_CLOSE = "</div>"
+
+
+def _shell_open(rtl: bool) -> str:
+    """The wrapper, with direction when the language needs it.
+
+    Arabic is the only right-to-left language we ship, and an email with no
+    dir attribute renders it left-aligned with the punctuation in the wrong
+    place — legible, but visibly the work of someone who did not check. The
+    panel already handles this; the emails did not exist in Arabic to handle.
+    """
+    if not rtl:
+        return f'<div style="{_SHELL_STYLE}">'
+    return f'<div dir="rtl" style="{_SHELL_STYLE}text-align:right;">'
 _H_STYLE = "color:#0078d4;font-size:20px;margin:0 0 14px;"
 _P_STYLE = "font-size:14px;line-height:1.6;"
 _LIST_STYLE = "color:#323130;font-size:14px;line-height:1.7;padding-left:20px;"
@@ -174,14 +187,16 @@ def _wrap(s: str, indent: str = "", first: str | None = None) -> str:
     )
 
 
-def render_blocks(blocks: list, strings: dict, variables: dict) -> tuple[str, str]:
+def render_blocks(
+    blocks: list, strings: dict, variables: dict, *, rtl: bool = False
+) -> tuple[str, str]:
     """(text, html) for one message body.
 
     ``blocks`` is a list of (kind, key...) tuples from the catalog; ``strings``
     maps key → raw copy in the target language.
     """
     text_parts: list[str] = []
-    html_parts: list[str] = [_SHELL_OPEN]
+    html_parts: list[str] = [_shell_open(rtl)]
     first_note = True
 
     for block in blocks:

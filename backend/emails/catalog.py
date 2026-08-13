@@ -55,10 +55,11 @@ class EmailTemplate:
     heading: str
     blocks: tuple
 
-    #: What the greeting does when we have no name.
+    #: Which anonymous greeting to use when we have no name.
     #:
-    #: False → "Hi there," (the four onboarding/billing emails, which have
-    #: always read that way). True → "Hi," (the other five). Preserved rather
+    #: False → common.greeting_anon_warm ("Hi there,"), the four
+    #: onboarding/billing emails, which have always read that way.
+    #: True → common.greeting_anon ("Hi,"), the other five. Preserved rather
     #: than unified because these are live customer emails and a refactor that
     #: quietly rewords one is a different change from the one being made.
     anon_greeting: bool = True
