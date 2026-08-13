@@ -180,16 +180,26 @@ def check_plan_price_ids(
 
 
 def run_startup_checks() -> None:
-    """Called once from main.py at import. Kept separate from the pure
-    functions above so tests can drive the logic without importing the app."""
+    """Called once at import by main.py AND by workers/celery_app.py.
+
+    Both, deliberately. This file was written because the Railway WORKER
+    service was carrying test Stripe keys against the production database,
+    and for its first two days it ran only on web — the one service the
+    incident had not happened on. Kept separate from the pure functions above
+    so tests can drive the logic without importing the app.
+    """
+    import os
+
     from config import (
         STRIPE_PRO_PRICE_ID,
         STRIPE_SECRET_KEY,
         STRIPE_STARTER_PRICE_ID,
         SUPABASE_URL,
     )
+    from utils.env_registry import check_env, current_role
 
     check_stripe_mode(STRIPE_SECRET_KEY, SUPABASE_URL)
     check_plan_price_ids(
         STRIPE_SECRET_KEY, STRIPE_STARTER_PRICE_ID, STRIPE_PRO_PRICE_ID
     )
+    check_env(current_role(), os.environ)

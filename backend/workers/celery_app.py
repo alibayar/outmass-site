@@ -21,6 +21,25 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+# ── Startup checks, on the worker and the beat too ──
+#
+# utils/config_guard.py was written after the Railway WORKER service was found
+# carrying TEST Stripe keys against the production database — and it ran only
+# from main.py, i.e. on web, the one service that incident had not happened
+# on. Importing config here also means a missing SUPABASE_URL or JWT_SECRET
+# stops the worker at boot instead of at the first task.
+#
+# Inside its own try: a misconfigured alert channel must not stop the worker
+# from sending mail, which has nothing to do with billing.
+try:
+    from utils.config_guard import run_startup_checks
+
+    run_startup_checks()
+except Exception:  # noqa: BLE001
+    import logging
+
+    logging.getLogger(__name__).exception("Startup checks could not run")
+
 # ── PostHog for Celery workers ──
 POSTHOG_API_KEY = os.getenv("POSTHOG_API_KEY", "")
 if POSTHOG_API_KEY:
