@@ -583,3 +583,66 @@ def test_a_test_host_cannot_write_into_the_funnel(client, fake_db):
     _, capture = _post_completed(client, _paid_session(), host="testserver")
 
     assert capture.call_args_list == []
+
+
+# ── Somebody reached the payment page and left ──
+#
+# Until 2026-08-13 that produced a PostHog event and a log line and nothing
+# else: no email to them, no alert to us. Four of the warmest leads OutMass
+# has ever had went unanswered — Kevin.McCann twice, Morgan Everhart,
+# anbu.atomix, flaviorfdc0406 — and two of them never even entered a card,
+# which is a question worth asking rather than a decision worth respecting
+# in silence. The daily report carried it, a day late.
+
+
+def _expire(client, session_obj):
+    with patch("routers.billing._telegram_alert") as alert:
+        resp, capture = _post_expired(client, session_obj)
+    return resp, capture, alert
+
+
+def test_an_abandoned_checkout_reaches_the_operator(client, fake_db):
+    fake_db.set_table(
+        "users",
+        FakeQueryBuilder(data=[{
+            "id": "u-9", "email": "walker@x.com", "plan": "free",
+            "stripe_subscription_id": None,
+        }]),
+    )
+
+    _, _, alert = _expire(client, {
+        "id": "cs_expired_alert",
+        "metadata": {"user_id": "u-9", "plan": "starter"},
+        "customer_email": "walker@x.com",
+        "amount_total": 900,
+        "currency": "usd",
+    })
+
+    alert.assert_called_once()
+    body = alert.call_args.args[0]
+    # Enough to act on without opening PostHog: who, what they wanted, and
+    # where to look for whether a card was actually tried.
+    assert "walker@x.com" in body
+    assert "starter" in body
+    assert "cs_expired_alert" in body
+
+
+def test_a_stale_session_behind_a_real_purchase_stays_quiet(client, fake_db):
+    """Session A abandoned, session B paid. A expiring afterwards is
+    bookkeeping, not a lost sale — alerting on it would train the channel to
+    be ignored, which is how the payment-failure alerts were lost in 2026-07."""
+    fake_db.set_table(
+        "users",
+        FakeQueryBuilder(data=[{
+            "id": "u-9", "email": "payer@x.com", "plan": "starter",
+            "stripe_subscription_id": "sub_live",
+        }]),
+    )
+
+    _, _, alert = _expire(client, {
+        "id": "cs_expired_stale",
+        "metadata": {"user_id": "u-9", "plan": "starter"},
+        "customer_email": "payer@x.com",
+    })
+
+    alert.assert_not_called()

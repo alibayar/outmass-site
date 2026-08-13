@@ -661,6 +661,32 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
             already_subscribed,
         )
 
+        # Somebody reached the payment page and left. Until 2026-08-13 that
+        # produced a PostHog event and this log line and nothing else — no
+        # email to them, no alert here — so four of the warmest leads we have
+        # ever had went unanswered: Kevin.McCann twice, Morgan Everhart,
+        # anbu.atomix and flaviorfdc0406. Two of them never even entered a
+        # card, which is a question worth asking rather than a decision worth
+        # respecting in silence.
+        #
+        # Not sent when they subscribed via a newer session — that is a stale
+        # session ageing out behind a completed purchase, not a lost sale.
+        if not already_subscribed:
+            _telegram_alert(
+                "🛒 OutMass checkout abandoned\n\n"
+                f"User: {email or user_id or 'unknown'}\n"
+                f"Wanted: {meta.get('plan') or 'unknown'}\n"
+                f"Currently on: {current_plan or 'unknown'}\n"
+                f"Session: {data_object.get('id')}\n\n"
+                "Stripe's Payments list says whether a card was tried:\n"
+                "· a decline is the customer's bank, and another method may "
+                "work\n"
+                "· no attempt at all means they left before paying, which is "
+                "worth asking about\n\n"
+                "The session is single-use; clicking Upgrade again makes a "
+                "new one."
+            )
+
     # ── customer.subscription.deleted ──
     elif event_type == "customer.subscription.deleted":
         customer_id = data_object.get("customer")
