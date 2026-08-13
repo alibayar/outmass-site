@@ -237,11 +237,25 @@ async def create_checkout(
         try:
             sub = stripe.Subscription.retrieve(existing_sub_id)
         except stripe.StripeError as e:
+            # 502, not a fallthrough. This used to set sub = None, which the
+            # status check below then read as "no live subscription" and
+            # dropped into the new-Checkout-Session branch — so a transient
+            # Stripe error during an UPGRADE handed an existing subscriber a
+            # brand-new full-price subscription alongside the one they were
+            # already paying. Cancelling the orphan later then downgraded a
+            # customer who had never stopped paying.
+            #
+            # A failed read is not evidence of absence, and the two are only
+            # indistinguishable if you throw the error away.
             logger.error("Could not retrieve subscription %s: %s", existing_sub_id, e)
-            sub = None
+            raise HTTPException(
+                status_code=502,
+                detail="Could not check your current subscription. Please try "
+                       "again in a moment.",
+            )
 
         # Only modify if the subscription is still active (not canceled/expired)
-        if sub and sub.get("status") in ("active", "trialing", "past_due"):
+        if sub and sub.get("status") in _LIVE_SUBSCRIPTION_STATUSES:
             try:
                 # Get the current item to replace its price
                 items = sub.get("items", {}).get("data", [])
@@ -313,6 +327,39 @@ async def create_checkout(
 # ours. Anything else (notably "unpaid") means a delayed payment method is
 # still clearing and the plan must NOT be granted yet.
 _SETTLED_PAYMENT_STATUSES = ("paid", "no_payment_required")
+
+
+# Subscription statuses that mean Stripe is still charging this person. Named
+# once because three places ask the question and a fourth is about to: an
+# upgrade deciding whether to modify in place, the guard against a second
+# subscription, and the webhook that must not treat a live subscriber as
+# lapsed. 'incomplete' is deliberately absent — it has never collected money
+# and Stripe expires it by itself within a day.
+_LIVE_SUBSCRIPTION_STATUSES = ("active", "trialing", "past_due")
+
+
+def _subscription_still_live(subscription_id: str) -> bool:
+    """Is Stripe still billing this subscription?
+
+    Answers True when it cannot tell. Every caller uses this to decide
+    whether overwriting a stored subscription is safe, and the two ways to be
+    wrong are not symmetric: refusing to overwrite a subscription that was
+    actually dead delays a plan grant until someone looks, while overwriting
+    one that was actually live drops a paying customer's subscription out of
+    our records and re-zeroes their quota. Delay is recoverable by hand; the
+    other is a support ticket the customer opens.
+    """
+    try:
+        sub = stripe.Subscription.retrieve(subscription_id)
+        return sub.get("status") in _LIVE_SUBSCRIPTION_STATUSES
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "Could not read subscription %s to check whether it is still live; "
+            "assuming it is",
+            subscription_id,
+            exc_info=True,
+        )
+        return True
 
 
 # What a subscription resolves to when we cannot read which price it bought.
@@ -418,6 +465,7 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
     # grant) then async_payment_succeeded (grant) is a single activation,
     # and a redelivery of either is a no-op.
     already_processed = False
+    stored_sub_id = None
     if subscription_id:
         existing = (
             db.table("users")
@@ -425,10 +473,48 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
             .eq("id", user_id)
             .execute()
         )
-        already_processed = bool(
-            existing.data
-            and existing.data[0].get("stripe_subscription_id") == subscription_id
+        stored_sub_id = (
+            existing.data[0].get("stripe_subscription_id") if existing.data else None
         )
+        already_processed = stored_sub_id == subscription_id
+
+    # A DIFFERENT subscription arriving while a live one is stored is not a
+    # replay, and the single-slot guard above cannot see it: it only asks
+    # "is this the id I already have", so a second subscription reads as a
+    # first-time activation.
+    #
+    # That is reachable. A delayed bank debit is withheld at
+    # checkout.session.completed (payment_status 'unpaid', nothing written),
+    # so the row still says no subscription; if the customer then pays again
+    # by card, the card subscription activates correctly — and days later the
+    # bank debit settles and arrives here as an unrecognised id. Overwriting
+    # would drop the live, actively-billing card subscription out of our own
+    # database and re-zero the customer's quota mid-period as a parting gift.
+    #
+    # So: keep what we have and tell a human. Both subscriptions are billing
+    # a real person; which one to cancel and refund is not a decision this
+    # function can make. Doing nothing leaves the customer on the plan they
+    # already had, with the counters they already had, which is the only
+    # outcome here that is wrong in no direction.
+    if subscription_id and stored_sub_id and not already_processed:
+        if _subscription_still_live(stored_sub_id):
+            logger.error(
+                "user %s has live subscription %s and a second one settled (%s)",
+                user_id, stored_sub_id, subscription_id,
+            )
+            _telegram_alert(
+                "🔴 OutMass: one customer, two live subscriptions\n\n"
+                f"User: {user_id}\n"
+                f"Already had: {stored_sub_id}\n"
+                f"Just settled: {subscription_id}\n"
+                f"Session: {session.get('id')}\n\n"
+                "Nothing was changed — their plan and quota are untouched and "
+                "the first subscription is still the one we know about. Both "
+                "are charging them. Cancel and refund whichever is the "
+                "duplicate in Stripe, then update the row by hand if you kept "
+                "the second one."
+            )
+            return
 
     # Determine plan from the price ID in the subscription
     plan = _UNKNOWN_PRICE_PLAN
