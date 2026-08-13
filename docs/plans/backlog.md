@@ -226,10 +226,18 @@ and the entry's own loop count was wrong. Items 2-4 verified still open.**
      `increment_sent_count(user_id, sent_count)` once, after the loop.
      Scheduled sends are the *most* exposed of the four, because they are the
      ones most likely to straddle a period boundary unattended.
-   - **The entry said "5 send loops"; there are 4.** The fifth,
-     `email_worker.send_email_task`, is **dead code** — grep finds no caller,
-     and it never touches `increment_sent_count` at all. Worth deleting or
-     documenting rather than leaving as a phantom obligation.
+   - **The entry said "5 send loops"; there are 4.** ✅ **Closed 2026-08-14 —
+     the fifth was deleted.** `email_worker.send_email_task` had no caller and
+     never touched `increment_sent_count`, but the 2026-08-13 send-path
+     mapping sharpened what that meant: it POSTed to Graph, marked the contact
+     sent and bumped the campaign counter, so it was the one path that could
+     put a customer's email on the wire charging no quota and reporting
+     nothing — and it stayed **registered** at `celery_app.py`, one
+     `celery.send_task()` from a shell away from being live. "Dead code" was
+     the wrong frame; dormant and armed was the right one. Ali's call: delete,
+     rewrite later if ever needed. A test now asserts the set of files that
+     POST to `/me/sendMail` is exactly the three that charge the quota, so a
+     fourth cannot reappear quietly.
 2. **cancel_at_period_end final-day refill** — date-granularity reset fires at
    00:00 UTC on the final anniversary while the sub dies at its creation TIME
    that day → up to one bonus quota-month for a cancelling user. Fix: persist

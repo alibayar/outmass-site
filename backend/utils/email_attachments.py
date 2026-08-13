@@ -6,7 +6,10 @@ appear inside outbound emails. Used by every send path:
   - routers/campaigns.py (immediate send)
   - workers/scheduled_worker.py (scheduled + AB winner)
   - workers/followup_worker.py (auto follow-ups)
-  - workers/email_worker.py (legacy async queue, dead code today)
+
+That is the complete list, and a test keeps it that way: every place that
+POSTs to Graph must also charge the quota, so a fourth send path cannot
+appear without being counted (tests/test_send_telemetry.py).
 
 Centralizing prevents drift — if we change the visual style or add
 a click-tracking wrapper later, only one function changes.

@@ -64,7 +64,16 @@ celery = Celery(
     broker=broker_url,
     backend=backend_url,
     include=[
-        "workers.email_worker",
+        # workers.email_worker was here until 2026-08-14. It POSTed to Graph,
+        # marked the contact sent and bumped the campaign counter, and never
+        # touched increment_sent_count — the one path that could put a
+        # customer's email on the wire charging no quota and reporting
+        # nothing. Nothing called it, but being registered here meant it was
+        # one celery.send_task() from a shell away from being live. It was a
+        # stub from before the real send loops existed ("MVP uses synchronous
+        # send in campaigns.py — this is for future scaling"); the scaling
+        # arrived and was built elsewhere, with quota, pacing, batching,
+        # resume and daily caps. git history has it if it is ever wanted.
         "workers.followup_worker",
         "workers.scheduled_worker",
         "workers.daily_report",

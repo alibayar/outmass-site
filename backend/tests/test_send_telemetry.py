@@ -178,6 +178,33 @@ def test_the_counter_still_advances_when_telemetry_dies():
 # ── The choke point, checked against the real source ──
 
 
+def _posts_to_graph(source: str) -> bool:
+    """Does this module actually POST to Graph's send endpoint?
+
+    Parsed, not grepped: a module that merely names the endpoint in prose is
+    not a sender, and a checker that cannot tell those apart either flags an
+    innocent file forever or gets deleted for crying wolf.
+    """
+    def _url_parts(node):
+        if isinstance(node, ast.Constant) and isinstance(node.value, str):
+            yield node.value
+        elif isinstance(node, ast.JoinedStr):
+            for piece in node.values:
+                if isinstance(piece, ast.Constant) and isinstance(piece.value, str):
+                    yield piece.value
+
+    # Any call that is HANDED the send URL, not only `.post(...)`: the real
+    # senders go through utils/graph_retry.async_post_with_retry, so matching
+    # on the method name found nothing at all and would have passed forever.
+    for node in ast.walk(ast.parse(source)):
+        if not isinstance(node, ast.Call):
+            continue
+        for arg in list(node.args) + [k.value for k in node.keywords]:
+            if any("/me/sendMail" in part for part in _url_parts(arg)):
+                return True
+    return False
+
+
 def _increment_calls(source: str):
     for node in ast.walk(ast.parse(source)):
         if (isinstance(node, ast.Call)
@@ -229,6 +256,53 @@ def test_every_send_path_passes_an_identity():
         f"{missing}. The event would open a second PostHog person and the "
         "sends would not show against the customer who made them"
     )
+
+
+def test_only_the_paths_that_charge_the_quota_can_reach_graph():
+    """The premise the whole design rests on, checked rather than assumed.
+
+    Instrumenting increment_sent_count only guarantees "no send is invisible"
+    while every sender goes through it. On 2026-08-13 that was already false:
+    workers/email_worker.py POSTed to /me/sendMail, marked the contact sent
+    and bumped the campaign counter, and never charged the quota. Nothing
+    called it — but it stayed registered with Celery, one send_task() away
+    from putting a customer's email on the wire counted by nobody. It was
+    deleted on 2026-08-14.
+
+    So the rule is the file list, not the intention: a module that can send
+    mail must also be a module that charges for it.
+    """
+    # Self-tested before it is trusted. The first version searched for the
+    # string and flagged utils/graph_retry.py, which only names the endpoint
+    # in its module docstring — the same substring-vs-code confusion that has
+    # cost this repo a whole afternoon more than once.
+    assert _posts_to_graph('client.post(f"{BASE}/me/sendMail", json=p)')
+    assert _posts_to_graph('await async_post_with_retry(c, f"{B}/me/sendMail", json=p)')
+    assert not _posts_to_graph('"""Graph\'s /me/sendMail is best-effort."""')
+    assert not _posts_to_graph('# client.post(f"{BASE}/me/sendMail")')
+
+    senders = set()
+    for path in BACKEND.rglob("*.py"):
+        rel = path.relative_to(BACKEND).as_posix()
+        if rel.startswith(("tests/", "venv/", ".venv/")):
+            continue
+        if _posts_to_graph(path.read_text(encoding="utf-8")):
+            senders.add(rel)
+
+    assert senders == set(SOURCES), (
+        f"the set of files that can send mail changed: {sorted(senders)}, "
+        f"expected {sorted(SOURCES)}. A new sender must charge the quota "
+        "through models/user.py::increment_sent_count — that is the only "
+        "thing making a send visible — and then be added to SOURCES here. "
+        "A sender that does not charge is a customer emailed for free and "
+        "an operator who cannot see it happened."
+    )
+
+    for rel in sorted(senders):
+        source = (BACKEND / rel).read_text(encoding="utf-8")
+        assert "increment_sent_count" in source, (
+            f"{rel} posts to Graph but never charges the quota"
+        )
 
 
 def test_the_vocabulary_matches_the_code_in_both_directions():
