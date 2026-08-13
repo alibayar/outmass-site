@@ -12,6 +12,8 @@
  *   ms-auth-codes       — every failure class the backend can send has a
  *                         panel sentence in every locale (crosses into
  *                         backend/routers/auth.py to compare both sides)
+ *   no-hardcoded-prices — no locale or markup holds a literal price, and the
+ *                         Intl path that shows the real one still exists
  *
  * A suite's run() may be sync or async — the result is awaited either way.
  *
@@ -29,6 +31,7 @@ const suites = [
   require("./analytics-race.test.js"),
   require("./ms-auth-codes.test.js"),
   require("./manifest-permissions.test.js"),
+  require("./no-hardcoded-prices.test.js"),
 ];
 
 async function main() {

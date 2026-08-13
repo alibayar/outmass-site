@@ -342,7 +342,7 @@
     "message": "An unknown error occurred."
   },
   "popupUpgradePro": {
-    "message": "Upgrade → Pro ($$19/mo)"
+    "message": "Upgrade → Pro"
   },
   "popupCheckoutFailed": {
     "message": "Could not create payment page: "
@@ -528,16 +528,16 @@
     "message": "You've reached your email limit.<br/>Upgrade to send more emails."
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2,500 emails/month — $$9/mo"
+    "message": "Starter: 2,500 emails/month"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10,000 emails/month — $$19/mo"
+    "message": "Pro: 10,000 emails/month"
   },
   "upgradeModalFeatures": {
     "message": "Detailed reports + priority support"
   },
   "upgradeModalBtn": {
-    "message": "Upgrade Now — Starter $$9/mo"
+    "message": "Upgrade Now — Starter"
   },
   "upgradeModalLater": {
     "message": "Maybe later"
@@ -606,7 +606,7 @@
     "message": "Auto (Browser default)"
   },
   "popupUpgradeStarter": {
-    "message": "Upgrade → Starter ($$9/mo)"
+    "message": "Upgrade → Starter"
   },
   "upgradeSuccessProrated": {
     "message": "Successfully upgraded! Stripe will charge the prorated difference automatically."

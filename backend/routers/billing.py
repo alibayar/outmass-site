@@ -1300,6 +1300,38 @@ async def billing_portal(user: dict = Depends(get_current_user)):
 _PLAN_CACHE: dict = {"at": None, "plans": None}
 _PLAN_CACHE_TTL_SECONDS = 3600
 
+# One alert per process, not one per request. The cache above stores only
+# successes, so a Stripe outage re-enters the failure branch on every panel
+# open; an alert that fires hundreds of times gets muted, and a muted channel
+# is how the next real one is missed.
+_CATALOGUE_ALERTED = False
+
+
+def _alert_catalogue_unavailable() -> None:
+    """Say out loud that the panel has lost its plan picker.
+
+    The startup guard in utils/config_guard.py covers an unset price id. This
+    covers everything else that empties the catalogue — Stripe unreachable, a
+    price archived, a tiered price with no unit_amount — because they all land
+    in the same place: the panel falls back to its old single button and
+    nothing says so.
+    """
+    global _CATALOGUE_ALERTED
+    if _CATALOGUE_ALERTED:
+        return
+    _CATALOGUE_ALERTED = True
+    try:
+        _telegram_alert(
+            "🚨 OutMass PLAN CATALOGUE UNAVAILABLE\n\n"
+            "Stripe prices could not be read, so /billing/status is carrying "
+            "no plans. The panel is showing its old single Upgrade button, "
+            "nobody can see a price before the payment form, and every "
+            "checkout is a hardcoded Starter.\n\n"
+            "Alerting once per process; check the logs for the cause."
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("Could not deliver the plan-catalogue alert")
+
 
 def _purchasable_plans() -> list[dict]:
     """Starter and Pro with live prices, or the last good answer.
@@ -1338,6 +1370,11 @@ def _purchasable_plans() -> list[dict]:
             })
     except Exception:  # noqa: BLE001
         logger.warning("Could not build the plan catalogue", exc_info=True)
+        if not cached:
+            # Only when the panel is actually left without prices. A stale but
+            # good catalogue is still a working picker, and alerting on that
+            # would be the false alarm that teaches us to ignore the channel.
+            _alert_catalogue_unavailable()
         return cached or []
 
     _PLAN_CACHE["plans"] = plans

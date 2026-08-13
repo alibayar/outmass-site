@@ -109,6 +109,59 @@
 
     showSection("connected");
     loadPopupAnnouncements();
+    renderPopupPrices();
+  }
+
+  // ── The price the popup used to keep for itself ──
+  //
+  // popupUpgradeStarter and popupUpgradePro read "Upgrade → Starter ($9/mo)"
+  // until 2026-08-13, which put the price into the product a second time, in
+  // fourteen message files. That is the shape that had docs/terms.html
+  // promising a 50-email free tier for months after config.py said 250: a
+  // number nobody remembers to change goes quietly wrong.
+  //
+  // The labels now name the plan only. The amount comes from Stripe via
+  // /billing/status and is formatted in the reader's own locale — and when
+  // the catalogue cannot be read the button carries no price at all, rather
+  // than a stale one.
+  function renderPopupPrices() {
+    // Literal keys, not built from p.key: the i18n-usage suite can only check
+    // what it can read, and a computed key is invisible to it.
+    var labels = {
+      starter: { id: "btn-upgrade-starter", text: t("popupUpgradeStarter") },
+      pro: { id: "btn-upgrade-pro", text: t("popupUpgradePro") },
+    };
+
+    chrome.runtime.sendMessage({ type: "GET_BILLING_STATUS" }, function (resp) {
+      var data = resp && (resp.data || resp);
+      var plans = (data && data.plans) || [];
+      if (!plans.length) return;
+
+      var locale = getActiveLocale();
+
+      plans.forEach(function (p) {
+        var label = labels[p.key];
+        if (!label) return;
+        var el = document.getElementById(label.id);
+        if (!el) return;
+
+        var money;
+        try {
+          money = new Intl.NumberFormat(locale, {
+            style: "currency",
+            currency: (p.currency || "usd").toUpperCase(),
+          }).format((p.amount || 0) / 100);
+        } catch (e) {
+          // A currency Intl cannot render must not blank the button.
+          return;
+        }
+
+        // Rebuilt from the base label, never appended to whatever is already
+        // there: loadState() runs again after a proration, and appending
+        // would print the price twice.
+        el.textContent = label.text + " · " + t("planPriceInterval", [money]);
+      });
+    });
   }
 
   // ── Announcements ──

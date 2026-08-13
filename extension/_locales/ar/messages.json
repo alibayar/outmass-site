@@ -353,7 +353,7 @@
     "message": "حدث خطأ غير معروف."
   },
   "popupUpgradePro": {
-    "message": "الترقية → Pro ($$19/شهر)"
+    "message": "الترقية → Pro"
   },
   "popupCheckoutFailed": {
     "message": "تعذّر إنشاء صفحة الدفع: "
@@ -539,16 +539,16 @@
     "message": "لقد وصلت إلى حد الرسائل.<br/>قم بالترقية لإرسال المزيد."
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2,500 بريد/شهر — $$9/شهر"
+    "message": "Starter: 2,500 بريد/شهر"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10,000 بريد/شهر — $$19/شهر"
+    "message": "Pro: 10,000 بريد/شهر"
   },
   "upgradeModalFeatures": {
     "message": "تقارير مفصّلة + دعم ذو أولوية"
   },
   "upgradeModalBtn": {
-    "message": "الترقية الآن — Starter $$9/شهر"
+    "message": "الترقية الآن — Starter"
   },
   "upgradeModalLater": {
     "message": "ربما لاحقًا"
@@ -617,7 +617,7 @@
     "message": "تلقائي (لغة المتصفح)"
   },
   "popupUpgradeStarter": {
-    "message": "الترقية → Starter ($$9/شهر)"
+    "message": "الترقية → Starter"
   },
   "upgradeSuccessProrated": {
     "message": "تمت الترقية بنجاح! سيقوم Stripe بخصم الفرق التناسبي تلقائيًا."

@@ -2,7 +2,7 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.2.1 — 2026-08-11
+## v0.2.1 — 2026-08-13
 
 A patch release. Two things you will notice, one thing you will not: OutMass
 asks Microsoft for less than it used to, explains what Microsoft is about to
@@ -47,6 +47,13 @@ like one that simply never sent.
   plans are now listed with their price and their monthly limit, and you
   choose. The prices come from Stripe and the limits from the server, so
   neither can drift out of date.
+
+  The same list now appears everywhere OutMass offers an upgrade. The
+  message you get when you reach your monthly limit part-way through a send
+  used to offer one button, with no price, that bought Starter whichever
+  plan you actually wanted; it now shows both. And the toolbar popup's
+  upgrade buttons carry the real current price instead of one written into
+  the extension.
 
 - **Two controls no longer hang off the edge of the panel.** The Delete
   button next to the template list sat outside the panel in French and in

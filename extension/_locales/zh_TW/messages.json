@@ -342,7 +342,7 @@
     "message": "發生未知的錯誤。"
   },
   "popupUpgradePro": {
-    "message": "升級 → Pro（每月 $$19）"
+    "message": "升級 → Pro"
   },
   "popupCheckoutFailed": {
     "message": "無法建立付款頁面："
@@ -528,16 +528,16 @@
     "message": "您已達郵件數量上限。<br/>升級後即可傳送更多郵件。"
   },
   "upgradeModalStandard": {
-    "message": "Starter：每月 2,500 封郵件 — 每月 $$9"
+    "message": "Starter：每月 2,500 封郵件"
   },
   "upgradeModalPro": {
-    "message": "Pro：每月 10,000 封郵件 — 每月 $$19"
+    "message": "Pro：每月 10,000 封郵件"
   },
   "upgradeModalFeatures": {
     "message": "詳細報表 + 優先支援"
   },
   "upgradeModalBtn": {
-    "message": "立即升級 — Starter 每月 $$9"
+    "message": "立即升級 — Starter"
   },
   "upgradeModalLater": {
     "message": "稍後再說"
@@ -606,7 +606,7 @@
     "message": "自動（瀏覽器預設）"
   },
   "popupUpgradeStarter": {
-    "message": "升級 → Starter（每月 $$9）"
+    "message": "升級 → Starter"
   },
   "upgradeSuccessProrated": {
     "message": "升級成功！Stripe 會自動按比例收取差額。"

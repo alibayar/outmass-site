@@ -3185,9 +3185,13 @@
       '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">' + t("upgradeModalTitle") + '</h3>' +
       quotaLineHtml +
       '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">' + t("upgradeModalText") + '</p>' +
+      // upgradeModalStandard and upgradeModalPro used to sit here, each
+      // spelling out a plan's quota and price — in fourteen message files,
+      // beside a plan list the server now renders from Stripe and config.py.
+      // Two sources for the same number in one dialog is how a reader ends up
+      // seeing both of them disagree. The keys are left in the locale files
+      // rather than deleted, per the deprecate-first rule.
       '<ul style="text-align:left;font-size:12px;color:#605e5c;margin:0 0 20px 16px;padding:0;">' +
-        '<li>' + t("upgradeModalStandard") + '</li>' +
-        '<li>' + t("upgradeModalPro") + '</li>' +
         '<li>' + t("upgradeModalFeatures") + '</li>' +
       '</ul>' +
       '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">' + t("upgradeModalBtn") + '</button>' +
@@ -3210,6 +3214,44 @@
 
     document.getElementById("btn-upgrade-cancel").addEventListener("click", function () {
       overlay.remove();
+    });
+
+    // Hitting the cap mid-send is the highest intent this product ever sees,
+    // and until now it was answered with one priceless button that bought
+    // Starter no matter what the person actually wanted. Same catalogue as
+    // the Account tab, same rule: the numbers come from the server.
+    //
+    // Deliberately asynchronous-and-swap rather than wait-then-render. The
+    // modal opens instantly with the button it has always had, so a slow or
+    // failed catalogue leaves today's behaviour rather than an empty box.
+    chrome.runtime.sendMessage({ type: "GET_BILLING_STATUS" }, function (resp) {
+      var data = resp && (resp.data || resp);
+      var plans = data && data.plans;
+      if (!plans || !plans.length) return;
+      // They may have closed it, or opened a newer one, while we waited.
+      if (!overlay.isConnected) return;
+
+      var rows = buildPlanRows(plans, "quota_modal", function () {
+        overlay.remove();
+      });
+      if (!rows.length) return;
+
+      var oldBtn = modal.querySelector("#btn-upgrade");
+      if (!oldBtn) return;
+
+      var list = document.createElement("div");
+      rows.forEach(function (row) {
+        list.appendChild(row);
+      });
+
+      // The Account tab renders these at full panel width against left-
+      // aligned text; this modal is narrower and centred, which would stack
+      // a plan name on top of its own price. Still inside the 380px panel.
+      modal.style.maxWidth = "340px";
+      list.style.textAlign = "left";
+
+      oldBtn.parentNode.insertBefore(list, oldBtn);
+      oldBtn.remove();
     });
 
     overlay.addEventListener("click", function (e) {
@@ -3356,6 +3398,85 @@
   // Every number here arrives from the server — price from Stripe, limit from
   // config.py — and is formatted by Intl in the reader's own locale. Nothing
   // numeric is written in this file or in any of the 14 message files.
+  // One place that turns the server's catalogue into rows, shared by the
+  // Account tab and the quota-cap modal. A second copy would be a second
+  // chance to format a price differently — and the copy is exactly where a
+  // hardcoded number creeps back in.
+  //
+  // `context` rides on the telemetry, so the funnel can tell someone browsing
+  // the Account tab from someone who just hit the cap mid-send. Those are
+  // very different intents and until now they looked identical.
+  function buildPlanRows(plans, context, afterClick) {
+    var locale = getActiveLocale();
+    var rows = [];
+
+    (plans || []).forEach(function (p) {
+      var money, quota;
+      try {
+        money = new Intl.NumberFormat(locale, {
+          style: "currency",
+          currency: (p.currency || "usd").toUpperCase(),
+        }).format((p.amount || 0) / 100);
+        quota = new Intl.NumberFormat(locale).format(p.limit || 0);
+      } catch (e) {
+        // A currency Intl cannot render must not produce a blank price.
+        return;
+      }
+
+      var row = document.createElement("div");
+      row.className = "plan-option";
+
+      var text = document.createElement("div");
+      text.className = "plan-option-text";
+
+      var name = document.createElement("div");
+      name.className = "plan-option-name";
+      name.textContent =
+        String(p.key || "").charAt(0).toUpperCase() + String(p.key || "").slice(1);
+
+      var price = document.createElement("div");
+      price.className = "plan-option-price";
+      price.textContent = t("planPriceInterval", [money]);
+
+      var limit = document.createElement("div");
+      limit.className = "plan-option-quota";
+      limit.textContent = t("planQuotaPerMonth", [quota]);
+
+      text.appendChild(name);
+      text.appendChild(price);
+      text.appendChild(limit);
+
+      var btn = document.createElement("button");
+      btn.className = "btn btn-primary plan-option-btn";
+      btn.textContent = t("btnChoosePlan");
+      btn.addEventListener("click", function () {
+        // Carries which plan, so the funnel can finally tell a Starter
+        // intent from a Pro one — the old event could not.
+        track("upgrade_button_clicked", {
+          context: context,
+          plan: p.key,
+        });
+        chrome.runtime.sendMessage(
+          { type: "CREATE_CHECKOUT", plan: p.key },
+          function (r) {
+            if (r && r.data && r.data.checkout_url) {
+              window.open(r.data.checkout_url, "_blank");
+            } else {
+              alert(t("settingsCheckoutFailed"));
+            }
+            if (afterClick) afterClick();
+          }
+        );
+      });
+
+      row.appendChild(text);
+      row.appendChild(btn);
+      rows.push(row);
+    });
+
+    return rows;
+  }
+
   function renderPlanPicker() {
     var box = document.getElementById("account-plan-picker");
     var btnUpgrade = document.getElementById("account-btn-upgrade");
@@ -3388,69 +3509,8 @@
       // we are not sure of would be worse than showing none.
       if (!plans || !plans.length) return;
 
-      var locale = getActiveLocale();
       box.innerHTML = "";
-
-      plans.forEach(function (p) {
-        var money, quota;
-        try {
-          money = new Intl.NumberFormat(locale, {
-            style: "currency",
-            currency: (p.currency || "usd").toUpperCase(),
-          }).format((p.amount || 0) / 100);
-          quota = new Intl.NumberFormat(locale).format(p.limit || 0);
-        } catch (e) {
-          // A currency Intl cannot render must not produce a blank price.
-          return;
-        }
-
-        var row = document.createElement("div");
-        row.className = "plan-option";
-
-        var text = document.createElement("div");
-        text.className = "plan-option-text";
-
-        var name = document.createElement("div");
-        name.className = "plan-option-name";
-        name.textContent =
-          String(p.key || "").charAt(0).toUpperCase() + String(p.key || "").slice(1);
-
-        var price = document.createElement("div");
-        price.className = "plan-option-price";
-        price.textContent = t("planPriceInterval", [money]);
-
-        var limit = document.createElement("div");
-        limit.className = "plan-option-quota";
-        limit.textContent = t("planQuotaPerMonth", [quota]);
-
-        text.appendChild(name);
-        text.appendChild(price);
-        text.appendChild(limit);
-
-        var btn = document.createElement("button");
-        btn.className = "btn btn-primary plan-option-btn";
-        btn.textContent = t("btnChoosePlan");
-        btn.addEventListener("click", function () {
-          // Carries which plan, so the funnel can finally tell a Starter
-          // intent from a Pro one — the old event could not.
-          track("upgrade_button_clicked", {
-            context: "plan_picker",
-            plan: p.key,
-          });
-          chrome.runtime.sendMessage(
-            { type: "CREATE_CHECKOUT", plan: p.key },
-            function (r) {
-              if (r && r.data && r.data.checkout_url) {
-                window.open(r.data.checkout_url, "_blank");
-              } else {
-                alert(t("settingsCheckoutFailed"));
-              }
-            }
-          );
-        });
-
-        row.appendChild(text);
-        row.appendChild(btn);
+      buildPlanRows(plans, "plan_picker").forEach(function (row) {
         box.appendChild(row);
       });
 

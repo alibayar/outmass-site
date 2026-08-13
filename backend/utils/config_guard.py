@@ -26,6 +26,11 @@ Both directions are wrong and both are checked:
     real rows. This is what happened.
   * LIVE key + throwaway database — charges real cards against data nobody
     intends to keep. Rarer, and worse.
+
+A second check of the same family lives here (2026-08-13): a missing Stripe
+price id empties the plan catalogue, which turns the panel's plan picker off
+without a word. Different setting, identical failure mode — the feature is
+simply absent and absence does not announce itself.
 """
 import logging
 from urllib.parse import urlparse
@@ -92,6 +97,20 @@ def stripe_mode_mismatch(secret_key: str, supabase_url: str) -> str | None:
     return None
 
 
+def _report(headline: str, message: str) -> None:
+    """Log it and ping the operator. Never raises."""
+    logger.error("%s — %s", headline, message)
+    try:
+        # Lazy, and inside its own try: an alerting failure must not be able
+        # to break startup. _telegram_alert already degrades to an error log
+        # when the token is missing, which is what happens on a dev machine.
+        from routers.billing import _telegram_alert
+
+        _telegram_alert("🚨 OutMass " + headline + "\n\n" + message)
+    except Exception:  # noqa: BLE001
+        logger.exception("Could not deliver the %s alert", headline)
+
+
 def check_stripe_mode(secret_key: str, supabase_url: str) -> str | None:
     """Run the check and report it. Returns the message so callers can test
     it; reporting is a side effect, never an exception."""
@@ -99,22 +118,78 @@ def check_stripe_mode(secret_key: str, supabase_url: str) -> str | None:
     if not message:
         return None
 
-    logger.error("CONFIG MISMATCH — %s", message)
-    try:
-        # Lazy, and inside its own try: an alerting failure must not be able
-        # to break startup. _telegram_alert already degrades to an error log
-        # when the token is missing, which is what happens on a dev machine.
-        from routers.billing import _telegram_alert
+    _report("CONFIG MISMATCH", message)
+    return message
 
-        _telegram_alert("🚨 OutMass CONFIG MISMATCH\n\n" + message)
-    except Exception:  # noqa: BLE001
-        logger.exception("Could not deliver the config-mismatch alert")
+
+# ── The picker that quietly does not appear ─────────────────────────────────
+#
+# /billing/status carries a `plans` array built from Stripe prices, and the
+# panel renders its plan picker only when that array comes back non-empty.
+# Otherwise it keeps the single "Upgrade Plan" button it has always had, whose
+# checkout is a hardcoded Starter. That fallback is deliberate — showing a
+# price we are not sure of is worse than showing none — but it is also
+# completely silent. With STRIPE_PRO_PRICE_ID unset, the change whose entire
+# purpose is letting someone see a price before a payment form ships as a
+# no-op, and the only trace is a PostHog event (context="plan_picker") that
+# never arrives.
+#
+# Deliberately a check of the CONFIGURATION, not of the catalogue. Building
+# the catalogue here would mean a Stripe call at boot, so a transient Stripe
+# blip would alert on every deploy — and an alert channel that cries wolf is
+# the same as no alert channel.
+_PICKER_PRICE_IDS = ("STRIPE_STARTER_PRICE_ID", "STRIPE_PRO_PRICE_ID")
+
+
+def missing_plan_price_ids(
+    secret_key: str, starter_price_id: str, pro_price_id: str
+) -> list[str]:
+    """Which price-id settings are unset while Stripe is configured.
+
+    Empty when Stripe itself is unconfigured: a service that does no billing
+    is not misconfigured, and alerting on it would make every worker shout.
+    """
+    if not (secret_key or "").strip():
+        return []
+    values = (starter_price_id, pro_price_id)
+    return [
+        name
+        for name, value in zip(_PICKER_PRICE_IDS, values)
+        if not (value or "").strip()
+    ]
+
+
+def check_plan_price_ids(
+    secret_key: str, starter_price_id: str, pro_price_id: str
+) -> str | None:
+    """Run the check and report it. Returns the message so callers can test
+    it; reporting is a side effect, never an exception."""
+    missing = missing_plan_price_ids(secret_key, starter_price_id, pro_price_id)
+    if not missing:
+        return None
+
+    message = (
+        "Unset while Stripe is configured: "
+        + ", ".join(missing)
+        + ". /billing/status will carry no plan catalogue, so the panel falls "
+        "back to its old single Upgrade button, nobody can see a price before "
+        "the payment form, and every checkout is a hardcoded Starter."
+    )
+    _report("CONFIG GAP", message)
     return message
 
 
 def run_startup_checks() -> None:
     """Called once from main.py at import. Kept separate from the pure
     functions above so tests can drive the logic without importing the app."""
-    from config import STRIPE_SECRET_KEY, SUPABASE_URL
+    from config import (
+        STRIPE_PRO_PRICE_ID,
+        STRIPE_SECRET_KEY,
+        STRIPE_STARTER_PRICE_ID,
+        SUPABASE_URL,
+    )
 
     check_stripe_mode(STRIPE_SECRET_KEY, SUPABASE_URL)
+    check_plan_price_ids(
+        STRIPE_SECRET_KEY, STRIPE_STARTER_PRICE_ID, STRIPE_PRO_PRICE_ID
+    )

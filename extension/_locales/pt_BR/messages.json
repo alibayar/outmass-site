@@ -342,7 +342,7 @@
     "message": "Ocorreu um erro desconhecido."
   },
   "popupUpgradePro": {
-    "message": "Fazer upgrade → Pro ($$19/mês)"
+    "message": "Fazer upgrade → Pro"
   },
   "popupCheckoutFailed": {
     "message": "Não foi possível criar a página de pagamento: "
@@ -528,16 +528,16 @@
     "message": "Você atingiu seu limite de e-mails.<br/>Faça upgrade para enviar mais e-mails."
   },
   "upgradeModalStandard": {
-    "message": "Starter: 2.500 e-mails/mês — $$9/mês"
+    "message": "Starter: 2.500 e-mails/mês"
   },
   "upgradeModalPro": {
-    "message": "Pro: 10.000 e-mails/mês — $$19/mês"
+    "message": "Pro: 10.000 e-mails/mês"
   },
   "upgradeModalFeatures": {
     "message": "Relatórios detalhados + suporte prioritário"
   },
   "upgradeModalBtn": {
-    "message": "Fazer upgrade agora — Starter $$9/mês"
+    "message": "Fazer upgrade agora — Starter"
   },
   "upgradeModalLater": {
     "message": "Talvez depois"
@@ -606,7 +606,7 @@
     "message": "Automático (idioma do navegador)"
   },
   "popupUpgradeStarter": {
-    "message": "Upgrade → Starter ($$9/mês)"
+    "message": "Upgrade → Starter"
   },
   "upgradeSuccessProrated": {
     "message": "Upgrade concluído! A Stripe cobrará a diferença proporcional automaticamente."

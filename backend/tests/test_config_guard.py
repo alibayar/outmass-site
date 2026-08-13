@@ -128,13 +128,94 @@ def test_startup_reads_the_real_config_names():
         called["key"] = secret_key
         called["url"] = supabase_url
 
-    with patch.object(config_guard, "check_stripe_mode", _capture):
+    with patch.object(config_guard, "check_stripe_mode", _capture), \
+         patch.object(config_guard, "check_plan_price_ids"):
         config_guard.run_startup_checks()
 
     import config
 
     assert called["key"] == config.STRIPE_SECRET_KEY
     assert called["url"] == config.SUPABASE_URL
+
+
+# ── The price id whose absence turns the plan picker off ──
+#
+# Added 2026-08-13. Same family as everything above: the setting is missing,
+# nothing fails, the feature is simply not there.
+
+
+PRICE_IDS = ("price_starter_live", "price_pro_live")
+
+
+@pytest.mark.parametrize("starter,pro,expected", [
+    ("", "price_pro", ["STRIPE_STARTER_PRICE_ID"]),
+    ("price_starter", "", ["STRIPE_PRO_PRICE_ID"]),
+    ("", "", ["STRIPE_STARTER_PRICE_ID", "STRIPE_PRO_PRICE_ID"]),
+    ("   ", "price_pro", ["STRIPE_STARTER_PRICE_ID"]),  # whitespace is unset
+    (None, "price_pro", ["STRIPE_STARTER_PRICE_ID"]),
+])
+def test_a_missing_price_id_is_named(starter, pro, expected):
+    """Named, not merely counted — the operator has to know WHICH variable to
+    go and set, and the two live in different Railway services."""
+    assert config_guard.missing_plan_price_ids("sk_live_abc", starter, pro) == expected
+
+
+def test_both_price_ids_present_is_silent():
+    assert config_guard.missing_plan_price_ids("sk_live_abc", *PRICE_IDS) == []
+
+
+@pytest.mark.parametrize("key", ["", None, "   "])
+def test_a_service_that_does_no_billing_never_alarms(key):
+    """The worker carries no Stripe key and needs no price ids. Alerting on
+    it would make every boot shout, which mutes the channel for the case that
+    matters."""
+    assert config_guard.missing_plan_price_ids(key, "", "") == []
+
+
+def test_the_operator_is_pinged_and_told_the_consequence():
+    with patch("routers.billing._telegram_alert") as alert:
+        msg = config_guard.check_plan_price_ids("sk_live_abc", "price_starter", "")
+
+    alert.assert_called_once()
+    sent = alert.call_args.args[0]
+    assert "CONFIG GAP" in sent
+    assert "STRIPE_PRO_PRICE_ID" in sent
+    # The alert has to say what the user experiences, not just which variable
+    # is empty — "unset" alone reads as harmless.
+    assert "hardcoded Starter" in msg
+
+
+def test_a_complete_price_config_does_not_ping_anyone():
+    with patch("routers.billing._telegram_alert") as alert:
+        assert config_guard.check_plan_price_ids("sk_live_abc", *PRICE_IDS) is None
+    alert.assert_not_called()
+
+
+def test_a_broken_alert_channel_cannot_break_startup_here_either():
+    with patch("routers.billing._telegram_alert",
+               side_effect=RuntimeError("telegram down")):
+        assert config_guard.check_plan_price_ids("sk_live_abc", "price_starter", "")
+
+
+def test_startup_reads_the_real_price_id_names():
+    """The twin of test_startup_reads_the_real_config_names, for the same
+    reason: a guard reading a renamed setting reports all-clear forever."""
+    called = {}
+
+    def _capture(secret_key, starter_price_id, pro_price_id):
+        called["key"] = secret_key
+        called["starter"] = starter_price_id
+        called["pro"] = pro_price_id
+
+    with patch.object(config_guard, "check_stripe_mode"), \
+         patch.object(config_guard, "check_plan_price_ids", _capture):
+        config_guard.run_startup_checks()
+
+    import config
+
+    assert called["key"] == config.STRIPE_SECRET_KEY
+    assert called["starter"] == config.STRIPE_STARTER_PRICE_ID
+    assert called["pro"] == config.STRIPE_PRO_PRICE_ID
 
 
 def _calls_startup_checks(source: str) -> bool:

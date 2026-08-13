@@ -16,6 +16,7 @@ The rule these tests encode: a WRONG price is worse than no price. When
 Stripe cannot be read, the endpoint serves the last good answer or nothing,
 and the panel falls back to its old single button.
 """
+from datetime import datetime, timedelta, timezone
 from unittest.mock import patch
 
 import pytest
@@ -28,9 +29,11 @@ from routers import billing
 def _clear_cache():
     billing._PLAN_CACHE["plans"] = None
     billing._PLAN_CACHE["at"] = None
+    billing._CATALOGUE_ALERTED = False
     yield
     billing._PLAN_CACHE["plans"] = None
     billing._PLAN_CACHE["at"] = None
+    billing._CATALOGUE_ALERTED = False
 
 
 def _price(amount, currency="usd"):
@@ -140,6 +143,71 @@ def test_the_catalogue_is_cached_rather_than_hit_per_request():
         billing._purchasable_plans()
 
     assert calls["n"] == first, "every /billing/status hit Stripe"
+
+
+# ── Falling back quietly is the whole hazard ──
+#
+# Serving no catalogue is the SAFE answer — a wrong price is worse. But the
+# panel's response to it is invisible: it shows the button it always showed,
+# and only a PostHog event that never arrives would ever hint at it. So the
+# fallback has to be loud somewhere, and the operator is the right somewhere.
+
+
+def _stripe_is_down(pid):
+    raise RuntimeError("stripe is unreachable")
+
+
+def test_an_empty_catalogue_pings_the_operator():
+    ids, retrieve = _with_stripe(_stripe_is_down)
+    with ids, retrieve, patch("routers.billing._telegram_alert") as alert:
+        assert billing._purchasable_plans() == []
+
+    alert.assert_called_once()
+    sent = alert.call_args.args[0]
+    # It has to say what the USER now experiences. "Catalogue unavailable"
+    # alone reads as a backend detail somebody else will handle.
+    assert "hardcoded Starter" in sent
+
+
+def test_a_stale_but_good_catalogue_does_not_ping_anyone():
+    """A cached catalogue is still a working picker. Alerting on a Stripe
+    blip that costs the user nothing is exactly the false alarm that trains
+    us to mute the channel."""
+    ids, retrieve = _with_stripe(_prices())
+    with ids, retrieve:
+        good = billing._purchasable_plans()
+    assert good
+
+    # Age the cache past its TTL so the next call genuinely retries Stripe.
+    billing._PLAN_CACHE["at"] = datetime.now(timezone.utc) - timedelta(hours=2)
+
+    ids, retrieve = _with_stripe(_stripe_is_down)
+    with ids, retrieve, patch("routers.billing._telegram_alert") as alert:
+        served = billing._purchasable_plans()
+
+    assert served == good, "a working picker was thrown away"
+    alert.assert_not_called()
+
+
+def test_the_alert_fires_once_per_process_not_once_per_request():
+    """Nothing throttles this branch — the cache stores only successes, so a
+    Stripe outage re-enters it on every panel open. A few hundred identical
+    alerts is the same as none."""
+    ids, retrieve = _with_stripe(_stripe_is_down)
+    with ids, retrieve, patch("routers.billing._telegram_alert") as alert:
+        for _ in range(5):
+            billing._purchasable_plans()
+
+    alert.assert_called_once()
+
+
+def test_a_broken_alert_channel_cannot_break_the_endpoint():
+    """Same rule as the startup guard: billing telemetry must never be able
+    to take down a page a paying user is looking at."""
+    ids, retrieve = _with_stripe(_stripe_is_down)
+    with ids, retrieve, patch("routers.billing._telegram_alert",
+                              side_effect=RuntimeError("telegram down")):
+        assert billing._purchasable_plans() == []
 
 
 def test_status_carries_the_catalogue(client, fake_db, auth_bypass):
