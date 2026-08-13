@@ -353,7 +353,7 @@
     "message": "Bilinmeyen bir hata oluştu."
   },
   "popupUpgradePro": {
-    "message": "Yukselt → Pro"
+    "message": "Yükselt → Pro"
   },
   "popupCheckoutFailed": {
     "message": "Ödeme sayfası oluşturulamadı: "
@@ -440,19 +440,19 @@
     "message": "Almanca"
   },
   "aiLangFr": {
-    "message": "Fransizca"
+    "message": "Fransızca"
   },
   "aiLangEs": {
-    "message": "Ispanyolca"
+    "message": "İspanyolca"
   },
   "aiLangRu": {
-    "message": "Rusca"
+    "message": "Rusça"
   },
   "aiLangAr": {
-    "message": "Arapca"
+    "message": "Arapça"
   },
   "aiLangHi": {
-    "message": "Hintce"
+    "message": "Hintçe"
   },
   "aiLangZh": {
     "message": "Çince (Basitleştirilmiş)"
@@ -548,7 +548,7 @@
     "message": "Detaylı raporlar + öncelikli destek"
   },
   "upgradeModalBtn": {
-    "message": "Simdi Yukselt — Starter"
+    "message": "Şimdi Yükselt — Starter"
   },
   "upgradeModalLater": {
     "message": "Belki sonra"
@@ -563,25 +563,25 @@
     "message": "Ödeme sayfası oluşturulamadı."
   },
   "quotaInfoTitle": {
-    "message": "Email limitleri hakkinda"
+    "message": "Email limitleri hakkında"
   },
   "quotaDisclaimer": {
-    "message": "Microsoft Outlook gunluk gonderim limiti uygular (~300/gun kisisel, ~10.000/gun Business). Bizim kotamiz bunlarin ustunedir."
+    "message": "Microsoft Outlook günlük gönderim limiti uygular (~300/gün kişisel, ~10.000/gün Business). Bizim kotamız bunların üstünedir."
   },
   "quotaInfoBody1": {
-    "message": "Microsoft, Outlook hesaplari icin bizim plan kotamizin yaninda kendi gonderim limitini de uygular. Hangisi daha kisitliysa o gecerlidir:"
+    "message": "Microsoft, Outlook hesapları için bizim plan kotamızın yanında kendi gönderim limitini de uygular. Hangisi daha kısıtlıysa o geçerlidir:"
   },
   "quotaInfoOutlookCom": {
-    "message": "Outlook.com (kisisel): gunde ~300 email"
+    "message": "Outlook.com (kişisel): günde ~300 email"
   },
   "quotaInfoMs365": {
-    "message": "Microsoft 365 Business: gunde ~10.000 email"
+    "message": "Microsoft 365 Business: günde ~10.000 email"
   },
   "quotaInfoExchange": {
-    "message": "Exchange Online: dakikada 30 mesaj sinirlamasi"
+    "message": "Exchange Online: dakikada 30 mesaj sınırlaması"
   },
   "quotaInfoBody2": {
-    "message": "Buyuk kampanyalari gunlere yayarak bu limitlere takilmamak ve gonderici itibarinizi korumak onerilir. OutMass, Microsoft platform limitlerini asamaz."
+    "message": "Büyük kampanyaları günlere yayarak bu limitlere takılmamak ve gönderici itibarınızı korumak önerilir. OutMass, Microsoft platform limitlerini aşamaz."
   },
   "tzMoscow": {
     "message": "Moskova (UTC+3)"
@@ -605,49 +605,49 @@
     "message": "Sao Paulo (UTC-3)"
   },
   "alertPartialCsvQuota": {
-    "message": "Kotanizda $1 email hakkiniz kaldi.\nCSV'de $2 alici var.\nYalnizca ilk $1 aliciya gonderilecek."
+    "message": "Kotanızda $1 email hakkınız kaldı.\nCSV'de $2 alıcı var.\nYalnızca ilk $1 alıcıya gönderilecek."
   },
   "settingsLanguage": {
-    "message": "Arayuz Dili"
+    "message": "Arayüz Dili"
   },
   "settingsLanguageHint": {
-    "message": "Aninda uygulanir. Sadece bu extension icin tarayici dilinizi gecersiz kilar."
+    "message": "Anında uygulanır. Sadece bu extension için tarayıcı dilinizi geçersiz kılar."
   },
   "langAuto": {
-    "message": "Otomatik (Tarayici dili)"
+    "message": "Otomatik (Tarayıcı dili)"
   },
   "popupUpgradeStarter": {
-    "message": "Yukselt → Starter"
+    "message": "Yükselt → Starter"
   },
   "upgradeSuccessProrated": {
-    "message": "Yukseltme basarili! Stripe orantili farki otomatik olarak tahsil edecek."
+    "message": "Yükseltme başarılı! Stripe orantılı farkı otomatik olarak tahsil edecek."
   },
   "labelCampaignName": {
-    "message": "Kampanya Adi (opsiyonel)"
+    "message": "Kampanya Adı (opsiyonel)"
   },
   "placeholderCampaignName": {
-    "message": "orn. 2. Ceyrek Outreach 1. Dalga"
+    "message": "örn. 2. Çeyrek Outreach 1. Dalga"
   },
   "csvTemplateDownload": {
-    "message": "Ornek CSV indir"
+    "message": "Örnek CSV indir"
   },
   "csvTemplateRow1": {
-    "message": "ali@example.com,Ali,Yilmaz,Acme Corp,CEO"
+    "message": "ali@example.com,Ali,Yılmaz,Acme Corp,CEO"
   },
   "csvTemplateRow2": {
-    "message": "mehmet@example.com,Mehmet,Demir,TechFlow A.S.,Pazarlama Muduru"
+    "message": "mehmet@example.com,Mehmet,Demir,TechFlow A.Ş.,Pazarlama Müdürü"
   },
   "csvTemplateRow3": {
-    "message": "ayse@example.com,Ayse,Kaya,Pioneer Yazilim,Satis Muduru"
+    "message": "ayse@example.com,Ayşe,Kaya,Pioneer Yazılım,Satış Müdürü"
   },
   "btnTestSend": {
-    "message": "Test Gonder"
+    "message": "Test Gönder"
   },
   "testSendPrompt": {
-    "message": "Kendi adresinize bir test e-postasi gonderilecek. Devam?"
+    "message": "Kendi adresinize bir test e-postası gönderilecek. Devam?"
   },
   "testSendSuccess": {
-    "message": "$EMAIL$ adresine test e-postasi gonderildi. Gelen kutunuzu kontrol edin.",
+    "message": "$EMAIL$ adresine test e-postası gönderildi. Gelen kutunuzu kontrol edin.",
     "placeholders": {
       "email": {
         "content": "$1"
@@ -655,7 +655,7 @@
     }
   },
   "testSendFailed": {
-    "message": "Test gonderim basarisiz: $ERROR$",
+    "message": "Test gönderim başarısız: $ERROR$",
     "placeholders": {
       "error": {
         "content": "$1"
@@ -663,16 +663,16 @@
     }
   },
   "testSendNeedsContent": {
-    "message": "Test gondermeden once konu ve icerigi doldurun."
+    "message": "Test göndermeden önce konu ve içeriği doldurun."
   },
   "warnSubjectLong": {
     "message": "Konu 78 karakterden uzun — mobilde kesilebilir."
   },
   "warnAllCaps": {
-    "message": "Konuda cok fazla buyuk harf var — spam gibi gorunuyor."
+    "message": "Konuda çok fazla büyük harf var — spam gibi görünüyor."
   },
   "warnSpamWords": {
-    "message": "Olasi spam kelimeleri: $LIST$",
+    "message": "Olası spam kelimeleri: $LIST$",
     "placeholders": {
       "list": {
         "content": "$1"
@@ -680,7 +680,7 @@
     }
   },
   "warnTooManyLinks": {
-    "message": "Icerikte $N$ bag — spam filtresi tetikleyebilir.",
+    "message": "İçerikte $N$ bağ — spam filtresi tetikleyebilir.",
     "placeholders": {
       "n": {
         "content": "$1"
@@ -688,13 +688,13 @@
     }
   },
   "warnContinueAnyway": {
-    "message": "Yine de gondermeye devam?"
+    "message": "Yine de göndermeye devam?"
   },
   "csvErrTooLarge": {
-    "message": "CSV cok buyuk (maks 5 MB)."
+    "message": "CSV çok büyük (maks 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "Bu dosya UTF-8 olarak kaydedilmemis; karakterler dogru okunamiyor. Excel'de: Dosya > Farkli Kaydet > 'CSV UTF-8 (Virgulle ayrilmis)' secin ve o dosyayi yukleyin."
+    "message": "Bu dosya UTF-8 olarak kaydedilmemiş; karakterler doğru okunamıyor. Excel'de: Dosya > Farklı Kaydet > 'CSV UTF-8 (Virgülle ayrılmış)' seçin ve o dosyayı yükleyin."
   },
   "csvEncodingTitle": {
     "message": "Bu dosyanın hangi karakter kümesiyle yazıldığını anlayamadık"
@@ -727,34 +727,34 @@
     "message": "Bu dosya okunamadı. Ağ sürücüsünde veya USB bellekteyse önce bilgisayarınıza kopyalayıp tekrar deneyin."
   },
   "alertBackendUnreachable": {
-    "message": "OutMass sunucularina su anda ulasilamiyor. Bu bir baglanti sorunu — hesabiniz veya planinizla ilgili degil. Internet baglantinizi, VPN veya guvenlik duvarinizi kontrol edip birazdan tekrar deneyin."
+    "message": "OutMass sunucularına şu anda ulaşılamıyor. Bu bir bağlantı sorunu — hesabınız veya planınızla ilgili değil. İnternet bağlantınızı, VPN veya güvenlik duvarınızı kontrol edip birazdan tekrar deneyin."
   },
   "netUnreachableBanner": {
-    "message": "OutMass sunucularina ulasilamiyor — gonderme ve kaydetme calismaz. Baglantinizi, VPN veya guvenlik duvarinizi kontrol edin."
+    "message": "OutMass sunucularına ulaşılamıyor — gönderme ve kaydetme çalışmaz. Bağlantınızı, VPN veya güvenlik duvarınızı kontrol edin."
   },
   "csvErrNoEmailColumn": {
-    "message": "CSV 'email' sutunu icermeli."
+    "message": "CSV 'email' sütunu içermeli."
   },
   "alertSignInFirst": {
-    "message": "Once Microsoft ile giris yapin — panelin ustundeki Giris yap butonunu kullanin. Hesapsiz taslak hazirlayabilirsiniz ama gondermek icin giris gerekir."
+    "message": "Önce Microsoft ile giriş yapın — panelin üstündeki Giriş yap butonunu kullanın. Hesapsız taslak hazırlayabilirsiniz ama göndermek için giriş gerekir."
   },
   "signInFirstBannerText": {
-    "message": "Gondermeye baslamak icin Microsoft ile giris yapin."
+    "message": "Göndermeye başlamak için Microsoft ile giriş yapın."
   },
   "dailyCapLabel": {
-    "message": "Gunluk gonderim limiti (istege bagli)"
+    "message": "Günlük gönderim limiti (isteğe bağlı)"
   },
   "dailyCapNote": {
-    "message": "Her gun en fazla bu kadar e-posta gonderir ve tum liste bitene kadar ertesi gun otomatik devam eder. (A/B testi ile birlikte kullanilamaz.)"
+    "message": "Her gün en fazla bu kadar e-posta gönderir ve tüm liste bitene kadar ertesi gün otomatik devam eder. (A/B testi ile birlikte kullanılamaz.)"
   },
   "csvErrNoEmailColumnHint": {
-    "message": "Gerekli formati gormek icin ornek CSV'yi indirin."
+    "message": "Gerekli formatı görmek için örnek CSV'yi indirin."
   },
   "csvEmptyEmailSkipped": {
-    "message": "atlandi (email yok)"
+    "message": "atlandı (email yok)"
   },
   "largeSendWarn": {
-    "message": "$COUNT$ aliciya gondermek uzeresiniz.\n\nOutlook'un gonderim limitleri icinde kalmak ve hesabinizin isaretlenmesini onlemek icin OutMass bu gonderimi otomatik olarak yavaslatir (yaklasik 30/dk); islem yaklasik $MIN$ dakika surer ve arka planda devam eder.\n\nBuyuk soguk listelerde en iyi teslimat icin gonderimi Zamanlama ile birkac gune yaymak (gunde birkac yuz) en iyisidir.\n\nDevam edilsin mi?",
+    "message": "$COUNT$ alıcıya göndermek üzeresiniz.\n\nOutlook'un gönderim limitleri içinde kalmak ve hesabınızın işaretlenmesini önlemek için OutMass bu gönderimi otomatik olarak yavaşlatır (yaklaşık 30/dk); işlem yaklaşık $MIN$ dakika sürer ve arka planda devam eder.\n\nBüyük soğuk listelerde en iyi teslimat için gönderimi Zamanlama ile birkaç güne yaymak (günde birkaç yüz) en iyisidir.\n\nDevam edilsin mi?",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -765,10 +765,10 @@
     }
   },
   "csvDupRemoved": {
-    "message": "tekrar kaldirildi"
+    "message": "tekrar kaldırıldı"
   },
   "campaignNameDuplicate": {
-    "message": "\"$NAME$\" adinda bir kampanya zaten var. Devam?",
+    "message": "\"$NAME$\" adında bir kampanya zaten var. Devam?",
     "placeholders": {
       "name": {
         "content": "$1"
@@ -776,37 +776,37 @@
     }
   },
   "previewSubjectLabel": {
-    "message": "Onizleme"
+    "message": "Önizleme"
   },
   "reportsTabActive": {
     "message": "Aktif"
   },
   "reportsTabArchived": {
-    "message": "Arsivli"
+    "message": "Arşivli"
   },
   "btnArchive": {
-    "message": "Arsivle"
+    "message": "Arşivle"
   },
   "btnUnarchive": {
-    "message": "Arsivden cikar"
+    "message": "Arşivden çıkar"
   },
   "archiveConfirm": {
-    "message": "Bu kampanyayi arsivle? Sonra Arsivli sekmesinden geri alabilirsin."
+    "message": "Bu kampanyayı arşivle? Sonra Arşivli sekmesinden geri alabilirsin."
   },
   "onbTitle": {
-    "message": "OutMass'a Hos Geldin"
+    "message": "OutMass'a Hoş Geldin"
   },
   "onbStep1": {
-    "message": "Adim 1 — Alici listesi olan bir CSV yukle. Ilk sutun 'email' olmali."
+    "message": "Adım 1 — Alıcı listesi olan bir CSV yükle. İlk sütun 'email' olmalı."
   },
   "onbStep2": {
-    "message": "Adim 2 — Konuyu ve icerigi yaz. Kisisellestirmek icin {{firstName}} kullan."
+    "message": "Adım 2 — Konuyu ve içeriği yaz. Kişiselleştirmek için {{firstName}} kullan."
   },
   "onbStep3": {
-    "message": "Adim 3 — Onizleme veya Test Gonder ile kontrol et, sonra Gonder'e bas."
+    "message": "Adım 3 — Önizleme veya Test Gönder ile kontrol et, sonra Gönder'e bas."
   },
   "onbNext": {
-    "message": "Ileri"
+    "message": "İleri"
   },
   "onbBack": {
     "message": "Geri"
@@ -815,10 +815,10 @@
     "message": "Bitir"
   },
   "btnExportList": {
-    "message": "Tumunu Indir"
+    "message": "Tümünü İndir"
   },
   "warnHtmlInvalid": {
-    "message": "HTML dengesiz gorunuyor (kapatilmamis: $TAGS$). Gondermeden once kontrol et.",
+    "message": "HTML dengesiz görünüyor (kapatılmamış: $TAGS$). Göndermeden önce kontrol et.",
     "placeholders": {
       "tags": {
         "content": "$1"
@@ -826,7 +826,7 @@
     }
   },
   "warnTooManyImages": {
-    "message": "Icerikte $N$ resim — cok resim spam gibi gorunur.",
+    "message": "İçerikte $N$ resim — çok resim spam gibi görünür.",
     "placeholders": {
       "n": {
         "content": "$1"
@@ -834,7 +834,7 @@
     }
   },
   "warnShortenedLinks": {
-    "message": "Kisaltilmis baglar var ($LIST$) — teslim edilebilirlik dusebilir.",
+    "message": "Kısaltılmış bağlar var ($LIST$) — teslim edilebilirlik düşebilir.",
     "placeholders": {
       "list": {
         "content": "$1"
@@ -845,16 +845,16 @@
     "message": "Tekrar Edenleri Atla"
   },
   "settingsDedupHint": {
-    "message": "Belirli bir surede farkli kampanyalarda ayni kisiye mail atma."
+    "message": "Belirli bir sürede farklı kampanyalarda aynı kişiye mail atma."
   },
   "settingsDedupEnabled": {
-    "message": "Etkin (Pro ozellik)"
+    "message": "Etkin (Pro özellik)"
   },
   "settingsDedupDays": {
-    "message": "Geriye donuk sure (gun)"
+    "message": "Geriye dönük süre (gün)"
   },
   "uploadSkippedPrevious": {
-    "message": "$N$ alici atlandi — son bir kampanyada iletisim kuruldu.",
+    "message": "$N$ alıcı atlandı — son bir kampanyada iletişim kuruldu.",
     "placeholders": {
       "n": {
         "content": "$1"

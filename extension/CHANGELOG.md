@@ -59,6 +59,12 @@ like one that simply never sent.
   button next to the template list sat outside the panel in French and in
   several other languages, forcing the panel to scroll sideways to reach it.
 
+- **Turkish now reads like Turkish.** Around a fifth of the Turkish
+  interface had been typed without the letters ç, ğ, ı, ö, ş and ü —
+  "gonder" for "gönder", "Arsivle" for "Arşivle" — so the panel was half
+  properly written and half not. Sixty-seven strings corrected, wording
+  unchanged.
+
 ### Behind the scenes (backend — affects all extension versions)
 
 - **A scheduled campaign stopped by an expired connection is no longer lost.**

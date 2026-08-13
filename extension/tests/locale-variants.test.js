@@ -133,6 +133,39 @@ const MAINLAND_TERMS = [
   ["應用程序", "應用程式"],
 ];
 
+// Turkish stripped of its own letters. On 2026-08-13 sixty-seven strings in
+// the tr locale read "gonder", "buyuk", "Arsivle", "Onizleme" — the file was
+// half properly written and half typed on a keyboard that could not produce
+// ç ğ ı ö ş ü, which to a Turkish reader is the difference between a product
+// and a machine translation of one. Key parity and placeholder checks passed
+// on every one of them.
+//
+// Every entry is a word that is ONLY ever the stripped form of a Turkish word
+// — never a correct spelling. Deliberately not exhaustive: a list with one
+// false positive gets deleted, and a list with sixty true positives does the
+// job. Notably absent, having caught the author out: limitleri, indir,
+// geldin, ileri, geri, bitir — all correct Turkish that happens to need no
+// special letter.
+const TR_ASCII_STRIPPED = [
+  "gonder", "gonderim", "gonderilecek", "gondermek", "gondermeye", "gonderildi",
+  "gonderir", "gonderici", "gunluk", "gunde", "gunlere", "buyuk", "kucuk",
+  "sutun", "arsiv", "arsivle", "arsivli", "arsivden", "onizleme", "yukselt",
+  "yukseltme", "simdi", "basarili", "basarisiz", "alici", "aliciya", "alicilar",
+  "icin", "icerik", "icerigi", "kisisel", "kisisellestirmek", "olustur",
+  "duzenle", "sablon", "baslamak", "secin", "cikis", "giris", "gorunuyor",
+  "gorunur", "gormek", "aciklama", "dogru", "yukle", "yukleyin", "kaldirildi",
+  "atlandi", "tarayici", "arayuz", "ozellik", "surede", "donuk", "iletisim",
+  "sinirlamasi", "kisitli", "gecerli", "itibarinizi", "asamaz", "yavaslatir",
+  "isaretlenmesini", "soguk", "birkac", "adim", "kisaltilmis", "kapatilmamis",
+  "olasi", "farkli", "virgulle", "ayrilmis", "dosyayi", "ulasilamiyor",
+  "baglanti", "baglantinizi", "guvenlik", "duvarinizi", "ustundeki",
+  "hesapsiz", "istege", "kullanilamaz", "adinda", "kampanyayi", "olmali",
+  "fransizca", "ispanyolca", "rusca", "arapca", "hintce", "muduru", "yazilim",
+  "satis", "kotamiz", "hesaplari", "kotanizda", "hakkiniz", "yalnizca",
+  "aninda", "kilar", "hakkinda", "ceyrek", "dusebilir", "takilmamak", "hos",
+  "tumunu", "ornek",
+];
+
 // locale dir -> rules
 const RULES = {
   zh: { chars: TRADITIONAL_ONLY, label: "Traditional characters in a Simplified locale" },
@@ -144,7 +177,29 @@ const RULES = {
   },
   pt_BR: { words: PT_ONLY, label: "European Portuguese word in the Brazilian locale" },
   pt_PT: { words: BR_ONLY, label: "Brazilian Portuguese word in the European locale" },
+  tr: {
+    asciiWords: TR_ASCII_STRIPPED,
+    label: "Turkish written without its own letters (ç ğ ı ö ş ü)",
+  },
 };
+
+/**
+ * Pure-ASCII words in a message, with addresses and URLs removed first.
+ *
+ * `eposta@ornek.com` and `ayse@example.com` are the placeholder address and
+ * the sample CSV row: their local parts must stay ASCII, and reading them as
+ * prose would flag two strings that are exactly right.
+ *
+ * A word carrying a Turkish letter cannot survive the [A-Za-z]+ tokeniser
+ * intact — "Gönder" arrives as "G" and "nder" — so a correct string simply
+ * has nothing for the list to match, provided no entry is a fragment.
+ */
+function asciiWords(text) {
+  return String(text)
+    .replace(/\S+@\S+/g, " ")
+    .replace(/https?:\/\/\S+/g, " ")
+    .match(/[A-Za-z]{3,}/g) || [];
+}
 
 // Words inside these constructs are code/brand, not prose.
 function strippable(message) {
@@ -156,6 +211,28 @@ function strippable(message) {
 
 function run() {
   const failures = [];
+  const check = (ok, msg) => { if (!ok) failures.push(msg); };
+
+  // ── The Turkish matcher, self-tested before it is trusted ──
+  //
+  // The first version of this detector was written in Python with a
+  // case-insensitive regex and reported all sixty-seven CORRECTED strings as
+  // still broken: under case folding `ı` and `i` are equivalent, because
+  // "ı".toUpperCase() is "I". JavaScript's /i/ flag does not fold them, but
+  // relying on that silently is how the same hour gets spent twice.
+  const has = (text, word) => asciiWords(text).some((w) => w.toLowerCase() === word);
+  check(has("Test Gonder", "gonder"), "the Turkish matcher no longer sees a stripped word");
+  check(!has("Test Gönder", "gonder"), "the Turkish matcher flags correctly written Turkish");
+  check(!has("eposta@ornek.com", "ornek"), "the Turkish matcher reads an email address as prose");
+  // The matcher reports whatever is in the list, so the only defence against a
+  // false positive is the list itself. These six are correct Turkish that
+  // needs no special letter, and every one of them was flagged by the first
+  // draft of this word list.
+  check(
+    !TR_ASCII_STRIPPED.some((w) => ["limitleri", "indir", "geldin", "ileri", "geri", "bitir"].includes(w)),
+    "a correctly-spelled Turkish word got into TR_ASCII_STRIPPED — one false " +
+      "positive and the next person deletes the whole suite"
+  );
 
   for (const [loc, rule] of Object.entries(RULES)) {
     const file = path.join(LOCALES_DIR, loc, "messages.json");
@@ -202,6 +279,19 @@ function run() {
           );
           if (re.test(lower)) {
             failures.push(`${loc}: key "${key}" uses "${w}" — ${rule.label}`);
+          }
+        }
+      }
+
+      if (rule.asciiWords) {
+        const seen = new Set(asciiWords(text).map((w) => w.toLowerCase()));
+        for (const w of rule.asciiWords) {
+          if (seen.has(w)) {
+            failures.push(
+              `${loc}: key "${key}" uses "${w}" — ${rule.label}. ` +
+              `Write it with the letter it needs; the text otherwise reads ` +
+              `as a machine translation to a native speaker`
+            );
           }
         }
       }
