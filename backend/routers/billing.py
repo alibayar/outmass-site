@@ -13,7 +13,14 @@ from datetime import datetime, timezone
 
 import posthog
 import stripe
-from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
+from fastapi import (
+    APIRouter,
+    BackgroundTasks,
+    Depends,
+    HTTPException,
+    Query,
+    Request,
+)
 from fastapi.responses import HTMLResponse, Response
 
 from pydantic import BaseModel
@@ -1455,33 +1462,98 @@ async def billing_status(user: dict = Depends(get_current_user)):
 
 # ─── 5. Success Page ────────────────────────────────────────────────────────
 
-@router.get("/success", response_class=HTMLResponse)
-async def billing_success():
-    """Simple HTML page shown after successful payment."""
-    html = """<!DOCTYPE html>
+def _success_page(title: str, headline: str, body: str, tint: str) -> Response:
+    """The shared shell for the post-checkout page."""
+    html = f"""<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Payment Successful — OutMass</title>
+    <title>{title} — OutMass</title>
     <style>
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        body {{ font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                display: flex; justify-content: center; align-items: center;
-               min-height: 100vh; margin: 0; background: #f0fdf4; color: #166534; }
-        .card { text-align: center; padding: 3rem; background: #fff;
-                border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }
-        h1 { margin: 0 0 .5rem; font-size: 1.5rem; }
-        p  { margin: 0; color: #4b5563; }
+               min-height: 100vh; margin: 0; background: {tint}; color: #166534; }}
+        .card {{ text-align: center; padding: 3rem; background: #fff; max-width: 30rem;
+                border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); }}
+        h1 {{ margin: 0 0 .5rem; font-size: 1.5rem; }}
+        p  {{ margin: 0; color: #4b5563; line-height: 1.5; }}
     </style>
 </head>
 <body>
     <div class="card">
-        <h1>Payment successful!</h1>
-        <p>Your plan upgrade is now active. You can close this tab.</p>
+        <h1>{headline}</h1>
+        <p>{body}</p>
     </div>
 </body>
 </html>"""
     return Response(content=html, media_type="text/html")
+
+
+# The one sentence this page exists to say. A bank debit clears days after
+# checkout, and until it does the account is still Free with no subscription
+# id — exactly what someone who was told "your upgrade is now active" sees
+# when they open the panel, and exactly what makes them pay a second time by
+# card. Two subscriptions is then our problem to unpick, and the replay guard
+# re-zeroes their quota mid-period on the way.
+_DONT_PAY_AGAIN = "You don't need to pay again."
+
+
+@router.get("/success", response_class=HTMLResponse)
+async def billing_success(session_id: str = Query(None)):
+    """What actually happened, rather than what we hope happened.
+
+    The page ignored its own session_id until 2026-08-14 and told everyone
+    their upgrade was active. For a card that is true within a second. For a
+    bank debit — live since 2026-08-08 — it is false for several days, and the
+    person reading it is looking at a Free account.
+
+    Unauthenticated by nature: Stripe redirects the browser here, so the
+    session id is the only thing we have. It is a long random string and the
+    page reveals nothing but the state of that one checkout.
+    """
+    settled = None  # None = we could not tell
+    if session_id and STRIPE_SECRET_KEY:
+        try:
+            session = stripe.checkout.Session.retrieve(session_id)
+            settled = session.get("payment_status") in _SETTLED_PAYMENT_STATUSES
+        except Exception:  # noqa: BLE001
+            # A Stripe blip must not turn the page into an error. Falling
+            # through to the neutral wording below is safe in both directions.
+            logger.warning(
+                "Could not read checkout session on the success page",
+                exc_info=True,
+            )
+
+    if settled is True:
+        return _success_page(
+            "Payment Successful",
+            "Payment successful!",
+            "Your plan upgrade is now active. You can close this tab.",
+            "#f0fdf4",
+        )
+
+    if settled is False:
+        return _success_page(
+            "Payment Received",
+            "Payment on its way",
+            "Your bank has the instruction and is sending the money — that "
+            "usually takes a few business days. Your plan switches on by "
+            f"itself the moment it lands, and we'll email you then. {_DONT_PAY_AGAIN}",
+            "#f0f9ff",
+        )
+
+    # Neither confirmed nor denied: no session id (an old link, a bookmark) or
+    # Stripe unreadable. Deliberately worded to be true whichever it was, and
+    # to carry the sentence that matters in both.
+    return _success_page(
+        "Thank You",
+        "Thanks — we're finishing up",
+        "Your plan switches on as soon as the payment clears: instantly for a "
+        "card, a few business days for a bank transfer. We'll email you when "
+        f"it does. {_DONT_PAY_AGAIN}",
+        "#f0f9ff",
+    )
 
 
 # ─── 6. Cancel Page ─────────────────────────────────────────────────────────
