@@ -970,11 +970,27 @@ async def _run_campaign_send(
                         # 25 bounds the loss to at most 24 emails however the
                         # process dies, at one extra write per 25 sends.
                         if sent_count - quota_charged >= QUOTA_CHARGE_BATCH:
-                            user_model.increment_sent_count(
-                                user["id"], sent_count - quota_charged,
-                                reason="send_now", email=user.get("email"),
-                            )
-                            quota_charged = sent_count
+                            # Its own try, for the reason the three worker
+                            # loops already have one (scheduled_worker.py:189):
+                            # mark_sent committed twelve lines up, so letting a
+                            # quota-write failure reach the per-contact except
+                            # below would run mark_failed(..., "deferred") on a
+                            # recipient who HAS the email, and Resume would
+                            # send it to them a second time. Leaving
+                            # quota_charged unadvanced is correct — the
+                            # end-of-loop flush recharges it.
+                            try:
+                                user_model.increment_sent_count(
+                                    user["id"], sent_count - quota_charged,
+                                    reason="send_now", email=user.get("email"),
+                                )
+                                quota_charged = sent_count
+                            except Exception:  # noqa: BLE001
+                                logging.getLogger(__name__).warning(
+                                    "batch quota charge failed; deferring to "
+                                    "the end-of-loop flush",
+                                    exc_info=True,
+                                )
                     else:
                         sc = result.get("status_code")
                         if sc in (401, 403):
@@ -993,6 +1009,15 @@ async def _run_campaign_send(
                     await asyncio.sleep(SEND_DELAY_SECONDS)
 
         # Whatever the batches have not covered yet.
+        #
+        # Deliberately NOT wrapped, unlike the in-loop batch above. A failure
+        # here escapes to this function's own handler, which recharges (it
+        # checks `not quota_counted`) and parks the campaign as 'partial'.
+        # Catching it instead would keep the status honest and lose the charge
+        # — free emails, silently. The status is recoverable (Resume finds
+        # nothing pending and closes the campaign as 'sent'); an uncounted
+        # send is not. Nothing was marked failed at this point either, so no
+        # recipient can be emailed twice by it.
         if sent_count > quota_charged:
             user_model.increment_sent_count(
                 user["id"], sent_count - quota_charged,
