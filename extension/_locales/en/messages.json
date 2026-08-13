@@ -1197,5 +1197,13 @@
   },
   "btnChoosePlan": {
     "message": "Choose"
+  },
+  "planEndedNotice": {
+    "message": "Your paid plan has ended — you're on Free ($1 emails a month). Pick a plan below to start again.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

@@ -237,6 +237,20 @@ INACTIVITY_CANCEL_DAYS = int(os.getenv("INACTIVITY_CANCEL_DAYS", "90"))
 # stay distinguishable.
 AUTH_RESUME_MAX_AGE_DAYS = int(os.getenv("AUTH_RESUME_MAX_AGE_DAYS", "7"))
 
+# How long the panel keeps saying "your plan ended" after a drop to Free.
+#
+# The notice is not the notification — the email sent at the moment of the
+# drop is. This is context at the moment of USE: you came back, you are
+# capped, here is why and here is the way back. That value decays, and a
+# banner shown while a condition holds for ever stops being information and
+# becomes furniture.
+#
+# 14 days matches Stripe's own retry window, which is the period where the
+# drop can still be a surprise. It lives here rather than in the extension
+# so the rule is defined once — same reason the plan catalogue's prices and
+# limits are read rather than typed.
+PLAN_DROP_NOTICE_DAYS = int(os.getenv("PLAN_DROP_NOTICE_DAYS", "14"))
+
 # ── Plan Limits (env-overridable — raise later in Railway, no code change) ──
 FREE_PLAN_MONTHLY_LIMIT = int(os.getenv("FREE_PLAN_MONTHLY_LIMIT", "250"))
 STARTER_PLAN_MONTHLY_LIMIT = int(os.getenv("STARTER_PLAN_MONTHLY_LIMIT", "2500"))

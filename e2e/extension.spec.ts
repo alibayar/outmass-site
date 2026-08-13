@@ -508,6 +508,35 @@ test.describe("plan picker", () => {
     await expect(page.locator("#account-btn-upgrade")).toBeVisible();
   });
 
+
+  test("someone whose plan just ended is told why they are capped", async ({
+    page,
+  }) => {
+    await openAccount(page, { ...PLANS, plan_ended_recently: true });
+
+    const notice = page.locator("#account-plan-ended");
+    await expect(notice).toBeVisible();
+    // Directly above the plan picker, so the way back is the next thing
+    // read rather than something to go looking for.
+    const [noticeBox, pickerBox] = await Promise.all([
+      notice.boundingBox(),
+      page.locator("#account-plan-picker").boundingBox(),
+    ]);
+    expect(noticeBox!.y).toBeLessThan(pickerBox!.y);
+  });
+
+  test("a free user who never paid is told nothing", async ({ page }) => {
+    // The backend owns that judgement — the panel must not invent it from
+    // the plan alone, or every free user would see a plan-ended notice.
+    await openAccount(page, { ...PLANS, plan_ended_recently: false });
+    await expect(page.locator("#account-plan-ended")).toBeHidden();
+  });
+
+  test("an older backend that omits the flag shows nothing", async ({ page }) => {
+    await openAccount(page, PLANS);
+    await expect(page.locator("#account-plan-ended")).toBeHidden();
+  });
+
   test("it fits the panel", async ({ page }) => {
     await openAccount(page, PLANS);
     await expectNoHorizontalOverflow(page, "plan picker: ");

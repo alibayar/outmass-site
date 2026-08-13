@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "Wählen"
+  },
+  "planEndedNotice": {
+    "message": "Ihr kostenpflichtiger Plan ist beendet — Sie sind auf Free ($1 E-Mails pro Monat). Wählen Sie unten einen Plan, um neu zu starten.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

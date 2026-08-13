@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "選択"
+  },
+  "planEndedNotice": {
+    "message": "有料プランが終了しました — 現在は Free です（月 $1 通）。再開するには下からプランを選んでください。",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

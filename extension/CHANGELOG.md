@@ -32,6 +32,14 @@ like one that simply never sent.
   campaign that then happens by itself (below); an older one is left for us
   to look at rather than sent behind your back.
 
+- **If your plan ends, the panel says so — and why.** A subscription that
+  ran out or a trial that finished used to leave no trace anywhere in
+  OutMass; the first sign was hitting the Free limit in the middle of a
+  send. For a couple of weeks afterwards the Account tab now explains what
+  happened, right above the plans, so starting again is one click rather
+  than a hunt. (You also get an email at the moment it happens — unless you
+  cancelled it yourself, in which case you already know.)
+
 - **You can now see what a plan costs before you reach the payment page.**
   The Account tab used to show a single "Upgrade Plan" button that took you
   straight to Stripe — so the only way to learn the price was to open a

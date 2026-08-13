@@ -3363,6 +3363,25 @@
 
     chrome.runtime.sendMessage({ type: "GET_BILLING_STATUS" }, function (resp) {
       var data = resp && (resp.data || resp);
+
+      // Why they are capped, for the fortnight after a paid plan ends. The
+      // backend owns the window (PLAN_DROP_NOTICE_DAYS) so the rule is not
+      // defined twice, and the quota is the server's number formatted here
+      // — never written into any of the 14 message files.
+      var endedEl = document.getElementById("account-plan-ended");
+      if (endedEl && data && data.plan_ended_recently) {
+        var freeLimit;
+        try {
+          freeLimit = new Intl.NumberFormat(getActiveLocale()).format(
+            data.limit || 0
+          );
+        } catch (e) {
+          freeLimit = String(data.limit || "");
+        }
+        endedEl.textContent = t("planEndedNotice", [freeLimit]);
+        endedEl.style.display = "block";
+      }
+
       var plans = data && data.plans;
       // No plans means the backend could not read Stripe, or this is an
       // older backend. Either way the single button stays — showing a price

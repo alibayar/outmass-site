@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "Seç"
+  },
+  "planEndedNotice": {
+    "message": "Ücretli planınız sona erdi — Free plandasınız (ayda $1 e-posta). Yeniden başlamak için aşağıdan bir plan seçin.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

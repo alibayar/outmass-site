@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "Choisir"
+  },
+  "planEndedNotice": {
+    "message": "Votre offre payante a pris fin — vous êtes sur Free ($1 e-mails par mois). Choisissez une offre ci-dessous pour recommencer.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

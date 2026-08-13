@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "選擇"
+  },
+  "planEndedNotice": {
+    "message": "您的付費方案已結束 — 目前為 Free（每月 $1 封郵件）。請在下方選擇方案以重新開始。",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

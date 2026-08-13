@@ -30,6 +30,7 @@ from config import (
     FREE_PLAN_MONTHLY_LIMIT,
     STARTER_PLAN_MONTHLY_LIMIT,
     PRO_PLAN_MONTHLY_LIMIT,
+    PLAN_DROP_NOTICE_DAYS,
 )
 from database import get_db
 from models import user as user_model
@@ -1344,6 +1345,39 @@ def _purchasable_plans() -> list[dict]:
     return plans
 
 
+def _plan_ended_recently(user: dict) -> bool:
+    """Is this a Free account that was paying until recently?
+
+    stripe_customer_id is written only on a completed checkout, so it set
+    while plan is 'free' means exactly "paid at some point, not paying now" —
+    no migration needed to ask the question.
+
+    Bounded by PLAN_DROP_NOTICE_DAYS because the condition itself never
+    stops being true. A user who paid once in June and has been happily on
+    Free since does not need a banner about it in December.
+
+    Never raises: a malformed timestamp must not take out the panel's whole
+    status call, and the cost of answering False is a missing explanation
+    rather than a wrong one.
+    """
+    try:
+        if (user.get("plan") or "free") != "free":
+            return False
+        if not user.get("stripe_customer_id"):
+            return False
+        changed = user.get("plan_updated_at")
+        if not changed:
+            return False
+        when = datetime.fromisoformat(str(changed).replace("Z", "+00:00"))
+        if when.tzinfo is None:
+            when = when.replace(tzinfo=timezone.utc)
+        age = (datetime.now(timezone.utc) - when).days
+        return 0 <= age <= PLAN_DROP_NOTICE_DAYS
+    except Exception:  # noqa: BLE001
+        logger.warning("plan_ended_recently check failed", exc_info=True)
+        return False
+
+
 @router.get("/status")
 async def billing_status(user: dict = Depends(get_current_user)):
     """Return the user's current plan and monthly usage."""
@@ -1359,6 +1393,10 @@ async def billing_status(user: dict = Depends(get_current_user)):
         "plan": plan,
         "emails_sent_this_month": sent,
         "limit": limit,
+        # Whether the panel should explain why this account is capped.
+        # Computed here, not in the extension: the window is one rule and it
+        # belongs in one place.
+        "plan_ended_recently": _plan_ended_recently(fresh_user),
         # Additive: older clients ignore the key and keep their single
         # Upgrade button. Empty when Stripe could not be read, which is the
         # signal for the panel to fall back rather than show a guess.

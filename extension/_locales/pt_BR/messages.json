@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "Escolher"
+  },
+  "planEndedNotice": {
+    "message": "Seu plano pago terminou — você está no Free ($1 e-mails por mês). Escolha um plano abaixo para recomeçar.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

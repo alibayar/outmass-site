@@ -156,3 +156,79 @@ def test_status_carries_the_catalogue(client, fake_db, auth_bypass):
     body = resp.json()
     assert {"plan", "emails_sent_this_month", "limit", "plans"} <= set(body)
     assert [p["key"] for p in body["plans"]] == ["starter", "pro"]
+
+
+# ── "Your plan ended" — context at the moment of use ──
+#
+# The notification is the email sent when the plan drops. This flag decides
+# whether the panel ALSO explains why the account is capped when the user
+# next comes back. Bounded, because the underlying condition never stops
+# being true: someone who paid once in June and has been happily on Free
+# since does not need a banner about it in December.
+
+
+def _dropped(days_ago, **over):
+    from datetime import datetime, timedelta, timezone
+
+    row = {
+        "plan": "free",
+        "stripe_customer_id": "cus_1",
+        "plan_updated_at": (
+            datetime.now(timezone.utc) - timedelta(days=days_ago)
+        ).isoformat(),
+    }
+    row.update(over)
+    return row
+
+
+def test_a_recent_drop_is_explained():
+    assert billing._plan_ended_recently(_dropped(2)) is True
+
+
+def test_an_old_drop_is_not():
+    """Past the window it is not news, it is just their plan — and a banner
+    that never clears is furniture rather than information."""
+    from config import PLAN_DROP_NOTICE_DAYS
+
+    assert billing._plan_ended_recently(_dropped(PLAN_DROP_NOTICE_DAYS + 1)) is False
+
+
+def test_someone_who_never_paid_is_never_told_a_plan_ended():
+    """stripe_customer_id is written only on a completed checkout, so its
+    absence means they have never had a plan to lose."""
+    assert billing._plan_ended_recently(_dropped(1, stripe_customer_id=None)) is False
+
+
+def test_a_paying_customer_is_not_told_their_plan_ended():
+    assert billing._plan_ended_recently(_dropped(1, plan="starter")) is False
+
+
+def test_a_missing_timestamp_says_nothing_rather_than_guessing():
+    assert billing._plan_ended_recently(_dropped(1, plan_updated_at=None)) is False
+
+
+def test_a_malformed_timestamp_cannot_break_the_status_call():
+    """The whole panel reads this endpoint. A bad row must cost an
+    explanation, not the account tab."""
+    assert billing._plan_ended_recently(_dropped(1, plan_updated_at="not-a-date")) is False
+
+
+def test_the_window_is_read_from_config():
+    """Patched to a value the default has never had, so a reinstated literal
+    cannot coincide with the assertion."""
+    with patch.object(billing, "PLAN_DROP_NOTICE_DAYS", 3):
+        assert billing._plan_ended_recently(_dropped(2)) is True
+        assert billing._plan_ended_recently(_dropped(5)) is False
+
+
+def test_status_carries_the_flag(client, fake_db, auth_bypass):
+    from tests.conftest import FakeQueryBuilder, FAKE_USER
+
+    row = dict(FAKE_USER)
+    row.update(_dropped(1))
+    fake_db.set_table("users", FakeQueryBuilder(data=[row]))
+    ids, retrieve = _with_stripe(_prices())
+    with ids, retrieve:
+        body = client.get("/billing/status").json()
+
+    assert body["plan_ended_recently"] is True

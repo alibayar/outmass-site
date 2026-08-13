@@ -554,6 +554,20 @@ body {
   background: #f3f2f1;
 }
 
+/* Amber, matching the reconnect banner and the paused-campaign note: the
+   same visual language for "something changed and you can act on it". Sits
+   directly above the plan picker so the way back is the next thing read. */
+.plan-ended-notice {
+  margin-bottom: 10px;
+  padding: 8px 10px;
+  border-radius: 6px;
+  background: #fff4e5;
+  border: 1px solid #f5d5a8;
+  color: #8a5a00;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 /* ── Plan picker (Account tab) ── */
 .plan-option {
   display: flex;

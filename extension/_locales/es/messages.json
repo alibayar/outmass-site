@@ -1186,5 +1186,13 @@
   },
   "btnChoosePlan": {
     "message": "Elegir"
+  },
+  "planEndedNotice": {
+    "message": "Tu plan de pago ha terminado — estás en Free ($1 correos al mes). Elige un plan abajo para volver a empezar.",
+    "placeholders": {
+      "1": {
+        "content": "$1"
+      }
+    }
   }
 }

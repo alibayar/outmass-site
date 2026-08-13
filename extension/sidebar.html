@@ -501,6 +501,13 @@
           </div>
         </div>
         <div class="settings-actions">
+          <!-- Why this account is capped, for the fortnight after a plan
+               ends. The notification is the email sent at the moment of the
+               drop; this is context at the moment of USE, and it sits
+               directly above the plan picker so the way back is the next
+               thing read. The backend decides when to show it — see
+               PLAN_DROP_NOTICE_DAYS. -->
+          <div id="account-plan-ended" class="plan-ended-notice" style="display:none;"></div>
           <!-- Filled from /billing/status's `plans`, which reads prices from
                Stripe and limits from config.py. Hidden until it has real
                numbers: a wrong price is worse than no price, so when the
