@@ -1208,6 +1208,12 @@ def _telegram_alert(text: str) -> None:
         )
         return
     try:
+        # raise_for_status, because a 401 from a revoked token, a 400 from a
+        # wrong chat id and a 429 from rate limiting all return normally and
+        # would otherwise be indistinguishable from delivery. Every guard in
+        # this codebase that pings an operator depends on this call actually
+        # arriving; a silently dropped alert is the failure they exist to
+        # prevent, reproduced one layer down.
         httpx.post(
             f"https://api.telegram.org/bot{TELEGRAM_BOT_TOKEN}/sendMessage",
             data={
@@ -1216,9 +1222,11 @@ def _telegram_alert(text: str) -> None:
                 "disable_web_page_preview": "true",
             },
             timeout=5.0,
-        )
+        ).raise_for_status()
     except Exception as e:  # noqa: BLE001
-        logger.warning("Dispute Telegram alert failed: %s", e)
+        # Named for disputes when this helper only sent those; it now carries
+        # every operator alert, so the undelivered text goes to the log too.
+        logger.warning("Operator alert not delivered (%s). Text:\n%s", e, text)
 
 
 # ─── 3. Customer Portal ─────────────────────────────────────────────────────
@@ -1370,10 +1378,14 @@ def _purchasable_plans() -> list[dict]:
             })
     except Exception:  # noqa: BLE001
         logger.warning("Could not build the plan catalogue", exc_info=True)
-        if not cached:
-            # Only when the panel is actually left without prices. A stale but
-            # good catalogue is still a working picker, and alerting on that
-            # would be the false alarm that teaches us to ignore the channel.
+        if not cached and (STRIPE_SECRET_KEY or "").strip():
+            # Two conditions, both narrowing toward "a real operator would
+            # want to know". Only when the panel is actually left without
+            # prices — a stale but good catalogue is still a working picker,
+            # and alerting on that is the false alarm that teaches us to
+            # ignore the channel. And only where Stripe is configured at all,
+            # the same exemption missing_plan_price_ids() makes: a service
+            # that does no billing is not misconfigured.
             _alert_catalogue_unavailable()
         return cached or []
 

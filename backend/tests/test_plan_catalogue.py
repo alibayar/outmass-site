@@ -48,8 +48,12 @@ def _prices(**over):
 
 
 def _with_stripe(side_effect):
+    # STRIPE_SECRET_KEY too: the runtime alert is gated on Stripe being
+    # configured at all, so without it every alert assertion below would pass
+    # vacuously in CI, where no Stripe key is set.
     return patch.multiple(
         billing,
+        STRIPE_SECRET_KEY="sk_test_catalogue",
         STRIPE_STARTER_PRICE_ID="price_starter",
         STRIPE_PRO_PRICE_ID="price_pro",
     ), patch("routers.billing.stripe.Price.retrieve", side_effect=side_effect)
@@ -208,6 +212,21 @@ def test_a_broken_alert_channel_cannot_break_the_endpoint():
     with ids, retrieve, patch("routers.billing._telegram_alert",
                               side_effect=RuntimeError("telegram down")):
         assert billing._purchasable_plans() == []
+
+
+def test_a_service_without_stripe_configured_stays_quiet():
+    """The same exemption the startup guard makes. A worker or a dev machine
+    with no Stripe key has no catalogue to lose, and an alert channel that
+    fires on correctly-configured services is one nobody reads."""
+    with patch.multiple(billing, STRIPE_SECRET_KEY="",
+                        STRIPE_STARTER_PRICE_ID="price_starter",
+                        STRIPE_PRO_PRICE_ID="price_pro"), \
+         patch("routers.billing.stripe.Price.retrieve",
+               side_effect=_stripe_is_down), \
+         patch("routers.billing._telegram_alert") as alert:
+        assert billing._purchasable_plans() == []
+
+    alert.assert_not_called()
 
 
 def test_status_carries_the_catalogue(client, fake_db, auth_bypass):

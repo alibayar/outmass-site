@@ -3201,6 +3201,14 @@
     document.body.appendChild(overlay);
 
     document.getElementById("btn-upgrade").addEventListener("click", function () {
+      // Claim the click before anything asynchronous runs. Dropping the id is
+      // what makes the catalogue swap below — which finds this button by id —
+      // leave an in-flight checkout alone instead of replacing it underneath
+      // the user; without it a click on the freshly rendered rows opens a
+      // SECOND Stripe session for one intent. Disabling also stops the plain
+      // double-click doing the same thing.
+      this.disabled = true;
+      this.id = "";
       track("upgrade_button_clicked", { context: "modal" });
       chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "starter" }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {

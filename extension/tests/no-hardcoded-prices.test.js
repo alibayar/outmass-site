@@ -1,10 +1,13 @@
 /**
  * A price may never be written into the extension.
  *
- * Until 2026-08-13 it was written in forty-two places: popupUpgradeStarter
- * and popupUpgradePro carried "($9/mo)", and the quota-cap modal's three
- * strings spelled out "$9/mo" and "$19/mo" — each of them fourteen times
- * over, once per locale. The panel's Account tab meanwhile read the same
+ * Until 2026-08-13 it was written in seventy places: popupUpgradeStarter and
+ * popupUpgradePro carried "($9/mo)", and the quota-cap modal's three strings
+ * spelled out "$9/mo" and "$19/mo" — five keys, each of them fourteen times
+ * over, once per locale, plus twice more as pre-i18n text in popup.html.
+ * (The commit that removed them said forty-two, which was the modal subtotal
+ * with the two popup keys left out of the multiplication. Fitting.)
+ * The panel's Account tab meanwhile read the same
  * numbers from Stripe. Two sources for one number is not a style question:
  * docs/terms.html promised a 50-email free tier for months after config.py
  * said 250, and nothing failed, because a stale number is still a number.
@@ -102,6 +105,36 @@ function run() {
     "buildPlanRows is gone from sidebar.js — the Account tab and the " +
       "quota-cap modal shared it precisely so a second copy could not " +
       "reintroduce a hardcoded plan"
+  );
+
+  // ── And it is still wired in at both call sites ──
+  //
+  // Defining the function and never calling it would satisfy every check
+  // above while the product quietly went back to showing no price. Counted,
+  // not merely found: one occurrence is the definition.
+  const count = (source, needle) => source.split(needle).length - 1;
+
+  check(
+    count(sidebar, "GET_BILLING_STATUS") >= 2,
+    "sidebar.js asks for the plan catalogue in fewer than two places — the " +
+      "Account tab picker and the quota-cap modal each need it"
+  );
+  check(
+    count(popup, "renderPopupPrices") >= 2,
+    "renderPopupPrices is defined but never called — the popup buttons would " +
+      "show no price at all, which this suite would otherwise call a pass"
+  );
+
+  // ── The quota-cap modal's fallback button claims its own click ──
+  //
+  // It drops its id so the catalogue swap cannot replace it while a checkout
+  // is in flight. Without that, a click on the rows that appear underneath
+  // opens a SECOND Stripe session for one intent.
+  check(
+    /this\.disabled = true;\s*\n\s*this\.id = "";/.test(sidebar),
+    "the quota-cap modal's Upgrade button no longer claims its click before " +
+      "the async catalogue swap — two checkout sessions can be created from " +
+      "one upgrade"
   );
 
   return { name: "no-hardcoded-prices", failures };
