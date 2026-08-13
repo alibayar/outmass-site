@@ -2,6 +2,19 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.2.2 — unreleased
+
+- **OutMass will write to you in the language you read it in.** Every email
+  we send — welcome, quota reached, plan changes, reconnect, the lot — has
+  been English regardless of the language you have the panel set to, because
+  we had no way of knowing which one that was. The panel now tells the server
+  which language it is showing, and the emails are written in thirteen more:
+  Arabic, Chinese (Simplified and Traditional), French, German, Hindi,
+  Japanese, Portuguese (Brazil and Portugal), Russian, Spanish and Turkish.
+  Nothing is sent anywhere else; it is the same value the panel already uses
+  to render itself. If you have not updated, or your language is not one of
+  these, the emails stay in English exactly as before.
+
 ## v0.2.1 — 2026-08-13
 
 A patch release. Two things you will notice, one thing you will not: OutMass
