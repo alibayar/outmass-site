@@ -100,6 +100,25 @@ def test_the_operator_is_pinged_on_a_mismatch():
     assert "CONFIG MISMATCH" in alert.call_args.args[0]
 
 
+@pytest.mark.parametrize("role,argv", [
+    ("web", ["uvicorn", "main:app"]),
+    ("worker", ["celery", "-A", "workers.celery_app", "worker"]),
+    ("beat", ["celery", "-A", "workers.celery_app", "beat"]),
+])
+def test_the_alert_names_the_service_it_came_from(role, argv):
+    """The first real firing of this guard (2026-08-14) said a test Stripe key
+    was pointed at the production database and did not say WHERE. Railway's
+    variables are per-service and we run three; an alert that leaves the
+    operator guessing which one to open is half an alert."""
+    with patch("routers.billing._telegram_alert") as alert, \
+         patch("utils.env_registry.sys.argv", argv):
+        config_guard.check_stripe_mode("sk_test_abc", PROD_DB)
+
+    sent = alert.call_args.args[0]
+    assert f"{role} service" in sent, sent
+    assert "Variables" in sent, "the alert does not say where to go and fix it"
+
+
 def test_a_broken_alert_channel_cannot_break_startup():
     """The guard runs at import time in main.py. If it could raise, a
     Telegram outage would take the API down — which is precisely the

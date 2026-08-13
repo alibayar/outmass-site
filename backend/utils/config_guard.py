@@ -98,15 +98,32 @@ def stripe_mode_mismatch(secret_key: str, supabase_url: str) -> str | None:
 
 
 def _report(headline: str, message: str) -> None:
-    """Log it and ping the operator. Never raises."""
-    logger.error("%s — %s", headline, message)
+    """Log it and ping the operator. Never raises.
+
+    Names the service, because these run on three of them now and the first
+    real alert (2026-08-14, a test Stripe key against the production
+    database) could not be acted on without guessing which one to go and fix.
+    Railway's Variables are per-service; an alert that does not say which is
+    half an alert.
+    """
+    try:
+        from utils.env_registry import current_role
+
+        role = current_role()
+    except Exception:  # noqa: BLE001
+        role = "unknown"
+
+    logger.error("%s [%s service] — %s", headline, role, message)
     try:
         # Lazy, and inside its own try: an alerting failure must not be able
         # to break startup. _telegram_alert already degrades to an error log
         # when the token is missing, which is what happens on a dev machine.
         from routers.billing import _telegram_alert
 
-        _telegram_alert("🚨 OutMass " + headline + "\n\n" + message)
+        _telegram_alert(
+            f"🚨 OutMass {headline} — {role} service\n\n{message}\n\n"
+            f"Railway → {role} service → Variables."
+        )
     except Exception:  # noqa: BLE001
         logger.exception("Could not deliver the %s alert", headline)
 
