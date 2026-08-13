@@ -74,6 +74,43 @@ def _send_reauth_email(user_email: str, user_name: str | None, reason: str) -> N
         logger.warning("Reauth MailerSend dispatch failed: %s", e)
 
 
+def mark_requires_reauth(user_id: str, reason: str) -> None:
+    """Public entry point for callers outside this module.
+
+    routers/auth.py needs it for the one case it can see and this module
+    never can: a first sign-in that came back with no refresh token at all,
+    so no user_tokens row is written and get_fresh_access_token has nothing
+    to find. Every later failure is then an absence rather than an error.
+    """
+    _mark_requires_reauth(user_id, reason)
+
+
+def _alert_token_persist_failed(user_id: str) -> None:
+    """Tell an operator that a rotated Microsoft refresh token was lost.
+
+    Nothing else can. Microsoft is satisfied, the user is signed in and
+    working, and the only later trace is a refresh that fails for a reason
+    nobody can reconstruct — which is precisely how task #42 came to sit
+    uninvestigated for weeks. Never raises: this is the recovery path of a
+    failure, and a failure in it must not become the exception.
+    """
+    try:
+        from routers.billing import _telegram_alert
+
+        _telegram_alert(
+            "🔴 OutMass: a refreshed Microsoft token could not be saved\n\n"
+            f"User: {user_id}\n\n"
+            "Microsoft rotated their refresh token and our write to "
+            "user_tokens failed, so we still hold the old one. This request "
+            "worked; their next one probably will not, and to them it will "
+            "look like signing in simply stopped working.\n\n"
+            "They will need to reconnect Outlook. Check the database was not "
+            "down for anyone else at the same time."
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception("Could not deliver the token-persist alert")
+
+
 def _mark_requires_reauth(user_id: str, reason: str) -> None:
     """Flag the user as needing to re-authorize with Microsoft.
 
@@ -360,9 +397,36 @@ def get_fresh_access_token(user_id: str) -> str | None:
             tokens = resp.json()
             new_access = tokens.get("access_token")
             new_refresh = tokens.get("refresh_token", refresh_token)
-            db.table("user_tokens").update(
-                {"access_token": new_access, "refresh_token": new_refresh}
-            ).eq("user_id", user_id).execute()
+            # Its own try, and not a tidy-up: the enclosing except catches
+            # only httpx.HTTPError, so a DB failure here — a postgrest
+            # APIError, a connection drop — escaped this function entirely
+            # and into the caller's unguarded per-contact loop.
+            #
+            # The loss is worse than the crash. Microsoft ROTATES refresh
+            # tokens: this response carries a new one and the token we sent
+            # may already be spent. Failing to persist it means the next
+            # refresh presents a dead token, and from the user's side their
+            # sign-in stops working for no reason they can see — which is
+            # what "the token died on day one" looks like from the inside.
+            try:
+                db.table("user_tokens").update(
+                    {"access_token": new_access, "refresh_token": new_refresh}
+                ).eq("user_id", user_id).execute()
+            except Exception:  # noqa: BLE001
+                rotated = new_refresh != refresh_token
+                logger.error(
+                    "Could not persist refreshed tokens for user %s "
+                    "(refresh token %s). This call succeeds; the next one "
+                    "may not.",
+                    user_id,
+                    "WAS ROTATED and is now lost" if rotated else "unchanged",
+                    exc_info=True,
+                )
+                if rotated:
+                    # Unrecoverable from here and invisible to every other
+                    # signal: Microsoft is satisfied, the user is signed in,
+                    # and the only trace is that their next refresh fails.
+                    _alert_token_persist_failed(user_id)
             return new_access
         # 4xx from Microsoft (especially 400/401 invalid_grant) means the
         # refresh_token is dead. Flag the user so the sidebar can prompt

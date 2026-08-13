@@ -550,6 +550,20 @@ def _persist_ms_tokens(
                 "first sign-in; tokens not persisted",
                 user_id,
             )
+            # And say so where someone will see it. Logging alone made this
+            # the most invisible failure in the product: the sign-in
+            # SUCCEEDS — a JWT is issued, the panel shows them connected —
+            # while nothing was stored, so every later token use finds no row
+            # and quietly returns None. Scheduled sends no-op forever and the
+            # user is told nothing. That is what "the token died on day one"
+            # looks like from the outside; from the inside it never lived.
+            #
+            # Flagging puts the reconnect banner in front of them, and the
+            # reason string is the diagnostic that was missing when task #42
+            # was first raised and could not be investigated.
+            ms_token_model.mark_requires_reauth(
+                user_id, "no_refresh_token_on_first_signin"
+            )
 
     # Guarded write. With migration 024 unrun, an update/insert payload
     # containing has_mail_read_scope is rejected by PostgREST with PGRST204
