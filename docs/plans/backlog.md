@@ -140,16 +140,20 @@ her feedback did arrive).
 
 ## 🔵 P3 — ops / quality
 
-### ⬜ DMARC for getoutmass.com — CONFIRMED MISSING (probed 2026-08-08)
-`nslookup -type=TXT _dmarc.getoutmass.com 8.8.8.8` → **NXDOMAIN**. SPF is
-already there and correct (`v=spf1 include:_spf.mx.cloudflare.net
-include:_spf.mailersend.net ~all`), so the groundwork exists and the missing
-piece is one DNS TXT record. Without DMARC, receivers have no policy to apply
-to mail that fails SPF/DKIM — our transactional mail (welcome, reconnect,
-quota-cap, nudge, feedback) is likelier to land in spam, and nothing tells us
-when it does. Ali's action, at the DNS provider.
-DKIM was NOT probed (needs the MailerSend selector, e.g.
-`mlsn1._domainkey.getoutmass.com`) — check it in the same sitting.
+### ✅ DMARC for getoutmass.com — DONE 2026-08-13
+
+> **Resolved.** The record is live, aggregate reports arrive daily, and
+> `scripts/dmarc_report.py` reads them without opening the XML; reports land
+> in `dmarc/`. The heading here still said **CONFIRMED MISSING** the day after
+> it was fixed — stale by exactly the amount that makes a backlog untrustworthy,
+> corrected 2026-08-14.
+>
+> *(Original entry: `nslookup -type=TXT _dmarc.getoutmass.com 8.8.8.8` →
+> NXDOMAIN on 2026-08-08. SPF was already correct
+> (`v=spf1 include:_spf.mx.cloudflare.net include:_spf.mailersend.net ~all`), so
+> the missing piece was one DNS TXT record. Without DMARC, receivers had no
+> policy to apply to mail failing SPF/DKIM, and nothing told us when it
+> happened. DKIM was verified in the same sitting.)*
 
 ### ⬜ Branded support send-as (`support@getoutmass.com`)
 Split out of the entry above on 2026-08-08 because the two are independent and
@@ -561,7 +565,15 @@ published (claims-follow-product: only after the store shows it):
    *(A dangling sentence fragment from an earlier draft of this item lived here
    until 2026-08-08 and was deleted; it described the pre-fix state.)*
 
-### 🔧 Move the API to api.getoutmass.com — DONE except one env var (audited 2026-08-08)
+### ✅ Move the API to api.getoutmass.com — DONE 2026-08-12 (closed with #27)
+
+> **Resolved.** The one remaining item — Railway's `BACKEND_URL` still pointing
+> at the railway host — was confirmed changed on 2026-08-12. Every part of this
+> entry has shipped; it stayed marked 🔧 for two more days, which is the same
+> staleness the DMARC entry above had. The audit below is kept because it
+> records how the halves came to ship six weeks apart.
+
+### 🔧 Original entry (audited 2026-08-08)
 
 > **Step 1 and the extension half of step 2 both shipped on 2026-07-14**
 > (`eb5e81b`, folded into 0.1.25), and the entry was simply never updated:
