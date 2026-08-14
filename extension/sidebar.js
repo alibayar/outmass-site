@@ -1877,14 +1877,26 @@
     // the real backend values into storage) before reading, so a returning user
     // is guarded against the real remaining quota — not a stale 0 that would let
     // them create a campaign only to hit a 402 on send.
-    chrome.runtime.sendMessage({ type: "GET_USER_STATE" }, function () {
-    chrome.storage.local.get(["emailsSentThisMonth", "plan", "monthlyLimit"], function (storage) {
+    chrome.runtime.sendMessage({ type: "GET_USER_STATE" }, function (state) {
+      // Only a LIVE answer may stop a send.
+      //
+      // This used to block on whatever was in chrome.storage. The backend
+      // enforces the quota independently — /campaigns/send returns 402
+      // limit_exceeded, and the partial-send path truncates to the real
+      // remaining and reports quota_skipped, which this panel already
+      // handles. So a stale cache here can never add safety. It can only
+      // produce a false block, and the person it blocks is by definition
+      // someone whose plan changed recently — most often upward, because
+      // they just paid. Approved 2026-08-14 after the mirror of the
+      // stale-plan bug was sized.
+      var fresh = !!(state && state.fresh);
+      var storage = fresh ? state : {};
       var sent = storage.emailsSentThisMonth || 0;
       var plan = storage.plan || "free";
       var limit = storage.monthlyLimit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
       var remaining = limit - sent;
 
-      if (remaining <= 0) {
+      if (fresh && remaining <= 0) {
         alert(t("alertLimitReached", [String(limit)]));
         track("send_failed", {
           recipient_count: (csvData && csvData.rows) ? csvData.rows.length : 0,
@@ -1893,7 +1905,9 @@
         return;
       }
 
-      if (csvData.rows.length > remaining) {
+      // Same rule: a warning that says "only 250 of your 1,000 will send" is
+      // wrong and alarming when the 250 came from an unrefreshed cache.
+      if (fresh && csvData.rows.length > remaining) {
         alert(t("alertPartialCsvQuota", [String(remaining), String(csvData.rows.length)]));
       }
 
@@ -1919,7 +1933,6 @@
       }
 
       startSendFlow(subject, body);
-    });
     });
   });
 
