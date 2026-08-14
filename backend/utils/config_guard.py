@@ -73,14 +73,48 @@ def _stripe_mode(secret_key: str) -> str | None:
     return None
 
 
-def stripe_mode_mismatch(secret_key: str, supabase_url: str) -> str | None:
-    """The message to raise, or None when the pairing is coherent."""
+#: Services that never reach the Stripe API.
+#:
+#: Verified 2026-08-14 rather than assumed: every stripe.* call in non-test
+#: code is in routers/billing.py, and no beat entry or worker task imports it
+#: for anything but _telegram_alert, which sets no key and calls nothing. The
+#: workers read `stripe_subscription_id` as an ordinary column.
+#:
+#: Re-check this if a worker ever needs to cancel, refund or reconcile
+#: anything — the day that lands, this list is what makes the alert lie.
+_ROLES_THAT_NEVER_CALL_STRIPE = ("worker", "beat")
+
+
+def stripe_mode_mismatch(
+    secret_key: str, supabase_url: str, role: str | None = None
+) -> str | None:
+    """The message to raise, or None when the pairing is coherent.
+
+    The consequence depends on WHICH service is misconfigured, so the message
+    does too. The first real firing (2026-08-14, on beat) named the service
+    correctly and then told the operator that "checkouts will write customer
+    and subscription ids" — on a service that creates no checkouts. Naming the
+    service and then describing a different service's failure is the same
+    defect the naming was added to fix: it sends you somewhere true-sounding
+    and wrong, and it teaches you to discount the next alert.
+    """
     mode = _stripe_mode(secret_key)
     if mode is None:
         return None
     production_db = _db_looks_production(supabase_url)
+    inert = role in _ROLES_THAT_NEVER_CALL_STRIPE
 
     if mode == "test" and production_db:
+        if inert:
+            return (
+                "STRIPE_SECRET_KEY is a TEST key but SUPABASE_URL points at "
+                "the production database. Nothing on THIS service calls "
+                "Stripe, so no billing state is being corrupted from here. It "
+                "still matters: it is the same wrong value that must not "
+                "reach the web service, and copied variables are how this "
+                "spread twice already. Check the web service first, then fix "
+                "this one."
+            )
         return (
             "STRIPE_SECRET_KEY is a TEST key but SUPABASE_URL points at the "
             "production database. Checkouts will write customer and "
@@ -89,12 +123,29 @@ def stripe_mode_mismatch(secret_key: str, supabase_url: str) -> str | None:
             "is what happened on 2026-04-17."
         )
     if mode == "live" and not production_db:
+        if inert:
+            return (
+                "STRIPE_SECRET_KEY is a LIVE key but SUPABASE_URL is not a "
+                "production database. Nothing on THIS service calls Stripe, "
+                "so no card can be charged from here — but the same pairing "
+                "on the web service would charge real cards against data "
+                "nobody intends to keep. Check the web service first."
+            )
         return (
             "STRIPE_SECRET_KEY is a LIVE key but SUPABASE_URL is not a "
             "production database. Real cards can be charged against data "
             "nobody intends to keep."
         )
     return None
+
+
+def _current_role() -> str:
+    try:
+        from utils.env_registry import current_role
+
+        return current_role()
+    except Exception:  # noqa: BLE001
+        return "unknown"
 
 
 def _report(headline: str, message: str) -> None:
@@ -106,13 +157,7 @@ def _report(headline: str, message: str) -> None:
     Railway's Variables are per-service; an alert that does not say which is
     half an alert.
     """
-    try:
-        from utils.env_registry import current_role
-
-        role = current_role()
-    except Exception:  # noqa: BLE001
-        role = "unknown"
-
+    role = _current_role()
     logger.error("%s [%s service] — %s", headline, role, message)
     try:
         # Lazy, and inside its own try: an alerting failure must not be able
@@ -131,7 +176,7 @@ def _report(headline: str, message: str) -> None:
 def check_stripe_mode(secret_key: str, supabase_url: str) -> str | None:
     """Run the check and report it. Returns the message so callers can test
     it; reporting is a side effect, never an exception."""
-    message = stripe_mode_mismatch(secret_key, supabase_url)
+    message = stripe_mode_mismatch(secret_key, supabase_url, _current_role())
     if not message:
         return None
 

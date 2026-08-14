@@ -119,6 +119,96 @@ def test_the_alert_names_the_service_it_came_from(role, argv):
     assert "Variables" in sent, "the alert does not say where to go and fix it"
 
 
+@pytest.mark.parametrize("role,argv", [
+    ("worker", ["celery", "-A", "workers.celery_app", "worker"]),
+    ("beat", ["celery", "-A", "workers.celery_app", "beat"]),
+])
+def test_a_service_that_cannot_call_stripe_is_told_so(role, argv):
+    """The second half of the same lesson, learned the same way.
+
+    The 2026-08-14 firing was on BEAT. It named the service correctly and then
+    said "checkouts will write customer and subscription ids" — on a service
+    that creates no checkouts and calls Stripe from nowhere. Naming the
+    service and then describing a different service's failure sends the
+    operator somewhere true-sounding and wrong, and teaches them to discount
+    the next one.
+
+    What is actually true on a worker: the key is inert, and the reason to
+    care is that the same wrong value must not reach web.
+    """
+    with patch("routers.billing._telegram_alert") as alert, \
+         patch("utils.env_registry.sys.argv", argv):
+        config_guard.check_stripe_mode("sk_test_abc", PROD_DB)
+
+    sent = alert.call_args.args[0]
+    assert "Nothing on THIS service calls Stripe" in sent, sent
+    assert "web service" in sent, "it must point at the one that does matter"
+    assert "Checkouts will write" not in sent, (
+        "the worker alert still claims this service writes billing state"
+    )
+
+
+def test_the_web_alert_still_states_the_real_consequence():
+    """The counterweight. Softening the message everywhere would be the
+    opposite mistake: on web this key DOES write fictional billing state into
+    real rows, and that sentence is why the guard exists."""
+    with patch("routers.billing._telegram_alert") as alert, \
+         patch("utils.env_registry.sys.argv", ["uvicorn", "main:app"]):
+        config_guard.check_stripe_mode("sk_test_abc", PROD_DB)
+
+    sent = alert.call_args.args[0]
+    assert "Checkouts will write" in sent, sent
+    assert "2026-04-17" in sent, "it no longer says this has already happened"
+
+
+def test_the_roles_that_never_call_stripe_are_actually_the_ones_in_the_list():
+    """The list is a claim about the codebase, so check the codebase.
+
+    Every stripe.* call in non-test code must live in routers/billing.py. The
+    day a worker needs to cancel or reconcile something, this fails — and it
+    has to, because that is the day the reassuring half of the alert above
+    becomes a lie.
+    """
+    import re
+    from pathlib import Path
+
+    backend = Path(__file__).resolve().parent.parent
+    pattern = re.compile(r"\bstripe\.[A-Za-z]")
+
+    # Self-test first. A scan that matches nothing passes clean, which is the
+    # worst of the three outcomes and has already happened in this repo — a
+    # sender detector written on 2026-08-14 looked for `.post(` while every
+    # real sender went through async_post_with_retry, and it reported a clean
+    # bill of health for a check that examined nothing. So: prove the pattern
+    # finds a real call, and does not fire on the word in prose, BEFORE
+    # believing an empty result.
+    billing = (backend / "routers" / "billing.py").read_text(encoding="utf-8")
+    assert pattern.search(billing), (
+        "the Stripe-call pattern no longer matches routers/billing.py, which "
+        "is full of them — this scan is measuring nothing"
+    )
+    assert not pattern.search("# we call stripe from the billing router only")
+    assert not pattern.search("import stripe")
+
+    offenders = []
+    for path in backend.rglob("*.py"):
+        parts = path.parts
+        if "venv" in parts or "__pycache__" in parts or "tests" in parts:
+            continue
+        if path.relative_to(backend).as_posix() == "routers/billing.py":
+            continue
+        for n, line in enumerate(path.read_text(encoding="utf-8").splitlines(), 1):
+            if pattern.search(line.split("#")[0]):
+                offenders.append(f"{path.relative_to(backend).as_posix()}:{n}")
+
+    assert not offenders, (
+        f"Stripe is now called outside routers/billing.py: {offenders}. "
+        "Check whether a worker or beat task is among them — if so, "
+        "_ROLES_THAT_NEVER_CALL_STRIPE in config_guard.py is now wrong and "
+        "the alert it produces would be reassuring and false."
+    )
+
+
 def test_a_broken_alert_channel_cannot_break_startup():
     """The guard runs at import time in main.py. If it could raise, a
     Telegram outage would take the API down — which is precisely the
