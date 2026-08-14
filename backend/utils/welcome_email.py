@@ -32,7 +32,14 @@ from config import (
     MAILERSEND_PERSON_FROM_NAME,
     monthly_limit_for_plan,
 )
-from emails import SUPPORT_EMAIL, fill, month_name, render, strings_for
+from emails import (
+    SUPPORT_EMAIL,
+    fill,
+    format_number,
+    month_name,
+    render,
+    strings_for,
+)
 
 logger = logging.getLogger("outmass.welcome")
 
@@ -93,7 +100,7 @@ def send_welcome_email(
         email,
         name,
         lang,
-        free_quota=f"{monthly_limit_for_plan('free'):,}",
+        free_quota=format_number(monthly_limit_for_plan("free"), lang),
     )
 
 
@@ -123,7 +130,10 @@ def send_quota_capped_email(
             reset_phrase = fill(
                 strings["quota_capped.reset_on_date"],
                 month=month_name(d.month, lang),
-                day=f"{d.day:02d}",
+                # Not zero-padded. "on September 05" is written by no
+                # language on earth, and %d had been padding it since the
+                # first version of this email.
+                day=str(d.day),
             )
         except ValueError:
             pass
@@ -134,7 +144,7 @@ def send_quota_capped_email(
         name,
         lang,
         skipped=skipped,
-        limit=f"{limit:,}",
+        limit=format_number(limit, lang),
         reset_phrase=reset_phrase,
     )
 
@@ -154,7 +164,7 @@ def send_upgrade_email(
         name,
         lang,
         plan_label="Pro" if plan == "pro" else "Starter",
-        quota=f"{monthly_limit_for_plan(plan):,}",
+        quota=format_number(monthly_limit_for_plan(plan), lang),
     )
 
 
@@ -191,5 +201,5 @@ def send_plan_dropped_email(
         email,
         name,
         lang,
-        free_quota=f"{monthly_limit_for_plan('free'):,}",
+        free_quota=format_number(monthly_limit_for_plan("free"), lang),
     )

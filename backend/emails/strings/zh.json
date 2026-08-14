@@ -2,12 +2,12 @@
   "common.greeting": "${name} 您好：",
   "common.greeting_anon": "您好：",
   "common.greeting_anon_warm": "您好：",
+  "common.number_group": ",",
   "common.signature_ali": "Ali",
   "common.signature_founder": "OutMass 创始人",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— OutMass 团队",
-
   "welcome.subject": "欢迎使用 OutMass — 三步完成你的第一个群发",
   "welcome.heading": "欢迎使用 OutMass 👋",
   "welcome.intro": "感谢你登录 OutMass！现在你可以直接用自己的 Outlook 账户发送个性化的邮件合并群发了。",
@@ -18,7 +18,6 @@
   "welcome.free_plan": "你从**免费方案**开始（每月 ${free_quota} 封邮件）——需要更多时，随时可以在面板中升级。",
   "welcome.reply": "遇到问题或有疑问？**直接回复这封邮件就行** — 它会直接发到我这里，我通常几小时内回复。",
   "welcome.ps": "附注：面板运行在**网页版** Outlook 中 — 在浏览器标签页里，而不是 Windows/Mac 桌面版应用。你的账户用哪个地址都可以（outlook.office.com、outlook.live.com 和 outlook.cloud.microsoft 都能用）。如果看不到那个圆形按钮，把 Outlook 标签页刷新一次。",
-
   "quota_capped.subject": "已保留 ${skipped} 位收件人 — 系统会自动发送",
   "quota_capped.heading": "已保留 ${skipped} 位收件人 📬",
   "quota_capped.saved": "你的群发刚刚达到每月 **${limit} 封邮件**的上限。剩余的 **${skipped} 位收件人已安全保留** — 什么都没有丢失，你也不需要做任何事。",
@@ -27,7 +26,6 @@
   "quota_capped.questions": "有疑问？直接回复即可 — 会发到我这里。",
   "quota_capped.reset_generic": "在你的每月配额重置时",
   "quota_capped.reset_on_date": "在 ${month}${day} 日，也就是你的每月配额重置时",
-
   "month.1": "1月",
   "month.2": "2月",
   "month.3": "3月",
@@ -40,7 +38,6 @@
   "month.10": "10月",
   "month.11": "11月",
   "month.12": "12月",
-
   "upgrade.subject": "你的 OutMass ${plan_label} 方案已生效 — 谢谢你！",
   "upgrade.heading": "你的 ${plan_label} 方案已生效 🎉",
   "upgrade.intro": "感谢升级 — 你的 **${plan_label}** 方案从现在起生效。这意味着：",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "随时可以在 OutMass 面板的**账户**中查看用量，并通过**管理订阅**来管理或取消订阅。",
   "upgrade.reply": "如果遇到任何情况 — 一个问题、一处卡顿、一个你需要但还没有的功能 — **直接回复这封邮件就行**。它会发到我这里。",
   "upgrade.thanks": "谢谢你在早期就支持一个小产品。这对我们意义很大。",
-
   "plan_dropped.subject_payment_failed": "你的 OutMass 方案已退回免费版",
   "plan_dropped.subject_promo_ended": "你的 OutMass 方案已结束",
   "plan_dropped.opening_payment_failed": "你的订阅今天结束了。Stripe 用你留存的卡尝试了大约两周，相关邮件你应该已经收到。",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "如果想继续，打开 OutMass 面板并选择一个方案。通常换一张卡或换一种支付方式就能解决。",
   "plan_dropped.carry_on_promo_ended": "如果想继续，打开 OutMass 面板并选择一个方案。",
   "plan_dropped.questions": "有疑问，或者有什么没跑通？**直接回复即可** — 会发到我这里。",
-
   "reauth.subject": "请重新连接 OutMass 与 Outlook",
   "reauth.heading": "需要处理：重新连接 Outlook",
   "reauth.expired": "OutMass 与 Microsoft Outlook 的连接已过期。在你重新连接之前，已排期的群发和跟进邮件会暂停而不是发送。",
   "reauth.how_to_fix": "**如何解决：**在网页版 Outlook 中打开 OutMass 侧边栏，点击**重新连接 Outlook**横幅，然后重新登录。大约需要 10 秒。",
   "reauth.reason": "原因：${reason}。如果一直出现，回复这封邮件，我们来排查。",
-
   "account_deleted.subject": "你的 OutMass 账户已删除",
   "account_deleted.heading": "你的 OutMass 账户已删除",
   "account_deleted.removed": "按照你的要求，你的 OutMass 账户以及所有相关数据（群发、联系人、模板、Microsoft 授权和设置）已被永久删除。",
   "account_deleted.audit_record": "根据我们的隐私政策，为满足反欺诈与法律义务，我们会保留一条匿名化的审计记录 5 年。该记录只包含你邮箱地址的哈希值和汇总计数 — 不含任何内容。",
   "account_deleted.subscription": "**如果你有生效中的付费订阅**，它由 Stripe 单独管理。如果需要协助取消或退款，回复这封邮件即可。",
   "account_deleted.archive_reference": "归档编号：${archive_id}",
-
   "inactivity_30d.subject": "还在用 OutMass 吗？",
   "inactivity_30d.heading": "还在用 OutMass 吗？",
   "inactivity_30d.noticed": "我们注意到你大约 ${days} 天没有使用 OutMass 了。这是提醒你留意，不是催促：你的付费订阅仍然有效，无论你是否打开，每月都会照常扣费。",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "打开 OutMass 面板 → **账户** → **管理订阅**，或者",
   "inactivity_30d.stop_reply": "在这里回复，或写信给 [${support_email}](mailto:${support_email}) — 我们会取消订阅并退还当前周期的费用。",
   "inactivity_30d.why_receiving": "你收到这封邮件，是因为你有一个生效中的 OutMass 付费订阅。每个未使用周期只会发送一次。",
-
   "inactivity_60d.subject": "在为没用上的 OutMass 付费吗？",
   "inactivity_60d.heading": "在为没用上的 OutMass 付费吗？",
   "inactivity_60d.noticed": "你大约 ${days} 天没有登录 OutMass 了。这段时间里，你的付费订阅一直在续订。我们不希望你为一个没有带来价值的东西付费。",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**告诉我们哪里出了问题** — 回复这封邮件。如果有什么挡住了你，我们宁愿把它修好，也不愿失去你。",
   "inactivity_60d.way_cancel": "**取消订阅** — 回复这封邮件或联系 [${support_email}](mailto:${support_email})，我们会取消订阅并退还当前账单周期的费用。",
   "inactivity_60d.one_more": "如果一直没有收到回复，我们会在第 90 天再联系你一次，之后才会采取任何其他措施。",
-
   "inactivity_90d.subject": "OutMass — 最后一次确认",
   "inactivity_90d.heading": "OutMass — 最后一次确认",
   "inactivity_90d.noticed": "距离你上次使用 OutMass 已经大约 ${days} 天了。我们已经写过两次，不想继续为你没有使用的东西收费。",

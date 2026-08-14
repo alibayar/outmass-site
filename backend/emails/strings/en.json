@@ -2,12 +2,12 @@
   "common.greeting": "Hi ${name},",
   "common.greeting_anon": "Hi,",
   "common.greeting_anon_warm": "Hi there,",
+  "common.number_group": ",",
   "common.signature_ali": "Ali",
   "common.signature_founder": "Founder, OutMass",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— The OutMass team",
-
   "welcome.subject": "Welcome to OutMass — your first campaign in 3 steps",
   "welcome.heading": "Welcome to OutMass 👋",
   "welcome.intro": "Thanks for signing in to OutMass! You're set up to send personalized mail-merge campaigns straight from your own Outlook account.",
@@ -18,16 +18,14 @@
   "welcome.free_plan": "You start on the **Free plan** (${free_quota} emails/month) — you can upgrade anytime from the panel when you need more.",
   "welcome.reply": "Hit a snag or have a question? **Just reply to this email** — it comes straight to me and I usually answer within a few hours.",
   "welcome.ps": "P.S. The panel lives in Outlook **on the web** — in a browser tab, not the Windows/Mac desktop app. Whichever address your account uses is fine (outlook.office.com, outlook.live.com and outlook.cloud.microsoft all work). If you don't see the round button, refresh your Outlook tab once.",
-
   "quota_capped.subject": "${skipped} recipients saved — they'll be sent automatically",
   "quota_capped.heading": "${skipped} recipients saved 📬",
   "quota_capped.saved": "Your campaign just reached your monthly limit of **${limit} emails**. The remaining **${skipped} recipients are safely saved** — nothing was lost, and there's nothing you need to do.",
   "quota_capped.automatic": "OutMass will send them **automatically** ${reset_phrase}.",
-  "quota_capped.sooner": "Want them out sooner? Upgrading raises your limit immediately and the saved recipients go out on the next sending run — open the OutMass panel and click **Upgrade**.",
+  "quota_capped.sooner": "Want them out sooner? Upgrading raises your limit immediately and the saved recipients go out on the next sending run — open the OutMass panel and click **Upgrade Plan**.",
   "quota_capped.questions": "Questions? Just reply — it comes straight to me.",
   "quota_capped.reset_generic": "when your monthly quota resets",
   "quota_capped.reset_on_date": "on ${month} ${day}, when your monthly quota resets",
-
   "month.1": "January",
   "month.2": "February",
   "month.3": "March",
@@ -40,7 +38,6 @@
   "month.10": "October",
   "month.11": "November",
   "month.12": "December",
-
   "upgrade.subject": "Your OutMass ${plan_label} plan is active — thank you!",
   "upgrade.heading": "Your ${plan_label} plan is active 🎉",
   "upgrade.intro": "Thank you for upgrading — your **${plan_label}** plan is active as of now. What that means:",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "See your usage anytime in the OutMass panel under **Account**, and manage or cancel via **Manage Subscription**.",
   "upgrade.reply": "If anything at all comes up — a question, a snag, a feature you're missing — **just reply to this email**. It comes straight to me.",
   "upgrade.thanks": "Thanks for backing a small product early. It means a lot.",
-
   "plan_dropped.subject_payment_failed": "Your OutMass plan has gone back to Free",
   "plan_dropped.subject_promo_ended": "Your OutMass plan has ended",
   "plan_dropped.opening_payment_failed": "Your subscription ended today. Stripe spent about two weeks trying the card on file, and you'll have had its emails about that.",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "If you'd like to carry on, open the OutMass panel and pick a plan. A different card or payment method usually does it.",
   "plan_dropped.carry_on_promo_ended": "If you'd like to carry on, open the OutMass panel and pick a plan.",
   "plan_dropped.questions": "Questions, or something that didn't work? **Just reply** — it comes straight to me.",
-
   "reauth.subject": "Reconnect OutMass to Outlook",
   "reauth.heading": "Action needed: reconnect Outlook",
   "reauth.expired": "Your OutMass connection to Microsoft Outlook has expired. Until you reconnect, any scheduled campaigns and follow-ups will pause instead of sending.",
   "reauth.how_to_fix": "**How to fix it:** open the OutMass sidebar in Outlook Web, click the **Reconnect to Outlook** banner, and sign in again. Takes about 10 seconds.",
   "reauth.reason": "Reason: ${reason}. If you keep seeing this, reply to this email and we'll look into it.",
-
   "account_deleted.subject": "Your OutMass account has been deleted",
   "account_deleted.heading": "Your OutMass account has been deleted",
   "account_deleted.removed": "As you requested, your OutMass account and all associated data (campaigns, contacts, templates, Microsoft authorization, and settings) have been permanently removed.",
   "account_deleted.audit_record": "Per our Privacy Policy, we retain an anonymised audit record for 5 years to comply with fraud prevention and legal obligations. This record contains only a hash of your email address and aggregate counters — no content.",
   "account_deleted.subscription": "**If you had an active paid subscription**, it is managed separately through Stripe. If you need help cancelling or getting a refund, reply to this email.",
   "account_deleted.archive_reference": "Archive reference: ${archive_id}",
-
   "inactivity_30d.subject": "Still using OutMass?",
   "inactivity_30d.heading": "Still using OutMass?",
   "inactivity_30d.noticed": "We noticed you haven't used OutMass in about ${days} days. A heads-up rather than a nudge: your paid subscription is still active and still billed each month, whether or not you open it.",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "Open the OutMass panel → **Account** → **Manage Subscription**, or",
   "inactivity_30d.stop_reply": "Reply here, or write to [${support_email}](mailto:${support_email}) — we'll cancel it and refund the current period.",
   "inactivity_30d.why_receiving": "You're receiving this because you have an active paid OutMass subscription. This is a one-time note per inactive period.",
-
   "inactivity_60d.subject": "Still paying for OutMass without using it?",
   "inactivity_60d.heading": "Still paying for OutMass without using it?",
   "inactivity_60d.noticed": "You haven't logged into OutMass in around ${days} days. Your paid subscription has continued to renew during this time. We don't want you paying for something you're not getting value from.",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**Tell us what went wrong** — reply to this email. If something blocked you, we would much rather fix it than lose you.",
   "inactivity_60d.way_cancel": "**Cancel it** — reply to this email or contact [${support_email}](mailto:${support_email}) and we'll cancel the subscription plus refund the current billing period.",
   "inactivity_60d.one_more": "If we don't hear back, we'll reach out one more time at the 90-day mark before taking any further action.",
-
   "inactivity_90d.subject": "OutMass — a final check-in",
   "inactivity_90d.heading": "OutMass — a final check-in",
   "inactivity_90d.noticed": "It's been about ${days} days since you last used OutMass. We've written twice already, and we don't want to keep charging you for something you aren't using.",

@@ -2,12 +2,12 @@
   "common.greeting": "مرحبًا ${name}،",
   "common.greeting_anon": "مرحبًا،",
   "common.greeting_anon_warm": "مرحبًا،",
+  "common.number_group": ",",
   "common.signature_ali": "Ali",
   "common.signature_founder": "مؤسس OutMass",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— فريق OutMass",
-
   "welcome.subject": "أهلًا بك في OutMass — حملتك الأولى في 3 خطوات",
   "welcome.heading": "أهلًا بك في OutMass 👋",
   "welcome.intro": "شكرًا لتسجيل دخولك إلى OutMass! صرت الآن جاهزًا لإرسال حملات بريد مُخصَّصة مباشرةً من حساب Outlook الخاص بك.",
@@ -18,7 +18,6 @@
   "welcome.free_plan": "تبدأ على **الخطة المجانية** (${free_quota} رسالة شهريًا) — ويمكنك الترقية في أي وقت من اللوحة عندما تحتاج إلى المزيد.",
   "welcome.reply": "تعثّرت في شيء أو لديك سؤال؟ **يكفي أن ترد على هذه الرسالة** — تصلني مباشرةً وعادةً ما أجيب خلال ساعات قليلة.",
   "welcome.ps": "ملاحظة: تعمل اللوحة داخل Outlook **على الويب** — في تبويب المتصفح، لا في تطبيق سطح المكتب على Windows أو Mac. لا يهم أي عنوان يستخدمه حسابك (outlook.office.com و outlook.live.com و outlook.cloud.microsoft كلها تعمل). إذا لم يظهر الزر الدائري، فحدِّث تبويب Outlook مرة واحدة.",
-
   "quota_capped.subject": "تم حفظ ${skipped} مستلمًا — وسيُرسَلون تلقائيًا",
   "quota_capped.heading": "تم حفظ ${skipped} مستلمًا 📬",
   "quota_capped.saved": "بلغت حملتك للتو حدّك الشهري وهو **${limit} رسالة**. أما **المستلمون المتبقون وعددهم ${skipped} فمحفوظون بأمان** — لم يضع شيء، ولا يلزمك فعل أي شيء.",
@@ -27,7 +26,6 @@
   "quota_capped.questions": "عندك أسئلة؟ يكفي أن ترد — تصلني مباشرةً.",
   "quota_capped.reset_generic": "عند تجديد حصتك الشهرية",
   "quota_capped.reset_on_date": "في ${day} ${month}، عند تجديد حصتك الشهرية",
-
   "month.1": "يناير",
   "month.2": "فبراير",
   "month.3": "مارس",
@@ -40,7 +38,6 @@
   "month.10": "أكتوبر",
   "month.11": "نوفمبر",
   "month.12": "ديسمبر",
-
   "upgrade.subject": "خطة ${plan_label} في OutMass صارت فعّالة — شكرًا لك!",
   "upgrade.heading": "خطة ${plan_label} صارت فعّالة 🎉",
   "upgrade.intro": "شكرًا على الترقية — خطة **${plan_label}** فعّالة اعتبارًا من الآن. وهذا ما يعنيه ذلك:",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "يمكنك متابعة استهلاكك في أي وقت من لوحة OutMass تحت **الحساب**، وإدارة الاشتراك أو إلغاؤه عبر **إدارة الاشتراك**.",
   "upgrade.reply": "إن طرأ أي شيء — سؤال، عقبة، ميزة تنقصك — **يكفي أن ترد على هذه الرسالة**. تصلني مباشرةً.",
   "upgrade.thanks": "شكرًا لدعمك منتجًا صغيرًا في بداياته. هذا يعني لنا الكثير.",
-
   "plan_dropped.subject_payment_failed": "عادت خطتك في OutMass إلى المجانية",
   "plan_dropped.subject_promo_ended": "انتهت خطتك في OutMass",
   "plan_dropped.opening_payment_failed": "انتهى اشتراكك اليوم. حاول Stripe نحو أسبوعين على البطاقة المحفوظة، ولا بد أنك تلقّيت رسائله بهذا الشأن.",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "إن أردت المتابعة، افتح لوحة OutMass واختر خطة. عادةً ما تحل بطاقة أخرى أو وسيلة دفع أخرى الأمر.",
   "plan_dropped.carry_on_promo_ended": "إن أردت المتابعة، افتح لوحة OutMass واختر خطة.",
   "plan_dropped.questions": "أسئلة، أو شيء لم يعمل؟ **يكفي أن ترد** — تصلني مباشرةً.",
-
   "reauth.subject": "أعد ربط OutMass بـ Outlook",
   "reauth.heading": "إجراء مطلوب: أعد ربط Outlook",
   "reauth.expired": "انتهت صلاحية ربط OutMass بـ Microsoft Outlook. وإلى أن تعيد الربط، ستتوقف الحملات المجدولة ورسائل المتابعة مؤقتًا بدل أن تُرسَل.",
   "reauth.how_to_fix": "**كيف تصلح ذلك:** افتح لوحة OutMass داخل Outlook على الويب، واضغط على شريط **إعادة الربط بـ Outlook**، ثم سجّل الدخول من جديد. يستغرق ذلك نحو 10 ثوانٍ.",
   "reauth.reason": "السبب: ${reason}. إن استمر ظهور هذا، فرد على هذه الرسالة وسنتحقق منه.",
-
   "account_deleted.subject": "تم حذف حسابك في OutMass",
   "account_deleted.heading": "تم حذف حسابك في OutMass",
   "account_deleted.removed": "بناءً على طلبك، حُذف حسابك في OutMass وكل البيانات المرتبطة به (الحملات وجهات الاتصال والقوالب وتفويض Microsoft والإعدادات) حذفًا نهائيًا.",
   "account_deleted.audit_record": "وفقًا لسياسة الخصوصية لدينا، نحتفظ بسجل تدقيق مجهول الهوية لمدة 5 سنوات امتثالًا لمتطلبات منع الاحتيال والالتزامات القانونية. لا يتضمن هذا السجل سوى بصمة تجزئة لعنوان بريدك وعدادات إجمالية — دون أي محتوى.",
   "account_deleted.subscription": "**إن كان لديك اشتراك مدفوع فعّال**، فهو يُدار بشكل منفصل عبر Stripe. إن احتجت مساعدة في الإلغاء أو استرداد المبلغ، فرد على هذه الرسالة.",
   "account_deleted.archive_reference": "مرجع الأرشيف: ${archive_id}",
-
   "inactivity_30d.subject": "هل ما زلت تستخدم OutMass؟",
   "inactivity_30d.heading": "هل ما زلت تستخدم OutMass؟",
   "inactivity_30d.noticed": "لاحظنا أنك لم تستخدم OutMass منذ نحو ${days} يومًا. هذا تنبيه لا إلحاح: اشتراكك المدفوع ما زال فعّالًا وتُحتسب قيمته كل شهر، سواء فتحته أم لا.",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "افتح لوحة OutMass ← **الحساب** ← **إدارة الاشتراك**، أو",
   "inactivity_30d.stop_reply": "رد هنا، أو اكتب إلى [${support_email}](mailto:${support_email}) — سنلغيه ونعيد لك قيمة الفترة الحالية.",
   "inactivity_30d.why_receiving": "تصلك هذه الرسالة لأن لديك اشتراكًا مدفوعًا فعّالًا في OutMass. وتُرسَل مرة واحدة فقط في كل فترة انقطاع.",
-
   "inactivity_60d.subject": "هل تدفع مقابل OutMass دون أن تستخدمه؟",
   "inactivity_60d.heading": "هل تدفع مقابل OutMass دون أن تستخدمه؟",
   "inactivity_60d.noticed": "لم تسجّل الدخول إلى OutMass منذ نحو ${days} يومًا. وقد ظل اشتراكك المدفوع يتجدد طوال هذه المدة. لا نريدك أن تدفع مقابل شيء لا تستفيد منه.",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**أخبرنا بما لم يعمل** — رد على هذه الرسالة. إن كان شيء قد أعاقك، فنحن نفضّل إصلاحه كثيرًا على أن نفقدك.",
   "inactivity_60d.way_cancel": "**الإلغاء** — رد على هذه الرسالة أو راسل [${support_email}](mailto:${support_email}) وسنلغي الاشتراك ونعيد قيمة فترة الفوترة الحالية.",
   "inactivity_60d.one_more": "إن لم يصلنا رد، فسنكتب إليك مرة أخيرة عند اليوم التسعين قبل اتخاذ أي خطوة أخرى.",
-
   "inactivity_90d.subject": "OutMass — تواصل أخير",
   "inactivity_90d.heading": "OutMass — تواصل أخير",
   "inactivity_90d.noticed": "مضى نحو ${days} يومًا منذ آخر مرة استخدمت فيها OutMass. كتبنا إليك مرتين من قبل، ولا نريد الاستمرار في محاسبتك على شيء لا تستخدمه.",

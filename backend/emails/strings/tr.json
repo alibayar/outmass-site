@@ -2,12 +2,12 @@
   "common.greeting": "Merhaba ${name},",
   "common.greeting_anon": "Merhaba,",
   "common.greeting_anon_warm": "Merhaba,",
+  "common.number_group": ".",
   "common.signature_ali": "Ali",
   "common.signature_founder": "Kurucu, OutMass",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— OutMass ekibi",
-
   "welcome.subject": "OutMass'a hoş geldiniz — 3 adımda ilk kampanyanız",
   "welcome.heading": "OutMass'a hoş geldiniz 👋",
   "welcome.intro": "OutMass'a giriş yaptığınız için teşekkürler! Artık kendi Outlook hesabınızdan kişiselleştirilmiş toplu e-posta kampanyaları gönderebilirsiniz.",
@@ -18,7 +18,6 @@
   "welcome.free_plan": "**Ücretsiz planla** başlıyorsunuz (ayda ${free_quota} e-posta) — daha fazlasına ihtiyacınız olduğunda panelden istediğiniz zaman yükseltebilirsiniz.",
   "welcome.reply": "Takıldığınız bir yer mi var, sorunuz mu var? **Bu e-postayı yanıtlamanız yeterli** — doğrudan bana geliyor ve genelde birkaç saat içinde dönüyorum.",
   "welcome.ps": "Not: Panel, **tarayıcıdaki** Outlook'ta çalışır — bir tarayıcı sekmesinde, Windows/Mac masaüstü uygulamasında değil. Hesabınızın kullandığı adres fark etmez (outlook.office.com, outlook.live.com ve outlook.cloud.microsoft hepsi çalışır). Yuvarlak düğmeyi göremiyorsanız Outlook sekmenizi bir kez yenileyin.",
-
   "quota_capped.subject": "${skipped} alıcı kaydedildi — otomatik olarak gönderilecekler",
   "quota_capped.heading": "${skipped} alıcı kaydedildi 📬",
   "quota_capped.saved": "Kampanyanız aylık **${limit} e-posta** sınırınıza ulaştı. Kalan **${skipped} alıcı güvenle kaydedildi** — hiçbir şey kaybolmadı ve yapmanız gereken bir şey yok.",
@@ -27,7 +26,6 @@
   "quota_capped.questions": "Sorunuz mu var? Yanıtlamanız yeterli — doğrudan bana geliyor.",
   "quota_capped.reset_generic": "aylık kotanız sıfırlandığında",
   "quota_capped.reset_on_date": "${day} ${month} tarihinde, aylık kotanız sıfırlandığında",
-
   "month.1": "Ocak",
   "month.2": "Şubat",
   "month.3": "Mart",
@@ -40,7 +38,6 @@
   "month.10": "Ekim",
   "month.11": "Kasım",
   "month.12": "Aralık",
-
   "upgrade.subject": "OutMass ${plan_label} planınız etkin — teşekkürler!",
   "upgrade.heading": "${plan_label} planınız etkin 🎉",
   "upgrade.intro": "Yükselttiğiniz için teşekkürler — **${plan_label}** planınız şu andan itibaren etkin. Bu ne demek:",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "Kullanımınızı OutMass panelinde **Hesap** altında istediğiniz zaman görebilir, aboneliğinizi **Aboneliği Yönet** ile yönetebilir veya iptal edebilirsiniz.",
   "upgrade.reply": "Aklınıza bir şey takılırsa — bir soru, bir aksaklık, eksik bulduğunuz bir özellik — **bu e-postayı yanıtlamanız yeterli**. Doğrudan bana geliyor.",
   "upgrade.thanks": "Küçük bir ürünü erken desteklediğiniz için teşekkürler. Bu bizim için çok değerli.",
-
   "plan_dropped.subject_payment_failed": "OutMass planınız Ücretsiz'e döndü",
   "plan_dropped.subject_promo_ended": "OutMass planınız sona erdi",
   "plan_dropped.opening_payment_failed": "Aboneliğiniz bugün sona erdi. Stripe yaklaşık iki hafta boyunca kayıtlı kartı denedi; bununla ilgili e-postalarını almış olmalısınız.",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "Devam etmek isterseniz OutMass panelini açıp bir plan seçin. Genellikle farklı bir kart veya ödeme yöntemi işi çözüyor.",
   "plan_dropped.carry_on_promo_ended": "Devam etmek isterseniz OutMass panelini açıp bir plan seçin.",
   "plan_dropped.questions": "Sorunuz mu var, ya da çalışmayan bir şey mi oldu? **Yanıtlamanız yeterli** — doğrudan bana geliyor.",
-
   "reauth.subject": "OutMass'ı Outlook'a yeniden bağlayın",
   "reauth.heading": "İşlem gerekli: Outlook'u yeniden bağlayın",
   "reauth.expired": "OutMass'ın Microsoft Outlook bağlantısının süresi doldu. Yeniden bağlanana kadar zamanlanmış kampanyalarınız ve takip e-postalarınız gönderilmek yerine duraklatılacak.",
   "reauth.how_to_fix": "**Nasıl düzeltilir:** Outlook Web'de OutMass panelini açın, **Outlook'a yeniden bağlan** bandına tıklayın ve tekrar giriş yapın. Yaklaşık 10 saniye sürer.",
   "reauth.reason": "Sebep: ${reason}. Bunu görmeye devam ederseniz bu e-postayı yanıtlayın, biz bakalım.",
-
   "account_deleted.subject": "OutMass hesabınız silindi",
   "account_deleted.heading": "OutMass hesabınız silindi",
   "account_deleted.removed": "Talebiniz üzerine OutMass hesabınız ve ona bağlı tüm veriler (kampanyalar, kişiler, şablonlar, Microsoft yetkilendirmesi ve ayarlar) kalıcı olarak kaldırıldı.",
   "account_deleted.audit_record": "Gizlilik Politikamız gereği, dolandırıcılık önleme ve yasal yükümlülükler için 5 yıl boyunca anonimleştirilmiş bir denetim kaydı tutuyoruz. Bu kayıt yalnızca e-posta adresinizin bir özetini ve toplam sayaçları içerir — hiçbir içerik içermez.",
   "account_deleted.subscription": "**Etkin bir ücretli aboneliğiniz varsa**, o ayrı olarak Stripe üzerinden yönetilir. İptal veya iade konusunda yardıma ihtiyacınız olursa bu e-postayı yanıtlayın.",
   "account_deleted.archive_reference": "Arşiv referansı: ${archive_id}",
-
   "inactivity_30d.subject": "OutMass'ı hâlâ kullanıyor musunuz?",
   "inactivity_30d.heading": "OutMass'ı hâlâ kullanıyor musunuz?",
   "inactivity_30d.noticed": "Yaklaşık ${days} gündür OutMass'ı kullanmadığınızı fark ettik. Dürtmek için değil, bilginiz olsun diye yazıyoruz: ücretli aboneliğiniz hâlâ etkin ve siz açsanız da açmasanız da her ay ücretlendiriliyor.",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "OutMass panelini açın → **Hesap** → **Aboneliği Yönet**, ya da",
   "inactivity_30d.stop_reply": "Buraya yanıt verin ya da [${support_email}](mailto:${support_email}) adresine yazın — iptal edip içinde bulunduğunuz dönemin ücretini iade edelim.",
   "inactivity_30d.why_receiving": "Bu e-postayı, etkin bir ücretli OutMass aboneliğiniz olduğu için alıyorsunuz. Her kullanılmayan dönem için yalnızca bir kez gönderilir.",
-
   "inactivity_60d.subject": "OutMass'ı kullanmadan ödemeye devam mı ediyorsunuz?",
   "inactivity_60d.heading": "OutMass'ı kullanmadan ödemeye devam mı ediyorsunuz?",
   "inactivity_60d.noticed": "Yaklaşık ${days} gündür OutMass'a giriş yapmadınız. Bu süre boyunca ücretli aboneliğiniz yenilenmeye devam etti. Değer görmediğiniz bir şeye ödeme yapmanızı istemeyiz.",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**Neyin ters gittiğini anlatın** — bu e-postayı yanıtlayın. Bir şey sizi engellediyse, sizi kaybetmektense onu düzeltmeyi tercih ederiz.",
   "inactivity_60d.way_cancel": "**İptal edin** — bu e-postayı yanıtlayın ya da [${support_email}](mailto:${support_email}) adresine yazın; aboneliği iptal edip içinde bulunduğunuz fatura döneminin ücretini iade edelim.",
   "inactivity_60d.one_more": "Sizden haber alamazsak, başka bir adım atmadan önce 90. günde bir kez daha yazacağız.",
-
   "inactivity_90d.subject": "OutMass — son bir kontrol",
   "inactivity_90d.heading": "OutMass — son bir kontrol",
   "inactivity_90d.noticed": "OutMass'ı son kullanmanızın üzerinden yaklaşık ${days} gün geçti. Size iki kez yazdık ve kullanmadığınız bir şey için ücret almaya devam etmek istemiyoruz.",

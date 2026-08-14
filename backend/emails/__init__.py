@@ -105,6 +105,28 @@ def fill(raw: str, **variables) -> str:
     return _substitute(raw, variables, escape=False)
 
 
+def format_number(n: int, lang: str | None = None) -> str:
+    """Group a number the way the reader's language groups numbers.
+
+    Python's ``f"{n:,}"`` is English. German, Turkish, Spanish and both
+    Portuguese variants use the comma as the DECIMAL separator, so an upgrade
+    email telling a new Pro customer they may send "10,000 E-Mails" was
+    telling them **ten** — on the one email whose entire job is to confirm
+    what they just bought. French and Russian group with a space, not a
+    comma at all.
+
+    The separator is a string in the table (``common.number_group``) rather
+    than a table in code, because it is a property of the language and it is
+    the translator who knows it. The panel has always done this correctly in
+    its own copy; the emails did not, for one day.
+
+    Grouping is plain thousands. Indian lakh/crore grouping differs above
+    99,999 and every number we print here is a plan limit under that.
+    """
+    sep = strings_for(lang).get("common.number_group", ",")
+    return f"{int(n):,}".replace(",", sep)
+
+
 def month_name(month: int, lang: str | None = None) -> str:
     """January…December in the reader's language.
 

@@ -2,12 +2,12 @@
   "common.greeting": "Hallo ${name},",
   "common.greeting_anon": "Hallo,",
   "common.greeting_anon_warm": "Hallo,",
+  "common.number_group": ".",
   "common.signature_ali": "Ali",
   "common.signature_founder": "Gründer, OutMass",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— Das OutMass-Team",
-
   "welcome.subject": "Willkommen bei OutMass — Ihre erste Kampagne in 3 Schritten",
   "welcome.heading": "Willkommen bei OutMass 👋",
   "welcome.intro": "Danke, dass Sie sich bei OutMass angemeldet haben! Sie können jetzt personalisierte Serienmails direkt aus Ihrem eigenen Outlook-Konto versenden.",
@@ -18,7 +18,6 @@
   "welcome.free_plan": "Sie starten im **Free-Tarif** (${free_quota} E-Mails/Monat) — Sie können jederzeit im Panel upgraden, wenn Sie mehr brauchen.",
   "welcome.reply": "Hängen Sie irgendwo fest oder haben eine Frage? **Antworten Sie einfach auf diese E-Mail** — sie kommt direkt bei mir an und ich antworte meist innerhalb weniger Stunden.",
   "welcome.ps": "PS: Das Panel läuft in Outlook **im Browser** — in einem Browser-Tab, nicht in der Windows-/Mac-Desktop-App. Welche Adresse Ihr Konto verwendet, spielt keine Rolle (outlook.office.com, outlook.live.com und outlook.cloud.microsoft funktionieren alle). Wenn Sie die runde Schaltfläche nicht sehen, laden Sie den Outlook-Tab einmal neu.",
-
   "quota_capped.subject": "${skipped} Empfänger gesichert — sie werden automatisch gesendet",
   "quota_capped.heading": "${skipped} Empfänger gesichert 📬",
   "quota_capped.saved": "Ihre Kampagne hat Ihr Monatslimit von **${limit} E-Mails** erreicht. Die verbleibenden **${skipped} Empfänger sind sicher gespeichert** — nichts ist verloren gegangen, und Sie müssen nichts tun.",
@@ -27,7 +26,6 @@
   "quota_capped.questions": "Fragen? Antworten Sie einfach — es kommt direkt bei mir an.",
   "quota_capped.reset_generic": "wenn Ihr monatliches Kontingent zurückgesetzt wird",
   "quota_capped.reset_on_date": "am ${day}. ${month}, wenn Ihr monatliches Kontingent zurückgesetzt wird",
-
   "month.1": "Januar",
   "month.2": "Februar",
   "month.3": "März",
@@ -40,7 +38,6 @@
   "month.10": "Oktober",
   "month.11": "November",
   "month.12": "Dezember",
-
   "upgrade.subject": "Ihr OutMass-${plan_label}-Tarif ist aktiv — vielen Dank!",
   "upgrade.heading": "Ihr ${plan_label}-Tarif ist aktiv 🎉",
   "upgrade.intro": "Danke für Ihr Upgrade — Ihr **${plan_label}**-Tarif ist ab sofort aktiv. Was das bedeutet:",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "Ihren Verbrauch sehen Sie jederzeit im OutMass-Panel unter **Konto**, verwalten oder kündigen können Sie über **Abo verwalten**.",
   "upgrade.reply": "Wenn irgendetwas aufkommt — eine Frage, ein Problem, eine fehlende Funktion — **antworten Sie einfach auf diese E-Mail**. Sie kommt direkt bei mir an.",
   "upgrade.thanks": "Danke, dass Sie ein kleines Produkt früh unterstützen. Das bedeutet viel.",
-
   "plan_dropped.subject_payment_failed": "Ihr OutMass-Tarif wurde auf Free zurückgesetzt",
   "plan_dropped.subject_promo_ended": "Ihr OutMass-Tarif ist beendet",
   "plan_dropped.opening_payment_failed": "Ihr Abo ist heute ausgelaufen. Stripe hat die hinterlegte Karte etwa zwei Wochen lang versucht, und Sie werden die entsprechenden E-Mails erhalten haben.",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "Wenn Sie weitermachen möchten, öffnen Sie das OutMass-Panel und wählen Sie einen Tarif. Eine andere Karte oder Zahlungsmethode löst es meistens.",
   "plan_dropped.carry_on_promo_ended": "Wenn Sie weitermachen möchten, öffnen Sie das OutMass-Panel und wählen Sie einen Tarif.",
   "plan_dropped.questions": "Fragen, oder hat etwas nicht funktioniert? **Antworten Sie einfach** — es kommt direkt bei mir an.",
-
   "reauth.subject": "OutMass wieder mit Outlook verbinden",
   "reauth.heading": "Aktion nötig: Outlook neu verbinden",
   "reauth.expired": "Die Verbindung von OutMass zu Microsoft Outlook ist abgelaufen. Bis Sie sie erneuern, werden geplante Kampagnen und Follow-ups pausiert statt gesendet.",
   "reauth.how_to_fix": "**So beheben Sie das:** Öffnen Sie die OutMass-Seitenleiste in Outlook im Browser, klicken Sie auf das Banner **Mit Outlook neu verbinden** und melden Sie sich erneut an. Dauert etwa 10 Sekunden.",
   "reauth.reason": "Grund: ${reason}. Falls Sie das weiterhin sehen, antworten Sie auf diese E-Mail und wir schauen es uns an.",
-
   "account_deleted.subject": "Ihr OutMass-Konto wurde gelöscht",
   "account_deleted.heading": "Ihr OutMass-Konto wurde gelöscht",
   "account_deleted.removed": "Wie von Ihnen gewünscht wurden Ihr OutMass-Konto und alle zugehörigen Daten (Kampagnen, Kontakte, Vorlagen, Microsoft-Autorisierung und Einstellungen) dauerhaft entfernt.",
   "account_deleted.audit_record": "Gemäß unserer Datenschutzerklärung bewahren wir 5 Jahre lang einen anonymisierten Prüfeintrag auf, um Betrugsprävention und gesetzliche Pflichten zu erfüllen. Dieser Eintrag enthält nur einen Hash Ihrer E-Mail-Adresse und aggregierte Zähler — keine Inhalte.",
   "account_deleted.subscription": "**Falls Sie ein aktives kostenpflichtiges Abo hatten**, wird dieses separat über Stripe verwaltet. Wenn Sie Hilfe bei Kündigung oder Erstattung brauchen, antworten Sie auf diese E-Mail.",
   "account_deleted.archive_reference": "Archiv-Referenz: ${archive_id}",
-
   "inactivity_30d.subject": "Nutzen Sie OutMass noch?",
   "inactivity_30d.heading": "Nutzen Sie OutMass noch?",
   "inactivity_30d.noticed": "Uns ist aufgefallen, dass Sie OutMass seit etwa ${days} Tagen nicht genutzt haben. Eher ein Hinweis als ein Anstupser: Ihr kostenpflichtiges Abo ist weiterhin aktiv und wird jeden Monat abgerechnet, ob Sie es öffnen oder nicht.",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "Öffnen Sie das OutMass-Panel → **Konto** → **Abo verwalten**, oder",
   "inactivity_30d.stop_reply": "Antworten Sie hier oder schreiben Sie an [${support_email}](mailto:${support_email}) — wir kündigen und erstatten den laufenden Zeitraum.",
   "inactivity_30d.why_receiving": "Sie erhalten diese Nachricht, weil Sie ein aktives kostenpflichtiges OutMass-Abo haben. Sie wird pro Inaktivitätsphase nur einmal gesendet.",
-
   "inactivity_60d.subject": "Zahlen Sie für OutMass, ohne es zu nutzen?",
   "inactivity_60d.heading": "Zahlen Sie für OutMass, ohne es zu nutzen?",
   "inactivity_60d.noticed": "Sie haben sich seit rund ${days} Tagen nicht bei OutMass angemeldet. Ihr kostenpflichtiges Abo hat sich in dieser Zeit weiter verlängert. Wir möchten nicht, dass Sie für etwas zahlen, das Ihnen nichts bringt.",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**Sagen Sie uns, was schiefging** — antworten Sie auf diese E-Mail. Wenn Sie etwas blockiert hat, beheben wir das viel lieber, als Sie zu verlieren.",
   "inactivity_60d.way_cancel": "**Kündigen** — antworten Sie auf diese E-Mail oder wenden Sie sich an [${support_email}](mailto:${support_email}); wir kündigen das Abo und erstatten den laufenden Abrechnungszeitraum.",
   "inactivity_60d.one_more": "Wenn wir nichts hören, melden wir uns nach 90 Tagen ein letztes Mal, bevor wir weitere Schritte unternehmen.",
-
   "inactivity_90d.subject": "OutMass — eine letzte Nachfrage",
   "inactivity_90d.heading": "OutMass — eine letzte Nachfrage",
   "inactivity_90d.noticed": "Es ist etwa ${days} Tage her, dass Sie OutMass zuletzt genutzt haben. Wir haben zweimal geschrieben und wollen Ihnen nichts weiter berechnen, das Sie nicht nutzen.",

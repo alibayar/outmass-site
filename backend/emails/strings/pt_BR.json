@@ -2,12 +2,12 @@
   "common.greeting": "Olá, ${name}!",
   "common.greeting_anon": "Olá!",
   "common.greeting_anon_warm": "Olá!",
+  "common.number_group": ".",
   "common.signature_ali": "Ali",
   "common.signature_founder": "Fundador, OutMass",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— Equipe OutMass",
-
   "welcome.subject": "Bem-vindo ao OutMass — sua primeira campanha em 3 passos",
   "welcome.heading": "Bem-vindo ao OutMass 👋",
   "welcome.intro": "Obrigado por entrar no OutMass! Agora você pode enviar campanhas de mala direta personalizadas direto da sua própria conta do Outlook.",
@@ -18,7 +18,6 @@
   "welcome.free_plan": "Você começa no **plano Free** (${free_quota} e-mails por mês) — dá para fazer upgrade a qualquer momento pelo painel quando precisar de mais.",
   "welcome.reply": "Travou em algo ou tem alguma dúvida? **É só responder este e-mail** — ele chega direto para mim e costumo responder em algumas horas.",
   "welcome.ps": "P.S.: o painel funciona no Outlook **no navegador** — em uma aba, não no aplicativo de desktop do Windows/Mac. Não importa qual endereço sua conta usa (outlook.office.com, outlook.live.com e outlook.cloud.microsoft funcionam todos). Se você não vir o botão redondo, atualize a aba do Outlook uma vez.",
-
   "quota_capped.subject": "${skipped} destinatários guardados — serão enviados automaticamente",
   "quota_capped.heading": "${skipped} destinatários guardados 📬",
   "quota_capped.saved": "Sua campanha acabou de atingir seu limite mensal de **${limit} e-mails**. Os **${skipped} destinatários restantes estão guardados em segurança** — nada foi perdido e não há nada que você precise fazer.",
@@ -27,7 +26,6 @@
   "quota_capped.questions": "Dúvidas? É só responder — chega direto para mim.",
   "quota_capped.reset_generic": "quando sua cota mensal for renovada",
   "quota_capped.reset_on_date": "em ${day} de ${month}, quando sua cota mensal for renovada",
-
   "month.1": "janeiro",
   "month.2": "fevereiro",
   "month.3": "março",
@@ -40,7 +38,6 @@
   "month.10": "outubro",
   "month.11": "novembro",
   "month.12": "dezembro",
-
   "upgrade.subject": "Seu plano ${plan_label} do OutMass está ativo — obrigado!",
   "upgrade.heading": "Seu plano ${plan_label} está ativo 🎉",
   "upgrade.intro": "Obrigado pelo upgrade — seu plano **${plan_label}** está ativo a partir de agora. O que isso significa:",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "Veja seu consumo quando quiser no painel do OutMass, em **Conta**, e gerencie ou cancele em **Gerenciar assinatura**.",
   "upgrade.reply": "Se aparecer qualquer coisa — uma dúvida, um problema, um recurso que está faltando — **é só responder este e-mail**. Ele chega direto para mim.",
   "upgrade.thanks": "Obrigado por apoiar cedo um produto pequeno. Isso significa muito.",
-
   "plan_dropped.subject_payment_failed": "Seu plano do OutMass voltou para o Free",
   "plan_dropped.subject_promo_ended": "Seu plano do OutMass terminou",
   "plan_dropped.opening_payment_failed": "Sua assinatura terminou hoje. O Stripe passou cerca de duas semanas tentando o cartão cadastrado, e você deve ter recebido os e-mails dele sobre isso.",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "Se quiser continuar, abra o painel do OutMass e escolha um plano. Normalmente outro cartão ou outra forma de pagamento resolve.",
   "plan_dropped.carry_on_promo_ended": "Se quiser continuar, abra o painel do OutMass e escolha um plano.",
   "plan_dropped.questions": "Dúvidas, ou algo que não funcionou? **É só responder** — chega direto para mim.",
-
   "reauth.subject": "Reconecte o OutMass ao Outlook",
   "reauth.heading": "Ação necessária: reconecte o Outlook",
   "reauth.expired": "A conexão do OutMass com o Microsoft Outlook expirou. Até você reconectar, as campanhas agendadas e os follow-ups vão ficar pausados em vez de serem enviados.",
   "reauth.how_to_fix": "**Como resolver:** abra o painel do OutMass no Outlook no navegador, clique no aviso **Reconectar ao Outlook** e entre de novo. Leva uns 10 segundos.",
   "reauth.reason": "Motivo: ${reason}. Se continuar aparecendo, responda este e-mail que a gente investiga.",
-
   "account_deleted.subject": "Sua conta do OutMass foi excluída",
   "account_deleted.heading": "Sua conta do OutMass foi excluída",
   "account_deleted.removed": "Conforme você pediu, sua conta do OutMass e todos os dados associados (campanhas, contatos, modelos, autorização da Microsoft e configurações) foram removidos permanentemente.",
   "account_deleted.audit_record": "Conforme nossa Política de Privacidade, mantemos um registro de auditoria anonimizado por 5 anos para atender à prevenção de fraudes e a obrigações legais. Esse registro contém apenas um hash do seu endereço de e-mail e contadores agregados — nenhum conteúdo.",
   "account_deleted.subscription": "**Se você tinha uma assinatura paga ativa**, ela é gerenciada separadamente pelo Stripe. Se precisar de ajuda para cancelar ou pedir reembolso, responda este e-mail.",
   "account_deleted.archive_reference": "Referência do arquivo: ${archive_id}",
-
   "inactivity_30d.subject": "Ainda está usando o OutMass?",
   "inactivity_30d.heading": "Ainda está usando o OutMass?",
   "inactivity_30d.noticed": "Percebemos que você não usa o OutMass há cerca de ${days} dias. Mais um aviso do que uma cutucada: sua assinatura paga continua ativa e continua sendo cobrada todo mês, abrindo você ou não.",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "Abra o painel do OutMass → **Conta** → **Gerenciar assinatura**, ou",
   "inactivity_30d.stop_reply": "Responda aqui, ou escreva para [${support_email}](mailto:${support_email}) — a gente cancela e devolve o período atual.",
   "inactivity_30d.why_receiving": "Você está recebendo isto porque tem uma assinatura paga ativa do OutMass. É enviado uma única vez por período de inatividade.",
-
   "inactivity_60d.subject": "Pagando pelo OutMass sem usar?",
   "inactivity_60d.heading": "Pagando pelo OutMass sem usar?",
   "inactivity_60d.noticed": "Você não entra no OutMass há cerca de ${days} dias. Sua assinatura paga continuou se renovando nesse tempo. Não queremos que você pague por algo de que não está tirando proveito.",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**Contar o que deu errado** — responda este e-mail. Se alguma coisa te bloqueou, preferimos muito mais consertar do que perder você.",
   "inactivity_60d.way_cancel": "**Cancelar** — responda este e-mail ou fale com [${support_email}](mailto:${support_email}) que a gente cancela a assinatura e devolve o período de cobrança atual.",
   "inactivity_60d.one_more": "Se não tivermos retorno, escrevemos mais uma vez aos 90 dias antes de qualquer outra providência.",
-
   "inactivity_90d.subject": "OutMass — um último contato",
   "inactivity_90d.heading": "OutMass — um último contato",
   "inactivity_90d.noticed": "Já faz cerca de ${days} dias desde a última vez que você usou o OutMass. Já escrevemos duas vezes e não queremos continuar cobrando por algo que você não usa.",

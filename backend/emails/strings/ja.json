@@ -2,12 +2,12 @@
   "common.greeting": "${name} 様",
   "common.greeting_anon": "こんにちは",
   "common.greeting_anon_warm": "こんにちは",
+  "common.number_group": ",",
   "common.signature_ali": "Ali",
   "common.signature_founder": "OutMass 創業者",
   "common.signature_site": "[getoutmass.com](https://getoutmass.com)",
   "common.signature_outmass": "OutMass",
   "common.team_signoff": "— OutMass チーム",
-
   "welcome.subject": "OutMass へようこそ — 3 ステップで最初のキャンペーンを",
   "welcome.heading": "OutMass へようこそ 👋",
   "welcome.intro": "OutMass にサインインいただきありがとうございます。これでご自身の Outlook アカウントから、差し込み印刷のようにパーソナライズしたメールキャンペーンを送れるようになりました。",
@@ -18,7 +18,6 @@
   "welcome.free_plan": "最初は **Free プラン**（月 ${free_quota} 通）から始まります。もっと必要になったら、いつでもパネルからアップグレードできます。",
   "welcome.reply": "つまずいた点やご質問があれば、**このメールに返信するだけ**で大丈夫です。私に直接届き、たいてい数時間以内にお返事します。",
   "welcome.ps": "追伸: パネルは**ブラウザー版**の Outlook で動きます。ブラウザーのタブの中であって、Windows/Mac のデスクトップアプリではありません。アカウントがどのアドレスでも構いません（outlook.office.com、outlook.live.com、outlook.cloud.microsoft のいずれでも動作します）。丸いボタンが見えない場合は、Outlook のタブを一度再読み込みしてください。",
-
   "quota_capped.subject": "${skipped} 件の宛先を保存しました — 自動的に送信されます",
   "quota_capped.heading": "${skipped} 件の宛先を保存しました 📬",
   "quota_capped.saved": "キャンペーンが月間上限の **${limit} 通**に達しました。残りの **${skipped} 件の宛先は安全に保存されています**。失われたものはなく、こちらで対応いただくことはありません。",
@@ -27,7 +26,6 @@
   "quota_capped.questions": "ご不明な点があれば返信するだけで結構です。私に直接届きます。",
   "quota_capped.reset_generic": "月間クォータがリセットされたとき",
   "quota_capped.reset_on_date": "${month}${day}日、月間クォータがリセットされたとき",
-
   "month.1": "1月",
   "month.2": "2月",
   "month.3": "3月",
@@ -40,7 +38,6 @@
   "month.10": "10月",
   "month.11": "11月",
   "month.12": "12月",
-
   "upgrade.subject": "OutMass ${plan_label} プランが有効になりました — ありがとうございます",
   "upgrade.heading": "${plan_label} プランが有効になりました 🎉",
   "upgrade.intro": "アップグレードありがとうございます。**${plan_label}** プランは只今より有効です。内容は次のとおりです。",
@@ -49,7 +46,6 @@
   "upgrade.point_manage": "使用量は OutMass パネルの**アカウント**でいつでも確認でき、**サブスクリプションの管理**から変更・解約ができます。",
   "upgrade.reply": "ご質問、うまくいかない点、足りない機能など何かあれば、**このメールに返信するだけ**で結構です。私に直接届きます。",
   "upgrade.thanks": "小さなプロダクトを早い段階で支えてくださり、ありがとうございます。本当に励みになります。",
-
   "plan_dropped.subject_payment_failed": "OutMass のプランが Free に戻りました",
   "plan_dropped.subject_promo_ended": "OutMass のプランが終了しました",
   "plan_dropped.opening_payment_failed": "本日、サブスクリプションが終了しました。Stripe が約 2 週間にわたり登録済みのカードで試行しており、その旨のメールが届いていたかと思います。",
@@ -58,20 +54,17 @@
   "plan_dropped.carry_on_payment_failed": "続けてご利用の場合は、OutMass パネルを開いてプランをお選びください。別のカードや支払い方法で解決することがほとんどです。",
   "plan_dropped.carry_on_promo_ended": "続けてご利用の場合は、OutMass パネルを開いてプランをお選びください。",
   "plan_dropped.questions": "ご質問、またはうまくいかなかったことはありますか。**返信するだけ**で私に直接届きます。",
-
   "reauth.subject": "OutMass を Outlook に再接続してください",
   "reauth.heading": "要対応: Outlook を再接続してください",
   "reauth.expired": "OutMass と Microsoft Outlook の接続の有効期限が切れました。再接続いただくまで、予約済みのキャンペーンとフォローアップは送信されず一時停止されます。",
   "reauth.how_to_fix": "**対処方法:** ブラウザー版 Outlook で OutMass のサイドバーを開き、**Outlook に再接続**のバナーをクリックして、もう一度サインインしてください。10 秒ほどで完了します。",
   "reauth.reason": "理由: ${reason}。繰り返し表示される場合は、このメールに返信いただければ調査します。",
-
   "account_deleted.subject": "OutMass アカウントを削除しました",
   "account_deleted.heading": "OutMass アカウントを削除しました",
   "account_deleted.removed": "ご依頼のとおり、OutMass アカウントと関連するすべてのデータ（キャンペーン、連絡先、テンプレート、Microsoft の認可、設定）を完全に削除しました。",
   "account_deleted.audit_record": "プライバシーポリシーに基づき、不正防止と法令上の義務のため、匿名化された監査記録を 5 年間保持します。この記録に含まれるのはメールアドレスのハッシュと集計カウンターのみで、内容は含まれません。",
   "account_deleted.subscription": "**有料サブスクリプションをご利用だった場合**、そちらは Stripe で別途管理されています。解約や返金でお困りの場合は、このメールに返信してください。",
   "account_deleted.archive_reference": "アーカイブ参照番号: ${archive_id}",
-
   "inactivity_30d.subject": "OutMass はお使いいただけていますか",
   "inactivity_30d.heading": "OutMass はお使いいただけていますか",
   "inactivity_30d.noticed": "${days} 日ほど OutMass をご利用いただいていないようです。催促ではなくお知らせです。有料サブスクリプションは有効なままで、開いても開かなくても毎月ご請求が続きます。",
@@ -81,7 +74,6 @@
   "inactivity_30d.stop_panel": "OutMass パネルを開き → **アカウント** → **サブスクリプションの管理**、または",
   "inactivity_30d.stop_reply": "こちらに返信するか、[${support_email}](mailto:${support_email}) までご連絡ください。解約のうえ、今期分を返金します。",
   "inactivity_30d.why_receiving": "このメールは、有効な OutMass 有料サブスクリプションをお持ちの方にお送りしています。未利用の期間ごとに 1 度だけ送信されます。",
-
   "inactivity_60d.subject": "OutMass をお使いにならないままお支払いが続いています",
   "inactivity_60d.heading": "OutMass をお使いにならないままお支払いが続いています",
   "inactivity_60d.noticed": "${days} 日ほど OutMass にサインインされていません。その間も有料サブスクリプションは更新され続けています。価値を感じていただけていないものにお支払いいただくのは本意ではありません。",
@@ -90,7 +82,6 @@
   "inactivity_60d.way_tell": "**うまくいかなかった点を教える** — このメールに返信してください。何かが妨げになったのであれば、お客様を失うより直したいと考えています。",
   "inactivity_60d.way_cancel": "**解約する** — このメールに返信するか [${support_email}](mailto:${support_email}) までご連絡ください。サブスクリプションを解約し、今期の請求分を返金します。",
   "inactivity_60d.one_more": "ご返信がない場合は、次の対応に進む前に 90 日の時点でもう一度だけご連絡します。",
-
   "inactivity_90d.subject": "OutMass — 最後のご確認",
   "inactivity_90d.heading": "OutMass — 最後のご確認",
   "inactivity_90d.noticed": "OutMass を最後にお使いいただいてから ${days} 日ほど経ちました。すでに 2 度ご連絡しており、お使いでないものに請求を続けたくはありません。",
