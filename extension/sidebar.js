@@ -624,6 +624,15 @@
       if (area !== "local") return;
       // Sending-identity line follows the stored user.
       if (changes.user) renderSenderIdentity();
+      // The quota bar follows the plan. renderQuota has three callers — init,
+      // post-send, post-sign-in — and switching tabs is not one of them, so a
+      // bar painted from a stale cache used to stay wrong for the life of the
+      // panel even after the correction landed a second later. That is how a
+      // compose screen reading "Pro Plan" and an Account tab reading "Free"
+      // were both on screen at the same instant (2026-08-14).
+      if (changes.plan || changes.monthlyLimit || changes.emailsSentThisMonth) {
+        renderQuota();
+      }
       // Account switches don't reload the Outlook page, so the sidebar (a
       // persistent iframe) would otherwise keep showing the prior account's
       // announcements until the next 5-min poll. When the JWT changes, wipe
@@ -1757,31 +1766,46 @@
   // persisted by background's GET_USER_STATE; loadQuota() below pulls a fresh
   // copy before we render so a returning user sees their real usage instead of
   // a stale 0 (which used to ambush them with a 402 mid-campaign).
-  function renderQuota() {
-    chrome.storage.local.get(["emailsSentThisMonth", "plan", "monthlyLimit"], function (result) {
-      var sent = result.emailsSentThisMonth || 0;
-      var plan = result.plan || "free";
-      // Prefer the backend-provided limit (parametric); fall back to current
-      // defaults only if the backend value isn't cached yet (offline/first run).
-      var limit = result.monthlyLimit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
-      var remaining = Math.max(0, limit - sent);
-      // quotaDefault template already has "Plan" suffix, so pass just the tier name
-      var planLabel = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "Free";
+  function renderQuota(snapshot) {
+    // A snapshot is one /settings answer: plan and limit from the same
+    // moment, about the same account. Storage is two keys with two writers,
+    // and on 2026-08-14 it showed "250/250 (Pro Plan)" — the free limit
+    // beside a plan the server had already stopped agreeing with.
+    if (snapshot) return _paintQuota(snapshot);
+    chrome.storage.local.get(
+      ["emailsSentThisMonth", "plan", "monthlyLimit"], _paintQuota
+    );
+  }
 
-      quotaText.textContent = t("quotaDefault", [String(remaining), String(limit), planLabel]);
-      quotaFill.style.width = (remaining / limit * 100) + "%";
-    });
+  function _paintQuota(result) {
+    var sent = result.emailsSentThisMonth || 0;
+      var plan = result.plan || "free";
+    // Prefer the backend-provided limit (parametric); fall back to current
+    // defaults only if the backend value isn't cached yet (offline/first run).
+    var limit = result.monthlyLimit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
+    var remaining = Math.max(0, limit - sent);
+    // quotaDefault template already has "Plan" suffix, so pass just the tier name
+    var planLabel = plan === "pro" ? "Pro" : plan === "starter" ? "Starter" : "Free";
+
+    quotaText.textContent = t("quotaDefault", [String(remaining), String(limit), planLabel]);
+    quotaFill.style.width = (remaining / limit * 100) + "%";
   }
 
   // Request the live user state (which persists the real emailsSentThisMonth /
   // monthlyLimit / plan into chrome.storage.local) and then render. Falls back
   // to whatever is already cached if the message round-trip fails (offline).
   function loadQuota() {
-    chrome.runtime.sendMessage({ type: "GET_USER_STATE" }, function () {
-      // GET_USER_STATE has already written the fresh values to storage by the
-      // time this callback fires; renderQuota reads them. We ignore the resp
-      // payload and read storage so this stays the single source of truth.
-      renderQuota();
+    chrome.runtime.sendMessage({ type: "GET_USER_STATE" }, function (resp) {
+      // Use the answer we were handed. This used to discard it and re-read
+      // storage, on the stated assumption that GET_USER_STATE "has already
+      // written the fresh values to storage by the time this callback
+      // fires" — a guarantee MV3 does not make across contexts, and the
+      // reason a corrected plan could arrive after the bar had painted.
+      //
+      // resp.fresh is absent when the refresh was offline, timed out, or hit
+      // a silent 401. Then the cache is all there is, and it is at least
+      // internally consistent now that it is written in one go.
+      renderQuota(resp && resp.fresh ? resp : undefined);
     });
   }
 

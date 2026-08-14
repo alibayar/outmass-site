@@ -592,6 +592,13 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
           backendJwt: jwtToken,
           user: user,
           plan: plan,
+          // Cleared with the plan, never left behind. This write is the only
+          // one that can move `plan` without touching its siblings, and a
+          // plan sitting beside the previous account's limit and count is
+          // both a wrong quota bar and a cross-account leak. msLogout already
+          // clears all three together; this now matches it.
+          monthlyLimit: null,
+          emailsSentThisMonth: 0,
           // Fresh JWT → clear any pending session-expired flag so the
           // sidebar banner hides on next poll.
           sessionExpired: false,
@@ -944,16 +951,41 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
                 // value instead of a stale 0 — a returning user was otherwise
                 // ambushed by a 402 after creating a campaign.
                 var freshSent = resp.data.emails_sent_this_month || 0;
-                var _set = { emailsSentThisMonth: freshSent };
-                if (freshPlan !== result.plan) _set.plan = freshPlan;
-                if (freshLimit) _set.monthlyLimit = freshLimit;
-                chrome.storage.local.set(_set);
-                log("Plan/limit/count refreshed from backend:", freshPlan, freshLimit, freshSent);
-                sendResponse({
-                  user: result.user,
+                // All three, unconditionally, in one write.
+                //
+                // They used to be written separately: the count always, the
+                // plan only `if (freshPlan !== result.plan)`, the limit only
+                // `if (freshLimit)`. Two conditionals on three fields that
+                // describe ONE account, and `result.plan` was read before the
+                // network round trip — so a second refresh in flight (the
+                // popup, the sidebar, a second Outlook tab) could leave the
+                // plan untouched while the limit moved. The panel then showed
+                // "250/250 emails remaining (Pro Plan)": the number from one
+                // account state, the label from another. Reported 2026-08-14.
+                //
+                // The saved conditional bought nothing. chrome.storage.local
+                // is not a database; writing an unchanged string costs less
+                // than the class of bug it created.
+                var _set = {
                   plan: freshPlan,
+                  monthlyLimit: freshLimit || null,
                   emailsSentThisMonth: freshSent,
-                  monthlyLimit: freshLimit,
+                };
+                // Respond AFTER the write commits. MV3 makes no ordering
+                // guarantee between a set() here and a get() in the sidebar's
+                // own context, and the sidebar used to re-read storage in this
+                // very callback — reading, sometimes, what was there before.
+                chrome.storage.local.set(_set, function () {
+                  log("Plan/limit/count refreshed from backend:", freshPlan, freshLimit, freshSent);
+                  sendResponse({
+                    user: result.user,
+                    plan: freshPlan,
+                    emailsSentThisMonth: freshSent,
+                    monthlyLimit: freshLimit,
+                    // The one field that lets a caller tell a live answer from
+                    // a cached one. Absent on every degraded branch below.
+                    fresh: true,
+                  });
                 });
               } else {
                 sendResponse({

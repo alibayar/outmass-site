@@ -493,11 +493,16 @@
           </div>
           <div class="settings-row">
             <span class="settings-label" data-i18n="settingsPlan">Plan</span>
-            <span class="settings-value"><span class="plan-badge" id="account-plan">Free</span></span>
+            <span class="settings-value"><!-- Not "Free". loadAccount returns early on a failed fetch without
+                 clearing these, so a hardcoded Free/0 rendered pixel-identically
+                 to a real free account with nothing sent — which made the
+                 2026-08-14 report ambiguous until the Email row (which does
+                 start as "-") proved the load had actually succeeded. -->
+            <span class="plan-badge" id="account-plan">-</span></span>
           </div>
           <div class="settings-row">
             <span class="settings-label" data-i18n="settingsSentThisMonth">Sent this month</span>
-            <span class="settings-value" id="account-sent-count">0</span>
+            <span class="settings-value" id="account-sent-count">-</span>
           </div>
         </div>
         <div class="settings-actions">
