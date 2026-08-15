@@ -256,7 +256,49 @@ and the entry's own loop count was wrong. Items 2-4 verified still open.**
    stripe_subscription_id exists; match webhooks on subscription id, not
    customer id.
 
-### 🔧 Microsoft-consent funnel leak (promoted from watch, Ali 2026-07-26)
+### ✅ Microsoft-consent funnel leak — ALL THREE SHIPPED, measure it now (2026-08-15)
+
+> **Re-audited 2026-08-15. All three ideas are in the code; the 08-08 audit
+> below is what was true a week ago and is kept because its warning still
+> applies — adjacent work lands near this and it is easy to miscount.**
+>
+> - **Idea 1, pre-OAuth trust panel: SHIPPED in 0.2.1**, published to Chrome
+>   on 08-15. `extension/sidebar.html:43` carries `popupConsentExplainer`,
+>   which the 08-08 audit correctly reported as living only in popup.html.
+> - **Idea 2, consent-decline follow-up: SHIPPED.** `i18n.js:197`
+>   `msAuthMessage(mcode, fallback)` maps 14 classifications to sentences, and
+>   it takes PRECEDENCE at all three places a user sees the failure —
+>   `sidebar.js:186`, `sidebar.js:249`, `popup.js:258`. The static
+>   `authErrorConsent` the audit flagged is now only the fallback for when the
+>   backend sent no code. (Read one line further than the `consent_declined`
+>   branch before concluding otherwise; that mistake was made twice.)
+> - **Idea 3, per-step measurement: SHIPPED, cadence still unmade.** Nothing
+>   reads the funnel on a schedule. `workers/green_report.py` is the obvious
+>   home; Gate 2 in it still says "PostHog, by hand".
+>
+> **The baseline to beat, measured 2026-08-15** — `oauth_started` and
+> `oauth_completed` are both client-side and lossy, so this counts
+> `ms_auth_window_opened` against the SERVER-side `login`:
+>
+> | week | reached Microsoft | signed in | rate |
+> |---|---|---|---|
+> | 08-09 | 28 | 13 | 46% |
+> | 08-02 | 17 | 7 | 41% |
+>
+> More than half of everyone who reaches Microsoft's screen never comes back.
+>
+> **And the shape of the loss, last 30 days by AADSTS:** user_declined_consent
+> (65004) 8 people — the largest classified group by far; no_code_from_
+> microsoft 3; account_from_other_tenant (50020) 1; unclassified 3.
+>
+> **AADSTS65001, the M365 admin-consent block this entry warned about, does
+> not appear at all.** The loss is people choosing "no", not a tenant policy
+> refusing them — which is the one kind a plain-language explanation before
+> the screen can actually move. That is the bet 0.2.1 places.
+>
+> **Nothing left to build. Two things left to do:** put 0.2.1 on Edge (Edge
+> received 0.2.0 on 08-15, and 0.2.0 does NOT contain the explainer), and
+> re-measure the table above in a week.
 
 > **Audited 2026-08-08 — one of the three ideas shipped. Read this before
 > assuming the other two did, because adjacent work landed near both.**
