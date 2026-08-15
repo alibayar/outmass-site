@@ -79,6 +79,7 @@ celery = Celery(
         "workers.daily_report",
         "workers.inactivity_nudge",
         "workers.reply_detector",
+        "workers.green_report",
     ],
 )
 
@@ -191,6 +192,18 @@ celery.conf.beat_schedule = {
         # reset (or an upgrade) restored headroom; the regular send beat then
         # finishes them. Removes the manual Resume click after a quota cap.
         "schedule": crontab(hour=6, minute=0),
+    },
+    "green-check": {
+        "task": "workers.green_report.send_green_report",
+        # 07:00 UTC daily — after every other beat has run, so the report
+        # describes a settled morning rather than one mid-flight.
+        #
+        # It runs HERE rather than on a laptop on purpose. The first version
+        # was a local script and its first real run read an empty users table
+        # from the wrong credentials, reported "0 accounts, ok" for every
+        # check, and looked like health. Running it where the production
+        # credentials already live removes the question of which ones it used.
+        "schedule": crontab(hour=7, minute=0),
     },
     "detect-replies": {
         "task": "workers.reply_detector.detect_replies",
