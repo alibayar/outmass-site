@@ -3467,11 +3467,15 @@
     var locale = getActiveLocale();
     var rows = [];
 
+    // Only plans ABOVE the current one are offers. Equal is the backend's
+    // "Already on <plan>" 400; lower is a downgrade, which the backend also
+    // refuses (a Pro user's every create-checkout is a 400) — so either row
+    // could only ever produce a click that ends in a misreported error.
+    var planRank = { free: 0, starter: 1, pro: 2 };
+    var currentRank = planRank[currentPlan] !== undefined ? planRank[currentPlan] : -1;
+
     (plans || []).forEach(function (p) {
-      // Never offer the plan someone is already on: clicking it can only
-      // produce the backend's "Already on <plan> plan" 400, which the
-      // failure branch below would then misreport as a payment-page error.
-      if (currentPlan && p.key === currentPlan) return;
+      if (planRank[p.key] !== undefined && planRank[p.key] <= currentRank) return;
       var money, quota;
       try {
         money = new Intl.NumberFormat(locale, {
