@@ -291,9 +291,24 @@ def send_green_report():
 
 
 if __name__ == "__main__":  # pragma: no cover
-    # Run it now, from a Railway shell, without waiting for 07:00:
+    # Run it now, from a Railway shell, without waiting for 07:00.
     #
-    #     python -m workers.green_report
+    # Bare `python` in that shell is NOT the interpreter the service runs
+    # with. Nixpacks installs the dependencies into a virtualenv and puts it
+    # on PATH for the start command only, so an interactive shell gets the
+    # system Python and `import dotenv` fails on config.py line 7 — which
+    # looks alarmingly like a missing dependency and is not one.
+    #
+    # Ask the image where its interpreter is, rather than guessing a path:
+    #
+    #     head -1 "$(command -v uvicorn)"      # e.g. #!/opt/venv/bin/python
+    #     /opt/venv/bin/python -m workers.green_report
+    #
+    # Or dispatch it as a task, which resolves `celery` off the same PATH the
+    # service uses and needs no interpreter hunting — at the cost of running
+    # on the WORKER, so Gate 1 reports the worker's Stripe key:
+    #
+    #     celery -A workers.celery_app call workers.green_report.send_green_report
     #
     # No `cd backend` on Railway: the image's WORKDIR is /app and /app IS
     # this directory — Procfile, main.py and workers/ all sit in it. The
