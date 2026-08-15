@@ -284,3 +284,40 @@ def send_green_report():
     except Exception as e:  # noqa: BLE001
         _telegram_alert(f"🔴 OutMass — green check crashed: {e}")
         return {"error": str(e)}
+
+
+if __name__ == "__main__":  # pragma: no cover
+    # Run it now, from a Railway shell, without waiting for 07:00:
+    #
+    #     cd backend && python -m workers.green_report
+    #
+    # Prints the full report to the shell AND sends the short form to
+    # Telegram, so the on-demand run and the daily one cannot tell different
+    # stories about the same morning.
+    #
+    # WHICH SERVICE you run it in changes exactly one line: Gate 1 reads the
+    # Stripe key of the process it is in. Run it on WEB to answer the gate
+    # that actually matters — web is the only service that creates checkouts.
+    # The scheduled run is on beat, and says so.
+    import sys
+
+    try:
+        from database import get_db
+
+        lines = build(get_db(), role="this service")
+        print(as_text(lines))
+    except EmptyDatabase as e:
+        print(f"STOP — {e}")
+        sys.exit(2)
+    except Exception as e:  # noqa: BLE001
+        # A raw traceback here would be a stack full of supabase internals
+        # ending in "Invalid API key", which says nothing about what to do.
+        print(f"could not build the report: {e}")
+        print(
+            "Run this inside a service that already has SUPABASE_URL and "
+            "SUPABASE_KEY — a Railway shell on web, worker or beat. It is "
+            "not meant to be run from a laptop; that is the mistake this "
+            "whole task exists to remove."
+        )
+        sys.exit(1)
+    send_green_report()
