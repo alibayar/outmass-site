@@ -54,6 +54,16 @@ QUOTED = {
     "inactivity_30d.stop_panel": ["tabAccount", "btnManageSub"],
 }
 
+#: A translation may name MORE controls than the English source does. ru and
+#: tr's reauth emails point at the banner's actual button (**Войти** /
+#: **Giriş yap**), which en does not name — better instructions, and they
+#: must be held to the same standard, or a panel rewording drifts them
+#: silently. Keyed (lang, email key) so English strictness is untouched.
+EXTRA_QUOTED: dict[tuple[str, str], list[str]] = {
+    ("ru", "reauth.how_to_fix"): ["reauthBannerCta"],
+    ("tr", "reauth.how_to_fix"): ["reauthBannerCta"],
+}
+
 #: (language, email key, panel key) triples that do NOT match today.
 #:
 #: Every one is a real defect found on 2026-08-14. They are listed rather
@@ -63,29 +73,25 @@ QUOTED = {
 #:
 #: Remove entries as they are fixed. Never add one.
 KNOWN_MISMATCHES: set[tuple[str, str, str]] = {
-    ("ar", "reauth.how_to_fix", "reauthBannerText"),
-    ("de", "inactivity_30d.stop_panel", "btnManageSub"),
-    ("de", "quota_capped.sooner", "btnUpgrade"),
-    ("de", "reauth.how_to_fix", "reauthBannerText"),
-    ("de", "upgrade.point_manage", "btnManageSub"),
-    ("es", "reauth.how_to_fix", "reauthBannerText"),
+    # 19 of the original 23 were fixed on 2026-08-15: 15 by the curated
+    # blocker+major pass from docs/plans/2026-08-14-translation-findings.md,
+    # 4 more (fr step3, de sooner, ja ×2) as exact-label swaps after the
+    # adversarial review closed the substring loophole that had hidden them.
+    # Each survivor carries its own reason — a shared reason is how the fr
+    # entry nearly outlived the fix it was blamed on:
+    #
+    # es welcome.step3 — PANEL-side defect: the email's "Envío de prueba" is
+    #   correct; the panel button says "Envio de prueba" (stripped accent).
+    #   Heals when task #55 fixes extension/_locales/es. Do NOT edit the
+    #   email.
+    # fr/pt_BR/pt_PT reauth.how_to_fix — the emails bold a banner name that
+    #   does not open those panels' reauthBannerText sentences; the review
+    #   offered no vetted replacement in these three languages. Task #56's
+    #   second pass owns them.
     ("es", "welcome.step3", "btnTestSend"),
-    ("fr", "quota_capped.sooner", "btnUpgrade"),
     ("fr", "reauth.how_to_fix", "reauthBannerText"),
-    ("fr", "welcome.step3", "btnTestSend"),
-    ("hi", "reauth.how_to_fix", "reauthBannerText"),
-    ("ja", "inactivity_30d.stop_panel", "btnManageSub"),
-    ("ja", "upgrade.point_manage", "btnManageSub"),
     ("pt_BR", "reauth.how_to_fix", "reauthBannerText"),
-    ("pt_BR", "welcome.step3", "btnPreview"),
-    ("pt_PT", "quota_capped.sooner", "btnUpgrade"),
     ("pt_PT", "reauth.how_to_fix", "reauthBannerText"),
-    ("ru", "quota_capped.sooner", "btnUpgrade"),
-    ("ru", "reauth.how_to_fix", "reauthBannerText"),
-    ("ru", "welcome.step3", "btnTestSend"),
-    ("tr", "reauth.how_to_fix", "reauthBannerText"),
-    ("zh_TW", "welcome.step3", "btnSend"),
-    ("zh_TW", "welcome.step3", "btnTestSend"),
 }
 
 
@@ -110,13 +116,22 @@ def _mismatches(lang: str) -> list[tuple[str, str, str, str]]:
     out = []
     for email_key, panel_keys in QUOTED.items():
         bolded = _bolded(emails[email_key])
-        for panel_key in panel_keys:
+        extra = EXTRA_QUOTED.get((lang, email_key), [])
+        for panel_key in panel_keys + extra:
             label = panel.get(panel_key)
             if not label:
                 continue
-            # Exact for a button; substring for reauthBannerText, whose panel
-            # value is a whole sentence that opens with the banner's name.
-            if any(frag == label or frag in label for frag in bolded):
+            # Exact for a button. The substring arm exists ONLY for
+            # reauthBannerText, whose panel value is a whole sentence that
+            # opens with the banner's name — applied to buttons it accepted
+            # any truncation, which is how six locales bolding a shortened
+            # btnUpgrade passed as clean until the 2026-08-15 review caught
+            # it. A truncated label is a control the user cannot find.
+            if any(
+                frag == label
+                or (panel_key == "reauthBannerText" and frag in label)
+                for frag in bolded
+            ):
                 continue
             out.append((email_key, panel_key, label, " | ".join(bolded)))
     return out
