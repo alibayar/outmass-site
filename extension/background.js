@@ -586,19 +586,22 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
 
       const user = { email: email, name: name || email };
 
-      // Save auth state
-      chrome.storage.local.set(
-        {
+      // Save auth state. The plan's quota siblings are cleared ONLY when the
+      // signed-in account actually changed: this same write also runs for
+      // the two incremental-consent flows (the OneDrive picker, the
+      // Mail.Read banner) on the SAME account, and wiping the cached limit
+      // and count there made the quota bar paint a fabricated fresh
+      // allowance the server never agreed to — the exact defect class the
+      // account-switch clearing was added to prevent, from the other side.
+      // Found by the 0.2.2 release review.
+      chrome.storage.local.get(["user"], function (prev) {
+        const sameAccount =
+          prev && prev.user && prev.user.email &&
+          String(prev.user.email).toLowerCase() === String(email).toLowerCase();
+        const authState = {
           backendJwt: jwtToken,
           user: user,
           plan: plan,
-          // Cleared with the plan, never left behind. This write is the only
-          // one that can move `plan` without touching its siblings, and a
-          // plan sitting beside the previous account's limit and count is
-          // both a wrong quota bar and a cross-account leak. msLogout already
-          // clears all three together; this now matches it.
-          monthlyLimit: null,
-          emailsSentThisMonth: 0,
           // Fresh JWT → clear any pending session-expired flag so the
           // sidebar banner hides on next poll.
           sessionExpired: false,
@@ -606,8 +609,16 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
           accessToken: null,
           refreshToken: null,
           expiresAt: null,
-        },
-        function () {
+        };
+        if (!sameAccount) {
+          // Cleared with the plan on a real account switch, never left
+          // behind: a plan sitting beside the previous account's limit and
+          // count is both a wrong quota bar and a cross-account leak.
+          // msLogout already clears all three together; this matches it.
+          authState.monthlyLimit = null;
+          authState.emailsSentThisMonth = 0;
+        }
+        chrome.storage.local.set(authState, function () {
           log("LOGIN_SUCCESS:", email);
           // Backend doesn't return user_id in the redirect fragment today, so
           // we identify by email — PostHog accepts any string as distinct_id.
@@ -622,8 +633,8 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
             return track("oauth_completed", { plan: plan });
           });
           finish({ error: null, user: user });
-        }
-      );
+        });
+      });
     }
 
     launch();
@@ -1390,7 +1401,12 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       return true;
 
     case "GET_BILLING_STATUS":
-      backendFetch("/billing/status").then(function (result) {
+      // silent: this call's only consumer is the price catalogue, every
+      // caller degrades to "no plans" on any error, and two of the three
+      // callers fire automatically (popup open, Account tab open). A price
+      // refresh must never be the thing that clears the JWT — the same rule
+      // GET_USER_STATE already follows a few lines above.
+      backendFetch("/billing/status", { silent: true }).then(function (result) {
         sendResponse(result);
       });
       return true;

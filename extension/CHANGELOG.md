@@ -2,25 +2,76 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.2.2 — unreleased
+## v0.2.2 — 2026-08-15
 
 - **OutMass will write to you in the language you read it in.** Every email
-  we send — welcome, quota reached, plan changes, reconnect, the lot — has
-  been English regardless of the language you have the panel set to, because
-  we had no way of knowing which one that was. The panel now tells the server
-  which language it is showing, and the emails are written in thirteen more:
-  Arabic, Chinese (Simplified and Traditional), French, German, Hindi,
-  Japanese, Portuguese (Brazil and Portugal), Russian, Spanish and Turkish.
-  Nothing is sent anywhere else; it is the same value the panel already uses
-  to render itself. If you have not updated, or your language is not one of
-  these, the emails stay in English exactly as before.
+  we send after your first sign-in — quota reached, plan changes, reconnect,
+  the lot — has been English regardless of the language you have the panel
+  set to, because we had no way of knowing which one that was. The panel now
+  tells the server which language it is showing, and the emails are written
+  in twelve more: Arabic, Chinese (Simplified and Traditional), French,
+  German, Hindi, Japanese, Portuguese (Brazil and Portugal), Russian,
+  Spanish and Turkish. Nothing is sent anywhere else; it is the same value
+  the panel already uses to render itself. Two honest limits: the very first
+  welcome email stays English, because it is sent before the panel has ever
+  talked to us — and if you have not updated, or your language is not one of
+  these, everything stays in English exactly as before.
+
+- **The monthly-limit message now shows both plans, with prices.** 0.2.1
+  put real prices on the Account tab's plan list; this release brings the
+  same list to the two places it was still missing. The message you get
+  when you reach your monthly limit part-way through a send used to offer
+  one button, with no price, that bought Starter whichever plan you
+  actually wanted; it now shows both plans with their price and limit. And
+  the toolbar popup's upgrade buttons carry the real current price instead
+  of one written into the extension. As everywhere else: when the panel
+  cannot reach the server, buttons show no price rather than a stale one.
+
+- **The quota bar and the Account tab can no longer disagree about your
+  plan.** They could: the bar above the editor might say "250/250 (Pro
+  Plan)" while the Account tab said Free, at the same moment — each was
+  reading a different stored copy of the same answer, and changing accounts
+  could leave the previous account's numbers standing next to the new
+  plan. Everything now paints from one fresh server answer and repaints
+  the moment that answer changes. And when the panel genuinely cannot
+  reach the server, the Account tab shows a dash instead of quietly
+  displaying "Free / 0" — which used to look exactly like a real free
+  account.
+
+- **An out-of-date memory of your plan can no longer stop your send.**
+  Right after an upgrade, the pre-send check could still be holding
+  yesterday's answer — and refuse the send at the Free limit for a
+  customer who had just paid for more. That check now blocks only on a
+  live answer from the server, fetched at the moment you press Send. When
+  that answer cannot be fetched, the send proceeds unchecked and the
+  server remains the judge, exactly as before — which also means the
+  up-front "only the first N will be sent" warning cannot appear offline;
+  the server still stops at your limit and reports what was saved.
+
+- **An in-place upgrade now says so, instead of reporting a failure.** If
+  you already have a subscription and pick the higher plan, there is no
+  payment page to open: Stripe adjusts the existing subscription and
+  charges the prorated difference. The panel used to treat that success as
+  a failed attempt to open a payment page — you were upgraded, charged
+  correctly, and told "Could not create payment page." It now says what
+  happened. (The toolbar popup always got this right; the panel's plan
+  list did not.)
+
+- **German, French and Spanish now read like themselves.** The same defect
+  0.2.1 fixed for Turkish, in three more languages: German written as
+  ASCII transliteration ("fuer", "Empfaenger"), French and Spanish with
+  their accents dropped outright — Spanish worst, where dropping the tilde
+  changes the word: the panel offered to archive "esta campana", a bell.
+  119 strings corrected across the three (32 German, 42 French, 45
+  Spanish), wording unchanged, and the check that already guards Turkish
+  now guards all four.
 
 ## v0.2.1 — 2026-08-13
 
-A patch release. Two things you will notice, one thing you will not: OutMass
-asks Microsoft for less than it used to, explains what Microsoft is about to
-ask before you get there, and no longer leaves a stopped campaign looking
-like one that simply never sent.
+A patch release that grew. OutMass asks Microsoft for less than it used to,
+explains what Microsoft is about to ask before you get there, no longer
+leaves a stopped campaign looking like one that simply never sent — and the
+Account tab starts showing real prices.
 
 - **OutMass no longer asks to read Microsoft's login site.** The install
   screen listed permission for `login.microsoftonline.com` and
@@ -45,6 +96,15 @@ like one that simply never sent.
   campaign that then happens by itself (below); an older one is left for us
   to look at rather than sent behind your back.
 
+- **You can now see what a plan costs before you reach the payment page.**
+  The Account tab used to show a single "Upgrade Plan" button that took you
+  straight to Stripe — so the only way to learn the price was to open a
+  payment form, and Pro could not be bought from the panel at all. Both
+  plans are now listed with their price and their monthly limit, and you
+  choose. The prices come from Stripe and the limits from the server, so
+  neither can drift out of date — and when the panel cannot reach the
+  server, it shows the plain button rather than a price it is not sure of.
+
 - **If your plan ends, the panel says so — and why.** A subscription that
   ran out or a trial that finished used to leave no trace anywhere in
   OutMass; the first sign was hitting the Free limit in the middle of a
@@ -53,30 +113,15 @@ like one that simply never sent.
   than a hunt. (You also get an email at the moment it happens — unless you
   cancelled it yourself, in which case you already know.)
 
-- **You can now see what a plan costs before you reach the payment page.**
-  The Account tab used to show a single "Upgrade Plan" button that took you
-  straight to Stripe — so the only way to learn the price was to open a
-  payment form, and Pro could not be bought from the panel at all. Both
-  plans are now listed with their price and their monthly limit, and you
-  choose. The prices come from Stripe and the limits from the server, so
-  neither can drift out of date.
-
-  The same list now appears everywhere OutMass offers an upgrade. The
-  message you get when you reach your monthly limit part-way through a send
-  used to offer one button, with no price, that bought Starter whichever
-  plan you actually wanted; it now shows both. And the toolbar popup's
-  upgrade buttons carry the real current price instead of one written into
-  the extension.
-
-- **Two controls no longer hang off the edge of the panel.** The Delete
-  button next to the template list sat outside the panel in French and in
-  several other languages, forcing the panel to scroll sideways to reach it.
-
 - **Turkish now reads like Turkish.** Around a fifth of the Turkish
   interface had been typed without the letters ç, ğ, ı, ö, ş and ü —
   "gonder" for "gönder", "Arsivle" for "Arşivle" — so the panel was half
   properly written and half not. Sixty-seven strings corrected, wording
   unchanged.
+
+- **Two controls no longer hang off the edge of the panel.** The Delete
+  button next to the template list sat outside the panel in French and in
+  several other languages, forcing the panel to scroll sideways to reach it.
 
 ### Behind the scenes (backend — affects all extension versions)
 

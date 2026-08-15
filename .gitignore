@@ -56,3 +56,7 @@ outmass-v*.zip
 # Git worktrees (isolated dev branches)
 .worktrees/
 .firecrawl/
+
+# Release artifacts live in the store dashboards, not in git
+outmass-*.zip
+tenantId.pdf

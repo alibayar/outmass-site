@@ -3278,7 +3278,7 @@
 
       var rows = buildPlanRows(plans, "quota_modal", function () {
         overlay.remove();
-      });
+      }, data.plan);
       if (!rows.length) return;
 
       var oldBtn = modal.querySelector("#btn-upgrade");
@@ -3424,6 +3424,18 @@
       } else {
         if (btnUpgrade) btnUpgrade.style.display = "none";
         if (btnPortal) btnPortal.style.display = "block";
+        // Tear down the free-only UI. The panel is a persistent iframe
+        // that survives the Stripe round trip, so without this a customer
+        // who just paid came back to the Account tab still reading "your
+        // paid plan has ended" above a list of plans to buy — including
+        // the one they are now on. Found by the 0.2.2 release review.
+        var pickerBox = document.getElementById("account-plan-picker");
+        if (pickerBox) {
+          pickerBox.style.display = "none";
+          pickerBox.innerHTML = "";
+        }
+        var endedNote = document.getElementById("account-plan-ended");
+        if (endedNote) endedNote.style.display = "none";
       }
 
       log("Account loaded");
@@ -3451,11 +3463,15 @@
   // `context` rides on the telemetry, so the funnel can tell someone browsing
   // the Account tab from someone who just hit the cap mid-send. Those are
   // very different intents and until now they looked identical.
-  function buildPlanRows(plans, context, afterClick) {
+  function buildPlanRows(plans, context, afterClick, currentPlan) {
     var locale = getActiveLocale();
     var rows = [];
 
     (plans || []).forEach(function (p) {
+      // Never offer the plan someone is already on: clicking it can only
+      // produce the backend's "Already on <plan> plan" 400, which the
+      // failure branch below would then misreport as a payment-page error.
+      if (currentPlan && p.key === currentPlan) return;
       var money, quota;
       try {
         money = new Intl.NumberFormat(locale, {
@@ -3495,6 +3511,10 @@
       btn.className = "btn btn-primary plan-option-btn";
       btn.textContent = t("btnChoosePlan");
       btn.addEventListener("click", function () {
+        // One in-flight checkout per row: a second click while the first
+        // round trip is out could open two Stripe sessions for one intent.
+        if (btn.disabled) return;
+        btn.disabled = true;
         // Carries which plan, so the funnel can finally tell a Starter
         // intent from a Pro one — the old event could not.
         track("upgrade_button_clicked", {
@@ -3506,8 +3526,22 @@
           function (r) {
             if (r && r.data && r.data.checkout_url) {
               window.open(r.data.checkout_url, "_blank");
+            } else if (r && r.data && r.data.modified) {
+              // A caller with a live subscription is upgraded IN PLACE:
+              // the backend has already run Subscription.modify with
+              // proration and written the new plan — there is no payment
+              // page to open, because the payment already happened. The
+              // popup handled this from day one; this shared helper did
+              // not, so a successful prorated upgrade was charged and then
+              // told "Could not create payment page." Found by the 0.2.2
+              // release review — the worst possible order of those two
+              // facts.
+              alert(t("upgradeSuccessProrated"));
+              loadQuota();
+              loadAccount();
             } else {
               alert(t("settingsCheckoutFailed"));
+              btn.disabled = false;
             }
             if (afterClick) afterClick();
           }
@@ -3555,7 +3589,7 @@
       if (!plans || !plans.length) return;
 
       box.innerHTML = "";
-      buildPlanRows(plans, "plan_picker").forEach(function (row) {
+      buildPlanRows(plans, "plan_picker", null, data.plan).forEach(function (row) {
         box.appendChild(row);
       });
 
