@@ -183,6 +183,11 @@ def test_checkout_completed_resets_counters_and_anchors_today(client, fake_db):
     assert captured["emails_sent_this_month"] == 0
     assert captured["ai_generations_this_month"] == 0  # AI period resets too
     assert captured["month_reset_date"] == datetime.now(timezone.utc).date().isoformat()
+    # Both halves of the anchor move together: the date names THIS period,
+    # the day is what every later period is computed from. The re-anchor
+    # wrote only the date until 2026-08-15, leaving the signup day in charge
+    # of a paid customer's cycle.
+    assert captured["month_reset_anchor_day"] == datetime.now(timezone.utc).date().day
     # No subscription id on the session, so the plan is genuinely unknowable.
     # It resolves to the lowest paid tier and alerts an operator, rather than
     # to "pro" as it silently did until 2026-08-10 — under-delivering to
@@ -207,3 +212,4 @@ def test_checkout_replay_does_not_refill_quota(client, fake_db):
     assert captured["plan"] == "pro"  # plan write is idempotent, still happens
     assert "emails_sent_this_month" not in captured  # no quota refill
     assert "month_reset_date" not in captured  # no anchor shift
+    assert "month_reset_anchor_day" not in captured  # day half stays put too

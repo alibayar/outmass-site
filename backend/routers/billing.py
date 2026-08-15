@@ -154,6 +154,75 @@ def _user_for_customer(db, customer_id: str) -> dict | None:
         return None
 
 
+def _event_subscription_is_current(
+    db, customer_id: str, event_sub_id, event_type: str
+) -> bool:
+    """A subscription event may only act on the account whose CURRENT
+    subscription it describes.
+
+    Both downgrade branches match users on stripe_customer_id, but a Stripe
+    customer can carry more than one subscription over time. The pre-fix
+    dual-checkout bug created orphans, and the ordinary cancel-then-
+    resubscribe flow does it legitimately: the old subscription dies at
+    period end AFTER the new one was created, and its deleted event would
+    downgrade the freshly re-paying customer.
+
+    The rules, in order:
+    - the event carries no subscription id → act (nothing to compare);
+    - no user row for the customer → act (the update is a no-op anyway);
+    - stored stripe_subscription_id is NULL → act on the customer match
+      (legacy rows, a lost checkout webhook — refusing here would mean
+      nothing ever downgrades those accounts);
+    - stored id matches the event's → act;
+    - stored id set and DIFFERENT → skip, loudly. The event is about a
+      subscription this account does not run on.
+
+    Fails toward the old behaviour on any read error: a wrongly-processed
+    event is bounded and visible, a silently immortal plan is neither.
+    """
+    if not event_sub_id:
+        return True
+    try:
+        res = (
+            db.table("users")
+            .select("id, email, stripe_subscription_id")
+            .eq("stripe_customer_id", customer_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        if not rows:
+            return True
+        stored = rows[0].get("stripe_subscription_id")
+        if not stored or stored == event_sub_id:
+            return True
+        logger.warning(
+            "%s for customer %s describes subscription %s, but the account "
+            "runs on %s — leaving the account untouched",
+            event_type,
+            customer_id,
+            event_sub_id,
+            stored,
+        )
+        _telegram_alert(
+            "⚠️ OutMass: subscription event ignored\n\n"
+            f"Event: {event_type}\n"
+            f"Customer: {customer_id} ({rows[0].get('email') or 'no email'})\n"
+            f"Event subscription: {event_sub_id}\n"
+            f"Account runs on: {stored}\n\n"
+            "Two subscriptions have existed for this customer. The account "
+            "was left untouched. Check the customer's page in Stripe for an "
+            "orphan subscription — cancelling the orphan will NOT downgrade "
+            "the account now."
+        )
+        return False
+    except Exception:  # noqa: BLE001
+        logger.exception(
+            "could not compare subscription ids for customer %s", customer_id
+        )
+        return True
+
+
 def _retarget_grant_to_free(db, user_id: str) -> None:
     """Point the active grant's restore target at 'free'.
 
@@ -454,6 +523,40 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
     customer_id = session.get("customer")
     subscription_id = session.get("subscription")
 
+    # A completed event whose SESSION is weeks old cannot be an organic
+    # delivery: Stripe's redelivery horizon is days, delayed bank debits
+    # settle within about a week, and checkout sessions themselves expire
+    # after 24 hours. What does arrive that old is an operator clicking
+    # "Resend" in the dashboard — and replaying an activation from another
+    # billing era can resurrect a plan a later cancellation took away,
+    # because the replay guard below compares subscription ids and every
+    # cancellation NULLs the stored one. Found by the 2026-08-15 review.
+    created = session.get("created")
+    if created:
+        try:
+            age_days = (
+                datetime.now(timezone.utc)
+                - datetime.fromtimestamp(int(created), timezone.utc)
+            ).days
+        except (TypeError, ValueError, OSError, OverflowError):
+            age_days = None
+        if age_days is not None and age_days > 14:
+            logger.warning(
+                "checkout.session.completed for a session %s days old "
+                "(session %s, user %s) — refusing to act on history",
+                age_days, session.get("id"), user_id,
+            )
+            _telegram_alert(
+                "⚠️ OutMass: historical checkout event ignored\n\n"
+                f"Session: {session.get('id')} ({age_days} days old)\n"
+                f"User: {user_id}\n\n"
+                "Nothing was changed. If this was a deliberate dashboard "
+                "Resend, whatever it was meant to fix needs doing by hand — "
+                "replaying an old activation could re-grant a plan a later "
+                "cancellation removed."
+            )
+            return
+
     # Replay guard: Stripe delivers webhooks at-least-once (retries on
     # timeout/non-2xx for days, plus manual dashboard "Resend"). The plan
     # write is idempotent, but the quota re-anchor below is NOT — a replay
@@ -518,6 +621,7 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
 
     # Determine plan from the price ID in the subscription
     plan = _UNKNOWN_PRICE_PLAN
+    paid_epoch = None
     if subscription_id:
         try:
             sub = stripe.Subscription.retrieve(subscription_id)
@@ -526,6 +630,13 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
             plan = _plan_for_price(
                 sub_price_id, f"checkout session {session.get('id')}"
             )
+            # Stripe's clock, not ours. The anchor below used to be the day
+            # WE processed the webhook; a delivery crossing UTC midnight (a
+            # near-midnight checkout, or a retry after a deploy 502) shifted
+            # the whole quota cycle a day off the billing cycle, forever.
+            # The subscription is already in hand for the price lookup, so
+            # take the period start it actually bills from.
+            paid_epoch = sub.get("current_period_start")
         except Exception:
             # The retrieve failed, so we know they paid but not for what.
             # This used to `pass` onto a "pro" default — a Stripe outage
@@ -560,9 +671,15 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
     update_payload = {
         "plan": plan,
         "stripe_customer_id": customer_id,
-        "stripe_subscription_id": subscription_id,
         "plan_updated_at": datetime.now(timezone.utc).isoformat(),
     }
+    # A session with no subscription id (the anomalous branch above) must
+    # not NULL a stored one: NULL is exactly the state the subscription-
+    # identity guards read as "no comparison possible — act", so writing it
+    # would disarm them for this customer while the alert about the anomaly
+    # is still in flight.
+    if subscription_id:
+        update_payload["stripe_subscription_id"] = subscription_id
     if not already_processed:
         # The paid quota period starts the day they pay: fresh counters +
         # anchor = today, so the rolling monthly reset (check_monthly_reset)
@@ -573,10 +690,22 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
         # edits (e.g. cancel/uncancel toggles), which must never refill
         # quota. Renewals need no webhook: the rolling reset is time-based
         # off this anchor.
+        paid_day = (
+            datetime.fromtimestamp(int(paid_epoch), timezone.utc).date()
+            if paid_epoch
+            else datetime.now(timezone.utc).date()
+        )
         update_payload.update({
             "emails_sent_this_month": 0,
             "ai_generations_this_month": 0,
-            "month_reset_date": datetime.now(timezone.utc).date().isoformat(),
+            "month_reset_date": paid_day.isoformat(),
+            # Re-anchoring means BOTH halves move. This site used to move the
+            # date alone, so a customer who paid on a different day than they
+            # signed up kept the stale signup anchor — and _anchor_day()
+            # prefers the stored day, so their next quota "month" was however
+            # long the gap between the two days happened to be (signup on the
+            # 5th, pay Aug 31 → next due Sep 5).
+            "month_reset_anchor_day": paid_day.day,
         })
 
     # Grab email/name before the plan write (which doesn't touch them)
@@ -809,7 +938,9 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     # ── customer.subscription.deleted ──
     elif event_type == "customer.subscription.deleted":
         customer_id = data_object.get("customer")
-        if customer_id:
+        if customer_id and _event_subscription_is_current(
+            db, customer_id, data_object.get("id"), "subscription.deleted"
+        ):
             update_data = {
                 "stripe_subscription_id": None,
                 "plan_updated_at": datetime.now(timezone.utc).isoformat(),
@@ -887,7 +1018,9 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         customer_id = data_object.get("customer")
         status = data_object.get("status")
 
-        if customer_id and status:
+        if customer_id and status and _event_subscription_is_current(
+            db, customer_id, data_object.get("id"), "subscription.updated"
+        ):
             update_data = {
                 "plan_updated_at": datetime.now(timezone.utc).isoformat(),
                 # Recorded on every subscription.updated, whatever the status.
@@ -1096,7 +1229,30 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
         #     restart, so neither should the quota.
         #   subscription_cycle  — the renewal. This one.
         if data_object.get("billing_reason") == "subscription_cycle":
-            _roll_quota_on_renewal(db, data_object.get("customer") or "")
+            # Both payload shapes, deliberately. Webhook payloads take the
+            # shape of the ENDPOINT's pinned API version, not this library's:
+            # before 2025-03-31.basil the invoice carries a top-level
+            # `subscription`; from basil on it lives at
+            # parent.subscription_details.subscription. Reading only one
+            # shape would leave the orphan-invoice guard silently inert on
+            # the other — and a guard that cannot see its input must say so,
+            # hence the warning.
+            invoice_sub_id = data_object.get("subscription") or (
+                ((data_object.get("parent") or {}).get("subscription_details")
+                 or {}).get("subscription")
+            )
+            if not invoice_sub_id:
+                logger.warning(
+                    "renewal invoice %s carries no subscription id in either "
+                    "the pre-basil or basil shape — the orphan-invoice guard "
+                    "cannot run for this event",
+                    data_object.get("id"),
+                )
+            _roll_quota_on_renewal(
+                db,
+                data_object.get("customer") or "",
+                invoice_sub_id=invoice_sub_id,
+            )
 
         attempts = data_object.get("attempt_count") or 0
         if attempts > 1:
@@ -1290,7 +1446,9 @@ def _handle_dispute_closed(db, dispute: dict) -> None:
     )
 
 
-def _roll_quota_on_renewal(db, customer_id: str) -> None:
+def _roll_quota_on_renewal(
+    db, customer_id: str, *, invoice_sub_id: str | None = None
+) -> None:
     """Start the paid month at the moment it was paid for.
 
     Delegates to the same check_monthly_reset the beat uses, with the one
@@ -1328,6 +1486,25 @@ def _roll_quota_on_renewal(db, customer_id: str) -> None:
             )
             return
         user = rows[0]
+
+        # The invoice must belong to the subscription this account runs on.
+        # A customer can carry an orphan subscription (the pre-fix dual-
+        # checkout bug, or cancel-then-resubscribe), and the orphan's cycle
+        # differs from the real one — rolling on both would hand out two
+        # resets a month. No last_cycle_invoice_at stamp either: stamping on
+        # an orphan's invoice would tell the green report the real renewal
+        # arrived when it did not.
+        stored = user.get("stripe_subscription_id")
+        if invoice_sub_id and stored and stored != invoice_sub_id:
+            logger.warning(
+                "renewal invoice for customer %s is for subscription %s, but "
+                "the account runs on %s — not rolling the quota month",
+                customer_id,
+                invoice_sub_id,
+                stored,
+            )
+            return
+
         before = user.get("month_reset_date")
         user_model.check_monthly_reset(user, paid_cycle_confirmed=True)
         rolled = user.get("month_reset_date") != before

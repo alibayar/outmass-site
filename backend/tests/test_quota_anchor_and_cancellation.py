@@ -19,14 +19,16 @@ subscription at the subscription's creation TIME that day, hours later. In
 between, we re-zeroed the counter of the one person we already knew was
 leaving.
 """
-from datetime import date
+import ast
+from datetime import date, datetime, timezone
+from pathlib import Path
 from unittest.mock import patch
 
 import pytest
 
 from fastapi.testclient import TestClient
 
-from models.user import check_monthly_reset, next_reset_date
+from models.user import check_monthly_reset, next_reset_date, upsert_user
 from tests.conftest import FakeQueryBuilder
 
 
@@ -248,3 +250,110 @@ def test_subscription_deleted_clears_the_flag(client, fake_db):
 
     written = [c for c in users.update_calls if "cancel_at_period_end" in c]
     assert written and written[0]["cancel_at_period_end"] is False
+
+
+# ── Three: the anchor column had readers but no writers ──
+#
+# Migration 029 backfilled month_reset_anchor_day once, and for a day nothing
+# in application code ever wrote it again: rows created after the backfill
+# carried NULL forever, and the checkout re-anchor moved the DATE while
+# leaving the DAY behind — so a customer who paid on a different day than
+# they signed up computed every later period from the wrong anchor (signup
+# on the 5th, pay Aug 31 → next due Sep 5, a five-day quota "month"). Found
+# 2026-08-15 by the skeptic pass of the backlog audit, one day after the
+# read path shipped and was called done.
+
+
+def test_a_rollover_persists_the_anchor_day_it_used():
+    """A legacy NULL-anchor row heals on its first rollover: the fallback
+    the period was just computed from is written down, not used and
+    discarded."""
+    user = _user("2026-07-25")  # no anchor_day stored → fallback is the 25th
+
+    with patch("models.user.get_db") as gdb:
+        check_monthly_reset(user, today=date(2026, 8, 25))
+
+    payload = gdb.return_value.table.return_value.update.call_args[0][0]
+    assert payload["month_reset_anchor_day"] == 25
+    assert user["month_reset_anchor_day"] == 25, (
+        "the in-memory row must see what the DB row now says"
+    )
+
+
+def test_a_rollover_does_not_disturb_a_stored_anchor():
+    """The unconditional write is a no-op for a healthy row: the 31 goes
+    back in, never the clamped 28 the stored date happens to sit on."""
+    user = _user("2026-02-28", anchor_day=31)
+
+    with patch("models.user.get_db") as gdb:
+        check_monthly_reset(user, today=date(2026, 3, 31))
+
+    payload = gdb.return_value.table.return_value.update.call_args[0][0]
+    assert payload["month_reset_anchor_day"] == 31
+
+
+def test_a_new_user_is_born_with_both_halves_of_the_anchor():
+    """Creation used to leave the date to the schema's DEFAULT CURRENT_DATE
+    and the day to nobody. Both are explicit now, from the same clock."""
+    with patch("models.user.find_by_microsoft_id", return_value=None), \
+         patch("models.user.get_db") as gdb:
+        insert = gdb.return_value.table.return_value.insert
+        insert.return_value.execute.return_value.data = [{"id": "u9"}]
+        upsert_user("ms-new", "new@user.com", "New User")
+
+    row = insert.call_args[0][0]
+    today = datetime.now(timezone.utc).date()
+    assert row["month_reset_date"] == today.isoformat()
+    assert row["month_reset_anchor_day"] == today.day
+
+
+# ── The invariant, enforced at the source ──
+#
+# The defect was not a wrong line, it was a MISSING line — nothing a test of
+# existing behaviour can see. So the rule is structural: no dict in
+# application code may carry month_reset_date without month_reset_anchor_day.
+# check_monthly_reset writes the (possibly identical) anchor back on purpose
+# so this rule can be absolute instead of carrying exemptions.
+
+
+_APP_DIRS = ("models", "routers", "workers", "utils")
+
+
+def _dict_writes_missing_anchor(source: str) -> list[int]:
+    """Line numbers of dict literals that carry month_reset_date without
+    month_reset_anchor_day."""
+    bad = []
+    for node in ast.walk(ast.parse(source)):
+        if isinstance(node, ast.Dict):
+            keys = {
+                k.value
+                for k in node.keys
+                if isinstance(k, ast.Constant) and isinstance(k.value, str)
+            }
+            if "month_reset_date" in keys and "month_reset_anchor_day" not in keys:
+                bad.append(node.lineno)
+    return bad
+
+
+def test_the_scanner_flags_a_planted_lone_write():
+    """A scanner that cannot fail is not a scanner — before trusting the
+    sweep below, prove the matcher fires on a known-bad snippet."""
+    assert _dict_writes_missing_anchor('x = {"month_reset_date": d}') == [1]
+
+
+def test_the_scanner_accepts_a_paired_write():
+    src = 'x = {"month_reset_date": d, "month_reset_anchor_day": n}'
+    assert _dict_writes_missing_anchor(src) == []
+
+
+def test_no_app_code_writes_the_date_without_its_anchor():
+    backend = Path(__file__).resolve().parent.parent
+    offenders = []
+    files = [p for d in _APP_DIRS for p in (backend / d).rglob("*.py")]
+    files += backend.glob("*.py")
+    for path in files:
+        for line in _dict_writes_missing_anchor(path.read_text(encoding="utf-8")):
+            offenders.append(f"{path.relative_to(backend)}:{line}")
+    assert offenders == [], (
+        f"month_reset_date written without its anchor day at: {offenders}"
+    )

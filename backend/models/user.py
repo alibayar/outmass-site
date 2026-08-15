@@ -51,6 +51,13 @@ def upsert_user(microsoft_id: str, email: str, name: str) -> tuple[dict, bool]:
         )
         return result.data[0], False
 
+    # The quota anchor is born HERE, explicitly — both halves of it. The
+    # date used to come from the schema's DEFAULT CURRENT_DATE and the
+    # anchor DAY from nowhere at all: migration 029 backfilled existing
+    # rows once and no application code ever wrote the column again, so
+    # every user created after the backfill carried NULL and fell back to
+    # the clamped-day arithmetic the column exists to end.
+    today = datetime.now(timezone.utc).date()
     result = (
         get_db()
         .table("users")
@@ -61,6 +68,8 @@ def upsert_user(microsoft_id: str, email: str, name: str) -> tuple[dict, bool]:
                 "name": name,
                 "plan": "free",
                 "emails_sent_this_month": 0,
+                "month_reset_date": today.isoformat(),
+                "month_reset_anchor_day": today.day,
             }
         )
         .execute()
@@ -448,8 +457,18 @@ def check_monthly_reset(
             "emails_sent_this_month": 0,
             "ai_generations_this_month": 0,
             "month_reset_date": new_anchor.isoformat(),
+            # Written unconditionally, on purpose. For a row that has one,
+            # this rewrites the same value — a no-op. For a legacy row that
+            # never got an anchor day (created in the gap after migration
+            # 029's one-time backfill, before creation started writing it),
+            # this persists the fallback the period was just computed from,
+            # so the row heals on its first rollover instead of falling
+            # back forever. It also keeps the invariant a source-scan test
+            # can enforce: no write of month_reset_date without its anchor.
+            "month_reset_anchor_day": anchor_day,
         }
     ).eq("id", user["id"]).execute()
     user["emails_sent_this_month"] = 0
     user["ai_generations_this_month"] = 0
     user["month_reset_date"] = new_anchor.isoformat()
+    user["month_reset_anchor_day"] = anchor_day

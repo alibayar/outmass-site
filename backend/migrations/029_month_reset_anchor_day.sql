@@ -39,7 +39,11 @@
 -- Inert until the code ships. Column first.
 --
 -- Additive and idempotent.
--- Reversal: ALTER TABLE users DROP COLUMN month_reset_anchor_day;
+-- Reversal: NO LONGER a bare DROP COLUMN. Since 2026-08-15 the column is
+-- WRITTEN on the two hottest paths — the signup INSERT (upsert_user) and the
+-- quota-rollover UPDATE (check_monthly_reset) — so dropping it under live
+-- code turns every signup and every rollover into an error. Roll the code
+-- back first, then: ALTER TABLE users DROP COLUMN month_reset_anchor_day;
 
 BEGIN;
 
