@@ -440,7 +440,7 @@
     "message": "Deutsch"
   },
   "aiLangFr": {
-    "message": "Franzoesisch"
+    "message": "Französisch"
   },
   "aiLangEs": {
     "message": "Spanisch"
@@ -563,16 +563,16 @@
     "message": "Zahlungsseite konnte nicht erstellt werden."
   },
   "quotaInfoTitle": {
-    "message": "Ueber E-Mail-Limits"
+    "message": "Über E-Mail-Limits"
   },
   "quotaDisclaimer": {
-    "message": "Microsoft Outlook setzt taegliche Sendelimits (~300/Tag persoenlich, ~10.000/Tag Business). Unser Kontingent kommt zusaetzlich."
+    "message": "Microsoft Outlook setzt tägliche Sendelimits (~300/Tag persönlich, ~10.000/Tag Business). Unser Kontingent kommt zusätzlich."
   },
   "quotaInfoBody1": {
-    "message": "Microsoft erzwingt Sendelimits fuer Outlook-Konten zusaetzlich zu unserem Plankontingent. Das strengere gilt:"
+    "message": "Microsoft erzwingt Sendelimits für Outlook-Konten zusätzlich zu unserem Plankontingent. Das strengere gilt:"
   },
   "quotaInfoOutlookCom": {
-    "message": "Outlook.com (persoenlich): ~300 E-Mails/Tag"
+    "message": "Outlook.com (persönlich): ~300 E-Mails/Tag"
   },
   "quotaInfoMs365": {
     "message": "Microsoft 365 Business: ~10.000 E-Mails/Tag"
@@ -581,7 +581,7 @@
     "message": "Exchange Online: 30 Nachrichten/Minute-Drosselung"
   },
   "quotaInfoBody2": {
-    "message": "Grosse Kampagnen ueber mehrere Tage zu verteilen hilft, Drosselung zu vermeiden. OutMass kann Microsoft-Plattform-Limits nicht ueberschreiben."
+    "message": "Große Kampagnen über mehrere Tage zu verteilen hilft, Drosselung zu vermeiden. OutMass kann Microsoft-Plattform-Limits nicht überschreiben."
   },
   "tzMoscow": {
     "message": "Moskau (UTC+3)"
@@ -602,16 +602,16 @@
     "message": "Denver (UTC-7/-6)"
   },
   "tzSaoPaulo": {
-    "message": "Sao Paulo (UTC-3)"
+    "message": "São Paulo (UTC-3)"
   },
   "alertPartialCsvQuota": {
-    "message": "$1 E-Mails in Ihrem Kontingent uebrig.\nCSV enthaelt $2 Empfaenger.\nNur die ersten $1 werden gesendet."
+    "message": "$1 E-Mails in Ihrem Kontingent übrig.\nCSV enthält $2 Empfänger.\nNur die ersten $1 werden gesendet."
   },
   "settingsLanguage": {
-    "message": "Oberflaechensprache"
+    "message": "Oberflächensprache"
   },
   "settingsLanguageHint": {
-    "message": "Wird sofort aktiv. Ueberschreibt Ihre Browsersprache nur fuer diese Erweiterung."
+    "message": "Wird sofort aktiv. Überschreibt Ihre Browsersprache nur für diese Erweiterung."
   },
   "langAuto": {
     "message": "Automatisch (Browsersprache)"
@@ -632,7 +632,7 @@
     "message": "Beispiel-CSV herunterladen"
   },
   "csvTemplateRow1": {
-    "message": "klaus@example.com,Klaus,Mueller,Mueller GmbH,Geschaeftsfuehrer"
+    "message": "klaus@example.com,Klaus,Müller,Müller GmbH,Geschäftsführer"
   },
   "csvTemplateRow2": {
     "message": "anna@example.com,Anna,Schmidt,TechFlow AG,Marketingleiterin"
@@ -647,7 +647,7 @@
     "message": "Eine Test-E-Mail wird an Ihre eigene Adresse gesendet. Fortfahren?"
   },
   "testSendSuccess": {
-    "message": "Test-E-Mail an $EMAIL$ gesendet. Pruefen Sie Ihren Posteingang.",
+    "message": "Test-E-Mail an $EMAIL$ gesendet. Prüfen Sie Ihren Posteingang.",
     "placeholders": {
       "email": {
         "content": "$1"
@@ -666,13 +666,13 @@
     "message": "Betreff und Inhalt erforderlich."
   },
   "warnSubjectLong": {
-    "message": "Betreff ueber 78 Zeichen — kann mobil abgeschnitten werden."
+    "message": "Betreff über 78 Zeichen — kann mobil abgeschnitten werden."
   },
   "warnAllCaps": {
-    "message": "Viele Grossbuchstaben im Betreff — wirkt wie Spam."
+    "message": "Viele Großbuchstaben im Betreff — wirkt wie Spam."
   },
   "warnSpamWords": {
-    "message": "Moegliche Spam-Woerter: $LIST$",
+    "message": "Mögliche Spam-Wörter: $LIST$",
     "placeholders": {
       "list": {
         "content": "$1"
@@ -680,7 +680,7 @@
     }
   },
   "warnTooManyLinks": {
-    "message": "$N$ Links im Inhalt — koennte Spam-Filter ausloesen.",
+    "message": "$N$ Links im Inhalt — könnte Spam-Filter auslösen.",
     "placeholders": {
       "n": {
         "content": "$1"
@@ -691,10 +691,10 @@
     "message": "Trotzdem senden?"
   },
   "csvErrTooLarge": {
-    "message": "CSV-Datei zu gross (max. 5 MB)."
+    "message": "CSV-Datei zu groß (max. 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "Diese Datei ist nicht als UTF-8 gespeichert; Zeichen koennen nicht korrekt gelesen werden. In Excel: Datei > Speichern unter > 'CSV UTF-8 (durch Trennzeichen getrennt)' waehlen und diese Datei hochladen."
+    "message": "Diese Datei ist nicht als UTF-8 gespeichert; Zeichen können nicht korrekt gelesen werden. In Excel: Datei > Speichern unter > 'CSV UTF-8 (durch Trennzeichen getrennt)' wählen und diese Datei hochladen."
   },
   "csvEncodingTitle": {
     "message": "Wir konnten nicht erkennen, in welchem Zeichensatz diese Datei vorliegt"
@@ -727,34 +727,34 @@
     "message": "Die Datei konnte nicht gelesen werden. Wenn sie auf einem Netzlaufwerk oder USB-Stick liegt, kopieren Sie sie zuerst auf Ihren Computer und versuchen Sie es erneut."
   },
   "alertBackendUnreachable": {
-    "message": "OutMass kann seine Server derzeit nicht erreichen. Das ist ein Verbindungsproblem — kein Problem mit Ihrem Konto oder Tarif. Pruefen Sie Internetverbindung, VPN oder Firewall und versuchen Sie es gleich erneut."
+    "message": "OutMass kann seine Server derzeit nicht erreichen. Das ist ein Verbindungsproblem — kein Problem mit Ihrem Konto oder Tarif. Prüfen Sie Internetverbindung, VPN oder Firewall und versuchen Sie es gleich erneut."
   },
   "netUnreachableBanner": {
-    "message": "OutMass-Server nicht erreichbar — Senden und Speichern funktionieren nicht. Verbindung, VPN oder Firewall pruefen."
+    "message": "OutMass-Server nicht erreichbar — Senden und Speichern funktionieren nicht. Verbindung, VPN oder Firewall prüfen."
   },
   "csvErrNoEmailColumn": {
     "message": "CSV muss eine 'email'-Spalte enthalten."
   },
   "alertSignInFirst": {
-    "message": "Bitte melden Sie sich zuerst mit Microsoft an — nutzen Sie die Anmelde-Schaltflaeche oben im Panel. Entwerfen geht ohne Konto, Senden nicht."
+    "message": "Bitte melden Sie sich zuerst mit Microsoft an — nutzen Sie die Anmelde-Schaltfläche oben im Panel. Entwerfen geht ohne Konto, Senden nicht."
   },
   "signInFirstBannerText": {
     "message": "Mit Microsoft anmelden, um mit dem Senden zu beginnen."
   },
   "dailyCapLabel": {
-    "message": "Tageslimit fuer den Versand (optional)"
+    "message": "Tageslimit für den Versand (optional)"
   },
   "dailyCapNote": {
-    "message": "Sendet pro Tag hoechstens so viele E-Mails und macht am naechsten Tag automatisch weiter, bis die ganze Liste fertig ist. (Nicht mit A/B-Tests kombinierbar.)"
+    "message": "Sendet pro Tag höchstens so viele E-Mails und macht am nächsten Tag automatisch weiter, bis die ganze Liste fertig ist. (Nicht mit A/B-Tests kombinierbar.)"
   },
   "csvErrNoEmailColumnHint": {
     "message": "Laden Sie die Beispiel-CSV herunter, um das erforderliche Format zu sehen."
   },
   "csvEmptyEmailSkipped": {
-    "message": "uebersprungen (keine E-Mail)"
+    "message": "übersprungen (keine E-Mail)"
   },
   "largeSendWarn": {
-    "message": "Sie sind dabei, an $COUNT$ Empfaenger zu senden.\n\nUm innerhalb der Outlook-Limits zu bleiben und Ihr Konto zu schuetzen, sendet OutMass automatisch gedrosselt (ca. 30/Min.); das dauert etwa $MIN$ Minuten und laeuft im Hintergrund weiter.\n\nBei grossen Cold-Listen ist die Zustellbarkeit am besten, wenn Sie den Versand per Zeitplan ueber mehrere Tage verteilen (einige Hundert pro Tag).\n\nFortfahren?",
+    "message": "Sie sind dabei, an $COUNT$ Empfänger zu senden.\n\nUm innerhalb der Outlook-Limits zu bleiben und Ihr Konto zu schützen, sendet OutMass automatisch gedrosselt (ca. 30/Min.); das dauert etwa $MIN$ Minuten und läuft im Hintergrund weiter.\n\nBei großen Cold-Listen ist die Zustellbarkeit am besten, wenn Sie den Versand per Zeitplan über mehrere Tage verteilen (einige Hundert pro Tag).\n\nFortfahren?",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -797,7 +797,7 @@
     "message": "Willkommen bei OutMass"
   },
   "onbStep1": {
-    "message": "Schritt 1 — Empfaenger-CSV hochladen. Erste Spalte muss 'email' sein."
+    "message": "Schritt 1 — Empfänger-CSV hochladen. Erste Spalte muss 'email' sein."
   },
   "onbStep2": {
     "message": "Schritt 2 — Betreff und Inhalt schreiben. Nutze {{firstName}} zur Personalisierung."
@@ -809,7 +809,7 @@
     "message": "Weiter"
   },
   "onbBack": {
-    "message": "Zurueck"
+    "message": "Zurück"
   },
   "onbFinish": {
     "message": "Fertig"
@@ -818,7 +818,7 @@
     "message": "Alle exportieren"
   },
   "warnHtmlInvalid": {
-    "message": "HTML wirkt unausgewogen (ungeschlossene Tags: $TAGS$). Vor dem Senden pruefen.",
+    "message": "HTML wirkt unausgewogen (ungeschlossene Tags: $TAGS$). Vor dem Senden prüfen.",
     "placeholders": {
       "tags": {
         "content": "$1"
@@ -842,19 +842,19 @@
     }
   },
   "settingsDedupTitle": {
-    "message": "Wiederholte Empfaenger ueberspringen"
+    "message": "Wiederholte Empfänger überspringen"
   },
   "settingsDedupHint": {
-    "message": "In einem Zeitfenster nicht denselben Empfaenger in mehreren Kampagnen anschreiben."
+    "message": "In einem Zeitfenster nicht denselben Empfänger in mehreren Kampagnen anschreiben."
   },
   "settingsDedupEnabled": {
     "message": "Aktiv (Pro-Funktion)"
   },
   "settingsDedupDays": {
-    "message": "Rueckblickzeitraum (Tage)"
+    "message": "Rückblickzeitraum (Tage)"
   },
   "uploadSkippedPrevious": {
-    "message": "$N$ Empfaenger uebersprungen — kuerzlich in einer Kampagne kontaktiert.",
+    "message": "$N$ Empfänger übersprungen — kürzlich in einer Kampagne kontaktiert.",
     "placeholders": {
       "n": {
         "content": "$1"

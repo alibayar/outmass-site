@@ -80,15 +80,15 @@ KNOWN_MISMATCHES: set[tuple[str, str, str]] = {
     # Each survivor carries its own reason — a shared reason is how the fr
     # entry nearly outlived the fix it was blamed on:
     #
-    # es welcome.step3 — PANEL-side defect: the email's "Envío de prueba" is
-    #   correct; the panel button says "Envio de prueba" (stripped accent).
-    #   Heals when task #55 fixes extension/_locales/es. Do NOT edit the
-    #   email.
+    # (es welcome.step3 left this list 2026-08-15 the PANEL-side way, as
+    # predicted: task #55 restored the accent in extension/_locales/es and
+    # the email's correct "Envío de prueba" matched again. The email was
+    # never edited.)
+    #
     # fr/pt_BR/pt_PT reauth.how_to_fix — the emails bold a banner name that
     #   does not open those panels' reauthBannerText sentences; the review
     #   offered no vetted replacement in these three languages. Task #56's
     #   second pass owns them.
-    ("es", "welcome.step3", "btnTestSend"),
     ("fr", "reauth.how_to_fix", "reauthBannerText"),
     ("pt_BR", "reauth.how_to_fix", "reauthBannerText"),
     ("pt_PT", "reauth.how_to_fix", "reauthBannerText"),

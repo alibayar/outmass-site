@@ -440,7 +440,7 @@
     "message": "Allemand"
   },
   "aiLangFr": {
-    "message": "Francais"
+    "message": "Français"
   },
   "aiLangEs": {
     "message": "Espagnol"
@@ -563,10 +563,10 @@
     "message": "Impossible de créer la page de paiement."
   },
   "quotaInfoTitle": {
-    "message": "A propos des limites d'e-mails"
+    "message": "À propos des limites d'e-mails"
   },
   "quotaDisclaimer": {
-    "message": "Microsoft Outlook applique egalement des limites quotidiennes (~300/jour personnel, ~10 000/jour Business). Notre quota s'ajoute a ces limites."
+    "message": "Microsoft Outlook applique également des limites quotidiennes (~300/jour personnel, ~10 000/jour Business). Notre quota s'ajoute à ces limites."
   },
   "quotaInfoBody1": {
     "message": "Microsoft applique des limites d'envoi aux comptes Outlook en plus de notre quota de plan. La plus stricte s'applique :"
@@ -581,7 +581,7 @@
     "message": "Exchange Online : limite de 30 messages/minute"
   },
   "quotaInfoBody2": {
-    "message": "Repartir les grandes campagnes sur plusieurs jours evite la limitation et protege votre reputation d'expediteur. OutMass ne peut pas contourner les limites Microsoft."
+    "message": "Répartir les grandes campagnes sur plusieurs jours évite la limitation et protège votre réputation d'expéditeur. OutMass ne peut pas contourner les limites Microsoft."
   },
   "tzMoscow": {
     "message": "Moscou (UTC+3)"
@@ -602,16 +602,16 @@
     "message": "Denver (UTC-7/-6)"
   },
   "tzSaoPaulo": {
-    "message": "Sao Paulo (UTC-3)"
+    "message": "São Paulo (UTC-3)"
   },
   "alertPartialCsvQuota": {
-    "message": "$1 e-mails restants dans votre quota.\nLe CSV contient $2 destinataires.\nSeuls les $1 premiers seront envoyes."
+    "message": "$1 e-mails restants dans votre quota.\nLe CSV contient $2 destinataires.\nSeuls les $1 premiers seront envoyés."
   },
   "settingsLanguage": {
     "message": "Langue de l'interface"
   },
   "settingsLanguageHint": {
-    "message": "Prend effet immediatement. Remplace la langue de votre navigateur uniquement pour cette extension."
+    "message": "Prend effet immédiatement. Remplace la langue de votre navigateur uniquement pour cette extension."
   },
   "langAuto": {
     "message": "Automatique (Langue du navigateur)"
@@ -620,7 +620,7 @@
     "message": "Passer à Starter"
   },
   "upgradeSuccessProrated": {
-    "message": "Mise a niveau reussie ! Stripe facturera automatiquement la difference au prorata."
+    "message": "Mise à niveau réussie ! Stripe facturera automatiquement la différence au prorata."
   },
   "labelCampaignName": {
     "message": "Nom de la campagne (facultatif)"
@@ -629,10 +629,10 @@
     "message": "ex. Sensibilisation T2 Vague 1"
   },
   "csvTemplateDownload": {
-    "message": "Telecharger un CSV d'exemple"
+    "message": "Télécharger un CSV d'exemple"
   },
   "csvTemplateRow1": {
-    "message": "jean@example.com,Jean,Dupont,Dupont SA,Directeur General"
+    "message": "jean@example.com,Jean,Dupont,Dupont SA,Directeur Général"
   },
   "csvTemplateRow2": {
     "message": "marie@example.com,Marie,Martin,TechFlow SARL,Directrice Marketing"
@@ -644,10 +644,10 @@
     "message": "Envoi test"
   },
   "testSendPrompt": {
-    "message": "Un e-mail de test sera envoye a votre adresse. Continuer ?"
+    "message": "Un e-mail de test sera envoyé à votre adresse. Continuer ?"
   },
   "testSendSuccess": {
-    "message": "E-mail de test envoye a $EMAIL$. Verifiez votre boite de reception.",
+    "message": "E-mail de test envoyé à $EMAIL$. Vérifiez votre boîte de réception.",
     "placeholders": {
       "email": {
         "content": "$1"
@@ -655,7 +655,7 @@
     }
   },
   "testSendFailed": {
-    "message": "Envoi test echoue : $ERROR$",
+    "message": "Envoi test échoué : $ERROR$",
     "placeholders": {
       "error": {
         "content": "$1"
@@ -666,10 +666,10 @@
     "message": "Remplissez sujet et contenu avant l'envoi test."
   },
   "warnSubjectLong": {
-    "message": "Sujet de plus de 78 caracteres — peut etre tronque sur mobile."
+    "message": "Sujet de plus de 78 caractères — peut être tronqué sur mobile."
   },
   "warnAllCaps": {
-    "message": "Trop de majuscules dans le sujet — ressemble a du spam."
+    "message": "Trop de majuscules dans le sujet — ressemble à du spam."
   },
   "warnSpamWords": {
     "message": "Mots potentiellement spam : $LIST$",
@@ -680,7 +680,7 @@
     }
   },
   "warnTooManyLinks": {
-    "message": "$N$ liens dans le contenu — peut declencher des filtres.",
+    "message": "$N$ liens dans le contenu — peut déclencher des filtres.",
     "placeholders": {
       "n": {
         "content": "$1"
@@ -688,13 +688,13 @@
     }
   },
   "warnContinueAnyway": {
-    "message": "Envoyer malgre tout ?"
+    "message": "Envoyer malgré tout ?"
   },
   "csvErrTooLarge": {
     "message": "Fichier CSV trop volumineux (max 5 Mo)."
   },
   "csvErrEncoding": {
-    "message": "Ce fichier n'est pas enregistre en UTF-8 ; les caracteres ne peuvent pas etre lus correctement. Dans Excel : Fichier > Enregistrer sous > choisissez 'CSV UTF-8 (delimite par des virgules)', puis importez ce fichier."
+    "message": "Ce fichier n'est pas enregistré en UTF-8 ; les caractères ne peuvent pas être lus correctement. Dans Excel : Fichier > Enregistrer sous > choisissez 'CSV UTF-8 (délimité par des virgules)', puis importez ce fichier."
   },
   "csvEncodingTitle": {
     "message": "Nous n'avons pas pu déterminer l'encodage de ce fichier"
@@ -727,34 +727,34 @@
     "message": "Impossible de lire ce fichier. S'il se trouve sur un lecteur réseau ou une clé USB, copiez-le d'abord sur votre ordinateur, puis réessayez."
   },
   "alertBackendUnreachable": {
-    "message": "OutMass ne peut pas joindre ses serveurs pour le moment. C'est un probleme de connexion — pas un probleme de compte ou d'abonnement. Verifiez votre connexion, VPN ou pare-feu, puis reessayez dans un instant."
+    "message": "OutMass ne peut pas joindre ses serveurs pour le moment. C'est un problème de connexion — pas un problème de compte ou d'abonnement. Vérifiez votre connexion, VPN ou pare-feu, puis réessayez dans un instant."
   },
   "netUnreachableBanner": {
-    "message": "Serveurs OutMass injoignables — l'envoi et l'enregistrement ne fonctionneront pas. Verifiez connexion, VPN ou pare-feu."
+    "message": "Serveurs OutMass injoignables — l'envoi et l'enregistrement ne fonctionneront pas. Vérifiez connexion, VPN ou pare-feu."
   },
   "csvErrNoEmailColumn": {
     "message": "Le CSV doit avoir une colonne 'email'."
   },
   "alertSignInFirst": {
-    "message": "Veuillez d'abord vous connecter avec Microsoft — utilisez le bouton de connexion en haut du panneau. Vous pouvez rediger sans compte, mais l'envoi en necessite un."
+    "message": "Veuillez d'abord vous connecter avec Microsoft — utilisez le bouton de connexion en haut du panneau. Vous pouvez rédiger sans compte, mais l'envoi en nécessite un."
   },
   "signInFirstBannerText": {
-    "message": "Connectez-vous avec Microsoft pour commencer a envoyer."
+    "message": "Connectez-vous avec Microsoft pour commencer à envoyer."
   },
   "dailyCapLabel": {
     "message": "Limite d'envoi quotidienne (facultatif)"
   },
   "dailyCapNote": {
-    "message": "Envoie au maximum ce nombre d'e-mails par jour et continue automatiquement le lendemain jusqu'a la fin de votre liste. (Non combinable avec les tests A/B.)"
+    "message": "Envoie au maximum ce nombre d'e-mails par jour et continue automatiquement le lendemain jusqu'à la fin de votre liste. (Non combinable avec les tests A/B.)"
   },
   "csvErrNoEmailColumnHint": {
-    "message": "Telechargez le CSV d'exemple pour voir le format requis."
+    "message": "Téléchargez le CSV d'exemple pour voir le format requis."
   },
   "csvEmptyEmailSkipped": {
-    "message": "ignores (sans email)"
+    "message": "ignorés (sans email)"
   },
   "largeSendWarn": {
-    "message": "Vous etes sur le point d'envoyer a $COUNT$ destinataires.\n\nPour respecter les limites d'Outlook et proteger votre compte, OutMass espace automatiquement cet envoi (env. 30/min) ; cela prendra environ $MIN$ minutes et continue en arriere-plan.\n\nPour les grandes listes froides, la delivrabilite est meilleure si vous etalez l'envoi sur plusieurs jours (quelques centaines par jour) via Planifier.\n\nContinuer ?",
+    "message": "Vous êtes sur le point d'envoyer à $COUNT$ destinataires.\n\nPour respecter les limites d'Outlook et protéger votre compte, OutMass espace automatiquement cet envoi (env. 30/min) ; cela prendra environ $MIN$ minutes et continue en arrière-plan.\n\nPour les grandes listes froides, la délivrabilité est meilleure si vous étalez l'envoi sur plusieurs jours (quelques centaines par jour) via Planifier.\n\nContinuer ?",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -765,10 +765,10 @@
     }
   },
   "csvDupRemoved": {
-    "message": "doublons supprimes"
+    "message": "doublons supprimés"
   },
   "campaignNameDuplicate": {
-    "message": "Une campagne nommee \"$NAME$\" existe deja. Continuer ?",
+    "message": "Une campagne nommée \"$NAME$\" existe déjà. Continuer ?",
     "placeholders": {
       "name": {
         "content": "$1"
@@ -776,19 +776,19 @@
     }
   },
   "previewSubjectLabel": {
-    "message": "Apercu"
+    "message": "Aperçu"
   },
   "reportsTabActive": {
     "message": "Actives"
   },
   "reportsTabArchived": {
-    "message": "Archivees"
+    "message": "Archivées"
   },
   "btnArchive": {
     "message": "Archiver"
   },
   "btnUnarchive": {
-    "message": "Desarchiver"
+    "message": "Désarchiver"
   },
   "archiveConfirm": {
     "message": "Archiver cette campagne ? Restauration possible depuis l'onglet Archives."
@@ -797,13 +797,13 @@
     "message": "Bienvenue sur OutMass"
   },
   "onbStep1": {
-    "message": "Etape 1 — Importez un CSV des destinataires. La premiere colonne doit etre 'email'."
+    "message": "Étape 1 — Importez un CSV des destinataires. La première colonne doit être 'email'."
   },
   "onbStep2": {
-    "message": "Etape 2 — Redigez sujet et contenu. Utilisez {{firstName}} pour personnaliser."
+    "message": "Étape 2 — Rédigez sujet et contenu. Utilisez {{firstName}} pour personnaliser."
   },
   "onbStep3": {
-    "message": "Etape 3 — Verifiez via Apercu ou Envoi test, puis cliquez Envoyer."
+    "message": "Étape 3 — Vérifiez via Aperçu ou Envoi test, puis cliquez Envoyer."
   },
   "onbNext": {
     "message": "Suivant"
@@ -818,7 +818,7 @@
     "message": "Exporter tout"
   },
   "warnHtmlInvalid": {
-    "message": "HTML deséquilibré (balises non fermées : $TAGS$). Verifiez avant l'envoi.",
+    "message": "HTML déséquilibré (balises non fermées : $TAGS$). Vérifiez avant l'envoi.",
     "placeholders": {
       "tags": {
         "content": "$1"
@@ -826,7 +826,7 @@
     }
   },
   "warnTooManyImages": {
-    "message": "$N$ images dans le contenu — un usage excessif parait du spam.",
+    "message": "$N$ images dans le contenu — un usage excessif paraît du spam.",
     "placeholders": {
       "n": {
         "content": "$1"
@@ -834,7 +834,7 @@
     }
   },
   "warnShortenedLinks": {
-    "message": "Liens raccourcis detectes ($LIST$) — la deliverabilite peut baisser.",
+    "message": "Liens raccourcis détectés ($LIST$) — la délivrabilité peut baisser.",
     "placeholders": {
       "list": {
         "content": "$1"
@@ -842,19 +842,19 @@
     }
   },
   "settingsDedupTitle": {
-    "message": "Ignorer les destinataires recurrents"
+    "message": "Ignorer les destinataires récurrents"
   },
   "settingsDedupHint": {
-    "message": "Ne pas ecrire au meme destinataire sur plusieurs campagnes dans une fenetre."
+    "message": "Ne pas écrire au même destinataire sur plusieurs campagnes dans une fenêtre."
   },
   "settingsDedupEnabled": {
-    "message": "Active (fonction Pro)"
+    "message": "Activé (fonction Pro)"
   },
   "settingsDedupDays": {
-    "message": "Periode de retroaction (jours)"
+    "message": "Période d'antériorité (jours)"
   },
   "uploadSkippedPrevious": {
-    "message": "$N$ destinataire(s) ignore(s) — deja contacte(s) dans une campagne recente.",
+    "message": "$N$ destinataire(s) ignoré(s) — déjà contacté(s) dans une campagne récente.",
     "placeholders": {
       "n": {
         "content": "$1"

@@ -166,6 +166,58 @@ const TR_ASCII_STRIPPED = [
   "tumunu", "ornek",
 ];
 
+// The same defect class shipped again nine days after the Turkish fix, in
+// three more languages, because this mechanism was wired to tr alone. Same
+// doctrine as TR_ASCII_STRIPPED: every entry is a word that actually
+// occurred stripped in the file, and a word that is correct WITHOUT its
+// accent in some other reading never gets in — es "continua" (the feminine
+// adjective is accentless) was found as a defect and still kept out of this
+// list for exactly that reason. fr "boite"/"parait" are deliberately IN:
+// the 1990 rectifications allow them, this product's convention does not.
+// The review's second pass then pruned these lists by the same doctrine it
+// audited them with: es campana/campanas (a bell), mas (poetry-register
+// 'but'), limite/limites (subjunctive of limitar), and five bare futures
+// (cobrara/enviara/enviaran/funcionaran/tardara read as correct
+// preterite-subjunctives without the accent) are all real Spanish words in
+// SOME reading; fr supprimes (tu supprimes) likewise; de gross/grosse/
+// grossen/grossbuchstaben are correct Swiss Standard German, which has no ß
+// and shares this generic de/ folder — the list already excluded "aussen"
+// on exactly that ground. fr deliverabilite/retroaction left because their
+// base words were themselves wrong and got fixed, so the stripped form no
+// longer names anything. The strings all these were written for are fixed;
+// what remains is only entries that can never fire falsely.
+const DE_ASCII_STRIPPED = [
+  "ausloesen", "empfaenger", "enthaelt", "franzoesisch", "fuer",
+  "geschaeftsfuehrer",
+  "hoechstens", "koennen", "koennte", "kuerzlich", "laeuft", "moegliche",
+  "mueller", "naechsten", "oberflaechensprache", "persoenlich", "pruefen",
+  "rueckblickzeitraum", "schaltflaeche", "schuetzen", "taegliche", "ueber",
+  "ueberschreiben", "ueberschreibt", "ueberspringen", "uebersprungen",
+  "uebrig", "waehlen", "woerter", "zurueck", "zusaetzlich",
+];
+
+const FR_ASCII_STRIPPED = [
+  "apercu", "archivees", "arriere", "boite", "caracteres", "declencher",
+  "deja", "delimite", "delivrabilite", "desarchiver",
+  "detectes", "difference", "echoue", "ecrire", "egalement", "envoye",
+  "envoyes", "etalez", "etape", "etes", "etre", "evite", "expediteur",
+  "fenetre", "francais", "general", "immediatement", "malgre", "meme",
+  "necessite", "nommee", "parait", "periode", "premiere", "probleme",
+  "protege", "proteger", "recente", "reception", "recurrents", "rediger",
+  "reessayez", "reputation", "reussie",
+  "telecharger", "telechargez", "verifiez",
+];
+
+const ES_ASCII_STRIPPED = [
+  "actualizacion", "ademas", "aleman", "arabe", "atras", "automaticamente",
+  "automatico", "boton", "busqueda",
+  "conexion", "dia", "dias", "direccion", "envia",
+  "envio", "espanol", "extension", "frances", "frias", "funcion",
+  "garcia", "imagenes", "japones",
+  "lopez", "martinez", "maximo", "mayusculas", "moscu", "movil",
+  "pestana", "reputacion", "sesion", "tambien",
+];
+
 // locale dir -> rules
 const RULES = {
   zh: { chars: TRADITIONAL_ONLY, label: "Traditional characters in a Simplified locale" },
@@ -180,6 +232,18 @@ const RULES = {
   tr: {
     asciiWords: TR_ASCII_STRIPPED,
     label: "Turkish written without its own letters (ç ğ ı ö ş ü)",
+  },
+  de: {
+    asciiWords: DE_ASCII_STRIPPED,
+    label: "German written as ASCII transliteration (ue/oe/ae/ss for ü ö ä ß)",
+  },
+  fr: {
+    asciiWords: FR_ASCII_STRIPPED,
+    label: "French written without its accents (é è ê à ç î ô û)",
+  },
+  es: {
+    asciiWords: ES_ASCII_STRIPPED,
+    label: "Spanish written without its accents (á é í ó ú ñ ü)",
   },
 };
 
@@ -196,7 +260,11 @@ const RULES = {
  */
 function asciiWords(text) {
   return String(text)
-    .replace(/\S+@\S+/g, " ")
+    // Bounded to an address shape, not \S+@\S+: the greedy form swallowed
+    // everything to the next SPACE, so in a CSV template row
+    // ("klaus@example.com,Klaus,Mueller,…") it ate the very names the
+    // tripwire was written to protect. Found by the 0.2.2 release review.
+    .replace(/[^\s,;]+@[^\s,;]+/g, " ")
     .replace(/https?:\/\/\S+/g, " ")
     .match(/[A-Za-z]{3,}/g) || [];
 }
@@ -233,6 +301,46 @@ function run() {
     "a correctly-spelled Turkish word got into TR_ASCII_STRIPPED — one false " +
       "positive and the next person deletes the whole suite"
   );
+
+  // The three languages added 2026-08-15, each proven the same way: the
+  // matcher must fire on a planted stripped string and stay silent on the
+  // correctly-written one.
+  check(has("Empfaenger pruefen", "empfaenger"), "the German matcher no longer sees a transliterated word");
+  check(!has("Empfänger prüfen", "empfaenger"), "the German matcher flags correctly written German");
+  check(has("Verifiez avant envoi", "verifiez"), "the French matcher no longer sees a stripped word");
+  check(!has("Vérifiez avant envoi", "verifiez"), "the French matcher flags correctly written French");
+  check(has("esta campana", "campana"), "the Spanish matcher no longer sees a stripped word");
+  check(!has("esta campaña", "campana"), "the Spanish matcher flags correctly written Spanish");
+  // List hygiene, same doctrine as the Turkish six: words that are correct
+  // in that language WITHOUT the accent in some reading must never enter
+  // the list. "continua" is the proven case — it occurred stripped as a
+  // verb (continúa) and was fixed, but the feminine adjective is accentless
+  // ("línea continua"), so the tripwire cannot carry it.
+  check(
+    !ES_ASCII_STRIPPED.some((w) => [
+      "continua", "campana", "campanas", "mas", "limite", "limites",
+      "cobrara", "enviara", "enviaran", "funcionaran", "tardara",
+    ].includes(w)),
+    "es: a word that is correct WITHOUT its accent in some reading got " +
+      "into the list — one false positive and the suite loses its trust"
+  );
+  check(
+    !DE_ASCII_STRIPPED.some((w) => [
+      "neue", "dauer", "muss", "dass", "aussen", "adresse",
+      "gross", "grosse", "grossen", "grossbuchstaben",
+    ].includes(w)),
+    "de: a legitimate ue/ss word (or a Swiss Standard German ss form) got " +
+      "into the transliteration list"
+  );
+  check(
+    !FR_ASCII_STRIPPED.some((w) => ["envoyez", "des", "les", "active", "avec", "supprimes"].includes(w)),
+    "fr: an accentless-correct French word got into the list"
+  );
+  // The scrubber must stop at CSV separators or the template rows escape
+  // the sweep entirely — while still reading a whole address as one blob.
+  check(!has("eposta@ornek.com", "ornek"), "the scrubber still swallows a full address");
+  check(has("klaus@example.com,Klaus,Mueller,GmbH", "mueller"),
+    "the scrubber no longer eats the CSV fields after an address");
 
   for (const [loc, rule] of Object.entries(RULES)) {
     const file = path.join(LOCALES_DIR, loc, "messages.json");

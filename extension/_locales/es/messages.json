@@ -437,19 +437,19 @@
     "message": "Inglés"
   },
   "aiLangDe": {
-    "message": "Aleman"
+    "message": "Alemán"
   },
   "aiLangFr": {
-    "message": "Frances"
+    "message": "Francés"
   },
   "aiLangEs": {
-    "message": "Espanol"
+    "message": "Español"
   },
   "aiLangRu": {
     "message": "Ruso"
   },
   "aiLangAr": {
-    "message": "Arabe"
+    "message": "Árabe"
   },
   "aiLangHi": {
     "message": "Hindi"
@@ -461,7 +461,7 @@
     "message": "Chino (tradicional)"
   },
   "aiLangJa": {
-    "message": "Japones"
+    "message": "Japonés"
   },
   "aiLangPt": {
     "message": "Portugués"
@@ -563,28 +563,28 @@
     "message": "No se pudo crear la página de pago."
   },
   "quotaInfoTitle": {
-    "message": "Acerca de los limites de correos"
+    "message": "Acerca de los límites de correos"
   },
   "quotaDisclaimer": {
-    "message": "Microsoft Outlook tambien aplica limites diarios (~300/dia personal, ~10.000/dia Business). Nuestra cuota es adicional."
+    "message": "Microsoft Outlook también aplica límites diarios (~300/día personal, ~10.000/día Business). Nuestra cuota es adicional."
   },
   "quotaInfoBody1": {
-    "message": "Microsoft aplica limites de envio en cuentas Outlook ademas de la cuota de nuestro plan. Se aplica el mas estricto:"
+    "message": "Microsoft aplica límites de envío en cuentas Outlook además de la cuota de nuestro plan. Se aplica el más estricto:"
   },
   "quotaInfoOutlookCom": {
-    "message": "Outlook.com (personal): ~300 correos/dia"
+    "message": "Outlook.com (personal): ~300 correos/día"
   },
   "quotaInfoMs365": {
-    "message": "Microsoft 365 Business: ~10.000 correos/dia"
+    "message": "Microsoft 365 Business: ~10.000 correos/día"
   },
   "quotaInfoExchange": {
-    "message": "Exchange Online: limite de 30 mensajes/minuto"
+    "message": "Exchange Online: límite de 30 mensajes/minuto"
   },
   "quotaInfoBody2": {
-    "message": "Distribuir campanas grandes en varios dias evita limitaciones y protege tu reputacion. OutMass no puede anular los limites de Microsoft."
+    "message": "Distribuir campañas grandes en varios días evita limitaciones y protege tu reputación. OutMass no puede anular los límites de Microsoft."
   },
   "tzMoscow": {
-    "message": "Moscu (UTC+3)"
+    "message": "Moscú (UTC+3)"
   },
   "tzKolkata": {
     "message": "India (UTC+5:30)"
@@ -602,28 +602,28 @@
     "message": "Denver (UTC-7/-6)"
   },
   "tzSaoPaulo": {
-    "message": "Sao Paulo (UTC-3)"
+    "message": "São Paulo (UTC-3)"
   },
   "alertPartialCsvQuota": {
-    "message": "$1 correos restantes en tu cuota.\nEl CSV tiene $2 destinatarios.\nSolo se enviaran los primeros $1."
+    "message": "$1 correos restantes en tu cuota.\nEl CSV tiene $2 destinatarios.\nSolo se enviarán los primeros $1."
   },
   "settingsLanguage": {
     "message": "Idioma de la interfaz"
   },
   "settingsLanguageHint": {
-    "message": "Se aplica de inmediato. Anula el idioma de tu navegador solo para esta extension."
+    "message": "Se aplica de inmediato. Anula el idioma de tu navegador solo para esta extensión."
   },
   "langAuto": {
-    "message": "Automatico (Idioma del navegador)"
+    "message": "Automático (Idioma del navegador)"
   },
   "popupUpgradeStarter": {
     "message": "Mejorar → Starter"
   },
   "upgradeSuccessProrated": {
-    "message": "Actualizacion exitosa! Stripe cobrara la diferencia prorrateada automaticamente."
+    "message": "¡Actualización exitosa! Stripe cobrará la diferencia prorrateada automáticamente."
   },
   "labelCampaignName": {
-    "message": "Nombre de la campana (opcional)"
+    "message": "Nombre de la campaña (opcional)"
   },
   "placeholderCampaignName": {
     "message": "ej. Alcance T2 Onda 1"
@@ -632,19 +632,19 @@
     "message": "Descargar CSV de ejemplo"
   },
   "csvTemplateRow1": {
-    "message": "carlos@example.com,Carlos,Garcia,Acme S.L.,Director General"
+    "message": "carlos@example.com,Carlos,García,Acme S.L.,Director General"
   },
   "csvTemplateRow2": {
-    "message": "maria@example.com,Maria,Lopez,TechFlow S.A.,Directora de Marketing"
+    "message": "maria@example.com,María,López,TechFlow S.A.,Directora de Marketing"
   },
   "csvTemplateRow3": {
-    "message": "juan@example.com,Juan,Martinez,Pionero Labs,Director de Ventas"
+    "message": "juan@example.com,Juan,Martínez,Pionero Labs,Director de Ventas"
   },
   "btnTestSend": {
-    "message": "Envio de prueba"
+    "message": "Envío de prueba"
   },
   "testSendPrompt": {
-    "message": "Se enviara un correo de prueba a tu direccion. ¿Continuar?"
+    "message": "Se enviará un correo de prueba a tu dirección. ¿Continuar?"
   },
   "testSendSuccess": {
     "message": "Correo de prueba enviado a $EMAIL$. Revisa tu bandeja.",
@@ -655,7 +655,7 @@
     }
   },
   "testSendFailed": {
-    "message": "Envio de prueba fallido: $ERROR$",
+    "message": "Envío de prueba fallido: $ERROR$",
     "placeholders": {
       "error": {
         "content": "$1"
@@ -666,10 +666,10 @@
     "message": "Completa asunto y contenido antes de la prueba."
   },
   "warnSubjectLong": {
-    "message": "Asunto supera 78 caracteres — puede cortarse en movil."
+    "message": "Asunto supera 78 caracteres — puede cortarse en móvil."
   },
   "warnAllCaps": {
-    "message": "Muchas mayusculas en el asunto — parece spam."
+    "message": "Muchas mayúsculas en el asunto — parece spam."
   },
   "warnSpamWords": {
     "message": "Posibles palabras spam: $LIST$",
@@ -691,10 +691,10 @@
     "message": "¿Enviar de todos modos?"
   },
   "csvErrTooLarge": {
-    "message": "Archivo CSV demasiado grande (max 5 MB)."
+    "message": "Archivo CSV demasiado grande (máx. 5 MB)."
   },
   "csvErrEncoding": {
-    "message": "Este archivo no esta guardado como UTF-8; los caracteres no se pueden leer correctamente. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y sube ese archivo."
+    "message": "Este archivo no está guardado como UTF-8; los caracteres no se pueden leer correctamente. En Excel: Archivo > Guardar como > elige 'CSV UTF-8 (delimitado por comas)' y sube ese archivo."
   },
   "csvEncodingTitle": {
     "message": "No pudimos determinar la codificación de este archivo"
@@ -727,25 +727,25 @@
     "message": "No se pudo leer el archivo. Si está en una unidad de red o en una memoria USB, cópialo primero a tu equipo y vuelve a intentarlo."
   },
   "alertBackendUnreachable": {
-    "message": "OutMass no puede conectarse a sus servidores ahora mismo. Es un problema de conexion — no de tu cuenta ni de tu plan. Revisa tu conexion, VPN o firewall y vuelve a intentarlo en un momento."
+    "message": "OutMass no puede conectarse a sus servidores ahora mismo. Es un problema de conexión — no de tu cuenta ni de tu plan. Revisa tu conexión, VPN o firewall y vuelve a intentarlo en un momento."
   },
   "netUnreachableBanner": {
-    "message": "No se puede conectar con los servidores de OutMass — enviar y guardar no funcionaran. Revisa conexion, VPN o firewall."
+    "message": "No se puede conectar con los servidores de OutMass — enviar y guardar no funcionarán. Revisa conexión, VPN o firewall."
   },
   "csvErrNoEmailColumn": {
     "message": "El CSV debe tener una columna 'email'."
   },
   "alertSignInFirst": {
-    "message": "Primero inicia sesion con Microsoft — usa el boton de inicio de sesion en la parte superior del panel. Puedes redactar sin cuenta, pero enviar requiere una."
+    "message": "Primero inicia sesión con Microsoft — usa el botón de inicio de sesión en la parte superior del panel. Puedes redactar sin cuenta, pero enviar requiere una."
   },
   "signInFirstBannerText": {
-    "message": "Inicia sesion con Microsoft para empezar a enviar."
+    "message": "Inicia sesión con Microsoft para empezar a enviar."
   },
   "dailyCapLabel": {
-    "message": "Limite de envio diario (opcional)"
+    "message": "Límite de envío diario (opcional)"
   },
   "dailyCapNote": {
-    "message": "Envia como maximo esta cantidad de emails al dia y continua automaticamente al dia siguiente hasta terminar toda tu lista. (No se puede combinar con pruebas A/B.)"
+    "message": "Envía como máximo esta cantidad de emails al día y continúa automáticamente al día siguiente hasta terminar toda tu lista. (No se puede combinar con pruebas A/B.)"
   },
   "csvErrNoEmailColumnHint": {
     "message": "Descarga el CSV de ejemplo para ver el formato requerido."
@@ -754,7 +754,7 @@
     "message": "omitidos (sin email)"
   },
   "largeSendWarn": {
-    "message": "Estas a punto de enviar a $COUNT$ destinatarios.\n\nPara respetar los limites de Outlook y proteger tu cuenta, OutMass espacia automaticamente este envio (unos 30/min); tardara aproximadamente $MIN$ minutos y continua en segundo plano.\n\nPara listas frias grandes, la entregabilidad es mejor si repartes el envio en varios dias (unos cientos al dia) usando Programar.\n\nContinuar?",
+    "message": "Estás a punto de enviar a $COUNT$ destinatarios.\n\nPara respetar los límites de Outlook y proteger tu cuenta, OutMass espacia automáticamente este envío (unos 30/min); tardará aproximadamente $MIN$ minutos y continúa en segundo plano.\n\nPara listas frías grandes, la entregabilidad es mejor si repartes el envío en varios días (unos cientos al día) usando Programar.\n\n¿Continuar?",
     "placeholders": {
       "count": {
         "content": "$1"
@@ -768,7 +768,7 @@
     "message": "duplicados eliminados"
   },
   "campaignNameDuplicate": {
-    "message": "Ya existe una campana llamada \"$NAME$\". ¿Continuar?",
+    "message": "Ya existe una campaña llamada \"$NAME$\". ¿Continuar?",
     "placeholders": {
       "name": {
         "content": "$1"
@@ -791,7 +791,7 @@
     "message": "Desarchivar"
   },
   "archiveConfirm": {
-    "message": "¿Archivar esta campana? Puedes restaurarla desde la pestana Archivadas."
+    "message": "¿Archivar esta campaña? Puedes restaurarla desde la pestaña Archivadas."
   },
   "onbTitle": {
     "message": "Bienvenido a OutMass"
@@ -803,13 +803,13 @@
     "message": "Paso 2 — Escribe asunto y contenido. Usa {{firstName}} para personalizar."
   },
   "onbStep3": {
-    "message": "Paso 3 — Revisa con Vista previa o Envio de prueba, luego Enviar."
+    "message": "Paso 3 — Revisa con Vista previa o Envío de prueba, luego Enviar."
   },
   "onbNext": {
     "message": "Siguiente"
   },
   "onbBack": {
-    "message": "Atras"
+    "message": "Atrás"
   },
   "onbFinish": {
     "message": "Finalizar"
@@ -826,7 +826,7 @@
     }
   },
   "warnTooManyImages": {
-    "message": "$N$ imagenes en el contenido — mucho uso de imagenes parece spam.",
+    "message": "$N$ imágenes en el contenido — mucho uso de imágenes parece spam.",
     "placeholders": {
       "n": {
         "content": "$1"
@@ -845,16 +845,16 @@
     "message": "Omitir destinatarios repetidos"
   },
   "settingsDedupHint": {
-    "message": "No escribir al mismo destinatario en varias campanas dentro de una ventana."
+    "message": "No escribir al mismo destinatario en varias campañas dentro de una ventana."
   },
   "settingsDedupEnabled": {
-    "message": "Activo (funcion Pro)"
+    "message": "Activo (función Pro)"
   },
   "settingsDedupDays": {
-    "message": "Periodo de busqueda (dias)"
+    "message": "Periodo de búsqueda (días)"
   },
   "uploadSkippedPrevious": {
-    "message": "$N$ destinatario(s) omitido(s) — ya contactado(s) en una campana reciente.",
+    "message": "$N$ destinatario(s) omitido(s) — ya contactado(s) en una campaña reciente.",
     "placeholders": {
       "n": {
         "content": "$1"
