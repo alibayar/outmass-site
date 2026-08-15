@@ -168,15 +168,24 @@ def build(db, *, role: str = "beat") -> list[Line]:
         INFO,
         "This column is written only on an authenticated request, so it means "
         "somebody USED it — unlike an auto-update, which fires while nobody "
-        "is at the keyboard. A long tail of old versions is therefore a map "
-        "of WHEN people stopped, not of what they are running: Chrome "
-        "auto-updates, so anyone still active is on the newest.",
+        "is at the keyboard. It also LAGS: it only moves when they next make "
+        "a request after the update reached them, so a recent release leaves "
+        "active users still recorded on the previous one for days.",
+        detail=True,
+    ))
+    out.append(Line(
+        INFO,
+        "Which means this list cannot tell 'stopped using it' from 'has not "
+        "been back since the update landed', and no amount of squinting at "
+        "it will. Read the next section instead.",
         detail=True,
     ))
 
-    # The version spread invites that inference; this measures it instead.
-    # The first real run showed 15 users last seen on 0.1.26 and a tail down
-    # to 0.1.13, which reads as a version problem and is a retention one.
+    # Because the version spread was read as churn twice on 2026-08-15, and
+    # was wrong twice: first as "only 8 of 54 are active" (the measure said
+    # 14 in 7 days, 30 in 30), then as an Edge-store lag (Edge users were on
+    # 0.2.0 too, and Chrome had the same tail). Both readings were inference
+    # from a column that answers a different question. This one is measured.
     out.append(Line(HEAD, "Actually still here"))
     for window in (7, 30):
         n = sum(
