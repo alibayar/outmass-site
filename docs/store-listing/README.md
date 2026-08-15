@@ -1,8 +1,13 @@
 # Chrome / Edge Store Localized Listings
 
-This directory contains the store listing content for all 11 listing languages
-(10 UI languages + pt-BR, which is listing-only until the pt locales ship in
-0.1.27).
+This directory contains the store listing content — **12 entries** in
+`listings.json`: en, tr, de, fr, es, ru, ar, hi, zh_CN, zh_TW, ja, pt_BR.
+(Count re-pinned 2026-08-15: this paragraph said "11" and described pt_BR as
+"listing-only until the pt locales ship in 0.1.27" for ten days after 0.1.27
+was published — the zh_TW entry was added the day after the sentence was
+written and the sentence never moved.) There is deliberately no pt_PT entry
+yet; whether the dashboards want one is an open question for Ali, tracked in
+the backlog's store-listing entry.
 
 ## File: `listings.json`
 
@@ -18,6 +23,7 @@ Structure:
   "ar": { ... },
   "hi": { ... },
   "zh_CN": { ... },
+  "zh_TW": { ... },
   "ja": { ... },
   "pt_BR": { ... }
 }

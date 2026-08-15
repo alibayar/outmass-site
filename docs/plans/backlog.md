@@ -212,9 +212,11 @@ oauth funnel. Low effort, UX-only.
 
 ### 🔧 Quota follow-ups (deferred from the 2026-07-03 billing-anchored quota review)
 Adversarial review of the rolling-quota change surfaced these; all bounded /
-rare, deliberately deferred. **Audited 2026-08-08 — item 1 is now partly done
-and the entry's own loop count was wrong. Items 2-4 verified still open.**
-1. 🔧 **Mid-campaign reset/increment race** — send loops increment the counter
+rare, deliberately deferred. **Re-audited 2026-08-15 against the code, every
+verdict cross-examined by two skeptics: 1 ✅, 2 ✅ with a narrower accepted
+residual, 3 🔧 HALF-done (the skeptic pass caught a missing write path the
+first read called done), 4 🔧 half-done.**
+1. ✅ **Mid-campaign reset/increment race — DONE 2026-08-11** — send loops incremented the counter
    ONCE at the end of a paced (possibly hours-long) run; if the period boundary
    rolls over mid-flight, the whole campaign's count lands in the NEW period.
    Fix: increment in small batches (~25) inside the send loops. Bounded
@@ -224,12 +226,14 @@ and the entry's own loop count was wrong. Items 2-4 verified still open.**
      `_run_campaign_send` (`backend/routers/campaigns.py:972-976`, with a
      tail-catch at 995 and handlers for cancellation and generic failure) —
      the **send-now** path only. That commit touched no worker file.
-   - **Still unbatched, all three:** `scheduled_worker.py:178`
-     (scheduled campaigns), `scheduled_worker.py:473` (A/B winner pass),
-     `followup_worker.py:109` (follow-ups). Each still calls
-     `increment_sent_count(user_id, sent_count)` once, after the loop.
-     Scheduled sends are the *most* exposed of the four, because they are the
-     ones most likely to straddle a period boundary unattended.
+   - ✅ **The three worker loops followed on 2026-08-11** (`ffe9737`): mid-loop
+     `QUOTA_CHARGE_BATCH` charging + a guarded remainder flush in the
+     scheduled-campaign loop (`scheduled_worker.py:181`), the A/B winner pass
+     (`:515`) and follow-ups (`followup_worker.py:109`).
+     `test_quota_batching.py` pins the call SHAPE (25+25+10, never one 60)
+     and bounds a mid-loop kill to one batch. This bullet claimed "still
+     unbatched, all three" for four days after the fix landed — task #26 was
+     the correct record and this file was the stale one.
    - **The entry said "5 send loops"; there are 4.** ✅ **Closed 2026-08-14 —
      the fifth was deleted.** `email_worker.send_email_task` had no caller and
      never touched `increment_sent_count`, but the 2026-08-13 send-path
@@ -242,19 +246,42 @@ and the entry's own loop count was wrong. Items 2-4 verified still open.**
      rewrite later if ever needed. A test now asserts the set of files that
      POST to `/me/sendMail` is exactly the three that charge the quota, so a
      fourth cannot reappear quietly.
-2. **cancel_at_period_end final-day refill** — date-granularity reset fires at
-   00:00 UTC on the final anniversary while the sub dies at its creation TIME
-   that day → up to one bonus quota-month for a cancelling user. Fix: persist
-   cancel_at_period_end from subscription.updated and defer the rollover.
-3. **Month-end anchor drift** — a day-29/30/31 anchor decays to 28 after the
-   first short month (stored clamped). User-favorable, ≤3 days; fix = store
-   anchor day separately. No current user affected (anchors are the 23rd-25th).
-4. **create-checkout StripeError fallthrough** (pre-existing) — a transient
-   Stripe error during Subscription.retrieve routes an ACTIVE subscriber to a
-   brand-new full-price checkout (dual subscription); later cancelling the
-   orphan downgrades a still-paying user. Fix: 502 on retrieve failure when
-   stripe_subscription_id exists; match webhooks on subscription id, not
-   customer id.
+2. ✅ **cancel_at_period_end final-day refill — DONE 2026-08-14/15**
+   (`79398b6` + `28a8c75`). Exactly the fix this line used to propose:
+   migration 028 persists cancel_at_period_end from subscription.updated in
+   both directions (`billing.py:886-906`) and holds the due-day rollover
+   (`user.py:395-401`); a day later the paid_cycle_confirmed hold
+   (`user.py:426-436`) covers the same case even if the flag were never set.
+   Tests: `test_quota_anchor_and_cancellation.py`,
+   `test_billing_cycle_reset.py:109` (the cancel hold wins even over a stray
+   paid_cycle_confirmed=True). **Accepted residual, not cancellation-specific:**
+   both holds are bounded to today==due, so a Stripe webhook lost past UTC
+   midnight lets ONE stale-plan rollover through a day late — the tradeoff
+   `user.py:390-394` documents on purpose. Revisit only if the green report's
+   "backstop rolled it" flag fires two months running.
+3. 🔧 **Month-end anchor drift — READ half shipped, WRITE half missing**
+   (re-scoped 2026-08-15; the audit's first pass called this done and two
+   skeptics refuted it). Migration 029 added `month_reset_anchor_day` and the
+   period math reads it (`user.py:304-324`, `:438-444`) — but **nothing in
+   application code ever writes the column**; the only writer is the
+   migration's one-time backfill. So (a) every user created after the
+   migration has NULL forever → falls back to the clamped day → the original
+   29/30/31→28 decay reproduces for all new users; and (b) NEW and sharper:
+   the checkout re-anchor (`billing.py:576-580`) sets month_reset_date=today
+   without touching the anchor day, so a subscriber who pays on a different
+   day than they signed up keeps the STALE signup anchor and the next quota
+   "month" can be days long (signup day 5, pay Aug 31 → due Sep 5). Fix =
+   write the anchor at user creation and at every month_reset_date re-anchor,
+   plus a source-scan test that every writer of one writes the other
+   (`test_send_telemetry.py` has the pattern). → task #57.
+4. 🔧 **create-checkout StripeError fallthrough — half done.** The 502 half
+   shipped: `billing.py:236-255` catches StripeError on Subscription.retrieve
+   when a subscription id exists and refuses to open a second checkout. The
+   other half is open: webhooks still match on stripe_customer_id, not
+   subscription id (`billing.py:845`, `:968`); `_promo_shield` (76-130)
+   protects manual promos only and bails when a subscription id exists, so
+   the dual-subscription orphan-cancel scenario is still reachable. Batch
+   with the next billing change.
 
 ### ✅ Microsoft-consent funnel leak — ALL THREE SHIPPED, measure it now (2026-08-15)
 
@@ -712,6 +739,11 @@ separation has happened. Mitigating: the pollution was a single burst on
 2026-06-19 (15 events in about an hour) and has not recurred in the seven weeks
 since, so this is low priority — but the shared key is still in place, so it
 can recur without warning.
+
+**2026-08-15 — measured, not assumed:** `match_started` / `lobby_viewed` no
+longer appear in the PostHog project's event schema at all; zero recurrence
+since the single 2026-06-19 burst. The shared key remains the only residue,
+so the item stays open at the lowest priority in this file.
 
 Original entry (for history):
 GitHub Actions CI: unit-tests green, **e2e-tests failing ~24/48 on every push
