@@ -343,9 +343,19 @@ def next_reset_date(user: dict) -> date | None:
     return _month_shift(reset_date, 1, _anchor_day(user, reset_date))
 
 
-def check_monthly_reset(user: dict, today: date | None = None):
+def check_monthly_reset(
+    user: dict,
+    today: date | None = None,
+    *,
+    paid_cycle_confirmed: bool = False,
+):
     """Reset the quota counters when the user's billing-anchored month rolls
     over.
+
+    ``paid_cycle_confirmed`` is set by exactly one caller: the Stripe webhook
+    for invoice.payment_succeeded with billing_reason subscription_cycle. It
+    means "this customer has just paid for a new month", which is the only
+    thing that can start a paid month on time — see the hold below.
 
     The quota period is a ROLLING month from month_reset_date (set at signup
     and re-anchored at each paid checkout) — NOT the calendar month. A Starter
@@ -386,6 +396,41 @@ def check_monthly_reset(user: dict, today: date | None = None):
         logger.info(
             "user %s reaches their anchor today with a cancelling "
             "subscription; holding the rollover until it ends",
+            user.get("id"),
+        )
+        return
+
+    # A paying customer's month starts when they pay for it, not at midnight.
+    #
+    # Same clock mismatch as above, pointing the other way. We reset on a DATE
+    # match minutes after 00:00 UTC; Stripe charges the renewal at the
+    # subscription's creation TIME — for the customer that prompted this,
+    # 20:20 UTC. So the new month's quota went live about twenty hours before
+    # the month was paid for, every month, for every subscriber.
+    #
+    # So the renewal is no longer something we predict. Stripe tells us it
+    # happened — invoice.payment_succeeded with billing_reason
+    # subscription_cycle — and that handler calls this function with
+    # paid_cycle_confirmed=True. No clock of ours is involved, which also
+    # means no timezone of ours can be wrong about it.
+    #
+    # Bounded to the due day alone, exactly like the cancellation hold: if the
+    # webhook is lost or Stripe's retries run long, tomorrow this rolls over
+    # anyway. Waiting a few hours is the fix; waiting forever would strand a
+    # paying customer at zero quota, which is a worse bug than the one being
+    # closed. Anything capped in the gap is not lost either — the auto-resume
+    # beat sends it as soon as the headroom lands.
+    #
+    # Free users have no subscription and are untouched: for them the anchor
+    # is not an approximation of anything, it IS the rule.
+    if (
+        today == due
+        and not paid_cycle_confirmed
+        and user.get("stripe_subscription_id")
+    ):
+        logger.info(
+            "user %s reaches their anchor today on a paid plan; holding the "
+            "rollover until Stripe confirms the renewal",
             user.get("id"),
         )
         return

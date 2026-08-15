@@ -1079,6 +1079,25 @@ async def stripe_webhook(request: Request, background_tasks: BackgroundTasks):
     # attempt_count > 1 means an earlier attempt failed and this one didn't,
     # so the money we were chasing has landed.
     elif event_type == "invoice.payment_succeeded":
+        # A renewal is a fact Stripe reports, not a moment we predict.
+        #
+        # The quota month used to roll over on a DATE match from the beat,
+        # minutes after 00:00 UTC. Stripe charges at the subscription's
+        # creation TIME — 20:20 UTC for the customer that surfaced this on
+        # 2026-08-14 — so every subscriber got the new month's quota about
+        # twenty hours before paying for it, every month.
+        #
+        # billing_reason tells the three invoice kinds apart, and only one of
+        # them is a new month:
+        #   subscription_create — the first invoice. _activate_from_checkout
+        #     _session already anchors the quota; rolling here would zero a
+        #     counter that was just set.
+        #   subscription_update — a mid-cycle plan change. The period did not
+        #     restart, so neither should the quota.
+        #   subscription_cycle  — the renewal. This one.
+        if data_object.get("billing_reason") == "subscription_cycle":
+            _roll_quota_on_renewal(db, data_object.get("customer") or "")
+
         attempts = data_object.get("attempt_count") or 0
         if attempts > 1:
             customer_id = data_object.get("customer")
@@ -1269,6 +1288,77 @@ def _handle_dispute_closed(db, dispute: dict) -> None:
         f"Status: {status}\n"
         f"User: {user_email or 'unresolved'}"
     )
+
+
+def _roll_quota_on_renewal(db, customer_id: str) -> None:
+    """Start the paid month at the moment it was paid for.
+
+    Delegates to the same check_monthly_reset the beat uses, with the one
+    flag that lifts its hold — so there is exactly one rollover rule and two
+    ways to reach it, rather than two rules that can disagree.
+
+    Idempotent by construction: check_monthly_reset does nothing unless the
+    stored anchor is genuinely a period behind. A Stripe redelivery, or a
+    renewal arriving after the backstop already rolled it, both land on a
+    no-op. That is why this is a delegation and not an UPDATE.
+
+    Never raises. This runs inside the webhook handler, and a failure here
+    must not make us return non-2xx to Stripe — which would have it retry the
+    whole event, including the parts that already succeeded.
+    """
+    if not customer_id:
+        return
+    try:
+        res = (
+            db.table("users")
+            .select(
+                "id, email, month_reset_date, month_reset_anchor_day, "
+                "emails_sent_this_month, ai_generations_this_month, "
+                "cancel_at_period_end, stripe_subscription_id"
+            )
+            .eq("stripe_customer_id", customer_id)
+            .limit(1)
+            .execute()
+        )
+        rows = res.data or []
+        if not rows:
+            logger.warning(
+                "renewal invoice for customer %s matches no user row",
+                customer_id,
+            )
+            return
+        user = rows[0]
+        before = user.get("month_reset_date")
+        user_model.check_monthly_reset(user, paid_cycle_confirmed=True)
+        rolled = user.get("month_reset_date") != before
+
+        # Stamped whether or not it rolled: the question this answers is "is
+        # the event path alive", and a redelivery that correctly no-ops is
+        # still evidence that it is. Separate update so a missing column
+        # (migration 031 unrun) cannot take the rollover down with it.
+        try:
+            db.table("users").update(
+                {"last_cycle_invoice_at": datetime.now(timezone.utc).isoformat()}
+            ).eq("id", user["id"]).execute()
+        except Exception:  # noqa: BLE001
+            logger.warning(
+                "could not stamp last_cycle_invoice_at for %s "
+                "(is migration 031 run?)",
+                user["id"],
+                exc_info=True,
+            )
+
+        logger.info(
+            "renewal for %s: quota %s (anchor %s -> %s)",
+            user.get("email"),
+            "rolled over" if rolled else "already current, no-op",
+            before,
+            user.get("month_reset_date"),
+        )
+    except Exception:  # noqa: BLE001
+        logger.exception(
+            "could not roll the quota month for customer %s", customer_id
+        )
 
 
 def _resolve_invoice_user(db, invoice: dict, customer_id: str) -> tuple[str, str]:
