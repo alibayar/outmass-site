@@ -274,14 +274,23 @@ first read called done), 4 🔧 half-done.**
    write the anchor at user creation and at every month_reset_date re-anchor,
    plus a source-scan test that every writer of one writes the other
    (`test_send_telemetry.py` has the pattern). → task #57.
-4. 🔧 **create-checkout StripeError fallthrough — half done.** The 502 half
-   shipped: `billing.py:236-255` catches StripeError on Subscription.retrieve
-   when a subscription id exists and refuses to open a second checkout. The
-   other half is open: webhooks still match on stripe_customer_id, not
-   subscription id (`billing.py:845`, `:968`); `_promo_shield` (76-130)
-   protects manual promos only and bails when a subscription id exists, so
-   the dual-subscription orphan-cancel scenario is still reachable. Batch
-   with the next billing change.
+4. ✅ **create-checkout StripeError fallthrough — DONE 2026-08-15** (second
+   half closed same day it was re-scoped). The 502 half had shipped earlier
+   (`billing.py:236-255`). The identity half now exists as
+   `_event_subscription_is_current`: subscription.deleted / subscription
+   .updated / the renewal invoice only act when the event describes the
+   subscription the account RUNS on; stored-NULL and no-id cases fail open
+   to the old behaviour, a mismatch skips loudly (log + Telegram). Covers
+   the orphan-cancel scenario AND the ordinary cancel-then-resubscribe flow,
+   where the old subscription's period-end death used to downgrade the
+   freshly re-paying customer. The invoice id is read in both the pre-basil
+   and basil payload shapes. Tests:
+   `test_webhook_subscription_identity.py`. The same review added three
+   checkout hardenings: a >14-day-old session event is refused (dashboard
+   "Resend" resurrection), an anomalous no-subscription session no longer
+   NULLs a stored id, and the quota anchor now comes from the
+   subscription's own `current_period_start`, not our webhook-processing
+   clock.
 
 ### ✅ Microsoft-consent funnel leak — ALL THREE SHIPPED, measure it now (2026-08-15)
 
