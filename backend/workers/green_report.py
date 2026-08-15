@@ -168,7 +168,29 @@ def build(db, *, role: str = "beat") -> list[Line]:
         INFO,
         "This column is written only on an authenticated request, so it means "
         "somebody USED it — unlike an auto-update, which fires while nobody "
-        "is at the keyboard.",
+        "is at the keyboard. A long tail of old versions is therefore a map "
+        "of WHEN people stopped, not of what they are running: Chrome "
+        "auto-updates, so anyone still active is on the newest.",
+        detail=True,
+    ))
+
+    # The version spread invites that inference; this measures it instead.
+    # The first real run showed 15 users last seen on 0.1.26 and a tail down
+    # to 0.1.13, which reads as a version problem and is a retention one.
+    out.append(Line(HEAD, "Actually still here"))
+    for window in (7, 30):
+        n = sum(
+            1 for r in rows
+            if (_age_days(r.get("last_activity_at")) or 1e9) <= window
+        )
+        out.append(Line(
+            PASS if n else CHECK,
+            f"{n}/{len(rows)} active in the last {window} days",
+        ))
+    out.append(Line(
+        INFO,
+        "The number that decides whether more traffic helps. Signups arriving "
+        "faster than they stick is a leak being fed, not growth.",
         detail=True,
     ))
 
@@ -301,8 +323,15 @@ if __name__ == "__main__":  # pragma: no cover
     #
     # Ask the image where its interpreter is, rather than guessing a path:
     #
-    #     head -1 "$(command -v uvicorn)"      # e.g. #!/opt/venv/bin/python
     #     /opt/venv/bin/python -m workers.green_report
+    #
+    # That path is MEASURED, not guessed — it is what worked on the web
+    # service on 2026-08-15. `command -v uvicorn` finds nothing there either:
+    # the venv is not on the shell's PATH at all, which is why the earlier
+    # "ask the image where its interpreter is" trick also failed. If a
+    # builder change ever moves it:
+    #
+    #     ls -l /opt/venv/bin/python || find / -maxdepth 5 -name uvicorn -type f
     #
     # Or dispatch it as a task, which resolves `celery` off the same PATH the
     # service uses and needs no interpreter hunting — at the cost of running
