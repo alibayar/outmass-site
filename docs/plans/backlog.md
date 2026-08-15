@@ -290,7 +290,13 @@ first read called done), 4 🔧 half-done.**
    "Resend" resurrection), an anomalous no-subscription session no longer
    NULLs a stored id, and the quota anchor now comes from the
    subscription's own `current_period_start`, not our webhook-processing
-   clock.
+   clock. **Endpoint API version confirmed by Ali 2026-08-15:
+   `2026-03-25.dahlia`** — post-basil, so the `parent.subscription_details`
+   path is the one live payloads actually use; without the two-shape read
+   the renewal guard would have shipped permanently inert. Every other
+   field the webhooks read has months of production behaviour proving it
+   arrives — `invoice.subscription` was the one field never read before,
+   which is exactly why its absence would have been silent.
 
 ### ✅ Microsoft-consent funnel leak — ALL THREE SHIPPED, measure it now (2026-08-15)
 
@@ -418,14 +424,28 @@ NOT reversible — if the user later un-suppresses an address, the contact
 stays skipped. Re-emailing someone who was on a do-not-email list should be
 a deliberate act, not a side effect.
 
-### 🔧 Store-listing refresh — content READY, dashboards NOT confirmed
+### ✅ Store-listing refresh — VERIFIED LIVE on the public listings (2026-08-15)
+
+> Ali said the paste "should have happened"; instead of trusting memory or
+> the dashboards, the PUBLIC store pages were scraped — they are what users
+> actually see, which makes them the evidence rather than a proxy for it.
+> **All 12 Chrome locales** (en, tr, de, fr, es, ru, ar, hi, zh-CN, zh-TW,
+> ja, pt-BR) **and 2 sampled Edge locales** (tr, de) carry the new copy:
+> 250/2,500 quotas, the 🚦 daily-limit and ♻️ auto-resume bullets, and no
+> timezone claim anywhere. Chrome shows 0.2.1 live. Edge takes its listing
+> as one submission, so two clean samples speak for the set.
+>
+> One false alarm during verification worth keeping: a grep for the OLD
+> "50 emails/mo" marker matched — inside "2**50** emails/month". Read the
+> context before believing a marker, even one you wrote yourself.
+>
+> The pt_PT question that used to live at the bottom of this entry moved to
+> its own item below — a ✅ must not contain an open question.
 
 > **Re-marked 2026-08-08.** This was ✅ while its last line said "Remaining: Ali
 > pastes all 11 languages into BOTH dashboards" — so the repo-side prep was
 > done and the only part users can actually see was not, tracked nowhere. A ✅
-> with an open action inside it is how work disappears. **Ali: has the paste
-> happened?** If yes this closes; if no it is the oldest open user-visible item
-> we have.
+> with an open action inside it is how work disappears.
 >
 > **And the number moved: it is 12 now, not 11.** `listings.json` currently
 > holds en, tr, de, fr, es, ru, ar, hi, zh_CN, **zh_TW**, ja, pt_BR — zh_TW was
@@ -434,9 +454,7 @@ a deliberate act, not a side effect.
 > describes pt_BR as "listing-only until the pt locales ship in 0.1.27"; 0.1.27
 > shipped on 08-05.
 >
-> **One open question for Ali:** there is no `pt_PT` entry in `listings.json`,
-> though the extension ships both pt_BR and pt_PT. Deliberate (the stores may
-> not list them separately) or a gap?
+> *(the pt_PT question moved to its own ⬜ item below on 2026-08-15)*
 
 Trigger fired: Edge published 0.1.26 on 07-29. All 9 points applied to
 `docs/store-listing/listings.json` (10 languages edited + NEW pt_BR entry) via
@@ -479,6 +497,14 @@ Original audit (for history):
    number; reconsider naming the model ("Claude destekli") in store copy.
 9. "30-day money-back guarantee" ✓ verified real (refund.html + pricing FAQ) —
    keep.
+
+### ⬜ pt_PT store-listing entry — decide, don't drift
+
+Split from the store-listing entry above (a ✅ must not carry an open
+question). The extension ships pt_PT but `listings.json` has no pt_PT
+entry. Next time Ali is inside either dashboard: do the stores offer pt-PT
+as a separate listing locale? If yes, decide add-or-skip deliberately; if
+no, close this entry with that fact written down.
 
 ### ✅ 0.1.27 queue — CUT 2026-07-29, PUBLISHED on Chrome 2026-08-05
 *(Heading corrected 08-08: it still said "awaiting Ali's upload" nine days after
