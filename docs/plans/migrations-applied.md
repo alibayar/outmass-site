@@ -11,10 +11,16 @@ production code path *proved* it — not that somebody remembers it.
 
 | migration | applied | verified |
 |---|---|---|
-| 031_last_cycle_invoice_at | 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — the green report ran in prod SELECTing the column by name; a missing column would have errored loudly |
-| 030_preferred_language | by 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — same run, the "know their language" line read it |
-| 029_month_reset_anchor_day | by 2026-08-15, Ali (in chat) | ⬜ pending — query below |
-| 028_cancel_at_period_end | by 2026-08-14, Ali (in chat) | ⬜ pending — query below |
+| 031_last_cycle_invoice_at | 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — the green report ran in prod SELECTing the column by name; also the information_schema query below, all four true |
+| 030_preferred_language | by 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — green report's "know their language" line read it; query confirms |
+| 029_month_reset_anchor_day | by 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — information_schema query run by Ali in the Supabase SQL editor: `applied = true` |
+| 028_cancel_at_period_end | by 2026-08-14, Ali (in chat) | ✅ 2026-08-15 — same query run, `applied = true` |
+
+All four verified 2026-08-15. The backfill-sanity query below is now
+OPTIONAL: since commit ad68d01 the write path self-heals — creation writes
+the anchor and each row's first rollover fills a NULL — so its answer only
+says how many rows are still waiting for their first rollover, not whether
+anything is wrong.
 
 ## Why "the code runs fine" is NOT proof for 028/029
 
