@@ -52,6 +52,19 @@ def head(text: str) -> None:
 
 
 def _rows() -> list[dict]:
+    """Every user row, or an abort.
+
+    An empty list is NOT a clean bill of health, and the first real run of
+    this script proved how badly it reads as one: zero rows produced
+    "0 accounts with a dead Microsoft connection [ok]", "0 sitting at their
+    cap [ok]", and a quota section reporting nothing to confirm. Every line
+    was true and every line was meaningless, because there was nothing behind
+    them.
+
+    We have paying customers. Zero rows means the credentials did not reach
+    them, not that they are fine — so the caller stops here rather than
+    printing a page of reassuring nothing.
+    """
     return (
         get_db()
         .table("users")
@@ -100,9 +113,12 @@ def gate_stripe_key() -> None:
     else:
         line(PASS, f"{mode} key, {'production' if prod_db else 'non-production'} database")
 
-    line(INFO, "Railway variables are PER SERVICE. This checks the one you")
-    line(INFO, "ran it in. Web is the only one that creates checkouts; the")
-    line(INFO, "worker and beat never call Stripe at all (verified 08-14).")
+    line(INFO, "Railway variables are PER SERVICE, and this reads the process")
+    line(INFO, "you started — so if you ran it on your own machine, it is")
+    line(INFO, "describing YOUR .env and says nothing about what the web")
+    line(INFO, "service has. Web is the only service that creates checkouts;")
+    line(INFO, "the worker and beat never call Stripe at all (verified 08-14).")
+    line(INFO, "The web service's own answer arrives as a startup alert.")
 
 
 def gate_consent_screen() -> None:
@@ -232,6 +248,29 @@ def main() -> None:
         print("Run this from backend/ with the production SUPABASE_URL/KEY.")
         raise SystemExit(1)
 
+    if not rows:
+        head("STOP — the users table came back empty")
+        line(FAIL, "zero rows. That is not a healthy database, it is the")
+        line(INFO, "wrong credentials: we have paying customers.")
+        line(INFO, "")
+        line(INFO, "Three things do this, in order of likelihood:")
+        line(INFO, "")
+        line(INFO, "1. SUPABASE_KEY is the ANON key, not the service role.")
+        line(INFO, "   Row-level security then returns an empty set instead")
+        line(INFO, "   of an error — no exception, no warning, no rows.")
+        line(INFO, "2. SUPABASE_URL points at a different Supabase project")
+        line(INFO, "   (a dev one) that genuinely has no users.")
+        line(INFO, "3. You ran it with a local .env rather than the values")
+        line(INFO, "   the web service actually has in Railway.")
+        line(INFO, "")
+        line(INFO, f"URL in this environment: {SUPABASE_URL}")
+        line(INFO, "")
+        line(INFO, "Everything below this point would have been computed over")
+        line(INFO, "an empty list and printed as though it passed, so it is")
+        line(INFO, "not printed at all.")
+        raise SystemExit(2)
+
+    line(INFO, f"{len(rows)} user row(s) read")
     gate_stripe_key()
     gate_consent_screen()
     gate_welcome_email(rows)
