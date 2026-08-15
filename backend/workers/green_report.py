@@ -254,7 +254,11 @@ def as_telegram(lines: list[Line]) -> str:
             parts.append(f"\n*{ln.text}*")
         else:
             parts.append(f"{icon.get(ln.mark, '·')} {ln.text}")
-    parts.append("\nFull report: cd backend && python scripts/green.py")
+    # The command as it works WHERE THIS IS READ: on a phone, and pasted into
+    # a Railway shell whose working directory is already /app. A footer
+    # telling you to cd into a directory that does not exist there is worse
+    # than no footer.
+    parts.append("\nFull report: python -m workers.green_report")
     return "\n".join(parts)
 
 
@@ -289,7 +293,14 @@ def send_green_report():
 if __name__ == "__main__":  # pragma: no cover
     # Run it now, from a Railway shell, without waiting for 07:00:
     #
-    #     cd backend && python -m workers.green_report
+    #     python -m workers.green_report
+    #
+    # No `cd backend` on Railway: the image's WORKDIR is /app and /app IS
+    # this directory — Procfile, main.py and workers/ all sit in it. The
+    # first attempt said `cd backend &&` and got "No such file or directory",
+    # which is a small thing to get wrong in a comment and an annoying one to
+    # get wrong in a message somebody pastes at 7am. Locally, where the repo
+    # root has a backend/ folder, `cd backend` first.
     #
     # Prints the full report to the shell AND sends the short form to
     # Telegram, so the on-demand run and the daily one cannot tell different
