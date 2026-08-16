@@ -36,14 +36,59 @@ it exists to catch. The per-service answer already has an instrument — the
 startup guard alerts on every deploy, naming its service — and this points
 at that rather than impersonating it.
 """
+import logging
 from dataclasses import dataclass
 from datetime import date, datetime, timezone
 
-from config import STRIPE_SECRET_KEY, SUPABASE_URL, monthly_limit_for_plan
+import httpx
+
+from config import (
+    POSTHOG_API_HOST,
+    POSTHOG_PERSONAL_API_KEY,
+    POSTHOG_PROJECT_ID,
+    STRIPE_SECRET_KEY,
+    SUPABASE_URL,
+    monthly_limit_for_plan,
+)
 from utils.config_guard import _db_looks_production, _stripe_mode
 from workers.celery_app import celery
 
+logger = logging.getLogger(__name__)
+
 PASS, CHECK, FAIL, INFO, HEAD = "ok", "check", "FAIL", "", "head"
+
+# Events that mean a human was at the keyboard: clicks, uploads, sign-ins.
+# Deliberately absent: emails_sent / send_completed (the machine finishing
+# what a click started — and for scheduled campaigns nobody is there at
+# all), ext_updated / ext_installed (the browser's doing), $exception.
+USER_PRESENT_EVENTS = [
+    "login", "signin_clicked", "oauth_started", "oauth_completed",
+    "oauth_retry", "ms_auth_window_opened", "sidebar_opened",
+    "compose_view_seen", "outlook_reached", "onboarding_step_viewed",
+    "onboarding_completed", "onboarding_skipped", "recipients_uploaded",
+    "csv_template_downloaded", "csv_upload_failed", "test_send_clicked",
+    "send_clicked", "send_failed", "test_send_failed",
+    "email_preview_opened", "merge_tag_chip_inserted", "ai_writer_opened",
+    "followup_enabled", "schedule_send_enabled", "ab_test_enabled",
+    "settings_updated", "language_changed", "template_saved",
+    "template_loaded", "reports_view_changed", "campaign_results_exported",
+    "upgrade_button_clicked", "manage_subscription_clicked",
+    "checkout_session_created", "onedrive_consent_acknowledged",
+    "onedrive_file_selected", "panel_open_failed",
+]
+
+# Ours. A rhythm read for deploy timing must not count the operator
+# testing at 03:00 as a user being awake at 03:00.
+INTERNAL_IDS = [
+    "outmassapp@outlook.com",   # support / test inbox
+    "bayar_ali@hotmail.com",    # operator's test account
+    "mstest404@outlook.com",    # store review account
+]
+
+_DAY_NAMES = [
+    "Monday", "Tuesday", "Wednesday", "Thursday", "Friday",
+    "Saturday", "Sunday",
+]
 
 
 class EmptyDatabase(RuntimeError):
@@ -94,6 +139,100 @@ def _rows(db) -> list[dict]:
             f"error at all. URL in use: {SUPABASE_URL}"
         )
     return rows
+
+
+def _window(totals: list[int], width: int, *, quiet: bool) -> tuple[int, int]:
+    """Start hour and sum of the best contiguous `width`-hour window over a
+    24h circle — the smallest-sum window when quiet, the largest otherwise.
+    Ties go to the earliest start, so the answer is stable day to day."""
+    sums = [sum(totals[(s + k) % 24] for k in range(width)) for s in range(24)]
+    best = min(sums) if quiet else max(sums)
+    start = sums.index(best)
+    return start, best
+
+
+def _rhythm_lines() -> list[Line]:
+    """When users are actually at the keyboard, from PostHog — the section
+    that answers "when do I deploy, and by when do I answer support". Never
+    raises; the report must go out even when this check is broken."""
+    out = [Line(HEAD, "Rhythm — when users are actually here (30d)")]
+    if not POSTHOG_PERSONAL_API_KEY:
+        out.append(Line(INFO, "check not configured (POSTHOG_PERSONAL_API_KEY)"))
+        return out
+
+    events = ", ".join(f"'{e}'" for e in USER_PRESENT_EVENTS)
+    internal = ", ".join(f"'{i}'" for i in INTERNAL_IDS)
+    # Weighted by user-days, not events: one heavy user's fifty clicks in an
+    # hour count once, so the busy band is "people were here", not "somebody
+    # was busy". Hours are Türkiye time — the operator's clock.
+    hogql = (
+        "SELECT toDayOfWeek(toTimeZone(timestamp, 'Europe/Istanbul')) AS dow, "
+        "toHour(toTimeZone(timestamp, 'Europe/Istanbul')) AS h, "
+        "uniq(distinct_id, toDate(toTimeZone(timestamp, 'Europe/Istanbul'))) AS user_days "
+        "FROM events WHERE timestamp >= now() - INTERVAL 30 DAY "
+        "AND distinct_id LIKE '%@%' "
+        f"AND distinct_id NOT IN ({internal}) "
+        f"AND event IN ({events}) "
+        "GROUP BY dow, h"
+    )
+    try:
+        resp = httpx.post(
+            f"{POSTHOG_API_HOST}/api/projects/{POSTHOG_PROJECT_ID}/query/",
+            headers={"Authorization": f"Bearer {POSTHOG_PERSONAL_API_KEY}"},
+            json={"query": {"kind": "HogQLQuery", "query": hogql}},
+            timeout=15.0,
+        )
+        if resp.status_code != 200:
+            logger.warning(
+                "PostHog rhythm check returned %s: %s",
+                resp.status_code, resp.text[:200],
+            )
+            out.append(Line(INFO, "check unavailable"))
+            return out
+        rows = resp.json().get("results") or []
+    except Exception as e:  # noqa: BLE001
+        logger.warning("PostHog rhythm check failed: %s", e)
+        out.append(Line(INFO, "check unavailable"))
+        return out
+
+    day_totals = [0] * 7
+    hour_totals = [0] * 24
+    for dow, h, user_days in rows:
+        day_totals[int(dow) - 1] += int(user_days)
+        hour_totals[int(h)] += int(user_days)
+    total = sum(day_totals)
+    if not total:
+        out.append(Line(INFO, "no user-initiated activity in 30 days"))
+        return out
+
+    top_day = max(range(7), key=lambda d: day_totals[d])
+    mon_thu = sum(day_totals[:4])
+    p_start, p_sum = _window(hour_totals, 6, quiet=False)
+    q_start, _ = _window(hour_totals, 4, quiet=True)
+    out.append(Line(
+        INFO,
+        f"busiest: {_DAY_NAMES[top_day]} ({round(100 * day_totals[top_day] / total)}%)"
+        f" · Mon–Thu {round(100 * mon_thu / total)}%",
+    ))
+    out.append(Line(
+        INFO,
+        f"peak: {p_start:02d}:00–{(p_start + 6) % 24:02d}:00 TSİ carries "
+        f"{round(100 * p_sum / total)}% — answer support before it starts",
+    ))
+    out.append(Line(
+        INFO,
+        f"quietest: {q_start:02d}:00–{(q_start + 4) % 24:02d}:00 TSİ — the "
+        "deploy window",
+    ))
+    out.append(Line(
+        INFO,
+        "Measured from user-initiated events only — clicks, uploads, "
+        "sign-ins — not sends the worker finished and not auto-updates, "
+        "with our own accounts excluded. The bands move as the user base "
+        "does; trust this line over any remembered version of it.",
+        detail=True,
+    ))
+    return out
 
 
 def build(db, *, role: str = "beat") -> list[Line]:
@@ -202,6 +341,9 @@ def build(db, *, role: str = "beat") -> list[Line]:
         "faster than they stick is a leak being fed, not growth.",
         detail=True,
     ))
+
+    # ── Rhythm ──
+    out.extend(_rhythm_lines())
 
     # ── Renewals ──
     out.append(Line(HEAD, "Quota rollover — is the Stripe event path alive?"))

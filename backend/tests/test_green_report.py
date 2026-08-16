@@ -159,6 +159,74 @@ def test_gate_one_says_which_process_it_read():
 # ── The two front-ends cannot drift ──
 
 
+def test_rhythm_says_not_configured_without_a_key():
+    """The test env has no PostHog key — the section must say so rather
+    than vanish or crash the report."""
+    lines = build(_db([_row()]))
+    text = as_text(lines)
+    assert "Rhythm" in text
+    assert "check not configured" in text
+
+
+def test_rhythm_computes_busiest_peak_and_quiet():
+    """A fixture week with a loud Monday-evening band and dead small hours:
+    the section must name Monday, put the 6h peak on the band, and put the
+    4h deploy window on the only all-zero stretch (02:00-06:00)."""
+    from workers import green_report
+
+    rows = (
+        [[1, h, 4] for h in (15, 16, 17, 18, 19, 20)]   # Monday band
+        + [[2, h, 2] for h in (15, 16, 17, 18, 19, 20)]  # Tuesday echo
+        + [[1, 6, 1], [1, 22, 1], [2, 7, 1], [2, 23, 1], [3, 8, 1],
+           [3, 9, 1], [4, 10, 1], [4, 12, 1], [5, 11, 1], [5, 13, 1],
+           [6, 0, 1], [6, 14, 1], [7, 1, 1], [7, 21, 1]]
+    )
+    with patch("workers.green_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.green_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": rows}
+        )
+        lines = green_report._rhythm_lines()
+
+    text = as_text(lines)
+    assert "busiest: Monday" in text
+    assert "peak: 15:00–21:00 TSİ" in text
+    assert "quietest: 02:00–06:00 TSİ" in text
+    # The query must exclude our own accounts and count only user-initiated
+    # events — send_completed is the machine finishing, not a user present.
+    q = post.call_args.kwargs["json"]["query"]["query"]
+    assert "outmassapp@outlook.com" in q
+    assert "send_clicked" in q
+    assert "send_completed" not in q
+    assert "INTERVAL 30 DAY" in q
+
+
+def test_rhythm_survives_a_posthog_outage():
+    from workers import green_report
+
+    with patch("workers.green_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.green_report.httpx.post", side_effect=Exception("down")):
+        lines = green_report._rhythm_lines()
+
+    assert any("check unavailable" in ln.text for ln in lines)
+
+
+def test_rhythm_with_no_activity_says_so():
+    """Zero rows is 'nobody was here', which is information — not a peak
+    at 00:00 computed over nothing (the empty-report lesson, again)."""
+    from workers import green_report
+
+    with patch("workers.green_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.green_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": []}
+        )
+        lines = green_report._rhythm_lines()
+
+    assert any("no user-initiated activity" in ln.text for ln in lines)
+    assert not any("peak:" in ln.text for ln in lines)
+
+
 def test_telegram_drops_the_prose_and_the_terminal_keeps_it():
     lines = [
         Line("head", "A section"),
