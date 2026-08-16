@@ -342,7 +342,7 @@ def test_error_check_clean_window():
 def test_error_check_flags_hard_errors_and_marks_info():
     from workers import daily_report
 
-    rows = [["send_failed", 0, 2, 1], ["oauth_failed", 0, 3, 2]]
+    rows = [["send_failed", "", 2, 1], ["oauth_failed", "", 3, 2]]
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
          patch("workers.daily_report.httpx.post") as post:
         post.return_value = MagicMock(
@@ -358,7 +358,7 @@ def test_error_check_flags_hard_errors_and_marks_info():
 def test_error_check_soft_only_is_not_alarming():
     from workers import daily_report
 
-    rows = [["oauth_failed", 1, 1, 1]]
+    rows = [["oauth_failed", "", 1, 1]]
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
          patch("workers.daily_report.httpx.post") as post:
         post.return_value = MagicMock(
@@ -377,8 +377,8 @@ def test_error_check_paywall_codes_are_info_not_hard():
     from workers import daily_report
 
     rows = [
-        ["send_failed", 1, 1, 1],              # paywall touch
-        ["ai_email_generate_failed", 1, 1, 1], # paywall touch
+        ["send_failed", "paywall", 1, 1],              # paywall touch
+        ["ai_email_generate_failed", "paywall", 1, 1], # paywall touch
     ]
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
          patch("workers.daily_report.httpx.post") as post:
@@ -398,8 +398,8 @@ def test_error_check_mixed_paywall_and_real_failures():
     from workers import daily_report
 
     rows = [
-        ["send_failed", 0, 2, 1],  # real failures
-        ["send_failed", 1, 1, 1],  # paywall touch
+        ["send_failed", "", 2, 1],         # real failures
+        ["send_failed", "paywall", 1, 1],  # paywall touch
     ]
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
          patch("workers.daily_report.httpx.post") as post:
@@ -412,6 +412,32 @@ def test_error_check_mixed_paywall_and_real_failures():
     assert "send_failed ×2 (1 user)" in lines[1]
     assert lines[1].endswith("(1 user)")
     assert "(info · paywall)" in lines[2]
+
+
+def test_error_check_declined_codes_are_info_not_hard():
+    """A user backing out of one of our own confirm dialogs (content
+    warning, large-send check) emits send_failed with a *_declined
+    error_code. The guard worked and the user said no — that must render
+    as info·declined and must NOT flip the ⚠️ flag (premierconsortium
+    08-16: two declined content warnings false-alarmed as hard errors)."""
+    from workers import daily_report
+
+    rows = [["send_failed", "declined", 2, 1]]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post") as post:
+        post.return_value = MagicMock(
+            status_code=200, json=lambda: {"results": rows}
+        )
+        lines = daily_report._error_check_lines()
+
+    assert lines[0] == "🩺 Errors (12h): ✅ no hard errors"
+    assert "send_failed ×2 (1 user) (info · declined)" in lines[1]
+    # The classifier itself must know both declined codes and still split
+    # out paywall touches
+    q = post.call_args.kwargs["json"]["query"]["query"]
+    assert "content_warning_declined" in q
+    assert "large_send_declined" in q
+    assert "feature_locked" in q
 
 
 def test_error_check_survives_posthog_outage():

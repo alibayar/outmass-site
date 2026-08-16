@@ -49,6 +49,11 @@ INFO_ERROR_EVENTS = [
     # product problem, while a run of user_declined_consent is a trust one.
     "ms_auth_failed",
 ]
+# error_codes that mean the user declined one of our own confirm dialogs —
+# the guard fired and the user said "no thanks". That is the guard working,
+# not a failed send (premierconsortium 08-16: two declined content warnings
+# rendered as hard "send_failed ×2" and false-alarmed the report).
+USER_DECLINED_CODES = ["content_warning_declined", "large_send_declined"]
 
 
 def _error_check_lines() -> list[str]:
@@ -58,16 +63,21 @@ def _error_check_lines() -> list[str]:
         return ["🩺 Errors (12h): check not configured"]
 
     quoted = ", ".join(f"'{e}'" for e in HARD_ERROR_EVENTS + INFO_ERROR_EVENTS)
-    # `paywall` splits feature-gate touches (error_code starting with
-    # feature_locked…) from real failures: a free user tapping a locked
-    # feature is working-as-designed and must not raise the ⚠️ flag
-    # (bellmed 07-14, hrcargo 07-17 both false-alarmed as hard errors).
+    declined = ", ".join(f"'{c}'" for c in USER_DECLINED_CODES)
+    # `info_class` splits working-as-designed rows from real failures, so
+    # neither raises the ⚠️ flag: 'paywall' is a free user tapping a locked
+    # feature (bellmed 07-14, hrcargo 07-17 both false-alarmed as hard
+    # errors), 'declined' is the user backing out of one of our own confirm
+    # dialogs.
     hogql = (
         "SELECT event, "
-        "startsWith(coalesce(properties.error_code, ''), 'feature_locked') AS paywall, "
+        "multiIf("
+        "startsWith(coalesce(properties.error_code, ''), 'feature_locked'), 'paywall', "
+        f"coalesce(properties.error_code, '') IN ({declined}), 'declined', "
+        "'') AS info_class, "
         "count() AS n, count(DISTINCT distinct_id) AS users "
         "FROM events WHERE timestamp >= now() - INTERVAL 12 HOUR "
-        f"AND event IN ({quoted}) GROUP BY event, paywall ORDER BY n DESC"
+        f"AND event IN ({quoted}) GROUP BY event, info_class ORDER BY n DESC"
     )
     try:
         resp = httpx.post(
@@ -91,15 +101,15 @@ def _error_check_lines() -> list[str]:
     if not rows:
         return ["🩺 Errors (12h): ✅ none"]
 
-    has_hard = any(r[0] in HARD_ERROR_EVENTS and not bool(r[1]) for r in rows)
+    has_hard = any(r[0] in HARD_ERROR_EVENTS and not r[1] for r in rows)
     lines = [
         "🩺 Errors (12h): ⚠️" if has_hard else "🩺 Errors (12h): ✅ no hard errors"
     ]
     for i, row in enumerate(rows):
-        event, paywall, n, users = row[0], bool(row[1]), int(row[2]), int(row[3])
+        event, info_class, n, users = row[0], row[1] or "", int(row[2]), int(row[3])
         branch = "└─" if i == len(rows) - 1 else "├─"
-        if paywall:
-            info = " (info · paywall)"
+        if info_class:
+            info = f" (info · {info_class})"
         elif event in HARD_ERROR_EVENTS:
             info = ""
         else:
