@@ -840,16 +840,23 @@ exit strategy is growing MRR.
     and "approved" are two separate flags. The public page still says
     "Pending approval..." and carries `noindex`; site search, the
     *-alternatives lists and compare pages all wait on the second flag.
-    Third-party guides say approval takes 1-3 business days → check
-    saashub.com/outmass around 08-19/20 (the "Pending approval..." line
-    disappearing is the signal). Past ~08-24 still pending: email
-    contacts@saashub.com referencing the verified listing. Never resubmit.
-  - **alternativeto.net:** normal queue is "a few months" and pending apps
-    are invisible to everyone. "Get reviewed sooner" = one-time $5 priority
-    review (their FAQ: usually 1-2 business days, same approval criteria,
-    refundable until reviewed). Recommended: pay it — impressions are the
-    bottleneck and this is the cheapest lever available. Ali's card, Ali's
-    call.
+    SaaSHub's own manage UI (2026-08-17) says "Pending approval... up to
+    32 days" — that overrides the third-party "1-3 business days" guides.
+    The $75 Priority+ (queue jump, non-guaranteed newsletter, 7-day
+    homepage feature) was declined 08-17: the listing page is already live
+    and verified, and the money buys less than a free G2 listing does.
+    Check saashub.com/outmass weekly; only if still pending past ~09-20
+    email contacts@saashub.com referencing the verified listing. Never
+    resubmit.
+  - **alternativeto.net:** ✅ APPROVED 2026-08-17 after Ali paid the $5
+    priority review (worked as advertised: same-day-to-24h). Listing live
+    with screenshots, UK origin, Chrome+Edge platforms. GMass and
+    Mailmeteor alternative-pairings already linked from the original
+    submission; remaining: Ali adds the YAMM pairing + ♥s the pairings
+    (each sits at 0 likes, one like lifts them above other zero-like
+    rows). Re-scrape gmass/mailmeteor/yamm pages in a few days to confirm
+    cross-listing renders (note: their alternatives lists lazy-load —
+    a markdown scrape can miss entries that ARE there; 08-17 false alarm).
   - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
     the directory pages are noindex-while-pending, so `site:` checks before
     ~08-24 measure nothing.
