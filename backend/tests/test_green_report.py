@@ -159,6 +159,44 @@ def test_gate_one_says_which_process_it_read():
 # ── The two front-ends cannot drift ──
 
 
+def test_freshness_canary_quiet_on_recent_activity():
+    """A row touched within 24h keeps the canary informational."""
+    now = datetime.now(timezone.utc)
+    rows = [_row(), _row()]
+    rows[0]["last_activity_at"] = (now - timedelta(hours=2)).isoformat()
+    rows[1]["last_activity_at"] = (now - timedelta(days=9)).isoformat()
+
+    lines = build(_db(rows))
+    fresh = [l for l in lines if "freshest activity" in l.text]
+    assert len(fresh) == 1
+    assert fresh[0].mark == ""  # INFO
+    assert "2.0h ago" in fresh[0].text
+    assert "STALE" not in fresh[0].text
+
+
+def test_freshness_canary_flags_a_stale_read():
+    """When the NEWEST activity the read can see is older than a day, the
+    canary flips to a warning — the 2026-08-17/18 morning reports described
+    a ~17h-old world and nothing in them said so."""
+    now = datetime.now(timezone.utc)
+    rows = [_row()]
+    rows[0]["last_activity_at"] = (now - timedelta(hours=40)).isoformat()
+
+    lines = build(_db(rows))
+    fresh = [l for l in lines if "freshest activity" in l.text]
+    assert len(fresh) == 1
+    assert fresh[0].mark == "check"
+    assert "STALE" in fresh[0].text
+
+
+def test_freshness_canary_survives_missing_timestamps():
+    rows = [_row()]
+    rows[0]["last_activity_at"] = None
+
+    lines = build(_db(rows))
+    assert any("no activity timestamps" in l.text for l in lines)
+
+
 def test_rhythm_says_not_configured_without_a_key():
     """The test env has no PostHog key — the section must say so rather
     than vanish or crash the report."""

@@ -241,6 +241,28 @@ def build(db, *, role: str = "beat") -> list[Line]:
     rows = _rows(db)
     out: list[Line] = [Line(INFO, f"{len(rows)} user row(s)")]
 
+    # ── Freshness canary ──
+    # On 2026-08-17 and 08-18 the 07:00 UTC scheduled run reported a world
+    # ~14-17 hours old — lucia's confirmed renewal, a new subscriber and a
+    # 0.2.2 sighting all sat in the database while the morning report denied
+    # them. Every ad-hoc run read fresh. A report that can quietly describe
+    # yesterday must say how old its newest evidence is, for the same reason
+    # it refuses to describe an empty table: wrongness must be visible.
+    newest = None
+    for r in rows:
+        age = _age_days(r.get("last_activity_at"))
+        if age is not None and (newest is None or age < newest):
+            newest = age
+    if newest is None:
+        out.append(Line(CHECK, "freshness: no activity timestamps at all"))
+    else:
+        hours = newest * 24
+        out.append(Line(
+            INFO if hours <= 24 else CHECK,
+            f"freshest activity in this read: {hours:.1f}h ago"
+            + ("" if hours <= 24 else " — this read may be STALE"),
+        ))
+
     # ── Gate 1 ──
     out.append(Line(HEAD, "GATE 1 — Stripe key"))
     mode = _stripe_mode(STRIPE_SECRET_KEY)
