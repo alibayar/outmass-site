@@ -852,9 +852,11 @@ exit strategy is growing MRR.
     priority review (worked as advertised: same-day-to-24h). Listing live
     with screenshots, UK origin, Chrome+Edge platforms. GMass and
     Mailmeteor alternative-pairings already linked from the original
-    submission; remaining: Ali adds the YAMM pairing + ♥s the pairings
-    (each sits at 0 likes, one like lifts them above other zero-like
-    rows). Re-scrape gmass/mailmeteor/yamm pages in a few days to confirm
+    submission (they rode along with the paid review). YAMM pairing
+    suggested 08-17 → sits in the separate suggestion-moderation queue
+    ("can take a while", no paid fast-track, nothing is lost). Remaining:
+    Ali ♥s the live GMass/Mailmeteor pairings (each at 0 likes; one like
+    lifts them above the zero-like rows). Re-scrape gmass/mailmeteor/yamm pages in a few days to confirm
     cross-listing renders (note: their alternatives lists lazy-load —
     a markdown scrape can miss entries that ARE there; 08-17 false alarm).
   - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
