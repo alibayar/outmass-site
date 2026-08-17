@@ -834,8 +834,25 @@ exit strategy is growing MRR.
   ~10k/day) + auto-spread a very large list over several days (GMass-style "N/day").
   Phase 1 (30/min pacing + warning) already protects business accounts; Phase 2
   matters most for personal accounts.
-- **Marketing:** Quora drip answers (drafts ready), alternativeto.net submission
-  (reminder set 2026-06-27, after the 7-day account-age gate), SaaSHub.
+- **Marketing:** Quora drip answers (drafts ready). Directory submissions went
+  out 2026-08-16; follow-through (#60) now has measured dates, not guesses:
+  - **SaaSHub:** listing live + ownership VERIFIED same day — but "verified"
+    and "approved" are two separate flags. The public page still says
+    "Pending approval..." and carries `noindex`; site search, the
+    *-alternatives lists and compare pages all wait on the second flag.
+    Third-party guides say approval takes 1-3 business days → check
+    saashub.com/outmass around 08-19/20 (the "Pending approval..." line
+    disappearing is the signal). Past ~08-24 still pending: email
+    contacts@saashub.com referencing the verified listing. Never resubmit.
+  - **alternativeto.net:** normal queue is "a few months" and pending apps
+    are invisible to everyone. "Get reviewed sooner" = one-time $5 priority
+    review (their FAQ: usually 1-2 business days, same approval criteria,
+    refundable until reviewed). Recommended: pay it — impressions are the
+    bottleneck and this is the cheapest lever available. Ali's card, Ali's
+    call.
+  - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
+    the directory pages are noindex-while-pending, so `site:` checks before
+    ~08-24 measure nothing.
 
 ---
 
