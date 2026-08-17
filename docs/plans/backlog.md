@@ -862,6 +862,15 @@ exit strategy is growing MRR.
   - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
     the directory pages are noindex-while-pending, so `site:` checks before
     ~08-24 measure nothing.
+  - **G2 Digital Markets:** submitted 2026-08-17 via
+    app.g2digitalmarkets.com (account: support@getoutmass.com, company
+    Metis Information Technologies Ltd, UK). Their own confirmation screen
+    says review within 1-2 business days → publishes on Capterra; add
+    GetApp + Software Advice from the panel after approval. Every section
+    was audited against the live product; the AI draft's two real errors
+    were caught before submit (calendar-month quota reset claim — ours is
+    anchor-day; English-only language list — we ship 12+). Still to do:
+    the separate G2.com profile via sell.g2.com/create-a-profile.
 
 ---
 
