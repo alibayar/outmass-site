@@ -834,6 +834,12 @@ exit strategy is growing MRR.
   ~10k/day) + auto-spread a very large list over several days (GMass-style "N/day").
   Phase 1 (30/min pacing + warning) already protects business accounts; Phase 2
   matters most for personal accounts.
+  - Market datapoint #2 (2026-08-18): Mary Bass (Business Solutions Weekly,
+    #31 prospect) chose QuickMail ($49/mo, 5k emails) over us for 6k contacts
+    at a-few-per-day over weeks — "better able to handle that volume." The
+    honest read: that job needs inbox rotation + warmup, not just auto-spread;
+    entering it is a category change, not a feature. (Datapoint #1 was Alan /
+    per-recipient attachments → SecureMailMerge, 2026-07-06.)
 - **Marketing:** Quora drip answers (drafts ready). Directory submissions went
   out 2026-08-16; follow-through (#60) now has measured dates, not guesses:
   - **SaaSHub:** listing live + ownership VERIFIED same day — but "verified"
