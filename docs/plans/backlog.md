@@ -871,14 +871,12 @@ exit strategy is growing MRR.
     and "approved" are two separate flags. The public page still says
     "Pending approval..." and carries `noindex`; site search, the
     *-alternatives lists and compare pages all wait on the second flag.
-    SaaSHub's own manage UI (2026-08-17) says "Pending approval... up to
-    32 days" — that overrides the third-party "1-3 business days" guides.
-    The $75 Priority+ (queue jump, non-guaranteed newsletter, 7-day
-    homepage feature) was declined 08-17: the listing page is already live
-    and verified, and the money buys less than a free G2 listing does.
-    Check saashub.com/outmass weekly; only if still pending past ~09-20
-    email contacts@saashub.com referencing the verified listing. Never
-    resubmit.
+    ✅ APPROVED 2026-08-19 — the free queue took 3 days (their own UI
+    threatened "up to 32"; the $75 Priority+ declined on 08-17 stayed in
+    the pocket). Verified from outside: "Pending approval" gone from the
+    public page, site search returns OutMass. Remaining: the
+    *-alternatives cross-lists (gmass/mailmeteor/yamm) don't surface us
+    yet — they rank by votes; check weekly, don't force.
   - **alternativeto.net:** ✅ APPROVED 2026-08-17 after Ali paid the $5
     priority review (worked as advertised: same-day-to-24h). Listing live
     with screenshots, UK origin, Chrome+Edge platforms. GMass and
