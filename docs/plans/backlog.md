@@ -891,6 +891,20 @@ exit strategy is growing MRR.
   - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
     the directory pages are noindex-while-pending, so `site:` checks before
     ~08-24 measure nothing.
+  - **SoftwareSuggest (India):** submitted 2026-08-19, status "Unapproved"
+    (their review, up to 3 business days). Free tier; vendor profile HQ set
+    to United Kingdom (signup widget locks HQ to phone country — the
+    portal's Company Profile does not). Full listing: 12 features, 11
+    languages, 3 plans, 5 screenshots (compressed under their 150 KB cap),
+    6 FAQs (no URLs allowed in answers), original-content descriptions
+    (they run plagiarism checks — G2/site copy was rewritten). Expect the
+    sales call pitching paid packages: decline, free listing is the plan.
+    Competitors linked: GMass, Mailmeteor, QuickMail (YAMM and
+    SecureMailMerge are not in their catalog).
+  - **TrustRadius:** closed to us — vendor access requires a LinkedIn
+    company page with 10+ employees (verified on the form 2026-08-19).
+  - **Softonic:** claim request sent 2026-08-19 (Certificate of
+    Incorporation + allegations text); await approval at support@.
   - **G2 Digital Markets:** submitted 2026-08-17 via
     app.g2digitalmarkets.com (account: support@getoutmass.com, company
     Metis Information Technologies Ltd, UK). Their own confirmation screen
