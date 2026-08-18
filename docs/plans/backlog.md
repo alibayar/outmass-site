@@ -846,6 +846,19 @@ exit strategy is growing MRR.
     earns the GMass "N/day" parity claim, and surfaces Starter's value at
     the exact moment someone uploads a big list. Design note + Ali onay
     before build (user-affecting).
+    - **0.2.3 release ritual addition — store-listing review pass (both
+      stores, all 13 languages), caught 2026-08-18:** (1) the live
+      listing claims "our servers never store email content" — false as
+      written: scheduled sends and follow-ups keep subject+body server-side
+      and campaigns persist for reports; soften to "sent from your own
+      Microsoft account; we never read your inbox; campaign content is
+      stored only to run scheduled sends and reports." (2) "30-day
+      money-back guarantee, no questions asked" appears in the listing —
+      either mirror it on the pricing page and EN listing (a promise in one
+      language is still a promise) or remove it; Ali decides. (3) zh (and
+      possibly other) listings have no screenshots/promo tiles — add the EN
+      set now, retake with zh UI later. Also fold in #63's new copy and any
+      claim the release makes true.
   - Market datapoint #2 (2026-08-18): Mary Bass (Business Solutions Weekly,
     #31 prospect) chose QuickMail ($49/mo, 5k emails) over us for 6k contacts
     at a-few-per-day over weeks — "better able to handle that volume." The
