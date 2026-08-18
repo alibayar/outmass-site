@@ -834,6 +834,18 @@ exit strategy is growing MRR.
   ~10k/day) + auto-spread a very large list over several days (GMass-style "N/day").
   Phase 1 (30/min pacing + warning) already protects business accounts; Phase 2
   matters most for personal accounts.
+  - **#63 — promoted out of deferral (approved 2026-08-18): one-click
+    "spread this campaign over N days".** Headline of 0.2.3; trigger = Edge
+    publishes 0.2.2 (don't reset their review queue). Bundle with #59 and
+    #56 — one locale pass ×14 files, one review, one zip. Scope: UI control
+    computing the existing daily cap + worker honoring a per-campaign day
+    budget; NOT rotation, NOT warmup (that boundary stays). The data
+    (90d): median send is 4 recipients, but 5 users fired 17 sends of
+    300+ (max 1,876 in one sitting) and nobody heeds the large-send
+    warning — the feature protects our heaviest users from themselves,
+    earns the GMass "N/day" parity claim, and surfaces Starter's value at
+    the exact moment someone uploads a big list. Design note + Ali onay
+    before build (user-affecting).
   - Market datapoint #2 (2026-08-18): Mary Bass (Business Solutions Weekly,
     #31 prospect) chose QuickMail ($49/mo, 5k emails) over us for 6k contacts
     at a-few-per-day over weeks — "better able to handle that volume." The
