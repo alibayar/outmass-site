@@ -22,7 +22,7 @@ Product Hunt (#60, marketing backlog).
 | Channel | Market | Action | Note |
 |---|---|---|---|
 | **G2 Digital Markets** | Global | app.g2digitalmarkets.com/get-listed/start | Research says G2 absorbed Capterra/GetApp/Software Advice in 2026 — one submission may now cover all four surfaces. If portals turn out separate, also file capterra.com/vendors (free tier, ~6 wk lag). Category: Mail Merge / Email Tracking — Mailmeteor and YAMM are already there. |
-| **TrustRadius** | Global | solutions.trustradius.com/claim-your-profile | Free; badges free (G2 charges for theirs). |
+| **TrustRadius** | Global | ~~solutions.trustradius.com/claim-your-profile~~ | **CLOSED TO US (verified 2026-08-19 on the actual form):** vendor access requires a LinkedIn company page with 10+ employees on LinkedIn — a solo company cannot truthfully pass. Parked indefinitely; G2+Capterra carry the review-platform leg. |
 | **Softonic claim** | Global | publishing-center.softonic.com | OutMass is already auto-listed from a store crawl — claim it, replace auto-copy. |
 | **SoftwareSuggest** | India | softwaresuggest.com/vendors | India's G2. Free tier; **decline the sales call** pitching $4k+ packages. |
 | **SourceForge** | India/Global | vendor account → Mail Merge category | They already run a live "Best Mail Merge Software in India" page. |
