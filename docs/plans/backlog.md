@@ -903,8 +903,11 @@ exit strategy is growing MRR.
     SecureMailMerge are not in their catalog).
   - **TrustRadius:** closed to us — vendor access requires a LinkedIn
     company page with 10+ employees (verified on the form 2026-08-19).
-  - **Softonic:** claim request sent 2026-08-19 (Certificate of
-    Incorporation + allegations text); await approval at support@.
+  - **Softonic:** ✅ claim APPROVED same day (2026-08-19, Certificate of
+    Incorporation did the job). Remaining 5-minute move: in the Publishing
+    Center, replace their auto-generated OutMass copy with the audited
+    G2 short+long text and check the screenshots. Bonus unlocked: reply
+    access to user reviews + visits/downloads metrics.
   - **G2 Digital Markets:** submitted 2026-08-17 via
     app.g2digitalmarkets.com (account: support@getoutmass.com, company
     Metis Information Technologies Ltd, UK). Their own confirmation screen
