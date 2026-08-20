@@ -35,7 +35,15 @@ infrastructure. The folder and this file are tracked so the path exists.
 - **A FAIL row from an IP we recognise** — our own sending path is broken.
   Fix it before tightening the DMARC policy.
 - **A FAIL row from an IP we do not** — somebody is sending as us. That is
-  what `p=reject` stops.
+  what `p=reject` stops. **But check the reverse DNS first:** if the FAIL
+  carries our own DKIM selectors (mlsend2/ms1, present-but-failing) and the
+  IP resolves to a mail-security vendor, it is the RECIPIENT's scanning
+  gateway re-injecting our legitimate mail — reprocessing breaks SPF and
+  DKIM by design. First live case 2026-08-19: 54.227.64.76 =
+  nat.perception-point.io re-sending our upgrade email inside
+  mercedesscientific.com. Broken signatures bearing our real selectors
+  cannot be forged from outside; a spoofer has no copy of our signatures
+  at all.
 - **The alignment note.** The envelope sender is `mta.getoutmass.com` and the
   header sender is `getoutmass.com`, so SPF aligns only under the relaxed
   policy we publish. Never set `aspf=s`; it would leave DKIM carrying the
