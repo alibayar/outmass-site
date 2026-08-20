@@ -712,6 +712,32 @@ async def login_redirect(
     return RedirectResponse(url=auth_url)
 
 
+def _notify_new_user(email: str) -> None:
+    """Operator ping on every first-ever sign-in (Ali, 2026-08-19: "aklım
+    hep burada kalıyor" — signups and payments must reach the phone as they
+    happen, not at the next report).
+
+    Lazy import: billing imports this module, so a top-level import back
+    would be circular. The user count is garnish — the ping must never
+    depend on it. Fires from the WEB service; if TELEGRAM_* is missing
+    there, _telegram_alert logs the drop loudly instead of losing it.
+    """
+    from routers.billing import _telegram_alert
+
+    suffix = ""
+    try:
+        from database import get_db
+
+        res = (
+            get_db().table("users").select("id", count="exact").limit(1).execute()
+        )
+        if getattr(res, "count", None):
+            suffix = f" (user #{res.count})"
+    except Exception:  # noqa: BLE001
+        pass
+    _telegram_alert(f"🆕 New user: {email}{suffix}")
+
+
 @router.get("/callback")
 async def auth_callback(
     request: Request,
@@ -894,6 +920,7 @@ async def auth_callback(
             user.get("name"),
             user.get("preferred_language"),
         )
+        background_tasks.add_task(_notify_new_user, user["email"])
 
     # Persist tokens for server-side refresh (worker, scheduled sending).
     # The access_token is ALWAYS updated (repeat consents can omit the
@@ -1375,6 +1402,7 @@ async def microsoft_auth(
             user.get("name"),
             user.get("preferred_language"),
         )
+        background_tasks.add_task(_notify_new_user, user["email"])
 
     # Save refresh token for follow-up worker (async email sending)
     if body.refresh_token:

@@ -752,6 +752,12 @@ def _activate_from_checkout_session(db, session: dict, background_tasks,
             },
             request_host,
         )
+        # Operator ping on every first activation. Rides the same replay
+        # guard as the thank-you email, so a Stripe redelivery cannot ping
+        # twice (Ali, 2026-08-19: every payment reaches the phone live).
+        _telegram_alert(
+            f"💰 New subscription: {upgraded.get('email') or user_id} → {plan}"
+        )
 
     logger.info(
         "User %s upgraded to %s (%s)",
@@ -1531,6 +1537,15 @@ def _roll_quota_on_renewal(
             "rolled over" if rolled else "already current, no-op",
             before,
             user.get("month_reset_date"),
+        )
+        # Operator ping on every paid renewal. Deliberately NOT gated on
+        # `rolled`: an invoice arriving after the backstop already rolled
+        # the month is still real money. Redeliveries are rare (this
+        # handler never returns non-2xx), so the duplicate risk is near
+        # zero while a missed payment ping would defeat the point.
+        _telegram_alert(
+            f"🔄 Renewal paid: {user.get('email') or customer_id}"
+            + ("" if rolled else " (quota already current)")
         )
     except Exception:  # noqa: BLE001
         logger.exception(

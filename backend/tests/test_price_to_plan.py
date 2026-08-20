@@ -153,7 +153,12 @@ def test_checkout_with_an_unknown_price_does_not_grant_pro(fake_db):
 
     assert resp.status_code == 200
     assert _plans_written(users) == ["starter"]
-    alert.assert_called_once()
+    # Two alerts since 2026-08-19: the unknown-price warning AND the
+    # operator payment ping (every activation pings, this one included).
+    msgs = [c.args[0] for c in alert.call_args_list]
+    assert len(msgs) == 2
+    assert any("unknown Stripe price" in m for m in msgs)
+    assert any("New subscription" in m for m in msgs)
 
 
 def test_checkout_when_stripe_cannot_be_read_does_not_grant_pro(fake_db):
@@ -179,7 +184,12 @@ def test_checkout_when_stripe_cannot_be_read_does_not_grant_pro(fake_db):
 
     assert resp.status_code == 200
     assert _plans_written(users) == ["starter"]
-    alert.assert_called_once()
+    # The guard's warning plus the payment ping (2026-08-19) — the outage
+    # alert must survive the new ping, not be replaced by it.
+    msgs = [c.args[0] for c in alert.call_args_list]
+    assert len(msgs) == 2
+    assert any("New subscription" in m for m in msgs)
+    assert any("New subscription" not in m for m in msgs)
 
 
 def test_subscription_updated_with_an_unknown_price_does_not_grant_pro(fake_db):
