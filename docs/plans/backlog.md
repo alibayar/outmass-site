@@ -891,8 +891,11 @@ exit strategy is growing MRR.
   - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
     the directory pages are noindex-while-pending, so `site:` checks before
     ~08-24 measure nothing.
-  - **SoftwareSuggest (India):** submitted 2026-08-19, status "Unapproved"
-    (their review, up to 3 business days). Free tier; vendor profile HQ set
+  - **SoftwareSuggest (India):** ✅ LIVE 2026-08-20 at
+    softwaresuggest.com/outmass — approved in under 24h (they said up to
+    3 business days). Verified from the public page: our short/long
+    descriptions, three plans and FAQs published verbatim, no mutations.
+    Original submission notes (2026-08-19): Free tier; vendor profile HQ set
     to United Kingdom (signup widget locks HQ to phone country — the
     portal's Company Profile does not). Full listing: 12 features, 11
     languages, 3 plans, 5 screenshots (compressed under their 150 KB cap),
