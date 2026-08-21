@@ -930,6 +930,15 @@ exit strategy is growing MRR.
     Center, replace their auto-generated OutMass copy with the audited
     G2 short+long text and check the screenshots. Bonus unlocked: reply
     access to user reviews + visits/downloads metrics.
+  - **G2 Digital Markets → Capterra: ✅ LIVE 2026-08-21** at
+    capterra.com/p/10057851/OutMass (3 business days; the NZ locale page
+    exists too and Google has indexed both). Verified from the public
+    page: audited description verbatim, our screenshots with our
+    captions, plans correct. Next 5-minute move: in the
+    app.g2digitalmarkets.com panel, publish the same listing to GetApp
+    and Software Advice (free, unlocks post-approval). The G2.com
+    product page attaches via the my.G2 vendor account when their sync
+    lands. Original submission notes:
   - **G2 Digital Markets:** submitted 2026-08-17 via
     app.g2digitalmarkets.com (account: support@getoutmass.com, company
     Metis Information Technologies Ltd, UK). Their own confirmation screen
