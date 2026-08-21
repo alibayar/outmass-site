@@ -930,6 +930,13 @@ exit strategy is growing MRR.
     Center, replace their auto-generated OutMass copy with the audited
     G2 short+long text and check the screenshots. Bonus unlocked: reply
     access to user reviews + visits/downloads metrics.
+  - **GetApp + Software Advice: submitted 2026-08-21, "Under review, 1-2
+    business days"** (→ expect ~08-24/25). Full channel profiles done the
+    same evening: default+category descriptions, screenshots with
+    captions, pricing details (no "downgrade anytime" claim — the panel
+    only offers upgrades), pricing URL. Listing score 72%→88%→~98%;
+    only remaining recommendation is product video (+2%), which waits
+    for the video afternoon. Reviews stay deliberately at 0 (#61).
   - **G2 Digital Markets → Capterra: ✅ LIVE 2026-08-21** at
     capterra.com/p/10057851/OutMass (3 business days; the NZ locale page
     exists too and Google has indexed both). Verified from the public
