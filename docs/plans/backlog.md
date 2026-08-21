@@ -865,6 +865,13 @@ exit strategy is growing MRR.
     honest read: that job needs inbox rotation + warmup, not just auto-spread;
     entering it is a category change, not a feature. (Datapoint #1 was Alan /
     per-recipient attachments → SecureMailMerge, 2026-07-06.)
+- **Edge 0.2.2 LIVE 2026-08-20** (uploaded 08-15 → exactly the 5 days Ali
+  predicted; verified on the public listing: "Version 0.2.2 · 13
+  languages"). Unblocks: the site email-language claim (both stores now
+  carry it — needs Ali's wording onay), 0.2.3 planning (#63 headline +
+  #59 + #56 + store-listing review pass), and starts #24's adoption
+  clock — revisit the Mail.Read first-signin flag around 08-27 once the
+  version spread drains toward 0.2.x.
 - **Review asks (#61) — trigger refined 2026-08-20:** "prospect converts"
   alone is NOT the moment. mercedes converted AND sent their first campaign
   the same week, but the first-campaign session was effortful (encoding
