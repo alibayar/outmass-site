@@ -865,6 +865,18 @@ exit strategy is growing MRR.
     honest read: that job needs inbox rotation + warmup, not just auto-spread;
     entering it is a category change, not a feature. (Datapoint #1 was Alan /
     per-recipient attachments → SecureMailMerge, 2026-07-06.)
+- **Review asks (#61) — trigger refined 2026-08-20:** "prospect converts"
+  alone is NOT the moment. mercedes converted AND sent their first campaign
+  the same week, but the first-campaign session was effortful (encoding
+  prompt, two CSV rejections, near midnight) — asking then would survey a
+  tired user, and we cannot even attribute the session to a person
+  (marketing@ ≠ necessarily Kevin). The ask fires on FELT value: a second
+  smooth campaign, good open/reply numbers on the first, or a thanked
+  support exchange — and it goes org-level through the relationship holder,
+  who routes it ("whoever drives the campaigns"). Never right after a
+  bumpy session, never "I saw you struggle" (telemetry-surveillance vibes),
+  never incentivized. Ali's instinct caught this; write it down so the
+  letter of a trigger never overrides its spirit again.
 - **Marketing:** Quora drip answers (drafts ready). Directory submissions went
   out 2026-08-16; follow-through (#60) now has measured dates, not guesses:
   - **SaaSHub:** listing live + ownership VERIFIED same day — but "verified"
