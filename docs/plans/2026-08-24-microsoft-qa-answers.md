@@ -136,6 +136,36 @@ to become the accepted one.
 - `site:learn.microsoft.com "mail merge"` — the narrow net. If it delivers
   nothing by mid-September, delete it; no loss.
 
+**First delivery, 2026-08-25 — and it was junk.** The broad alert fired within a
+day with "HOW TO MAIL MERGE IN OUTLOOK" on `ellaurel.gob.ec`, the site of a rural
+parish government in Guayas, Ecuador. Checked, because a `.gob.ec` domain ranking
+for our keyword is either very strange or very ordinary:
+
+- The parish's own site is genuine. Its `inventario.` subdomain is **hacked** and
+  serving auto-generated English spam under `/scholarship/` and `/browse/` paths
+  ("merge cells in google sheets", "free lakeside collection catalog request by
+  mail"). Classic parasite SEO: borrow a government domain's trust, spray keyword
+  pages, monetise the clicks.
+- The link Google showed leads to `reviewbooku.com/review/how-to-mail-merge-in-outlook-5043848`.
+  That page is an ad farm — one auto-spun page per keyword, ~900 words of filler
+  that never explains anything ("our platform gives you instant access... free PDF
+  download"), three Adsterra iframe slots, no product, no video, no outbound link,
+  and its own footer admits it: "(c) 2026 Review Template - Auto-generated layout."
+
+**Action: none against the spam.** It is not a competitor, not a mention of us,
+and not a link opportunity. Do not engage.
+
+**Action on the alert:** in Google Alerts, edit `"mail merge" "new outlook"` ->
+*How many* -> **Only the best results** (it defaults to "All results", which is
+what let this through). If junk still dominates after a week, add `-download
+-pdf -ebook` to the query.
+
+**One thing worth keeping from it.** Google has indexed a hacked subdomain's
+keyword page for the exact phrase our 2,400-word guide is still waiting on. That
+is another point for the authority/crawl-budget reading of the indexing problem
+(see `2026-08-24-practitioner-channels.md`) - the SERP is not judging our
+content, it has not looked at it yet.
+
 **Realistic expectation.** Checked on 2026-08-24, that tag had **five** unanswered
 questions in total and none about mail merge; over the past year we found roughly
 six mail-merge threads, all answered within days. So this is a fifteen-minutes-a-week
