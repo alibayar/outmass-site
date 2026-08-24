@@ -116,4 +116,14 @@ accepted-answer status, or traffic.
 
 | Date | Thread | Posted by | Outcome |
 |---|---|---|---|
-| _pending_ | 5945262 | Ali | — |
+| 2026-08-24 | [5945262 — Complete mail merge features in the new Outlook](https://learn.microsoft.com/en-us/answers/questions/5945262/complete-mail-merge-features-in-the-new-outlook) | Ali (bayar_ali@hotmail.com) | posted — first answer from this account; watch for upvotes / accepted status |
+
+**No link to our blog was included, deliberately.** The answer already names the
+product once; adding our own domain on top would double the promotional surface
+on a thread that is a feature request, not a help request. The blog link is held
+in reserve for a follow-up: if someone asks how the limits work or what the tool
+actually does, linking it then is welcome rather than pushy.
+
+**Check back around 2026-09-07:** did it earn upvotes, a reply, or accepted
+status? That is the measurement that tells us whether this channel is worth the
+monthly hours, and it is the first answer we can measure.
