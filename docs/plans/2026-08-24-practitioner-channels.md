@@ -138,3 +138,44 @@ outbound prospecting. Channel choice follows from that.
   visibility benefit is sales-assisted and scale-gated.
 - **Recruiting Brainfood** paid slots — sponsor-per-issue economics
   ($500–3,000). A free resource mention is the only realistic path.
+
+## Search Console baseline (2026-08-24)
+
+Recorded so the content channel can be measured rather than believed.
+
+**A four-month-old bug, found by the blog post's review and fixed the same
+day.** `docs/sitemap.xml` declared a namespace that does not exist
+(`sitemap-protocols.com` instead of `sitemaps.org`). Search Console had been
+reporting "Hatalı ad alanı — Satır 2, Etiket: urlset" on every read since the
+sitemap was submitted on 29 April. Google tolerated it and still discovered 13
+pages, but the file was flagged for four months. After the fix and a
+re-submit: **status Başarılı, 15 pages, read 24 August**.
+
+**Indexing state on the day:** 9 pages indexed, 4 not.
+
+| URL | Reason | Last crawl |
+|---|---|---|
+| blog/mail-merge-in-outlook.html | discovered, not indexed | never |
+| blog/mailmeteor-alternative-for-outlook.html | discovered, not indexed | never |
+| blog/yamm-alternative-for-outlook.html | discovered, not indexed | never |
+| blog/outlook-mail-merge-limit.html | crawled, not indexed | 29 Apr 2026 |
+
+**The diagnosis is authority, not content.** Measured before guessing: every
+one of those pages is 2,278–2,536 words, and the page Google crawled and
+rejected is the *most* internally linked on the site (six inbound links). So
+"write more" and "link more" are both answered by the data. A young domain
+gets discovered and deprioritised; the cure is external signal and time.
+
+Which is what this week's directory work actually was. AlternativeTo, SaaSHub,
+SoftwareSuggest and Capterra all went live in the eight days to 24 August, with
+GetApp, Software Advice, SourceForge and Softonic still in review — real links
+from established, frequently-crawled sites. Their effect arrives on a lag of
+weeks, and the indexing gap should close along the same curve.
+
+**Actions taken today:** sitemap namespace fixed and re-submitted; the three
+posts edited today given a truthful fresh `lastmod`; indexing requested for
+both new posts and all four unindexed URLs.
+
+**Check back around 2026-09-07:** are those four indexed? Has the Performance
+tab moved off zero impressions? Those two answers, not a feeling about the
+writing, tell us whether the content channel is working.
