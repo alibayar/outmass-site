@@ -910,6 +910,17 @@ exit strategy is growing MRR.
   - Search engines: getoutmass.com is #1 for "outmass" on Google and Bing;
     the directory pages are noindex-while-pending, so `site:` checks before
     ~08-24 measure nothing.
+  - **SourceForge (India + global):** submitted 2026-08-24 via
+    sourceforge.net/software/vendors/new — a listing REQUEST form (their
+    team reviews, "we'll be in touch"). Target shelf: their Mail Merge
+    category, which already runs indexed "Best Mail Merge Software in
+    India" pages. Two form quirks worth remembering: Product Description
+    rejects anything that looks like a URL (domain names included, so
+    outlook.office.com had to go) and caps at 1000 chars; Platforms
+    Supported means INSTALLED apps, so SaaS/Web alone is the honest
+    answer for an extension. Next step if approved: create a free
+    SourceForge account with support@ to manage the page. Paid marketing
+    packages declined as everywhere else.
   - **SoftwareSuggest (India):** ✅ LIVE 2026-08-20 at
     softwaresuggest.com/outmass — approved in under 24h (they said up to
     3 business days). Verified from the public page: our short/long
