@@ -25,54 +25,66 @@ Google for years. Answers are posted from Ali's own Microsoft account.
    staff answers are currently quoting dates that have already passed — do not
    repeat that mistake in the other direction.
 
-## Target 1 — "Complete mail merge features in the new Outlook"
+## Which account
 
-`learn.microsoft.com/answers/questions/5945262` — asked 2026-07-13, no accepted
-answer, still open. The moderator replied with a feedback-portal link and a
-roadmap mention but **no workaround**, which is what the asker needed. High
-value, low crowding.
+Post as **bayar_ali@hotmail.com**, under the name Ali Bayar. Microsoft Q&A is a
+personal-identity forum: people answer as themselves and reputation accrues to
+the person. A brand account (outmassapp@) reads corporate on a community forum,
+outmass.review@ is a test account and using it would be deceptive, and partner@
+is the tenant admin. Pick one account and stay with it — the reputation score
+is what makes later answers carry weight.
 
-> Disclosure: I build OutMass, a third-party add-in for Outlook, so treat the
-> last paragraph accordingly. The rest is just what I have had to learn.
->
-> The reason the merge is missing rather than broken: Word's mail merge drives
-> Outlook through MAPI, and only classic Outlook for Windows exposes that
-> interface. New Outlook does not, so Word tries to open classic Outlook and the
-> merge stops there. A moderator confirmed exactly this on another thread here
-> ("depends on MAPI integration, which is only available in the classic Outlook
-> for Windows"), so it is expected behaviour rather than a fault on your machine.
->
-> **What works today**
->
-> - If you need the full Word merge back: turn off the "Try the new Outlook"
->   toggle and run it from classic Outlook. Everything behaves as before.
-> - The mail merge you can see in new Outlook is the basic version: it gives
->   each recipient their own copy of the message, so nobody sees the recipient
->   list. It does not personalize the body per recipient — which is why it can
->   feel like a relabelled BCC.
->
-> **What is actually planned**
->
-> Microsoft 365 roadmap item 423047, "Mail Merge (Advanced) on Outlook on the
-> Web and new Outlook for Windows", is the one to watch. As of 24 August 2026 it
-> reads: status In development, preview August 2026, general availability
-> September 2026. Its description says fields will be replaced per recipient so
-> emails can include content such as the recipient's name. Worth noting that
-> several articles still quote earlier dates for this item that have already
-> passed, so it is worth reading the roadmap entry itself rather than a summary
-> of it.
->
-> **If you need personalization on Outlook on the web before then**, third-party
-> add-ins fill the gap — SecureMailMerge and Mailmeteor both work in the Outlook
-> ecosystem, and mine (OutMass) is a Chrome/Edge extension that merges from a
-> CSV inside Outlook on the web and sends through your own account with the
-> Graph API. Any of them beats waiting if the sends are time-sensitive.
+## What checking the threads actually showed (2026-08-24)
 
-## Target 2 — a "my merge stopped working after the upgrade" thread
+The threads we found from search are mostly **already answered**:
 
-Several are open (`5786491`, `5813458`, `5761318`, `5778805`, `5634950`). Pick
-**one** that has no complete answer yet, and adapt — do not paste this verbatim
-into several.
+| Thread | State | Verdict |
+|---|---|---|
+| 5761318 "New Outlook not sending email merge" | accepted answer covers MAPI + workaround; an MVP added that the toggle is being removed and classic can be started from the Start menu | skip |
+| 5611677 "not being received by recipient" | solid Microsoft-staff answer | skip |
+| 1822752 "limit of recipients" | accepted answer, from 2024 | skip |
+| 5945262 "Complete mail merge features" | open, no accepted answer — but the moderator already posted the roadmap card (preview Aug 2026 / GA Sept 2026, ID 423047) | answer, trimmed |
+
+**The lesson for this channel:** its value is being early on a fresh question,
+not retrofitting old ones. Every thread above was answered within days of being
+asked. Set a watch on the Outlook tags and answer new mail-merge questions on
+day one — that is how an answer becomes the accepted one and keeps earning for
+years.
+
+## Target 1 (trimmed) — "Complete mail merge features in the new Outlook"
+
+`learn.microsoft.com/answers/questions/5945262` — asked 2026-07-13, still open.
+Note it is a **feature request addressed to Microsoft**, not a help request, so
+the product mention stays to one clause at the end. Do not repeat the roadmap
+dates: the moderator's answer already shows that card.
+
+> Disclosure: I build a third-party Outlook add-in, so factor that into the last
+> line. The rest is just what I have had to learn.
+>
+> Adding the part the roadmap entry above does not explain — *why* it is missing
+> rather than broken. Word's mail merge drives Outlook through MAPI, and only
+> classic Outlook for Windows exposes that interface. New Outlook does not, so
+> Word tries to hand the merge to classic Outlook and it stops there. That is
+> also why what you are seeing looks like three half-features: the mail merge in
+> new Outlook today is the basic version, which gives each recipient their own
+> copy of the same message. It does not personalize the body per recipient,
+> which is exactly why it feels like BCC with extra steps.
+>
+> Until the Advanced version actually lands, the only way to get the full Word
+> merge is classic Outlook — turn off "Try the new Outlook", or, on builds where
+> that toggle has been removed, start Outlook (classic) from the Start menu and
+> set it as the default mail app. Worth doing before a big send anyway: Word's
+> merge has no pacing of its own, and Exchange Online allows about 30 messages a
+> minute and 10,000 recipients per rolling 24 hours, so large merges tend to
+> crawl or stop partway rather than fail loudly.
+>
+> If the sends cannot wait for September, third-party add-ins do personalization
+> on Outlook on the web today (SecureMailMerge and Mailmeteor among them; mine is
+> OutMass). Otherwise classic Outlook remains the complete answer.
+
+## Target 2 — a fresh "my merge stopped working" thread
+
+Do not paste into the old ones listed above. When a new one appears, adapt:
 
 > Disclosure: I build a third-party Outlook add-in, so I have spent more time in
 > this particular hole than is healthy.
@@ -80,15 +92,15 @@ into several.
 > This is almost always the new-Outlook switch rather than anything wrong with
 > your document or your list. Word's merge talks to Outlook over MAPI, and only
 > classic Outlook for Windows provides it; on new Outlook, Word opens (or tries
-> to open) classic Outlook and the send never happens. Two checks that confirm
-> it quickly: the messages do not appear in Sent Items, and no error is raised —
-> the merge simply completes in Word and nothing leaves.
+> to open) classic Outlook and the send never happens. Two checks that confirm it
+> quickly: the messages do not appear in Sent Items, and no error is raised — the
+> merge simply completes in Word and nothing leaves.
 >
-> The fix that works today is to turn off "Try the new Outlook" and run the
-> merge from classic Outlook. If classic is no longer installed on the machine,
-> the alternatives are to run the merge on another machine that still has it, or
-> to use a tool that sends through Microsoft Graph rather than MAPI — several
-> exist for Outlook on the web.
+> The fix that works today is to run the merge from classic Outlook. If the
+> "Try the new Outlook" toggle is gone on your build, start Outlook (classic)
+> from the Start menu and set it as the default mail app. If classic is not
+> installed at all, the alternatives are another machine that still has it, or a
+> tool that sends through Microsoft Graph rather than MAPI.
 >
 > One thing worth knowing before a big send, whichever route you take: Exchange
 > Online allows 10,000 recipients per rolling 24 hours and about 30 messages a
