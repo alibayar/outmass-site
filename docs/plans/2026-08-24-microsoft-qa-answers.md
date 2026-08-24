@@ -128,10 +128,13 @@ The `aiansweronly` filter is quietly the best one — a question whose only repl
 is an AI answer is still effectively unanswered, and a real answer there tends
 to become the accepted one.
 
-**3. Google Alert for the keyword net.** The tag alone is too narrow: mail-merge
-questions also land under Word, Office and Outlook.com tags. Create an alert for
-`site:learn.microsoft.com "mail merge" outlook` — it catches new threads across
-every tag once they are indexed.
+**3. Google Alerts for the keyword net.** ✅ Two created 2026-08-24, because
+`site:` is unreliable inside Alerts and one net alone would miss threads:
+- `"mail merge" "new outlook"` — the broad net. Also doubles as competitive
+  radar: when Microsoft actually ships Mail Merge (Advanced), this is where we
+  hear it first.
+- `site:learn.microsoft.com "mail merge"` — the narrow net. If it delivers
+  nothing by mid-September, delete it; no loss.
 
 **Realistic expectation.** Checked on 2026-08-24, that tag had **five** unanswered
 questions in total and none about mail merge; over the past year we found roughly
