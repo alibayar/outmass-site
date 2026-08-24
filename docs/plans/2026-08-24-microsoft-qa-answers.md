@@ -108,6 +108,38 @@ Do not paste into the old ones listed above. When a new one appears, adapt:
 > recipient merge will hit the per-minute ceiling and crawl, and a second day of
 > sending can stop entirely once the 24-hour recipient count is used up.
 
+## The watch (set up 2026-08-24, mechanics verified)
+
+Being early is the whole game here, so the point of this section is to see a
+question the day it appears rather than the month after.
+
+**1. Follow the tag.** Signed in as bayar_ali@hotmail.com, open the tag page and
+press Follow:
+`learn.microsoft.com/en-us/answers/tags/1214/office-outlook-platform-windows-new-outlook-windows-business/`
+That is the exact tag our first answer's thread carries — where "my merge broke
+in new Outlook" questions land.
+
+**2. Bookmark the unanswered feed.** Verified working, newest first, questions
+with no answer at all:
+`…/tags/1214/office-outlook-platform-windows-new-outlook-windows-business/?answerfilter=noanswers&orderby=createdat`
+Useful parameters, confirmed on the live site: `answerfilter=noanswers |
+unresolved | aiansweronly`, `orderby=createdat | updatedat | answercount`.
+The `aiansweronly` filter is quietly the best one — a question whose only reply
+is an AI answer is still effectively unanswered, and a real answer there tends
+to become the accepted one.
+
+**3. Google Alert for the keyword net.** The tag alone is too narrow: mail-merge
+questions also land under Word, Office and Outlook.com tags. Create an alert for
+`site:learn.microsoft.com "mail merge" outlook` — it catches new threads across
+every tag once they are indexed.
+
+**Realistic expectation.** Checked on 2026-08-24, that tag had **five** unanswered
+questions in total and none about mail merge; over the past year we found roughly
+six mail-merge threads, all answered within days. So this is a fifteen-minutes-a-week
+channel with maybe one or two genuinely answerable fresh questions a month — not a
+daily habit. Do not force it: an answer written because the calendar said so reads
+exactly like what it is.
+
 ## After posting
 
 Note the thread URL and date in this file so we do not answer the same thread
