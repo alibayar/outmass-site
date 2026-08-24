@@ -18,7 +18,7 @@
     "headline": "Mail Merge in Outlook — the Native Way vs the Easy Way",
     "description": "How to mail merge in Outlook the native way (Word + Excel) — and the easy way with attachments, open/click tracking, scheduling, and follow-ups using OutMass.",
     "datePublished": "2026-06-12",
-    "dateModified": "2026-06-12",
+    "dateModified": "2026-08-24",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/mail-merge-in-outlook.html"
@@ -112,6 +112,10 @@
     <p>There are two ways to do a <strong>mail merge in Outlook</strong>. The first is the native one Microsoft ships: you drive it from Word, pull recipients from an Excel sheet, and let Outlook do the sending. The second is to skip the Word-and-Excel dance entirely and run the merge inside Outlook on the web with a CSV. This guide covers both — the exact native steps, the limitations nobody tells you about (attachments and tracking are the big ones), and where the easy way fits.</p>
 
     <p>If you searched for "<strong>outlook mail merge with attachments</strong>" or "<strong>track mail merge outlook</strong>," you already hit the wall that brings most people here. We'll get to why, and what to do about it.</p>
+
+    <div class="highlight">
+      <p><strong>On new Outlook?</strong> The Word method below needs <em>classic</em> Outlook for Windows &mdash; Word talks to it through MAPI, which new Outlook does not expose. If your merge broke after an upgrade, that is why: <a href="does-new-outlook-have-mail-merge.html">what mail merge does and does not do in new Outlook</a>.</p>
+    </div>
 
     <div class="highlight">
       <p><strong>Short version.</strong> Native Word mail merge sends personalized bulk email through Outlook, but it can't attach per-recipient files, has zero open/click tracking, no scheduling, and no follow-ups. <a href="../index.html">OutMass</a> does the merge from a CSV inside Outlook on the web and adds all of that.</p>
@@ -273,7 +277,7 @@
     <h3>Why do mail merge emails from Outlook go to spam?</h3>
     <p>Common causes are sending too many messages too fast, spammy subject lines or content, and large file attachments. The native Word merge has no throttle, so it can outrun Microsoft's documented <strong>30-messages-per-minute</strong> send rate on Exchange Online (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Microsoft Learn</a>) — a burst that looks like spam. OutMass sends through your own mailbox at a controlled rate and uses OneDrive sharing links instead of heavy attachments, both of which help deliverability. If raw volume is the issue, see our breakdown of <a href="outlook-mail-merge-limit.html">Outlook and Microsoft 365 send limits</a>.</p>
 
-    <p class="updated-note">Last updated: June 12, 2026.</p>
+    <p class="updated-note">Last updated: August 24, 2026 &mdash; added guidance for people moved to new Outlook.</p>
 
   </div>
 </div>

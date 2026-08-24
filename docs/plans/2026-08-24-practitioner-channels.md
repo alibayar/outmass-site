@@ -10,20 +10,35 @@ August 2026; costs and gates are quoted from the channels' own pages.
 ## 0. The finding that reframes everything
 
 **Microsoft is shipping native mail merge into Outlook on the web.**
-"Outlook Mail Merge (Advanced)" sits on the Microsoft 365 roadmap with
-preview/rollout targeted **June–July 2026**, for Outlook on the web and new
-Outlook for Windows; Microsoft's own guidance tells admins to keep the classic
-Word workflow for business-critical sends. Rollout is staged and has already
-slipped more than once.
+Verified against Microsoft's own sources on 2026-08-24 (roadmap item **423047**,
+fetched from microsoft.com's release-communications feed):
 
-What it reportedly does: per-recipient personalized messages, each with its
-own To field, without Word.
+- Official name: "Outlook: Mail Merge (Advanced) on Outlook on the Web and new
+  Outlook for Windows". Status **In development**, **preview August 2026**,
+  **GA September 2026**, entry last modified 29 May 2026.
+- Microsoft's own new-vs-classic feature comparison page lists mail merge as
+  *Available* in classic Outlook and *Partially Available* in new Outlook, with
+  that row linking to roadmap 423047.
+- Word-driven mail merge **does not work in new Outlook at all** — it needs
+  MAPI, which only classic Outlook exposes; a Microsoft Q&A moderator says so
+  and gives "turn off Try the new Outlook" as the workaround. This is a live
+  pain: people whose merges broke after the upgrade are looking for an answer
+  right now.
+- What ships today is Mail Merge (Basic): each recipient gets their own copy,
+  no per-recipient personalization, recipients entered by hand.
+- Exchange Online limits are unchanged and apply regardless: 10,000 recipients
+  per rolling 24h, up to 1,000 per message, 30 messages/minute, plus a
+  tenant-wide external-recipient cap. Microsoft's own words on that page:
+  customers who need to send bulk commercial email "should use third-party
+  providers that specialize in these services."
 
-What it reportedly does **not** do (secondary sources — YNOT Mail, AdminDroid,
-Windows Forum — **not** Microsoft's own documentation): open/click tracking,
-reply detection, automated follow-ups, scheduling, rate limiting, unsubscribe
-handling, bounce/complaint processing, campaign reporting. It also stays bound
-by ordinary mailbox sending limits.
+**Correction to the first draft of this doc:** secondary sources said pilot
+June–July 2026 and listed specific missing features. The primary roadmap says
+preview August / GA September, and Microsoft says **nothing at all** about
+tracking, reply detection, follow-ups, scheduling, pacing, unsubscribe handling
+or reporting for the Advanced feature — silence, not denial. Data sources and
+licence coverage are likewise unpublished. We write "Microsoft has not said",
+never "it cannot do".
 
 Two consequences:
 

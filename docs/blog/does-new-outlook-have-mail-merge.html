@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Does the New Outlook Have Mail Merge? The 2026 Answer — OutMass</title>
+  <meta name="description" content="New Outlook can't run Word's mail merge. Here's what it does do today, why yours broke, and where Microsoft's Mail Merge (Advanced) stands on the roadmap.">
+  <meta property="og:title" content="Does the New Outlook Have Mail Merge? The 2026 Answer">
+  <meta property="og:description" content="New Outlook can't run Word's mail merge. What it does do today, why yours broke, and where Mail Merge (Advanced) stands on Microsoft's roadmap.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/does-new-outlook-have-mail-merge.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/does-new-outlook-have-mail-merge.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Does the New Outlook Have Mail Merge? What Works Today",
+    "description": "What mail merge in new Outlook and Outlook on the web can actually do today, why Word mail merge stopped working after the upgrade, and where Microsoft's Mail Merge (Advanced) stands on the roadmap.",
+    "datePublished": "2026-08-24",
+    "dateModified": "2026-08-24",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/does-new-outlook-have-mail-merge.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Does the new Outlook support mail merge using Word and Excel?",
+        "acceptedAnswer": {"@type": "Answer", "text": "No. Word's merge needs MAPI, which only classic Outlook for Windows provides. Word will try to launch classic Outlook when you start the merge; if you no longer have it, the merge cannot complete."}
+      },
+      {
+        "@type": "Question",
+        "name": "Is mail merge being removed from Outlook permanently?",
+        "acceptedAnswer": {"@type": "Answer", "text": "There is no Microsoft statement saying that. Classic Outlook still lists mail merge as available, and the roadmap has an item explicitly about extending the new Outlook version rather than retiring it."}
+      },
+      {
+        "@type": "Question",
+        "name": "I can see a mail merge option in new Outlook but it will not send. What is wrong?",
+        "acceptedAnswer": {"@type": "Answer", "text": "The basic version has been reported to fail in some tenants and configurations, and Microsoft's own community threads carry those reports. If it will not send for you, the reliable routes today are classic Outlook for a Word merge, or a tool that sends through Graph from Outlook on the web."}
+      },
+      {
+        "@type": "Question",
+        "name": "Can I do a mail merge in the web version of Outlook?",
+        "acceptedAnswer": {"@type": "Answer", "text": "You can send each person their own copy with the basic feature. For personalized content per recipient — names, companies, any column from your own list — you need Mail Merge (Advanced) when it ships, or an extension that does it now."}
+      },
+      {
+        "@type": "Question",
+        "name": "Why were my mail merge emails not received?",
+        "acceptedAnswer": {"@type": "Answer", "text": "The usual culprits are Microsoft's sending limits — messages held back once you pass 30 a minute, or a daily recipient ceiling reached after a big send — or a large identical send being filtered. Sending at a controlled pace from your own mailbox, with an unsubscribe link and a clean list, is what keeps that from happening."}
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .table-wrap { overflow-x: auto; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>Does the New Outlook Have Mail Merge? What Works Today</h1>
+    <p class="meta">Published August 24, 2026 · 8 min read</p>
+
+    <p>Every answer you find to this question disagrees with the last one. Some pages say mail merge is gone from Outlook, some say it arrived in 2025, some say it lands "early 2026." Meanwhile people whose merges worked last month are watching Word open a copy of Outlook they no longer have.</p>
+
+    <p>So this page does something simple: it separates what ships today from what is on the roadmap, and it cites Microsoft for both.</p>
+
+    <div class="highlight">
+      <p><strong>Short version.</strong> Classic Outlook for Windows still does full Word-driven mail merge. New Outlook and Outlook on the web have a <em>basic</em> mail merge that gives each recipient their own copy of the message, and Word-driven merge does not work there at all. The personalized version — Microsoft calls it <strong>Mail Merge (Advanced)</strong> — is roadmap item 423047, currently listed as preview in August 2026 and general availability in September 2026, status "In development."</p>
+    </div>
+
+    <h2 id="why-it-broke">Why your Word mail merge stopped working</h2>
+
+    <p>This is the most common version of the question, and it has a precise answer. Word's mail merge talks to Outlook through MAPI, an interface that only <strong>classic</strong> Outlook for Windows provides. New Outlook does not expose it. A moderator on Microsoft Q&amp;A — badged "Microsoft External Staff" — <a href="https://learn.microsoft.com/en-us/answers/questions/5617179/does-new-outlook-support-mail-merge-using-word-and">puts it directly</a>: mail merge in Word "depends on MAPI integration, which is only available in the classic Outlook for Windows. The New Outlook does not currently support this feature, so when you start a Mail Merge, Word will attempt to open Outlook (classic). This is expected behavior."</p>
+
+    <p>Nothing is wrong with your Word document or your Excel list. If you need Word-driven merge back today, the workaround given in that thread is to switch the <strong>Try the new Outlook</strong> toggle off and run the merge from classic Outlook.</p>
+
+    <p>Microsoft's own <a href="https://support.microsoft.com/en-us/outlook/getstarted/feature-comparison-between-new-outlook-and-classic-outlook">feature comparison between new Outlook and classic Outlook</a> puts it in one line: mail merge is <em>Available</em> in classic Outlook and <em>Partially Available</em> in new Outlook — and the link on that row points straight at the roadmap item below.</p>
+
+    <h2 id="today">What mail merge in new Outlook does today</h2>
+
+    <p>The version shipping now is Mail Merge (Basic). Microsoft's instruction is to open a new message and pick <em>Start mail merge</em> from the Send dropdown. What it does is give every recipient their own copy of the email, addressed only to them — so nobody sees the whole list. Think of it as a better BCC.</p>
+
+    <p>What it is not, yet, is personalization. There is no data file to import and no per-recipient fields: you address the message the way you address any other, and everyone gets the same body. That difference — one identical message versus a message that greets each person by name — is exactly what the Advanced version is meant to add.</p>
+
+    <h2 id="roadmap">What Mail Merge (Advanced) is supposed to do</h2>
+
+    <p>Here is the roadmap description, from Microsoft 365 roadmap item <strong>423047</strong>, "Outlook: Mail Merge (Advanced) on Outlook on the Web and new Outlook for Windows":</p>
+
+    <div class="highlight">
+      <p>"Mail Merge (Basic) will be improved upon to allow fields to be replaced by values per email address. When Mail Merge (Advanced) is launched, not only will every recipient receive their own email with only their email address in the recipients list, but the emails can further be personalized to include content such as their name."</p>
+    </div>
+
+    <p>Current state of that entry, checked on 24 August 2026: status <strong>In development</strong>, preview <strong>August 2026</strong>, general availability <strong>September 2026</strong>, last modified 29 May 2026. Platforms named are Outlook on the web and new Outlook for Windows.</p>
+
+    <p>Treat those dates as a plan, not a promise. The entry has been revised more than once since it appeared, and a good deal of the coverage you will find still quotes earlier dates that have already come and gone. We re-check the roadmap rather than repeat an old article, and we date this page when we do.</p>
+
+    <h2 id="not-said">What Microsoft has not said</h2>
+
+    <p>This is the part most pages fill in with guesses, so here is the honest version. Across the roadmap entry, Microsoft's support documentation and answers from Microsoft Q&amp;A moderators, we could not find any statement about whether Mail Merge (Advanced) will include:</p>
+
+    <ul>
+      <li>open or click tracking</li>
+      <li>detection of who replied</li>
+      <li>automated follow-ups</li>
+      <li>pacing or throttling controls of its own</li>
+      <li>unsubscribe handling, bounce processing or complaint handling</li>
+      <li>campaign reporting</li>
+    </ul>
+
+    <p>Not "Microsoft says no" — Microsoft says nothing. The same is true of which data sources it will import from and which licences will receive it. Anyone who tells you the finished feature will or will not do these things is guessing. We will update this page when Microsoft publishes more.</p>
+
+    <h2 id="limits">The limits that do not change either way</h2>
+
+    <p>Whatever the merge button ends up doing, the mailbox underneath it has the same ceilings. From Microsoft's <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits">Exchange Online limits</a> service description:</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Limit</th><th scope="col">Value</th></tr></thead>
+        <tbody>
+          <tr><td>Recipient rate limit</td><td>10,000 recipients per rolling 24 hours, per mailbox</td></tr>
+          <tr><td>Recipient limit per message</td><td>customizable up to 1,000 recipients (many mailboxes default to 500)</td></tr>
+          <tr><td>Message rate limit</td><td>30 messages per minute</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>There is also a tenant-wide external recipient limit tied to your licence count, documented by the Exchange team. Personal <a href="https://support.microsoft.com/en-us/office/sending-limits-in-outlook-com-279ee200-594c-40f0-9ec8-bb6af7735c2e">Outlook.com accounts have their own published limits</a>, and Microsoft notes they vary with account history.</p>
+
+    <p>Two different ceilings explain two different symptoms. Go faster than 30 messages a minute and the excess is held back and carried into the following minutes — the send crawls rather than stops. Pass the daily recipient ceiling and the rest of the batch stops going out until the 24-hour window rolls; that is the one people meet on day two of a big send. We wrote the full arithmetic up in <a href="outlook-mail-merge-limit.html">Outlook's send limits explained</a>.</p>
+
+    <p>Microsoft's guidance on that same page is blunt, and it is fair: customers "who need to send legitimate bulk commercial email (for example, customer newsletters) should use third-party providers that specialize in these services." If you are sending a newsletter to 50,000 strangers, a mailbox is the wrong tool and no merge button will fix that. If you are sending 200 personalized emails to people who know you, from the address they recognise, the mailbox is exactly right — you just need something around it.</p>
+
+    <h2 id="what-to-do">So what should you do today?</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">If you…</th><th scope="col">Do this</th></tr></thead>
+        <tbody>
+          <tr><td>Use classic Outlook and just want the old merge</td><td>Nothing changed. Word + Excel still works — <a href="mail-merge-in-outlook.html">step-by-step here</a>.</td></tr>
+          <tr><td>Got moved to new Outlook and your merge broke</td><td>Turn off "Try the new Outlook" to get classic back, or run the merge in Outlook on the web with a tool that does not need MAPI.</td></tr>
+          <tr><td>Only need everyone to get their own copy, no personalization</td><td>Mail Merge (Basic) in new Outlook already does that.</td></tr>
+          <tr><td>Need names, fields, tracking, follow-ups or reports</td><td>That is not in the box today, on any Outlook — <a href="#where-outmass-fits">here is what we built for it</a>.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="where-outmass-fits">Where OutMass fits</h2>
+
+    <p>OutMass is a Chrome and Edge extension that runs inside Outlook on the web. It reads a CSV, turns your columns into merge tags, and sends each message through your own Microsoft account with the official Graph API — so what lands in the recipient's inbox is a normal email from your address.</p>
+
+    <p>The parts it adds are the ones no merge button covers: open and click tracking, a daily check of your inbox for real replies, follow-ups that skip anyone who has already answered, campaigns scheduled for a later time, a per-day cap that spreads a long list over several days so you stay under the daily recipient ceiling, A/B subject testing, and a campaign report you can export. Sends are paced at roughly 30 a minute on every plan, which is the ceiling Microsoft sets.</p>
+
+    <p>Which of those you get depends on the plan: mail merge, open tracking and campaign reports are on the free tier; scheduled sending, the daily cap and per-recipient CSV export come with Starter at $9 a month; follow-ups, A/B subject testing and the AI writer with Pro at $19. The full breakdown is on the <a href="../pricing.html">pricing page</a>.</p>
+
+    <p>It works today, on the Outlook you already have, and it keeps working whatever September brings — because the value was never the merge itself. It is knowing what happened after you hit send.</p>
+
+    <div class="cta">
+      <h3>Try OutMass — free up to 250 emails/month</h3>
+      <p>CSV mail merge and open tracking inside Outlook on the web, free. Scheduling and daily caps on Starter; reply-aware follow-ups on Pro. One click and a Microsoft sign-in.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
+      <div style="margin-top:12px;font-size:13px;"><a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Also available for Microsoft Edge →</a></div>
+    </div>
+
+    <h2 id="faq">Questions people actually ask</h2>
+
+    <h3>Does the new Outlook support mail merge using Word and Excel?</h3>
+    <p>No. Word's merge needs MAPI, which only classic Outlook for Windows provides. Word will try to launch classic Outlook when you start the merge; if you no longer have it, the merge cannot complete.</p>
+
+    <h3>Is mail merge being removed from Outlook permanently?</h3>
+    <p>There is no Microsoft statement saying that. Classic Outlook still lists mail merge as available, and the roadmap has an item explicitly about extending the new Outlook version rather than retiring it.</p>
+
+    <h3>I can see a mail merge option in new Outlook but it will not send. What is wrong?</h3>
+    <p>The basic version has been reported to fail in some tenants and configurations, and Microsoft's own community threads carry those reports. If it will not send for you, the reliable routes today are classic Outlook for a Word merge, or a tool that sends through Graph from Outlook on the web.</p>
+
+    <h3>Can I do a mail merge in the web version of Outlook?</h3>
+    <p>You can send each person their own copy with the basic feature. For personalized content per recipient — names, companies, any column from your own list — you need Mail Merge (Advanced) when it ships, or an extension that does it now.</p>
+
+    <h3>Why were my mail merge emails not received?</h3>
+    <p>The usual culprits are Microsoft's sending limits — messages held back once you pass 30 a minute, or a daily recipient ceiling reached after a big send — or a large identical send being filtered. Sending at a controlled pace from your own mailbox, with an unsubscribe link and a clean list, is what keeps that from happening.</p>
+
+    <p class="updated-note">This page tracks Microsoft 365 roadmap item 423047. Roadmap state last checked 24 August 2026 (status "In development", preview August 2026, GA September 2026). Dates on that item have changed before; we re-check it rather than quoting an old article.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>
