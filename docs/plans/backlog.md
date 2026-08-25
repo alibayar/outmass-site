@@ -921,6 +921,42 @@ exit strategy is growing MRR.
     answer for an extension. Next step if approved: create a free
     SourceForge account with support@ to manage the page. Paid marketing
     packages declined as everywhere else.
+  - **SourceForge: APPROVED 2026-08-25.** Page live at
+    `sourceforge.net/software/product/OutMass/`, created by SourceForge from
+    our 08-24 request; Logan Abbott emailed asking us to claim it. Verified
+    independently (not via the email link): our submitted description is
+    published verbatim, categories Bulk Email + Mail Merge, company shown as
+    Metis Information Technologies Ltd / United Kingdom / Founded 2026,
+    website link to getoutmass.com, Platforms "Cloud", Training
+    "Documentation", Support "Online". Cross-listed under Alternatives:
+    ActiveCampaign, BrandMail, GBlast, MailMerge365, EmailOctopus, **GMass**,
+    lemlist - the GMass and MailMerge365 adjacency is the whole point of this
+    listing.
+    - **Ali's move (not mine - account creation):** go to sourceforge.net
+      directly, sign up with **support@getoutmass.com** (shared box; the page
+      will attract vendor-package sales mail), then "Claim this page" on the
+      product page. Decline the paid marketing packages as everywhere else.
+    - **Two edits once access lands:**
+      1. The description says "Automated follow-ups re-contact non-openers and
+         stop the moment someone replies." The mechanism is a daily reply
+         check (`reply_detector`, beat `crontab(hour=5)`), which the previous
+         sentence already discloses. Same overstatement corrected on the blog
+         on 08-24 - change to "stop once a reply is detected". `not_opened`
+         itself is accurate: `followup_worker` excludes repliers regardless of
+         condition.
+      2. "Videos and Screen Captures" is an empty section. The 5 screenshots
+         recompressed for SoftwareSuggest fit here; the YouTube gap video
+         (channel plan item 4) fills the video slot on this page too, making
+         it the fourth surface that video would serve (Edge, G2, site,
+         SourceForge).
+    - Reviews sit at 0.0/5, "hasn't been reviewed yet". Another destination for
+      the #61 trigger when a user's value is *felt* - never solicited, never
+      incentivised.
+  - **SoftwareSuggest language count is stale:** submitted 08-19 as "11
+    languages"; the product ships 13 (14 locale files - `zh` and `zh_CN` are the
+    same language). Understated rather than oversold, so not urgent; fix on the
+    next portal visit. `CLAUDE.md` carried the same stale 11 and was corrected
+    2026-08-25.
   - **SoftwareSuggest (India):** ✅ LIVE 2026-08-20 at
     softwaresuggest.com/outmass — approved in under 24h (they said up to
     3 business days). Verified from the public page: our short/long
