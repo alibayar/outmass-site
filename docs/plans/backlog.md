@@ -936,6 +936,20 @@ exit strategy is growing MRR.
       directly, sign up with **support@getoutmass.com** (shared box; the page
       will attract vendor-package sales mail), then "Claim this page" on the
       product page. Decline the paid marketing packages as everywhere else.
+    - **Claim SUBMITTED 2026-08-25**, "Claim Received - being evaluated".
+      Account: username `outmass`, support@getoutmass.com, country Turkey
+      (personal/phone country; the listing's own country must stay United
+      Kingdom - verify after approval). Claim form: Founder, company number
+      17114932 given in Comments, paid-advertising toggle set to No,
+      LinkedIn left blank rather than invented. Company Size answered with
+      the smallest true option; the TrustRadius lesson is that inflating it
+      buys a listing we would then have to defend.
+      The paid pitch arrived on the confirmation page itself - "marketing
+      packages... hundreds of software buyers per month" plus buyer-intent
+      data. Declined by default; the free listing is the whole plan.
+      Note the consent that came bundled with Submit: "I agree to receive
+      communications from SourceForge.net" is not separable from the terms
+      checkbox, so sales mail to support@ is expected, not a leak.
     - **Two edits once access lands:**
       1. The description says "Automated follow-ups re-contact non-openers and
          stop the moment someone replies." The mechanism is a daily reply
