@@ -5,8 +5,9 @@ own extension of it: stop varying the CSV row limit by plan. One limit of
 **10,000 rows** for everyone; whichever monthly quota the user is on does the
 actual work.
 
-**Status:** IMPLEMENTED 2026-08-25, both halves approved by Ali. Backend
-suite 1141 passed / 1 skipped; `node extension/tests/run-all.js` green across
+**Status:** IMPLEMENTED 2026-08-25 and shipping DARK behind
+`UPLOAD_LIMIT_FOLLOWS_QUOTA` (default off) — see §8. Backend
+suite 1143 passed / 1 skipped; `node extension/tests/run-all.js` green across
 all eleven suites. Ships with 0.2.3 — no separate deploy, no migration.
 
 **Release-notes line, since this is user-visible:** free and Starter users can
@@ -39,14 +40,14 @@ user, and leaves the remainder `pending` for the next month
 
 **`backend/config.py`**
 
-- Add `CSV_UPLOAD_ROW_LIMIT = int(os.getenv("CSV_UPLOAD_ROW_LIMIT", "10000"))`.
-- `FREE_UPLOAD_ROW_LIMIT` / `STARTER_UPLOAD_ROW_LIMIT` / `PRO_UPLOAD_ROW_LIMIT`
-  keep existing as deprecated aliases of the new value, so any deployment that
-  reads them keeps working. `railway-env.md` lists all three as optional with
-  defaults, so nothing should be set today — worth confirming before deploy.
-- `upload_limit_for_plan(plan)` returns `CSV_UPLOAD_ROW_LIMIT` regardless of
-  plan. The function keeps its signature so `/settings` (`upload_limit`) does
-  not change shape for older clients.
+- `UPLOAD_LIMIT_FOLLOWS_QUOTA` (default **false**) and
+  `CSV_UPLOAD_ROW_LIMIT` (default 10000).
+- The three per-plan limits stay exactly as they were, read from the same env
+  vars as before. They are what answers while the flag is off — confirmed
+  unset in Railway by Ali on 2026-08-25, so the defaults are live.
+- `upload_limit_for_plan(plan)` branches on the flag at CALL time, so one
+  switch moves the upload endpoint and `/settings` together and neither can
+  answer differently from the other.
 
 **`backend/routers/campaigns.py`**
 
@@ -60,14 +61,20 @@ remains the second bound.
 
 ## 3. What the user sees
 
-| | Before | After |
+| | Flag off (today) | Flag on |
 |---|---|---|
 | Free, 800-row list | 413, raw English, dead end | Uploads. Merge preview works. 250 send now, 550 stay pending. |
-| Free, 10,001-row list | 413 | 413 (unchanged — the ceiling is now the same for everyone) |
+| Free, 10,001-row list | 413 | 413 — the ceiling is real for everyone |
 | Starter, 3,000-row list | 413 | Uploads. 2,500 send now, 500 pending. |
-| Pro | unchanged | unchanged |
+| Pro, 10,000-row list | uploads | uploads |
 
-Nobody loses a capability. Nobody gains send volume: the quota is untouched.
+Nobody loses a capability in either state. Nobody gains send volume: the
+quota is untouched. Verified by running both states:
+
+```
+flag off  free 250   starter 2500   pro 10000   unknown 250
+flag on   free 10000 starter 10000  pro 10000   unknown 10000
+```
 
 ## 4. The message that had to change with it (approved)
 
@@ -122,9 +129,14 @@ Three decisions inside that helper worth keeping:
 
 ## 6. Rollback
 
-Set `CSV_UPLOAD_ROW_LIMIT=250` in Railway (web service) and the old free
-behaviour returns without a deploy. Existing pending contacts are unaffected
-either way — nothing is migrated, no schema changes.
+Delete `UPLOAD_LIMIT_FOLLOWS_QUOTA` (or set it to `false`) on the Railway web
+service and every plan is back to its old limit without a deploy. Existing
+pending contacts are unaffected either way — nothing is migrated, no schema
+changes.
+
+A contact list uploaded while the flag was on stays uploaded if the flag goes
+off; the limit is checked at upload, not at send. That is the intended
+behaviour — a rollback should not strand a campaign someone already built.
 
 ## 7. Notes for whoever implements
 
@@ -134,24 +146,37 @@ either way — nothing is migrated, no schema changes.
 - The sidebar has no client-side row check; the server value is authoritative
   and `/settings` already exposes it as `upload_limit`.
 
-## 8. Deploy sequencing — the one way this goes wrong
+## 8. Deploy sequencing
 
 The two halves ship on different clocks. The backend takes effect on the next
 Railway deploy of the web service; the message needs a store release and days
-of review. Deploy the backend first and every user gets the relaxed limit while
-their extension still says the leftovers go out "after your monthly reset" -
-exactly the combination §4 exists to prevent, and it would be live for however
-long 0.2.3 sits in review.
+of review. Deploy the backend live and every user would get the relaxed limit
+while their installed extension still says the leftovers go out "after your
+monthly reset" — exactly the pairing §4 exists to prevent, for however long
+0.2.3 sits in review.
 
-**So flag it off until the extension can explain it.** Before (or with) the
-next backend deploy, set on the Railway **web** service:
+So the change ships **dark**, the way `INACTIVITY_NUDGE_ENABLED` does. Nothing
+to set before deploying: the flag defaults to false, so forgetting it changes
+nothing, which is the safe direction to forget in.
+
+**On the day 0.2.3 is published on BOTH stores**, set on the Railway **web**
+service:
 
 ```
-CSV_UPLOAD_ROW_LIMIT=250
+UPLOAD_LIMIT_FOLLOWS_QUOTA=true
 ```
 
-The code is then deployed and dormant. On the day 0.2.3 is published on BOTH
-stores, delete that variable and the change goes live with its message
-attached. Same knob as the rollback in §6, used forward instead of backward.
+### Why it is a switch and not a number
+
+The first version of this plan said to hold the change back by setting
+`CSV_UPLOAD_ROW_LIMIT=250`. **Ali caught that it would have capped Starter and
+Pro at 250 rows too** — that single value had replaced all three per-plan
+limits, so the "rollback" would have taken 9,750 rows away from every paying
+customer. It was one command away from being deployed.
+
+The lesson is in the shape, not the number: a flag that changes behaviour must
+be a switch between two known-good states. A magic value that happens to equal
+the old default for one plan is not a rollback, it is a coincidence that
+expires the moment the plans differ.
 
 Ali owns Railway; nothing here touches it.

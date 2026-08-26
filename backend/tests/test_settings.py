@@ -19,10 +19,8 @@ def test_get_settings_exposes_plan_limits(client, auth_bypass, fake_db):
     resp = client.get("/settings")
     data = resp.json()
     assert data["monthly_limit"] == 250
-    # Upload limit no longer tracks the plan — the monthly quota does the
-    # gating, so a free user may upload the whole list and watch it send
-    # across resets instead of being turned away at the door (2026-08-25).
-    assert data["upload_limit"] == 10000
+    # Flag off until 0.2.3 publishes, so the per-plan limit still answers.
+    assert data["upload_limit"] == 250
 
 
 def test_plan_limit_values_are_current():
@@ -38,25 +36,38 @@ def test_plan_limit_values_are_current():
         PRO_UPLOAD_ROW_LIMIT,
         monthly_limit_for_plan,
         upload_limit_for_plan,
+        UPLOAD_LIMIT_FOLLOWS_QUOTA,
     )
 
     assert FREE_PLAN_MONTHLY_LIMIT == 250
     assert STARTER_PLAN_MONTHLY_LIMIT == 2500
     assert PRO_PLAN_MONTHLY_LIMIT == 10000
-    # One upload ceiling for everyone; the deprecated per-plan names are
-    # aliases of it, so nothing that still imports them sees a stale number.
+    assert FREE_UPLOAD_ROW_LIMIT == 250
+    assert STARTER_UPLOAD_ROW_LIMIT == 2500
+    assert PRO_UPLOAD_ROW_LIMIT == 10000
     assert CSV_UPLOAD_ROW_LIMIT == 10000
-    assert FREE_UPLOAD_ROW_LIMIT == CSV_UPLOAD_ROW_LIMIT
-    assert STARTER_UPLOAD_ROW_LIMIT == CSV_UPLOAD_ROW_LIMIT
-    assert PRO_UPLOAD_ROW_LIMIT == CSV_UPLOAD_ROW_LIMIT
     # helpers map correctly + unknown plan falls back to free
     assert monthly_limit_for_plan("pro") == 10000
     assert monthly_limit_for_plan("starter") == 2500
     assert monthly_limit_for_plan("free") == 250
     assert monthly_limit_for_plan("garbage") == 250
-    # The quota still separates the plans; the upload limit no longer does.
+    # The 2026-08-25 change ships dark: with the flag off, every plan keeps
+    # the limit it has today. A paying user must not lose upload room while
+    # the flag waits for the 0.2.3 store release.
+    assert UPLOAD_LIMIT_FOLLOWS_QUOTA is False
+    assert upload_limit_for_plan("pro") == 10000
+    assert upload_limit_for_plan("starter") == 2500
+    assert upload_limit_for_plan("free") == 250
+    assert upload_limit_for_plan(None) == 250
+
+
+def test_upload_limit_follows_quota_when_flag_on(monkeypatch):
+    """Flag on: one ceiling for everyone, and nobody is capped below it."""
+    import config
+
+    monkeypatch.setattr(config, "UPLOAD_LIMIT_FOLLOWS_QUOTA", True)
     for plan in ("pro", "starter", "free", "garbage", None):
-        assert upload_limit_for_plan(plan) == 10000
+        assert config.upload_limit_for_plan(plan) == 10000
 
 
 def test_get_settings_unauthorized(client):
