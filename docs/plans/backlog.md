@@ -28,6 +28,9 @@ site, so this never ships to getoutmass.com.)
 
 ### 🔴 Store listing claims a privacy guarantee the code does not keep
 
+Full checklist, including everything else the Softonic submission turned up:
+`2026-08-25-claims-and-listing-fixes.md`.
+
 **Found 2026-08-25**, while preparing the Softonic description. Live on the
 Chrome and Edge store listings in 12 languages, sourced from
 `docs/store-listing/listings.json`:
