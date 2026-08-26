@@ -282,18 +282,39 @@ def test_upload_rejects_oversized_csv(client, fake_db, auth_bypass):
     assert resp.status_code == 413
 
 
-def test_upload_rejects_too_many_rows_for_free_plan(client, fake_db, auth_bypass):
+def test_upload_rejects_rows_past_the_ceiling(client, fake_db, auth_bypass):
     campaign = {
         "id": "cU3", "user_id": FAKE_USER["id"], "status": "draft",
         "subject": "s", "body": "b", "name": "n",
         "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
     }
     fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
-    # Free plan = 250 row upload limit; 300 rows must be rejected.
-    rows = "\n".join(f"user{i}@example.com" for i in range(300))
+    # One ceiling for every plan (10,000). Past it, still a 413 - the
+    # limit is the abuse bound now rather than a paywall.
+    rows = "\n".join(f"user{i}@example.com" for i in range(10001))
     csv_text = "email\n" + rows + "\n"
     resp = client.post("/campaigns/cU3/contacts", json={"csv_string": csv_text})
     assert resp.status_code == 413
+
+
+def test_upload_accepts_big_list_on_free_plan(client, fake_db, auth_bypass):
+    """The 800-parent school must get past the door.
+
+    Before 2026-08-25 this was a 413 carrying a raw English detail string and
+    no upgrade path, so a free user could not evaluate the product with their
+    real list. The monthly quota still caps what actually sends - that is the
+    gate protecting revenue, and it fires after the user has seen it work.
+    """
+    campaign = {
+        "id": "cU3b", "user_id": FAKE_USER["id"], "status": "draft",
+        "subject": "s", "body": "b", "name": "n",
+        "sent_count": 0, "open_count": 0, "click_count": 0, "total_contacts": 0,
+    }
+    fake_db.set_table("campaigns", FakeQueryBuilder(data=[campaign]))
+    rows = "\n".join(f"parent{i}@example.com" for i in range(800))
+    csv_text = "email\n" + rows + "\n"
+    resp = client.post("/campaigns/cU3b/contacts", json={"csv_string": csv_text})
+    assert resp.status_code == 200, resp.text
 
 
 def test_archive_campaign_sets_flag(client, fake_db, auth_bypass):

@@ -262,10 +262,22 @@ STANDARD_PLAN_MONTHLY_LIMIT = STARTER_PLAN_MONTHLY_LIMIT
 # AI generation limit (per month, Pro only)
 AI_GENERATION_MONTHLY_LIMIT = int(os.getenv("AI_GENERATION_MONTHLY_LIMIT", "50"))
 
-# CSV upload limits (per upload, not cumulative)
-FREE_UPLOAD_ROW_LIMIT = int(os.getenv("FREE_UPLOAD_ROW_LIMIT", "250"))
-STARTER_UPLOAD_ROW_LIMIT = int(os.getenv("STARTER_UPLOAD_ROW_LIMIT", "2500"))
-PRO_UPLOAD_ROW_LIMIT = int(os.getenv("PRO_UPLOAD_ROW_LIMIT", "10000"))
+# CSV upload row limit (per upload, not cumulative).
+#
+# ONE number for every plan since 2026-08-25. The per-plan version rejected
+# the list at the door — a free user with 800 recipients got a raw English
+# 413 and never saw the product work — while protecting no revenue: the
+# monthly quota already caps what actually sends and leaves the remainder
+# pending for the next reset. The ceiling is still a real ceiling, and it is
+# the abuse bound that sits next to MAX_CSV_SIZE_BYTES.
+CSV_UPLOAD_ROW_LIMIT = int(os.getenv("CSV_UPLOAD_ROW_LIMIT", "10000"))
+
+# Deprecated aliases, kept so anything still importing the per-plan names
+# keeps working. Setting the old env vars no longer changes anything —
+# CSV_UPLOAD_ROW_LIMIT is the only knob, and the only rollback.
+FREE_UPLOAD_ROW_LIMIT = CSV_UPLOAD_ROW_LIMIT
+STARTER_UPLOAD_ROW_LIMIT = CSV_UPLOAD_ROW_LIMIT
+PRO_UPLOAD_ROW_LIMIT = CSV_UPLOAD_ROW_LIMIT
 MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 
@@ -279,11 +291,10 @@ def monthly_limit_for_plan(plan: str) -> int:
 
 
 def upload_limit_for_plan(plan: str) -> int:
-    """Per-upload CSV row limit for a plan name. Unknown/None plan → free."""
-    return {
-        "pro": PRO_UPLOAD_ROW_LIMIT,
-        "starter": STARTER_UPLOAD_ROW_LIMIT,
-    }.get(plan, FREE_UPLOAD_ROW_LIMIT)
+    """Per-upload CSV row limit. The same for every plan since 2026-08-25 —
+    the monthly quota does the gating. Kept as a function taking `plan` so
+    /settings and older clients keep the shape they already expect."""
+    return CSV_UPLOAD_ROW_LIMIT
 
 # 2s between sends ≈ 30 emails/min — under Microsoft's ~30 messages/minute
 # throttle (Exchange Online), so we pace within the provider's limit instead

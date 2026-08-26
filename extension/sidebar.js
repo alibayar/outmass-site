@@ -1895,6 +1895,7 @@
       var plan = storage.plan || "free";
       var limit = storage.monthlyLimit || (plan === "pro" ? 10000 : plan === "starter" ? 2500 : 250);
       var remaining = limit - sent;
+      _quotaHorizonLimit = fresh ? limit : null;
 
       if (fresh && remaining <= 0) {
         alert(t("alertLimitReached", [String(limit)]));
@@ -1908,7 +1909,10 @@
       // Same rule: a warning that says "only 250 of your 1,000 will send" is
       // wrong and alarming when the 250 came from an unrefreshed cache.
       if (fresh && csvData.rows.length > remaining) {
-        alert(t("alertPartialCsvQuota", [String(remaining), String(csvData.rows.length)]));
+        alert(
+          t("alertPartialCsvQuota", [String(remaining), String(csvData.rows.length)]) +
+          quotaHorizonSuffix(csvData.rows.length - remaining)
+        );
       }
 
       // Large-send guidance: above a threshold, tell the user OutMass paces the
@@ -1935,6 +1939,32 @@
       startSendFlow(subject, body);
     });
   });
+
+  // Live monthly limit, stashed by the send-time quota read so the two quota
+  // alerts can say how long the leftovers will actually take. Null whenever
+  // that read was not fresh — see quotaHorizonSuffix.
+  var _quotaHorizonLimit = null;
+
+  // "…and the rest would take about N more months."
+  //
+  // Both quota alerts stop at "the rest will be sent after your monthly
+  // reset", which reads as ONE reset. For a list several times the monthly
+  // allowance that is a promise we do not keep, and now that any plan can
+  // upload up to 10,000 rows it is the normal case rather than the edge.
+  // Only added when the remainder genuinely outlives one reset, and only
+  // from a fresh limit: a month count off a stale plan would be confidently
+  // wrong, which is worse than silence.
+  function quotaHorizonSuffix(skipped) {
+    if (!_quotaHorizonLimit || skipped <= _quotaHorizonLimit) return "";
+    var months = Math.ceil(skipped / _quotaHorizonLimit);
+    var line = t("alertQuotaHorizon", [
+      String(_quotaHorizonLimit),
+      String(skipped),
+      String(months),
+    ]);
+    if (!line || line === "alertQuotaHorizon") return "";
+    return "\n\n" + line;
+  }
 
   // B.2: cache of existing campaign names (lowercase) for duplicate warning
   var _cachedCampaignNames = null;
@@ -2341,7 +2371,7 @@
               "⚠️ " + skipped + " recipients were not included — you've reached your monthly plan limit. " +
               "They stay saved and will be sent automatically after your monthly reset. To send them sooner, upgrade your plan.";
           }
-          alert(cappedMsg);
+          alert(cappedMsg + quotaHorizonSuffix(skipped));
           track("send_completed", {
             recipient_count: _recipientCount,
             campaign_id: campaignId || null,

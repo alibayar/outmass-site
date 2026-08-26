@@ -13,6 +13,9 @@
       }
     }
   },
+  "alertQuotaHorizon": {
+    "message": "Planınız ayda $1 email gönderiyor; kalan $2 alıcı yaklaşık $3 ay daha sürer. Daha erken göndermek için planınızı yükseltin."
+  },
   "popupConsentExplainer": {
     "message": "Microsoft, OutMass'in kendi Outlook hesabınızdan e-posta göndermesi ve yanıtları algılaması için izin isteyecek. OutMass diğer e-postalarınızı asla okumaz; kampanyalarınız, zamanlama ve takip gönderimlerinin çalışabilmesi için güvenle saklanır."
   },

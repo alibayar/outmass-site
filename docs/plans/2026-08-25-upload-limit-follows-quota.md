@@ -5,8 +5,13 @@ own extension of it: stop varying the CSV row limit by plan. One limit of
 **10,000 rows** for everyone; whichever monthly quota the user is on does the
 actual work.
 
-**Status:** plan written, NOT implemented — awaiting Ali's yes on §4, the one
-part he has not yet seen.
+**Status:** IMPLEMENTED 2026-08-25, both halves approved by Ali. Backend
+suite 1141 passed / 1 skipped; `node extension/tests/run-all.js` green across
+all eleven suites. Ships with 0.2.3 — no separate deploy, no migration.
+
+**Release-notes line, since this is user-visible:** free and Starter users can
+now upload their whole list; what sends each month is unchanged. Nobody loses
+a capability, so no proactive email is warranted — release notes only.
 
 ---
 
@@ -64,7 +69,7 @@ remains the second bound.
 
 Nobody loses a capability. Nobody gains send volume: the quota is untouched.
 
-## 4. The part that needs Ali's yes
+## 4. The message that had to change with it (approved)
 
 Making big lists uploadable exposes a message that is already slightly wrong
 and would become badly wrong. After a quota-capped send the sidebar says:
@@ -83,17 +88,27 @@ takes on the current plan, and put the upgrade next to it. Same for
 `alertPartialCsvQuota`, which today says "only the first N will be sent" and
 stops there.
 
-Draft (English; the real change lands in all 14 locale files, which the test
-suite enforces):
+**Shipped as a new key, `alertQuotaHorizon`, in all 14 locale files:**
 
-> 250 of your 10,000 recipients will send now. On the Free plan (250 emails a
-> month) the rest would take about 39 more months. Starter sends 2,500 a month,
-> Pro 10,000 — upgrade to finish this campaign sooner.
+> Your plan sends $1 emails a month, so the remaining $2 recipients would take
+> about $3 more months. Upgrade to send them sooner.
 
-This is a user-visible wording change on a paid-conversion moment, so it is
-Ali's call: **approve the wording, or approve the limit change alone and leave
-the messages for 0.2.3.** Shipping the limit change *without* it is the one
-combination worth avoiding.
+It is appended to BOTH quota alerts - the pre-send "only the first N will be
+sent" and the post-send "they stay saved until your monthly reset" - by
+`quotaHorizonSuffix` in `extension/sidebar.js`.
+
+Three decisions inside that helper worth keeping:
+
+1. **Only when the remainder outlives one reset.** If the leftovers fit in a
+   single month, the existing sentence is already true and nothing is added.
+2. **Only from a fresh limit.** The month count comes from the same live read
+   that guards the send; if that read was stale the line is omitted entirely.
+   A confidently wrong "39 months" is worse than silence, and this file already
+   made that call once (the comment above `alertPartialCsvQuota`).
+3. **No other plan's numbers in the string.** The draft named Starter's 2,500
+   and Pro's 10,000. Plan numbers living in 14 translated files is how the free
+   quota came to be mis-stated in July - the string says "your plan sends $1"
+   and stops.
 
 ## 5. Tests
 

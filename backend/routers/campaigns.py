@@ -30,9 +30,7 @@ from config import (
     RATE_LIMIT_WAIT_SECONDS,
     QUOTA_CHARGE_BATCH,
     SEND_DELAY_SECONDS,
-    FREE_UPLOAD_ROW_LIMIT,
-    STARTER_UPLOAD_ROW_LIMIT,
-    PRO_UPLOAD_ROW_LIMIT,
+    upload_limit_for_plan,
     MAX_CSV_SIZE_BYTES,
 )
 from database import get_db
@@ -529,10 +527,9 @@ async def upload_contacts(
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     plan = user.get("plan", "free")
-    row_limit = {
-        "pro": PRO_UPLOAD_ROW_LIMIT,
-        "starter": STARTER_UPLOAD_ROW_LIMIT,
-    }.get(plan, FREE_UPLOAD_ROW_LIMIT)
+    # Same number for every plan; the helper stays the single source so this
+    # cannot drift from /settings the way the inline copy of this dict could.
+    row_limit = upload_limit_for_plan(plan)
 
     contacts: list[dict] = []
 

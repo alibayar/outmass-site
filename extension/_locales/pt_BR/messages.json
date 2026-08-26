@@ -850,6 +850,9 @@
       }
     }
   },
+  "alertQuotaHorizon": {
+    "message": "Seu plano envia $1 e-mails por mês, então os $2 destinatários restantes levariam cerca de $3 meses a mais. Faça upgrade do seu plano para enviá-los antes."
+  },
   "largeSendWarn": {
     "message": "Você está prestes a enviar para $COUNT$ destinatários.\n\nPara respeitar os limites de envio do Outlook e proteger sua conta contra bloqueios, o OutMass espaça este envio automaticamente (cerca de 30/min), então ele levará aproximadamente $MIN$ minutos e continua em segundo plano.\n\nEm listas frias grandes, a entregabilidade é melhor se você distribuir o envio por vários dias (algumas centenas por dia) usando Agendar.\n\nContinuar?",
     "placeholders": {

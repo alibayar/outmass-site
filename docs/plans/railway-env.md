@@ -120,9 +120,7 @@ sign-in and sending.
 | `FREE_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 250 |
 | `STARTER_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 2500 |
 | `PRO_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 10000 |
-| `FREE_UPLOAD_ROW_LIMIT` | web | no | defaults to 250 |
-| `STARTER_UPLOAD_ROW_LIMIT` | web | no | defaults to 2500 |
-| `PRO_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000 |
+| `CSV_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000, same for every plan; set it to roll back the 2026-08-25 change |
 | `AI_GENERATION_MONTHLY_LIMIT` | web | no | defaults to 50 |
 | `PLAN_DROP_NOTICE_DAYS` | web | no | defaults to 14 |
 | `AUTH_RESUME_MAX_AGE_DAYS` | web, worker | no | defaults to 7 |
