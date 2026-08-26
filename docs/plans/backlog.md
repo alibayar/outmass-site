@@ -26,6 +26,50 @@ site, so this never ships to getoutmass.com.)
 
 ---
 
+### 🔴 Store listing claims a privacy guarantee the code does not keep
+
+**Found 2026-08-25**, while preparing the Softonic description. Live on the
+Chrome and Edge store listings in 12 languages, sourced from
+`docs/store-listing/listings.json`:
+
+> "We never store the content of your emails on our servers."
+
+`create_campaign` inserts `subject` and `body` straight into the `campaigns`
+table ([backend/models/campaign.py:57](../../backend/models/campaign.py)). It
+has to: scheduled sending, follow-ups and campaign reports all read the stored
+campaign later. The uploaded list lives in `contacts` for the same reason. So
+the sentence is not a nuance we are shading - it is the opposite of what
+happens, and it is the strongest kind of claim to get wrong.
+
+What IS true, and what the blog post already says as of 08-24: sending goes
+through the user's own Microsoft account over OAuth 2.0 and Graph, there is no
+third-party sending server or shared IP pool, and reply detection stamps
+`replied_at` without recording any reply content.
+
+**Second, smaller claim in the same copy:** "follow-ups ... stop automatically
+**as soon as** someone replies". Follow-ups dispatch hourly
+([celery_app.py:129](../../backend/workers/celery_app.py)) while reply detection
+runs once a day at 05:00 UTC, and the follow-up filter reads the `replied_at`
+the detector stamps. A reply arriving at 06:00 is invisible until the next
+morning, so a follow-up due in that window still goes out to someone who
+already answered - which the worker's own docstring calls "the #1 thing users
+expect follow-ups to never do".
+
+**Actions:**
+1. Softonic gets corrected copy today (`softonic-en.txt`) - do not propagate.
+2. Fix `listings.json` at the source and regenerate all 12 descriptions, then
+   update both store listings in the 0.2.3 pass. Until that lands, do not add
+   translated listings anywhere: each new language is another copy of the
+   false sentence.
+3. Product decision for Ali (behaviour change, needs approval): close the
+   reply window - either scan replies for the campaign immediately before
+   dispatching its follow-ups, or move detection to hourly. If the window
+   closes, the original sentence becomes true rather than needing softening.
+
+Note the 30-day guarantee was checked at the same time and is consistent -
+`refund.html` matches the store copy, exclusions and all. Not every flagged
+claim turns out to be wrong.
+
 ## 🔴 P0 — blocks users / revenue now
 
 ### ✅ Publisher verification → Azure MPN ID — DONE (2026-06-24)
@@ -986,6 +1030,27 @@ exit strategy is growing MRR.
     SecureMailMerge are not in their catalog).
   - **TrustRadius:** closed to us — vendor access requires a LinkedIn
     company page with 10+ employees (verified on the form 2026-08-19).
+  - **Softonic (revised understanding 2026-08-25):** there is NO auto-listed
+    OutMass page to claim - the 08-17 note that said otherwise was never
+    verified. Panel search, web search and a direct URL guess all come up
+    empty, and softonic.com serves a CAPTCHA to any external check. The org
+    claim (approved 08-19) and an app claim are separate things; "claim"
+    kept answering "You already have a claimed organization" because the org
+    was all we ever had. So this is a NEW listing, not a correction of an
+    existing one - a surface we now own and maintain.
+    - Platform **Web apps** (no binary upload - the shelf we wanted),
+      Category **Productivity** (the default "Browsers" would have listed us
+      as a browser).
+    - Icon: needed 512x512, largest we had was 200. `docs/ss/logo-512.png`,
+      redrawn from the generator's own numbers rather than upscaled.
+    - Screenshots: Softonic demands >=1920x1080, our captures are 1280x800.
+      `docs/store-listing/frame-screenshots.py` places each capture at native
+      resolution on a 1920x1080 canvas with a soft shadow - nothing is
+      resampled, so no blurred UI text. Output in `docs/ss/softonic/`.
+    - Description: `docs/store-listing/softonic-en.txt`, NOT the generated
+      `descriptions/en.txt`. See the claims item below.
+    - Their "Create with assistant" AI description generator is declined by
+      default: it would write claims nobody audited.
   - **Softonic:** ✅ claim APPROVED same day (2026-08-19, Certificate of
     Incorporation did the job). Remaining 5-minute move: in the Publishing
     Center, replace their auto-generated OutMass copy with the audited

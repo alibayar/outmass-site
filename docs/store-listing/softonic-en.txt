@@ -1,0 +1,40 @@
+Turn Outlook Web into a professional mass email tool. OutMass brings mail merge, tracking, follow-ups, and AI-powered writing directly inside outlook.office.com and outlook.live.com — with full Microsoft 365 and personal Outlook.com support.
+
+✨ WHAT YOU CAN DO
+
+📧 Mail merge from CSV — personalize with {{firstName}}, {{company}}, and any column
+🎯 Subject A/B testing (Pro) — split-test subject lines to find what converts
+⏰ Scheduled sending (Starter+) — write now, deliver at the perfect time
+🚦 Daily send limit — cap how many emails go out per day to protect your sender reputation
+♻️ Auto-resume — hit your monthly quota mid-campaign? The rest sends automatically after your reset
+🔁 Automatic follow-ups (Pro) — re-engage recipients who didn't open, and stop automatically once a reply is detected
+📚 Template library (Starter+) — save and reuse your best-performing emails
+🤖 AI Email Writer — drafts your email from a short brief (Pro, 50/month)
+📊 Open & click tracking — pixel tracking, click tracking, unsubscribe links
+📎 OneDrive attachments — share files via OneDrive links instead of bulky attachments. Better deliverability, larger files, recipient analytics.
+💬 Reply detection — a daily Inbox scan flags real replies, the strongest engagement signal beyond opens and clicks.
+📈 Campaign reports — open rates, click rates, full CSV export
+🌍 13 UI languages — including Arabic RTL support
+
+💼 BUILT FOR
+
+• Organisations emailing their own list — schools to parents, suppliers to customers, associations to members
+• PR and agency teams reaching journalists or clients from their existing mailbox
+• Founders and SDRs running outbound from Outlook
+• Anyone who has tried to mail-merge in Outlook and given up
+
+💰 PRICING
+
+• Free — 250 emails/month, forever
+• Starter — $9/month, 2,500 emails/month + scheduled sending + templates + CSV export
+• Pro — $19/month, 10,000 emails/month + AI Writer + A/B testing + automatic follow-ups
+
+🔒 YOUR ACCOUNT, YOUR SENDING
+
+OutMass sends through your own Microsoft account using OAuth 2.0 and the official Graph API — no third-party sending servers and no shared IP pools, so recipients see a normal email from you. Your campaign is stored on our servers, because scheduled sending, follow-ups and campaign reports cannot work otherwise. Reply detection records only that a reply arrived, never its contents.
+
+🛡️ 30-DAY MONEY-BACK GUARANTEE
+
+Not happy with your subscription? Get a full refund within 30 days — no questions asked.
+
+🚀 Install OutMass and run your first campaign in 5 minutes.
