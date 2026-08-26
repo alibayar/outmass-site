@@ -133,3 +133,25 @@ either way — nothing is migrated, no schema changes.
   cleanup rides along with this.
 - The sidebar has no client-side row check; the server value is authoritative
   and `/settings` already exposes it as `upload_limit`.
+
+## 8. Deploy sequencing — the one way this goes wrong
+
+The two halves ship on different clocks. The backend takes effect on the next
+Railway deploy of the web service; the message needs a store release and days
+of review. Deploy the backend first and every user gets the relaxed limit while
+their extension still says the leftovers go out "after your monthly reset" -
+exactly the combination §4 exists to prevent, and it would be live for however
+long 0.2.3 sits in review.
+
+**So flag it off until the extension can explain it.** Before (or with) the
+next backend deploy, set on the Railway **web** service:
+
+```
+CSV_UPLOAD_ROW_LIMIT=250
+```
+
+The code is then deployed and dormant. On the day 0.2.3 is published on BOTH
+stores, delete that variable and the change goes live with its message
+attached. Same knob as the rollback in §6, used forward instead of backward.
+
+Ali owns Railway; nothing here touches it.
