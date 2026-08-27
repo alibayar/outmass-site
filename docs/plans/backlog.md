@@ -1110,7 +1110,30 @@ exit strategy is growing MRR.
       directly, sign up with **support@getoutmass.com** (shared box; the page
       will attract vendor-package sales mail), then "Claim this page" on the
       product page. Decline the paid marketing packages as everywhere else.
-    - **Claim SUBMITTED 2026-08-25**, "Claim Received - being evaluated".
+    - **Claim APPROVED 2026-08-27** ("OutMass Page Claim Approved"). The mail
+      landed in support@'s JUNK folder, as the first SourceForge mail did -
+      check there before concluding nothing arrived.
+      - **It is three pages, not one.** The approval says OutMass also has a
+        page on **Slashdot** and **Top Business Software**. Verified:
+        `slashdot.org/software/p/OutMass/` exists and carries a PARAPHRASE of
+        our description - "automated follow-ups are sent, and these cease as
+        soon as a reply is received". So the overstatement travelled, in
+        someone else's words. After editing the SourceForge page, check
+        whether the edit propagates or whether each surface needs its own.
+        (The privacy sentence is absent from all of them: our 08-24 submission
+        never carried that paragraph. It lives only in listings.json.)
+      - **Free, worth taking:** they offer buyer-intent notifications by email
+        at no cost - which companies viewed the listing. It is the lead-in to
+        their paid tier, but the free half is a real signal.
+      - **A trade, not a gift:** placing a SourceForge badge on getoutmass.com
+        makes our page "automatically rank higher in our category". Real lever
+        on a site with 20M monthly visitors, paid for with a third-party badge
+        and an outbound link on our own page. Ali's call, not obvious either
+        way.
+      - **Declined as everywhere:** the marketing packages, and the claim that
+        upgrading makes ChatGPT and Gemini more likely to mention us. That is
+        an upsell wearing the GEO research's clothes.
+    - **Claim submitted 2026-08-25**, "Claim Received - being evaluated".
       Account: username `outmass`, support@getoutmass.com, country Turkey
       (personal/phone country; the listing's own country must stay United
       Kingdom - verify after approval). Claim form: Founder, company number
