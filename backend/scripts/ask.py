@@ -100,18 +100,23 @@ def show(hogql: str) -> None:
 # ── Presets: the questions actually asked, so they are not re-typed ──
 
 def q_signups(days: str) -> str:
-    """Everyone who produced their first event in the window, and what they did.
+    """Everyone whose FIRST EVER event falls in the window, and what they did.
 
-    Ordered by first_seen so the newest sign-ups read top-down, with the event
-    count and the last thing they did — enough to tell "signed in and left"
-    from "signed in and sent"."""
+    Deliberately no WHERE on timestamp. With one, min(timestamp) is only the
+    first event inside the window, so every returning user looks new — the
+    first run of this preset reported bellmed and a two-week-old account as
+    fresh sign-ups. The aggregate has to see all of history to know what is
+    actually first.
+
+    Ordered newest first, with the event count and the last thing they did:
+    enough to tell "signed in and left" from "signed in and got somewhere".
+    """
     return (
         "SELECT distinct_id, min(timestamp) AS first_seen, "
         "max(timestamp) AS last_seen, count() AS events, "
         "count(DISTINCT event) AS kinds, "
         "argMax(event, timestamp) AS last_event "
         "FROM events "
-        f"WHERE timestamp >= now() - INTERVAL {int(days)} DAY "
         "GROUP BY distinct_id "
         f"HAVING first_seen >= now() - INTERVAL {int(days)} DAY "
         "ORDER BY first_seen DESC"
