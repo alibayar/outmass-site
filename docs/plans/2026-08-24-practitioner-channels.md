@@ -176,6 +176,38 @@ weeks, and the indexing gap should close along the same curve.
 posts edited today given a truthful fresh `lastmod`; indexing requested for
 both new posts and all four unindexed URLs.
 
-**Check back around 2026-09-07:** are those four indexed? Has the Performance
-tab moved off zero impressions? Those two answers, not a feeling about the
-writing, tell us whether the content channel is working.
+## Resolved 2026-08-27 — all four are indexed, three days later
+
+Checked one by one with `site:` queries against Google itself:
+
+| URL | 08-24 state | 08-27 |
+|---|---|---|
+| blog/mail-merge-in-outlook.html | discovered, never crawled | **indexed** |
+| blog/mailmeteor-alternative-for-outlook.html | discovered, never crawled | **indexed** |
+| blog/yamm-alternative-for-outlook.html | discovered, never crawled | **indexed** |
+| blog/outlook-mail-merge-limit.html | crawled 29 Apr, rejected | **indexed** |
+| blog/does-new-outlook-have-mail-merge.html | published 08-24 | indexed in ~1 day |
+| blog/email-your-whole-list-from-outlook.html | published 08-24 | indexed in ~1 day |
+
+Nine indexed and four out became fifteen and none.
+
+**Which fix did it is not cleanly answerable, and the honest ranking is not
+the one this document argued for on 08-24.** Three things happened the same
+day: the sitemap namespace was corrected after four months of being invalid,
+indexing was requested by hand for all six URLs, and four directory listings
+had gone live in the preceding week. The diagnosis written above — "authority,
+not content; the cure is external signal and time", on a lag of weeks — does
+not fit a three-day recovery. A sitemap that Google had flagged on every read
+since 29 April, fixed on the 24th and followed by every page landing within
+seventy-two hours, fits it much better.
+
+That does not make the authority reasoning wrong about young domains in
+general. It makes it the wrong explanation for THIS symptom, reached by
+measuring word counts and inbound links — the things we could measure — while
+the actual blocker was in a file we had been told was broken since April and
+had read past every time.
+
+**What remains open, and it is the one that matters:** the Performance tab was
+at zero impressions on 08-24. Indexed is not read. **Check around 2026-09-07:**
+has it moved? That single number, not the index count, says whether the content
+channel is working.
