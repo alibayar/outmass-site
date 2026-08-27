@@ -20,10 +20,38 @@ Google for years. Answers are posted from Ali's own Microsoft account.
    reply is noise — even a good one.
 6. **Skip old threads** unless the asker is still active. A 2024 thread with an
    accepted answer helps nobody.
-7. **Facts get re-checked before posting.** The roadmap dates below were true on
-   2026-08-24; check roadmap item 423047 again if posting later. Microsoft's own
-   staff answers are currently quoting dates that have already passed — do not
-   repeat that mistake in the other direction.
+7. **Facts get re-checked before posting.** Check roadmap item 423047 again
+   before any answer that quotes it. Microsoft's own staff answers have quoted
+   dates that already passed — do not repeat that mistake in the other
+   direction.
+
+## Roadmap 423047 — verification log
+
+Read from Microsoft's own release-communications API, not from an article:
+`microsoft.com/releasecommunications/api/v1/m365/423047`. Secondary coverage
+has said June, July and August in the same week, so only this line counts.
+
+| Checked | Status | Preview | GA | Card last modified |
+|---|---|---|---|---|
+| 2026-08-24 | In development | August CY2026 | September CY2026 | 29 May 2026 |
+| 2026-08-27 | In development | August CY2026 | September CY2026 | 29 May 2026 |
+
+**Nothing has moved.** "In development" is Microsoft's own word for *not
+rolling out yet*; the states after it are "Rolling out" and "Launched". So the
+08-24 blog post remains accurate: the basic mail merge already in new Outlook
+gives each recipient their own copy of the same message, and the Advanced one
+that personalises the body has not shipped.
+
+**The 08-27 alert that prompted this re-check is a good example of why the
+snippet is not the source.** It quoted a community thread reading "Users now
+have mail merge, Quick Parts, Unified Inbox, and partial PST support, with
+Advanced Mail Merge ..." — truncated exactly at the word the whole distinction
+turns on. Read as "Advanced shipped", it would have sent us editing a correct
+post.
+
+**What to watch for:** the day `status` flips to Rolling out. That is when the
+blog post needs its update and when "mail merge in Outlook" stops being
+available to us as a headline claim at all.
 
 ## Which account
 
