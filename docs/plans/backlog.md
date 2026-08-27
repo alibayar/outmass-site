@@ -26,6 +26,43 @@ site, so this never ships to getoutmass.com.)
 
 ---
 
+### AADSTS650051 is turning new users away at the front door
+
+**Found 2026-08-27** with `backend/scripts/ask.py`, the first thing it was used
+for. Both of that day's sign-ups hit it on their very first attempt:
+
+| When (UTC) | Browser | Code | Our classification |
+|---|---|---|---|
+| 04:46:46 | Edge | AADSTS650051 / invalid_client | app_registration_rejected |
+| 11:52:53 | Chrome | AADSTS650051 / invalid_client | app_registration_rejected |
+
+Both failures are at `stage: authorize`, both carry `attributed_to: "app"`, and
+the message our own code shows the user is **"This is our fault, not yours.
+Please report it (AADSTS650051)"**. So this is not the consent leak and not the
+user's IT — by our own reading it is our app registration being refused.
+
+Both users retried and got in within 8 and 30 seconds, which is the one
+reassuring fact: a permanently broken registration would fail every time, so
+this looks intermittent rather than dead. The same code appeared on 2026-08-10
+and is the reason `_APP_LEVEL_ERRORS` exists in `routers/auth.py` at all.
+Nothing else in the last fourteen days carries it.
+
+**Why it matters more than the count suggests:** it fires on someone's first
+ever interaction with the product, before they have any reason to persist. The
+two who did retry were lucky or determined; there is no way to know how many
+did not.
+
+**Ali's check (Azure is his):** the app registration's **client secret expiry**
+first, then whether anything about the registration changed on or before 08-10.
+`AZURE_CLIENT_SECRET` living only on the web service means a rotation that half
+lands would look exactly like this.
+
+**Separately, two visitors were lost outright on 08-26** — 12:03 UTC
+(`attempt_no 3`) and 13:34 UTC — both `chrome_error` with **no** Microsoft code
+at all, so those failed before or outside Microsoft's answer. Neither came
+back. Worth watching whether that shape recurs; two in ninety minutes on a day
+with three sign-ups is not nothing.
+
 ### 🔴 Store listing claims a privacy guarantee the code does not keep
 
 Full checklist, including everything else the Softonic submission turned up:
