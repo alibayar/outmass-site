@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft 服务器现在很忙。请过一分钟再试。"
   },
+  "authMsProvisioning": {
+    "message": "Microsoft 仍在为您的组织设置访问权限。请稍后再试一次。"
+  },
   "authMsUnknownCode": {
     "message": "登录失败，原因我们此前没有遇到过。请重试——如果一直如此，请联系 support@getoutmass.com，我们会去查明原因。"
   },

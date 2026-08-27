@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft ist gerade ausgelastet. Versuchen Sie es in einer Minute erneut."
   },
+  "authMsProvisioning": {
+    "message": "Microsoft richtet den Zugriff für Ihre Organisation noch ein. Bitte versuchen Sie es gleich noch einmal."
+  },
   "authMsUnknownCode": {
     "message": "Die Anmeldung ist aus einem Grund fehlgeschlagen, den wir bisher nicht kennen. Versuchen Sie es erneut — wenn es weiterhin passiert, kontaktieren Sie support@getoutmass.com, wir sehen uns das an."
   },

@@ -311,13 +311,20 @@ def test_mrr_excludes_owner_accounts(fake_db):
 # ── 12h error check (PostHog) + health line ──
 
 
-def test_report_says_error_check_not_configured_by_default(fake_db):
-    """Without a PostHog key (the test env), the report still builds and says
-    the check isn't configured — and makes no network call."""
+def test_report_says_error_check_not_configured_by_default(fake_db, monkeypatch):
+    """Without a PostHog key the report still builds, says the check is not
+    configured, and makes no network call.
+
+    The key is forced empty rather than assumed absent: a developer with a
+    read key in backend/.env used to turn this test into a live query against
+    production analytics, which then failed on the real answer.
+    """
     _setup_fake_db(fake_db)
 
-    from workers.daily_report import build_report
-    msg = build_report()
+    from workers import daily_report
+    monkeypatch.setattr(daily_report, "POSTHOG_PERSONAL_API_KEY", "")
+
+    msg = daily_report.build_report()
 
     assert "Errors (12h): check not configured" in msg
 

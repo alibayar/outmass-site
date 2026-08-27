@@ -31,12 +31,37 @@ def _classify(error, description=None):
 # ── the case that prompted this ──
 
 
-def test_invalid_client_is_attributed_to_the_app_not_the_user():
+def test_650051_is_microsofts_race_not_our_registration():
+    """Corrected 2026-08-27, and the correction is the interesting part.
+
+    This test used to assert that AADSTS650051 meant our app registration was
+    refused, because `invalid_client` sat beside it. Both of that day's
+    sign-ups hit it and both were signed in within thirty seconds of retrying
+    - which a refused registration cannot do, since it would fail every time.
+    Microsoft's own Q&A threads describe 650051 as the service principal
+    already existing in the target tenant while Entra has not finished
+    provisioning it: a transient that clears on retry.
+
+    The cost of the old belief was not the label. It was the sentence the
+    label produced: "This is our fault, not yours. Please report it" - asking
+    the user to do the one thing that cannot help, and not to do the one that
+    can.
+    """
     c = _classify("invalid_client", "AADSTS650051: Something undocumented.")
-    assert c["meaning"] == "app_registration_rejected"
-    assert c["attributed_to"] == "app"
+    assert c["meaning"] == "tenant_provisioning_race"
+    assert c["attributed_to"] == "microsoft"
     # The raw code still travels for support.
     assert c["aadsts"] == "AADSTS650051"
+
+
+def test_650051_tells_the_user_to_retry():
+    """The whole point of the reclassification, pinned where it is visible."""
+    c = _classify("invalid_client", "AADSTS650051: Something undocumented.")
+    settle = auth._ms_settle_code(c, fallback="invalid_client")
+    assert "Retry" in settle
+    assert "our fault" not in settle
+    assert "AADSTS650051" in settle
+    assert len(settle) <= 64
 
 
 def test_invalid_client_without_any_code_still_names_the_app():
@@ -160,3 +185,41 @@ def test_every_named_meaning_has_an_attribution():
     named = set(auth._AADSTS_MEANINGS.values()) | set(auth._APP_LEVEL_ERRORS.values())
     missing = named - set(auth._MEANING_ATTRIBUTION)
     assert not missing, f"no attribution for: {sorted(missing)}"
+
+
+# ── the alert that would have found 650051 seventeen days earlier ──
+
+
+def test_only_failures_on_our_side_page_the_operator(monkeypatch):
+    """AADSTS650051 had been turning users away since at least 2026-08-10 and
+    was found on 08-27 only because somebody went looking. The events existed
+    the whole time; nothing said so.
+
+    A consent decline must stay silent: a channel that reports people's
+    choices as incidents stops being read, and then the real ones go with it.
+    """
+    import routers.billing as billing
+
+    sent = []
+    monkeypatch.setattr(billing, "_telegram_alert", lambda m: sent.append(m))
+
+    auth._alert_if_ours("authorize", _classify(
+        "invalid_client", "AADSTS650051: undocumented"), "api.getoutmass.com")
+    auth._alert_if_ours("authorize", _classify(
+        "access_denied", "AADSTS65004: The user declined."), "api.getoutmass.com")
+
+    assert len(sent) == 1
+    assert "tenant_provisioning_race" in sent[0]
+    assert "AADSTS650051" in sent[0]
+
+
+def test_a_broken_alert_channel_cannot_break_the_sign_in(monkeypatch):
+    """The user is mid-sign-in and this is garnish."""
+    import routers.billing as billing
+
+    def boom(_m):
+        raise RuntimeError("telegram down")
+
+    monkeypatch.setattr(billing, "_telegram_alert", boom)
+    auth._alert_if_ours("authorize", _classify(
+        "invalid_client", "AADSTS650051: undocumented"), "api.getoutmass.com")

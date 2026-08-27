@@ -228,6 +228,21 @@ _AADSTS_MEANINGS = {
     # Fires on the token-EXCHANGE leg only: an unregistered redirect_uri at
     # the authorize leg errors on Microsoft's own page and never reaches us.
     "AADSTS50011": "redirect_uri_not_registered",
+    # Microsoft does not publish 650051, and until 2026-08-27 the
+    # `invalid_client` beside it made us file it as OUR registration being
+    # refused — then tell the user "this is our fault, please report it".
+    #
+    # It is not ours. Microsoft's own Q&A threads describe it the same way
+    # every time: the consent fails because the service principal already
+    # exists in the target tenant while Entra has not finished provisioning
+    # it, and it clears on retry. Both users who hit it on 2026-08-27 were
+    # signed in within eight and thirty seconds of trying again, and a
+    # genuinely rejected registration fails every time, not intermittently.
+    #
+    # Naming it here matters because _AADSTS_MEANINGS outranks
+    # _APP_LEVEL_ERRORS: a plain `invalid_client` with no number still reads
+    # as app-level, which is right, while this one stops doing so.
+    "AADSTS650051": "tenant_provisioning_race",
 }
 
 
@@ -274,6 +289,10 @@ _MEANING_ATTRIBUTION = {
     "bad_request_method": "app",
     "microsoft_server_error": "microsoft",
     "microsoft_unavailable": "microsoft",
+    # Microsoft's own provisioning race, not our registration - see
+    # _AADSTS_MEANINGS. Attributing it to "app" put a self-healing
+    # transient in the same bucket as a broken client id.
+    "tenant_provisioning_race": "microsoft",
 }
 
 
@@ -343,8 +362,10 @@ def _classify_ms_error(error: str | None, description: str | None) -> dict:
     #   2. the OAuth error value, when the code is missing OR unknown to us
     #   3. two DISTINCT unknowns
     #
-    # Step 2 matters: AADSTS650051 is not in Microsoft's published reference,
-    # but the `invalid_client` beside it says exactly whose problem it is.
+    # Step 2 matters: a code Microsoft does not publish still arrives beside
+    # an `error` value that says whose problem it is. (650051 used to be the
+    # example here; it now has its own meaning, because "invalid_client"
+    # was telling us the wrong side.)
     #
     # Step 3 splits what used to be one bucket. "we do not recognise this
     # code" and "Microsoft never sent a code" are different states: the
@@ -404,6 +425,44 @@ def _track_ms_auth_failed(
         )
     except Exception:
         logger.warning("ms_auth_failed capture failed", exc_info=True)
+
+    _alert_if_ours(stage, fields, host)
+
+
+def _alert_if_ours(stage: str, fields: dict, host: str = "") -> None:
+    """Ping the operator when a sign-in failed on OUR side of the line.
+
+    AADSTS650051 had been turning new users away since at least 2026-08-10 and
+    was found on 08-27 only because somebody went looking. The events were
+    there the whole time; nothing said so. A funnel you have to remember to
+    query is a funnel you learn about after the user is gone.
+
+    Only `app` and `microsoft` attributions ping. A consent decline is a
+    person making a choice, and a channel that reports choices as incidents
+    stops being read — which would cost us the alerts that matter.
+
+    Volume is the throttle for now: nine sign-in failures in the fourteen days
+    to 2026-08-27, of which two were app-side. If Microsoft ever has a bad
+    hour this will chatter, and the fix then is a counter in Redis, not
+    silence here.
+    """
+    if fields.get("attributed_to") not in ("app", "microsoft"):
+        return
+    try:
+        from routers.billing import _telegram_alert
+
+        _telegram_alert(
+            "🔐 Sign-in failed on our side\n"
+            f"stage: {stage}\n"
+            f"reason: {fields.get('meaning') or fields.get('error') or 'unknown'}"
+            f" ({fields.get('aadsts') or fields.get('error') or '—'})\n"
+            f"blamed: {fields.get('attributed_to')}\n"
+            f"host: {host or 'unknown'}"
+        )
+    except Exception:  # noqa: BLE001
+        # An alert that cannot be delivered must never take the callback with
+        # it: the user is mid-sign-in and this is garnish.
+        logger.warning("auth failure alert not delivered", exc_info=True)
 
 
 def _decode_state(state: str | None) -> dict | None:
@@ -1129,6 +1188,12 @@ _SETTLE_MESSAGES = {
         "This is our fault, not yours. Please report it",
     "microsoft_server_error":
         "Microsoft had an error. Wait a minute and retry",
+    # 44 chars, so the AADSTS number still fits inside the 64-char cap.
+    # The whole point of this one is the last word: retry is the fix,
+    # and the sentence it replaced ("report it") asked the user to do
+    # the one thing that cannot help.
+    "tenant_provisioning_race":
+        "Microsoft was still setting up access. Retry",
     "microsoft_unavailable":
         "Microsoft is busy right now. Retry in a minute",
     # A code exists but is not in our table. "Retry" is the honest first

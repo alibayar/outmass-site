@@ -559,6 +559,29 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
           /consent/i.test(settled);
         // The AADSTS number is the stable grouping key regardless.
         var aadsts = (settled.match(/AADSTS\d+/) || [null])[0];
+
+        // Auto-retry ONCE when Microsoft was still provisioning us.
+        //
+        // AADSTS650051 means the service principal already exists in the
+        // user's tenant while Entra has not finished setting it up. It clears
+        // on retry — both users who hit it on 2026-08-27 retried by hand and
+        // were in within eight and thirty seconds. They happened to try
+        // again; a first-time visitor has no reason to.
+        //
+        // Keyed on the backend's own class name, not on sniffing the
+        // sentence, and deliberately only this class. Microsoft's 5xx
+        // classes say "wait a minute" in their own message, and retrying
+        // instantly would contradict the advice we just gave. Consent
+        // declines are untouchable for the older reason: reopening the
+        // window on someone who said no is harassment, not recovery.
+        if (msCode === "tenant_provisioning_race" && !retried) {
+          retried = true;
+          log("Microsoft was still provisioning the app — retrying once");
+          track("oauth_retry", failureContext({ after: msCode }));
+          setTimeout(launch, 1500);
+          return;
+        }
+
         var result = { error: settled };
         if (msCode) result.msCode = msCode;
         if (isConsent) result.errorCode = "consent_declined";

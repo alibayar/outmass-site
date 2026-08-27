@@ -56,6 +56,68 @@ INFO_ERROR_EVENTS = [
 USER_DECLINED_CODES = ["content_warning_declined", "large_send_declined"]
 
 
+def _signin_lines() -> list[str]:
+    """Who reached the sign-in door in the last 24h, and who got through.
+
+    The green check carries the seven-day version of this. The daily one earns
+    its place by catching the losses that never page anybody: a consent decline
+    is a person choosing, so it raises no alert, and a week-long ratio smooths
+    away the day three of them happened.
+
+    Denominator is oauth_started; numerator is the SERVER login rather than the
+    client's oauth_completed, which is race-lossy on builds before 0.1.28.
+    Never raises - the report goes out even when this check cannot run.
+    """
+    if not POSTHOG_PERSONAL_API_KEY:
+        return ["", "🚪 Sign-in (24h): check not configured"]
+
+    hogql = (
+        "SELECT event, coalesce(toString(properties.attributed_to), '') AS who, "
+        "count() AS n FROM events "
+        "WHERE timestamp >= now() - INTERVAL 24 HOUR "
+        "AND event IN ('oauth_started', 'login', 'ms_auth_failed') "
+        "GROUP BY event, who"
+    )
+    try:
+        resp = httpx.post(
+            f"{POSTHOG_API_HOST}/api/projects/{POSTHOG_PROJECT_ID}/query/",
+            headers={"Authorization": f"Bearer {POSTHOG_PERSONAL_API_KEY}"},
+            json={"query": {"kind": "HogQLQuery", "query": hogql}},
+            timeout=15.0,
+        )
+        if resp.status_code != 200:
+            logger.warning(
+                "PostHog sign-in check returned %s: %s",
+                resp.status_code, resp.text[:200],
+            )
+            return ["", "🚪 Sign-in (24h): check unavailable"]
+        rows = resp.json().get("results") or []
+    except Exception as e:  # noqa: BLE001
+        logger.warning("PostHog sign-in check failed: %s", e)
+        return ["", "🚪 Sign-in (24h): check unavailable"]
+
+    started = sum(n for ev, _who, n in rows if ev == "oauth_started")
+    completed = sum(n for ev, _who, n in rows if ev == "login")
+    blame = {}
+    for ev, who, n in rows:
+        if ev == "ms_auth_failed":
+            blame[who or "unknown"] = blame.get(who or "unknown", 0) + n
+
+    if not started and not completed:
+        return ["", "🚪 Sign-in (24h): nobody tried"]
+
+    pct = round(100 * completed / started) if started else 0
+    out = ["", f"🚪 Sign-in (24h): {completed}/{started} completed ({pct}%)"]
+    if blame:
+        out.append(
+            "└─ lost: "
+            + ", ".join(
+                f"{n} {who}" for who, n in sorted(blame.items(), key=lambda kv: -kv[1])
+            )
+        )
+    return out
+
+
 def _error_check_lines() -> list[str]:
     """The "any errors in the last 12h?" section, from PostHog. Never raises —
     the report must go out even when the check itself is broken."""
@@ -293,6 +355,7 @@ def build_report() -> str:
         f"└─ Clicks: {clicks} ({click_rate}%)",
         "",
     ]
+    lines += _signin_lines()
     lines += _error_check_lines()
     lines += _health_line()
     return "\n".join(lines)

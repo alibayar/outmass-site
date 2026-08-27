@@ -1173,6 +1173,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft is busy right now. Try again in a minute."
   },
+  "authMsProvisioning": {
+    "message": "Microsoft is still setting up access for your organization. Please try once more in a moment."
+  },
   "authMsUnknownCode": {
     "message": "Sign-in failed for a reason we have not seen before. Try again — if it keeps happening, contact support@getoutmass.com and we will look into it."
   },

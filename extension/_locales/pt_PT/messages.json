@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "A Microsoft está sobrecarregada neste momento. Tente novamente dentro de um minuto."
   },
+  "authMsProvisioning": {
+    "message": "A Microsoft ainda está a configurar o acesso para a sua organização. Tente novamente daqui a pouco."
+  },
   "authMsUnknownCode": {
     "message": "O início de sessão falhou por um motivo que ainda não conhecemos. Tente novamente — se continuar a acontecer, escreva para support@getoutmass.com que nós investigamos."
   },

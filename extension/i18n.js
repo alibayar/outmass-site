@@ -181,6 +181,7 @@ var MS_AUTH_MESSAGE_KEYS = {
   app_not_authorized: "authMsOurFault",
   microsoft_server_error: "authMsMicrosoftError",
   microsoft_unavailable: "authMsMicrosoftBusy",
+  tenant_provisioning_race: "authMsProvisioning",
   unclassified_code: "authMsUnknownCode",
   no_code_from_microsoft: "authMsNoReason",
 };

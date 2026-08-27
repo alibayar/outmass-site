@@ -199,6 +199,50 @@ def test_a_renewal_that_passed_without_an_invoice_is_a_check():
     assert "no invoice arrived" in said[0].text
 
 
+def _posthog(rows):
+    """Stand in for the query endpoint with a fixed result set."""
+    resp = MagicMock()
+    resp.status_code = 200
+    resp.json.return_value = {"results": rows}
+    return resp
+
+
+def test_gate_two_counts_instead_of_asking_someone_to_count(monkeypatch):
+    """It used to print "PostHog, by hand" every morning to someone who was
+    never going to run the query by hand - and was still printing it on the
+    day two sign-ups turned out to have been refused."""
+    from workers import green_report
+
+    monkeypatch.setattr(green_report, "POSTHOG_PERSONAL_API_KEY", "phx_test")
+    monkeypatch.setattr(green_report.httpx, "post", lambda *a, **k: _posthog([
+        ["oauth_started", "", 10],
+        ["login", "", 8],
+        ["ms_auth_failed", "user", 1],
+        ["ms_auth_failed", "microsoft", 1],
+    ]))
+    lines = green_report._signin_gate_lines()
+    text = " | ".join(ln.text for ln in lines)
+    assert "10 attempt(s), 8 completed (80%)" in text
+    assert "1 user" in text and "1 microsoft" in text
+
+
+def test_gate_two_only_raises_a_flag_for_losses_we_can_act_on(monkeypatch):
+    """A consent decline is a person choosing. Marking it as a problem would
+    train the reader to ignore the mark."""
+    from workers import green_report
+
+    monkeypatch.setattr(green_report, "POSTHOG_PERSONAL_API_KEY", "phx_test")
+    monkeypatch.setattr(green_report.httpx, "post", lambda *a, **k: _posthog([
+        ["oauth_started", "", 5],
+        ["login", "", 3],
+        ["ms_auth_failed", "user", 2],
+    ]))
+    lines = green_report._signin_gate_lines()
+    ratio = [ln for ln in lines if "completed" in ln.text]
+    assert ratio and ratio[0].mark == "ok", "user declines are not our incident"
+    assert not any("our side of the line" in ln.text for ln in lines)
+
+
 def test_gate_one_says_which_process_it_read():
     """Railway variables are per-service. A report that reads the beat's key
     and presents it as the answer is the confident wrongness this exists to
@@ -252,9 +296,16 @@ def test_freshness_canary_survives_missing_timestamps():
     assert any("no activity timestamps" in l.text for l in lines)
 
 
-def test_rhythm_says_not_configured_without_a_key():
-    """The test env has no PostHog key — the section must say so rather
-    than vanish or crash the report."""
+def test_rhythm_says_not_configured_without_a_key(monkeypatch):
+    """Without a PostHog key the section must say so rather than vanish or
+    crash the report.
+
+    Forced empty rather than assumed: with a real key in the environment this
+    test used to query production and fail on the live answer.
+    """
+    from workers import green_report
+
+    monkeypatch.setattr(green_report, "POSTHOG_PERSONAL_API_KEY", "")
     lines = build(_db([_row()]))
     text = as_text(lines)
     assert "Rhythm" in text

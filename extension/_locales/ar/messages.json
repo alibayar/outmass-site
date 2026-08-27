@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "خوادم Microsoft مزدحمة حالياً. أعد المحاولة بعد دقيقة."
   },
+  "authMsProvisioning": {
+    "message": "لا تزال Microsoft تُهيئ الوصول لمؤسستك. حاول مرة أخرى بعد قليل."
+  },
   "authMsUnknownCode": {
     "message": "فشل تسجيل الدخول لسبب لم نصادفه من قبل. أعد المحاولة — وإن تكرر الأمر، فراسلنا على support@getoutmass.com وسنبحث فيه."
   },

@@ -298,6 +298,90 @@ def _no_stamp_line(row: dict, anchor: str | None) -> "Line":
     )
 
 
+def _signin_gate_lines() -> list["Line"]:
+    """GATE 2, computed instead of delegated.
+
+    This line used to read "PostHog, by hand: oauth_started -> oauth_completed"
+    and carry a CHECK mark, which is a to-do item printed daily to someone who
+    was never going to run the query by hand. It was still saying it on
+    2026-08-27, the day two sign-ups were found to have been refused by
+    Microsoft and to have retried their way in unaided.
+
+    Denominator is `oauth_started` from the extension; numerator is the SERVER
+    `login`, not the client's `oauth_completed` - the client event is
+    race-lossy on builds before 0.1.28 and would flatter the ratio.
+
+    Losses are split by the side they belong to, because the response differs:
+    a consent decline is a person choosing, and app/microsoft failures are ours
+    to chase. Never raises; the report must go out even when this check cannot.
+    """
+    out = [Line(HEAD, "GATE 2 — Microsoft consent screen (#48)")]
+    if not POSTHOG_PERSONAL_API_KEY:
+        out.append(Line(CHECK, "not configured (POSTHOG_PERSONAL_API_KEY)"))
+        return out
+
+    hogql = (
+        "SELECT event, coalesce(toString(properties.attributed_to), '') AS who, "
+        "count() AS n FROM events "
+        "WHERE timestamp >= now() - INTERVAL 7 DAY "
+        "AND event IN ('oauth_started', 'login', 'ms_auth_failed') "
+        "GROUP BY event, who"
+    )
+    try:
+        resp = httpx.post(
+            f"{POSTHOG_API_HOST}/api/projects/{POSTHOG_PROJECT_ID}/query/",
+            headers={"Authorization": f"Bearer {POSTHOG_PERSONAL_API_KEY}"},
+            json={"query": {"kind": "HogQLQuery", "query": hogql}},
+            timeout=15.0,
+        )
+        if resp.status_code != 200:
+            logger.warning(
+                "PostHog sign-in gate returned %s: %s",
+                resp.status_code, resp.text[:200],
+            )
+            out.append(Line(CHECK, "check unavailable"))
+            return out
+        rows = resp.json().get("results") or []
+    except Exception as e:  # noqa: BLE001
+        logger.warning("PostHog sign-in gate failed: %s", e)
+        out.append(Line(CHECK, "check unavailable"))
+        return out
+
+    started = sum(n for ev, _who, n in rows if ev == "oauth_started")
+    completed = sum(n for ev, _who, n in rows if ev == "login")
+    blame = {}
+    for ev, who, n in rows:
+        if ev == "ms_auth_failed":
+            blame[who or "unknown"] = blame.get(who or "unknown", 0) + n
+
+    if not started:
+        out.append(Line(INFO, "no sign-in attempts in the last 7 days"))
+        return out
+
+    pct = round(100 * completed / started)
+    ours = blame.get("app", 0) + blame.get("microsoft", 0)
+    out.append(Line(
+        PASS if not ours else CHECK,
+        f"7d: {started} attempt(s), {completed} completed ({pct}%)",
+    ))
+    if blame:
+        out.append(Line(
+            INFO,
+            "lost: " + ", ".join(
+                f"{n} {who}" for who, n in sorted(
+                    blame.items(), key=lambda kv: -kv[1]
+                )
+            ),
+        ))
+    if ours:
+        out.append(Line(
+            CHECK,
+            f"{ours} of those were on our side of the line — the ones worth "
+            "chasing; a decline is a person choosing",
+        ))
+    return out
+
+
 def build(db, *, role: str = "beat") -> list[Line]:
     """The whole report, as lines. Raises EmptyDatabase rather than
     describing a population it never saw."""
@@ -347,15 +431,7 @@ def build(db, *, role: str = "beat") -> list[Line]:
     ))
 
     # ── Gate 2 ──
-    out.append(Line(HEAD, "GATE 2 — Microsoft consent screen (#48)"))
-    out.append(Line(CHECK, "PostHog, by hand: oauth_started -> oauth_completed"))
-    out.append(Line(
-        INFO,
-        "34 people lost between them. It sits above everything else in the "
-        "funnel, so every acquired user walks into it. No honest proxy for it "
-        "exists in our database, so none is invented here.",
-        detail=True,
-    ))
+    out.extend(_signin_gate_lines())
 
     # ── Gate 3 ──
     out.append(Line(HEAD, "GATE 3 — welcome email"))

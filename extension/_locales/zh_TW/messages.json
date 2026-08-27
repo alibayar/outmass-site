@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft 目前忙碌中。請過一分鐘再試一次。"
   },
+  "authMsProvisioning": {
+    "message": "Microsoft 仍在為您的組織設定存取權限。請稍待片刻再試一次。"
+  },
   "authMsUnknownCode": {
     "message": "這次登入失敗的原因我們沒有見過。請再試一次——如果一直發生，請聯絡 support@getoutmass.com，我們會查明原因。"
   },

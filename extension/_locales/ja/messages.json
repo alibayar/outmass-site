@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft が現在混み合っています。1 分ほどしてから、もう一度お試しください。"
   },
+  "authMsProvisioning": {
+    "message": "Microsoft がご利用の組織のアクセス設定をまだ完了していません。少し待ってから、もう一度お試しください。"
+  },
   "authMsUnknownCode": {
     "message": "これまでに例のない理由でサインインに失敗しました。もう一度お試しください。解消しない場合は support@getoutmass.com までご連絡ください。こちらで調べます。"
   },

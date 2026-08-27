@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft şu anda yoğun. Bir dakika sonra tekrar deneyin."
   },
+  "authMsProvisioning": {
+    "message": "Microsoft, kuruluşunuz için erişimi hâlâ hazırlıyor. Birazdan bir kez daha deneyin."
+  },
   "authMsUnknownCode": {
     "message": "Giriş, daha önce karşılaşmadığımız bir nedenle başarısız oldu. Tekrar deneyin — sorun sürerse support@getoutmass.com ile iletişime geçin, inceleyelim."
   },

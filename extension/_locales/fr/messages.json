@@ -1162,6 +1162,9 @@
   "authMsMicrosoftBusy": {
     "message": "Microsoft est surchargé pour le moment. Réessayez dans une minute."
   },
+  "authMsProvisioning": {
+    "message": "Microsoft prépare encore l'accès pour votre organisation. Réessayez dans un instant."
+  },
   "authMsUnknownCode": {
     "message": "La connexion a échoué pour une raison que nous n'avons jamais rencontrée. Réessayez — si cela persiste, écrivez à support@getoutmass.com et nous examinerons le problème."
   },
