@@ -38,8 +38,20 @@ for. Both of that day's sign-ups hit it on their very first attempt:
 
 Both failures are at `stage: authorize`, both carry `attributed_to: "app"`, and
 the message our own code shows the user is **"This is our fault, not yours.
-Please report it (AADSTS650051)"**. So this is not the consent leak and not the
-user's IT — by our own reading it is our app registration being refused.
+Please report it (AADSTS650051)"**.
+
+**That attribution is wrong, and it is the finding.** Microsoft does not publish
+650051, but their own Q&A threads describe it consistently: the consent action
+fails because the service principal for the app already exists in the target
+tenant while Entra has not finished provisioning it. A known transient that
+clears on retry. Our data says the same thing — both users were in within eight
+and thirty seconds of retrying, and a genuinely rejected registration fails
+every time.
+
+So we label Microsoft's provisioning race as our own registration being
+refused, and then ask the user to report it. Nobody can act on that report,
+and the one thing that does work — try again — is the thing the message does
+not say.
 
 Both users retried and got in within 8 and 30 seconds, which is the one
 reassuring fact: a permanently broken registration would fail every time, so
@@ -52,16 +64,22 @@ ever interaction with the product, before they have any reason to persist. The
 two who did retry were lucky or determined; there is no way to know how many
 did not.
 
-**Ali's check (Azure is his):** the app registration's **client secret expiry**
-first, then whether anything about the registration changed on or before 08-10.
-`AZURE_CLIENT_SECRET` living only on the web service means a rotation that half
-lands would look exactly like this.
+**Azure: probably nothing to fix.** A `stage: authorize` failure happens before
+any secret is used — the client secret only enters at token exchange — so a
+rotation or expiry cannot produce this, and an expiring secret would surface as
+`stage: token_exchange`. Worth a five-minute sanity pass on the registration
+(client id, redirect URI, supported account types, publisher verification, and
+note the secret's expiry date for its own sake), but not a hunt.
 
-**Separately, two visitors were lost outright on 08-26** — 12:03 UTC
-(`attempt_no 3`) and 13:34 UTC — both `chrome_error` with **no** Microsoft code
-at all, so those failed before or outside Microsoft's answer. Neither came
-back. Worth watching whether that shape recurs; two in ninety minutes on a day
-with three sign-ups is not nothing.
+**On 08-26 there was one real loss, not two.** Reading the properties rather
+than the row count: 13:34 UTC was `consent_declined` after 34 seconds in the
+window on Edge 0.2.2, with no `ms_auth_failed` from the backend — Microsoft
+never redirected back, so the window was closed. That is the consent-page
+abandonment we already know about. The 12:03 row looked like a second loss and
+is not: `attempt_no 3`, extension 0.1.27, and `seconds: 1376725` — sixteen days
+in the window. It is an old session finally reporting, not a visitor that day.
+
+The lesson repeats: the count was two, the reading was one.
 
 ### 🔴 Store listing claims a privacy guarantee the code does not keep
 
