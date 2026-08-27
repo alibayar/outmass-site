@@ -26,6 +26,62 @@ site, so this never ships to getoutmass.com.)
 
 ---
 
+### Two infrastructure hygiene items, queued 2026-08-27
+
+Both surfaced from the beat's own logs while verifying the variable cleanup.
+Neither is urgent; both are the kind of thing that only ever gets found while
+looking at something else.
+
+**1. We turn off Redis certificate verification, citing a dead link.**
+
+`workers/celery_app.py:117-125` sets `ssl_cert_reqs=CERT_NONE` for any
+`rediss://` broker, and both the beat and the worker log Celery's warning on
+every boot: no validation of the broker's identity, vulnerable to a
+man-in-the-middle. The justification in the comment is that Upstash uses a
+certificate outside standard CA bundles, sourced to
+`upstash.com/docs/redis/howto/celeryintegration` - **which now returns 404**.
+So the reason is an unverified quote from a page that no longer exists.
+
+The channel carries the task queue. Someone able to sit in the path could read
+it and, having captured the broker password, enqueue tasks of their own. The
+path is Railway to Upstash, so the practical likelihood is low - this is
+hygiene, not an incident.
+
+Settling it is one TLS handshake: connect to the production Upstash host with
+`ssl.create_default_context()` and see whether it verifies. If it does,
+`CERT_REQUIRED` replaces `CERT_NONE` and the warning goes with it. If it does
+not, the comment gets a live source instead of a dead one. Could not be tested
+from the dev sandbox - `upstash.io` does not resolve there, while
+`api.getoutmass.com` does, so it is that domain rather than the network.
+
+**2. Railway bakes secrets into the image as build args.**
+
+Every build logs `SecretsUsedInArgOrEnv` for each service variable whose NAME
+looks secret - on the 08-27 beat build: `JWT_SECRET`,
+`SUPABASE_SERVICE_ROLE_KEY`, `TELEGRAM_BOT_TOKEN`, each twice (ARG line 11,
+ENV line 12). Nixpacks declares service variables at build time, so they land
+in the image's layer metadata rather than only in the running container.
+
+Two things worth keeping about this:
+
+- **The warning list is name-based, so it undercounts.** `REDIS_URL` carries
+  the Upstash password and is never flagged, because "URL" is not a word the
+  scanner looks for. Do not read the list as the inventory.
+- **Deleting the eight unused variables shrank this by two real secrets.**
+  `AZURE_CLIENT_SECRET` and `ANTHROPIC_API_KEY` match the same naming pattern
+  and would have been baked into this image had they still been on the
+  service. (Inferred from the pattern rather than observed - there is no
+  before-build log to compare.) That is a second, unplanned reason the cleanup
+  was worth doing.
+
+The image sits in Railway's private registry, so exposure needs registry
+access. The fix, if one exists, is on Railway's side: whether build-time
+injection can be limited to the variables a build actually needs. Worth thirty
+minutes of reading their docs before doing anything else.
+
+**Also in that build log and NOT worth chasing:** `UndefinedVar: $NIXPACKS_PATH`
+is nixpacks referencing its own variable a line before defining it. Cosmetic.
+
 ### AADSTS650051 is turning new users away at the front door
 
 **Found 2026-08-27** with `backend/scripts/ask.py`, the first thing it was used
