@@ -150,10 +150,33 @@ def q_errors(hours: str) -> str:
     )
 
 
+def q_sending(minutes: str) -> str:
+    """Is anyone mid-send right now? Ask before deploying the web service.
+
+    A send is a background task inside the WEB process, paced two seconds per
+    recipient, so a deploy kills it mid-list. Nothing is lost - already-sent
+    recipients stay sent and the hourly stuck-campaign sweep resumes the rest -
+    but the customer watches a campaign stall, which is a bad minute to give
+    someone for the sake of not waiting five.
+
+    Shows sends started in the window with their recipient count; multiply by
+    two seconds to see whether the slowest is still running.
+    """
+    return (
+        "SELECT timestamp, distinct_id, event, "
+        "coalesce(toString(properties.recipient_count), '') AS recipients "
+        "FROM events "
+        f"WHERE timestamp >= now() - INTERVAL {int(minutes)} MINUTE "
+        "AND event IN ('send_clicked', 'send_completed', 'send_failed') "
+        "ORDER BY timestamp DESC"
+    )
+
+
 PRESETS = {
     "--signups": (q_signups, "3", "new distinct_ids and what they did"),
     "--trail": (q_trail, None, "one person's events in order (pass an email)"),
     "--errors": (q_errors, "24", "failures by code"),
+    "--sending": (q_sending, "15", "sends in flight — ask before a web deploy"),
 }
 
 
