@@ -79,6 +79,8 @@ REGISTRY: tuple[Var, ...] = (
         aliases=("STRIPE_STANDARD_PRICE_ID",)),
     Var("STRIPE_PRO_PRICE_ID", (WEB,), True, "same as STRIPE_STARTER_PRICE_ID — the catalogue is all-or-nothing"),
     Var("AZURE_CLIENT_SECRET", (WEB,), True, "the OAuth token exchange fails and nobody can sign in"),
+    Var("REDIS_TLS_VERIFY", (WEB, WORKER, BEAT), False,
+        "defaults to false, keeping the certificate check off; set true to verify the broker (2026-08-27)"),
     Var("REDIS_URL", (WORKER, BEAT), True,
         "the worker talks to a localhost broker that is not there — no "
         "scheduled send, no follow-up, no auto-resume, and no error anywhere"),

@@ -32,7 +32,7 @@ Both surfaced from the beat's own logs while verifying the variable cleanup.
 Neither is urgent; both are the kind of thing that only ever gets found while
 looking at something else.
 
-**1. We turn off Redis certificate verification, citing a dead link.**
+**1. Redis certificate verification — answered 2026-08-27, awaiting one variable.**
 
 `workers/celery_app.py:117-125` sets `ssl_cert_reqs=CERT_NONE` for any
 `rediss://` broker, and both the beat and the worker log Celery's warning on
@@ -47,12 +47,28 @@ it and, having captured the broker password, enqueue tasks of their own. The
 path is Railway to Upstash, so the practical likelihood is low - this is
 hygiene, not an incident.
 
-Settling it is one TLS handshake: connect to the production Upstash host with
-`ssl.create_default_context()` and see whether it verifies. If it does,
-`CERT_REQUIRED` replaces `CERT_NONE` and the warning goes with it. If it does
-not, the comment gets a live source instead of a dead one. Could not be tested
-from the dev sandbox - `upstash.io` does not resolve there, while
-`api.getoutmass.com` does, so it is that domain rather than the network.
+**Tested, and the comment was wrong.** Ali ran the handshake against the
+production host with a default `ssl.create_default_context()`: **OK, TLSv1.3**.
+Upstash's certificate verifies against the standard CA bundle, so the reason
+for turning verification off no longer exists - if it ever did.
+
+**Shipped as a switch, still off.** `REDIS_TLS_VERIFY` (default `false`) in
+`workers/celery_app.py`. Off it produces byte-identical behaviour to before;
+on it sets `CERT_REQUIRED` in both places that matter - the URL parameter
+Celery's result backend demands, and the `broker_use_ssl` dict kombu hands to
+redis-py. Both were checked to move together, since disagreeing would be worse
+than either setting.
+
+It defaults off rather than on because the failure mode is not a warning: a
+broker we cannot connect to means no scheduled sends, no follow-ups, no
+auto-resume, and nothing user-visible saying so. A laptop's CA bundle
+verifying is not the container's CA bundle verifying.
+
+**Ali's move, whenever convenient:** set `REDIS_TLS_VERIFY=true` on web, worker
+and beat; watch one deploy connect (the beat log's `Sending due task` line
+within five minutes is the proof); unset it if it does not. One variable, no
+rollback deploy. The Celery man-in-the-middle warning disappears at the same
+time, which is how you will know it took.
 
 **2. Railway bakes secrets into the image as build args.**
 

@@ -48,16 +48,39 @@ if POSTHOG_API_KEY:
 
 REDIS_URL = os.getenv("REDIS_URL", "redis://localhost:6379/0")
 
-# Upstash requires ssl_cert_reqs parameter in the URL for rediss://
+# Whether to verify the broker's TLS certificate — and why it is a switch.
+#
+# CERT_NONE was chosen when Upstash was adopted, justified by a comment citing
+# their Celery integration page: the endpoint "uses a certificate not in
+# standard CA bundles". That page now 404s, and on 2026-08-27 the claim did
+# not survive a test — a handshake to the production host with a default
+# ssl.create_default_context() verified cleanly, TLSv1.3. So the reason for
+# turning verification off no longer exists, and Celery has been printing its
+# man-in-the-middle warning on every worker and beat boot ever since.
+#
+# It still ships OFF, because being wrong here is not a warning, it is the
+# whole async half going quiet: no scheduled sends, no follow-ups, no
+# auto-resume, and nothing user-visible saying so. Ali's laptop verifying the
+# certificate is not the same as the container's CA bundle verifying it.
+#
+# So: set REDIS_TLS_VERIFY=true on web, worker and beat, watch one deploy
+# connect, and unset it if it does not. A variable, not a rollback deploy.
+REDIS_TLS_VERIFY = os.getenv("REDIS_TLS_VERIFY", "false").strip().lower() == "true"
+
+# Celery's own error text is explicit that a rediss:// URL must carry
+# ssl_cert_reqs as one of CERT_REQUIRED / CERT_OPTIONAL / CERT_NONE, so the
+# URL parameter is load-bearing rather than decorative — the result backend
+# refuses to start without it. The word and the ssl constant must agree.
+_CERT_WORD = "CERT_REQUIRED" if REDIS_TLS_VERIFY else "CERT_NONE"
+
 broker_url = REDIS_URL
 backend_url = REDIS_URL
 
 if REDIS_URL.startswith("rediss://"):
-    # Append ssl_cert_reqs=CERT_NONE if not already present
     separator = "&" if "?" in REDIS_URL else "?"
     if "ssl_cert_reqs" not in REDIS_URL:
-        broker_url = REDIS_URL + separator + "ssl_cert_reqs=CERT_NONE"
-        backend_url = REDIS_URL + separator + "ssl_cert_reqs=CERT_NONE"
+        broker_url = REDIS_URL + separator + "ssl_cert_reqs=" + _CERT_WORD
+        backend_url = REDIS_URL + separator + "ssl_cert_reqs=" + _CERT_WORD
 
 celery = Celery(
     "outmass",
@@ -114,14 +137,15 @@ celery.conf.update(
     },
 )
 
-# SSL config for Upstash Redis (rediss:// URLs)
-# Upstash Redis requires CERT_NONE because their rediss:// endpoint
-# uses a certificate not in standard CA bundles.
-# See: https://upstash.com/docs/redis/howto/celeryintegration
+# The same decision, in the form kombu actually consumes: broker_use_ssl is a
+# dict of real ssl constants handed straight to redis-py, which is why it takes
+# the integer rather than the word above. Both must move together — the URL
+# says one thing to Celery's backend check and this says it to the connection.
 if REDIS_URL.startswith("rediss://"):
+    _cert_flag = ssl.CERT_REQUIRED if REDIS_TLS_VERIFY else ssl.CERT_NONE
     celery.conf.update(
-        broker_use_ssl={"ssl_cert_reqs": ssl.CERT_NONE},
-        redis_backend_use_ssl={"ssl_cert_reqs": ssl.CERT_NONE},
+        broker_use_ssl={"ssl_cert_reqs": _cert_flag},
+        redis_backend_use_ssl={"ssl_cert_reqs": _cert_flag},
     )
 
 # Beat schedule

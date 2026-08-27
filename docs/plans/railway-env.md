@@ -84,6 +84,7 @@ sign-in and sending.
 | `STRIPE_STARTER_PRICE_ID` (or `STRIPE_STANDARD_PRICE_ID`) | web | **yes** | the plan catalogue comes back empty and the panel silently falls back to its old single hardcoded-Starter button |
 | `STRIPE_PRO_PRICE_ID` | web | **yes** | same as the Starter price id — the catalogue is all-or-nothing |
 | `AZURE_CLIENT_SECRET` | web | **yes** | the OAuth token exchange fails and nobody can sign in |
+| `REDIS_TLS_VERIFY` | web, worker, beat | no | defaults to false, keeping the certificate check off; set true to verify the broker (2026-08-27) |
 | `REDIS_URL` | worker, beat | **yes** | the worker talks to a localhost broker that is not there — no scheduled send, no follow-up, no auto-resume, and no error anywhere |
 | `BACKEND_URL` | web, worker, beat | **yes** | tracking pixels, click links, unsubscribe links and Stripe redirect URLs are stamped into outgoing mail pointing at localhost |
 | `MAILERSEND_API_KEY` | web, worker | **yes** | every transactional email is skipped — welcome, reconnect, quota-cap, plan-drop, the 30-day nudge and feedback forwarding |
