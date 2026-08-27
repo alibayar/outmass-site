@@ -144,6 +144,61 @@ def test_a_backstop_rollover_is_flagged_not_celebrated():
     assert flagged and flagged[0].mark == "check"
 
 
+def test_a_renewal_older_than_the_stamp_is_not_read_as_a_missed_one():
+    """The blank that cost an hour on 2026-08-27.
+
+    A subscriber whose renewal happened before the stamping code shipped can
+    never carry a stamp. Printed as a bare "none yet" it looks exactly like a
+    payment that never arrived - and Stripe had collected that one perfectly.
+    """
+    lines = build(_db([_row(
+        email="gsanders@example.com",
+        stripe_subscription_id="sub_1",
+        month_reset_date="2026-07-08",
+        last_cycle_invoice_at=None,
+    )]))
+    said = [ln for ln in lines if "gsanders@example.com" in ln.text]
+    assert said, "the subscriber should still get a line"
+    assert said[0].mark != "check", "a pre-stamping renewal is not a problem"
+    assert "before stamping began" in said[0].text
+    # And it names the date that WILL prove the path works.
+    assert "2026-09-08" in said[0].text
+
+
+def test_a_renewal_that_has_not_come_round_yet_says_so():
+    future_anchor = (
+        datetime.now(timezone.utc).date().replace(day=1) + timedelta(days=32)
+    ).replace(day=1)
+    lines = build(_db([_row(
+        email="mercedes@example.com",
+        stripe_subscription_id="sub_1",
+        month_reset_date=future_anchor.isoformat(),
+        last_cycle_invoice_at=None,
+    )]))
+    said = [ln for ln in lines if "mercedes@example.com" in ln.text]
+    assert said and said[0].mark != "check"
+    assert "not due yet" in said[0].text
+
+
+def test_a_renewal_that_passed_without_an_invoice_is_a_check():
+    """The one state actually worth reading: due, and nothing arrived.
+
+    35 days back puts the renewal roughly five days in the past — recent
+    enough to be after the stamping cutoff on any run from now on, which is
+    what separates this case from the pre-stamping one above.
+    """
+    overdue_anchor = datetime.now(timezone.utc).date() - timedelta(days=35)
+    lines = build(_db([_row(
+        email="silent@example.com",
+        stripe_subscription_id="sub_1",
+        month_reset_date=overdue_anchor.isoformat(),
+        last_cycle_invoice_at=None,
+    )]))
+    said = [ln for ln in lines if "silent@example.com" in ln.text]
+    assert said and said[0].mark == "check"
+    assert "no invoice arrived" in said[0].text
+
+
 def test_gate_one_says_which_process_it_read():
     """Railway variables are per-service. A report that reads the beat's key
     and presents it as the answer is the confident wrongness this exists to

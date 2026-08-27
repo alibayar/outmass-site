@@ -235,6 +235,69 @@ def _rhythm_lines() -> list[Line]:
     return out
 
 
+# The renewal path only started stamping invoices on this date (migration 031
+# and the invoice.payment_succeeded handler, both 2026-08-15). A subscriber
+# whose last renewal happened before it can never carry a stamp, and reading
+# their blank as a missed payment costs an hour and a scare - it did on
+# 2026-08-27, for a renewal Stripe had collected perfectly on 08-08.
+STAMPING_SINCE = date(2026, 8, 15)
+
+
+def _next_renewal(anchor: str | None) -> date | None:
+    """The day this subscriber's next invoice is due, from their anchor.
+
+    One month on, clamped into short months the same way the quota does it
+    (a 31st anchor lands on the 30th, then finds the 31st again). Returns
+    None for a row with no anchor to reason from.
+    """
+    if not anchor:
+        return None
+    try:
+        a = date.fromisoformat(str(anchor)[:10])
+    except ValueError:
+        return None
+    month = a.month + 1
+    year = a.year + (month > 12)
+    month = month - 12 if month > 12 else month
+    day = a.day
+    while day > 28:
+        try:
+            return date(year, month, day)
+        except ValueError:
+            day -= 1
+    return date(year, month, day)
+
+
+def _no_stamp_line(row: dict, anchor: str | None) -> "Line":
+    """Why this subscriber has no confirmed renewal - and whether that is fine.
+
+    Three very different states used to print the same "none yet", which is
+    how a paid renewal came to look like a lost one:
+      * the renewal predates the stamping code - nothing to see, ever
+      * the next renewal has not come round yet - nothing to see, for now
+      * the renewal date has passed with no invoice - the one worth reading
+    """
+    email = row.get("email")
+    due = _next_renewal(anchor)
+    today = datetime.now(timezone.utc).date()
+    if due is None:
+        return Line(INFO, f"{email}: no anchor to reason from")
+    if due < STAMPING_SINCE:
+        return Line(
+            INFO,
+            f"{email}: renewed {due}, before stamping began "
+            f"{STAMPING_SINCE} — first provable renewal "
+            f"{_next_renewal(due.isoformat())}",
+        )
+    if due > today:
+        return Line(INFO, f"{email}: next renewal {due}, not due yet")
+    return Line(
+        CHECK,
+        f"{email}: renewal was due {due} and no invoice arrived — check "
+        "Stripe for this customer before assuming the webhook is at fault",
+    )
+
+
 def build(db, *, role: str = "beat") -> list[Line]:
     """The whole report, as lines. Raises EmptyDatabase rather than
     describing a population it never saw."""
@@ -375,7 +438,7 @@ def build(db, *, role: str = "beat") -> list[Line]:
     for r in subs:
         stamp, anchor = r.get("last_cycle_invoice_at"), r.get("month_reset_date")
         if not stamp:
-            out.append(Line(INFO, f"{r.get('email')}: anchor {anchor}, none yet"))
+            out.append(_no_stamp_line(r, anchor))
         elif str(stamp)[:10] == str(anchor):
             out.append(Line(PASS, f"{r.get('email')}: Stripe confirmed {str(stamp)[:10]}"))
         else:
@@ -387,9 +450,8 @@ def build(db, *, role: str = "beat") -> list[Line]:
     if subs and not stamped:
         out.append(Line(
             INFO,
-            "Expected until the first renewal after 2026-08-14. Still empty a "
-            "month from now means the webhook is not arriving and every paid "
-            "rollover is running on the backstop.",
+            "No confirmed renewal on any subscriber yet. Each row above says "
+            "whether that is expected; a CHECK among them is the one to read.",
             detail=True,
         ))
 
