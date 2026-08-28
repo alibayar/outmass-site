@@ -391,6 +391,9 @@
   "alertAbTestProOnly": {
     "message": "اختبار A/B متاح فقط في خطة Pro."
   },
+  "alertFollowupProOnly": {
+    "message": "رسائل المتابعة التلقائية متاحة في خطة Pro فقط. سيتم إرسال حملتك على أي حال، لكن لم تتم جدولة رسالة المتابعة."
+  },
   "alertScheduledSuccess": {
     "message": "تم بنجاح! سيُرسل إلى $1 مستلمين في $2."
   },

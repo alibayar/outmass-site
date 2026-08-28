@@ -391,6 +391,9 @@
   "alertAbTestProOnly": {
     "message": "A/B 测试仅在 Pro 计划中可用。"
   },
+  "alertFollowupProOnly": {
+    "message": "自动跟进邮件仅在 Pro 套餐中可用。您的邮件系列仍会发送，但跟进邮件未被安排。"
+  },
   "alertScheduledSuccess": {
     "message": "成功！将于 $2 向 $1 位收件人发送。"
   },

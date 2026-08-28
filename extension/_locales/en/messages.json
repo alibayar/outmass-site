@@ -377,6 +377,9 @@
   "alertAbTestProOnly": {
     "message": "A/B testing is only available on the Pro plan."
   },
+  "alertFollowupProOnly": {
+    "message": "Automatic follow-ups are only available on the Pro plan. Your campaign will still be sent — the follow-up was not scheduled."
+  },
   "alertScheduledSuccess": {
     "message": "Success! Will be sent to $1 recipients on $2."
   },

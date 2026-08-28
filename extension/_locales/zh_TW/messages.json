@@ -377,6 +377,9 @@
   "alertAbTestProOnly": {
     "message": "A/B 測試僅限 Pro 方案使用。"
   },
+  "alertFollowupProOnly": {
+    "message": "自動跟進郵件僅在 Pro 方案中提供。您的行銷活動仍會寄送，但跟進郵件並未排程。"
+  },
   "alertScheduledSuccess": {
     "message": "已完成！將於 $2 傳送給 $1 位收件者。"
   },

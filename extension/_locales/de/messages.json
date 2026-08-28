@@ -391,6 +391,9 @@
   "alertAbTestProOnly": {
     "message": "A/B-Tests sind nur im Pro-Plan verfügbar."
   },
+  "alertFollowupProOnly": {
+    "message": "Automatische Follow-ups sind nur im Pro-Tarif verfügbar. Ihre Kampagne wird trotzdem gesendet — das Follow-up wurde nicht geplant."
+  },
   "alertScheduledSuccess": {
     "message": "Erfolg! Wird an $1 Empfänger am $2 gesendet."
   },

@@ -391,6 +391,9 @@
   "alertAbTestProOnly": {
     "message": "A/BテストはProプランでのみご利用いただけます。"
   },
+  "alertFollowupProOnly": {
+    "message": "自動フォローアップは Pro プランでのみご利用いただけます。キャンペーンはこのまま送信されますが、フォローアップは予約されていません。"
+  },
   "alertScheduledSuccess": {
     "message": "成功！$2 に $1 件の受信者に送信されます。"
   },

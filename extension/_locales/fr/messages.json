@@ -391,6 +391,9 @@
   "alertAbTestProOnly": {
     "message": "Les tests A/B sont disponibles uniquement avec le plan Pro."
   },
+  "alertFollowupProOnly": {
+    "message": "Les relances automatiques sont réservées au forfait Pro. Votre campagne sera quand même envoyée ; la relance n'a pas été programmée."
+  },
   "alertScheduledSuccess": {
     "message": "Succès ! Sera envoyé à $1 destinataires le $2."
   },

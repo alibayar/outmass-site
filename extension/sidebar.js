@@ -2890,9 +2890,29 @@
       function (resp) {
         if (resp && !resp.error) {
           log("Follow-up created for campaign:", campaignId);
-        } else {
-          log("Follow-up creation failed:", resp ? resp.error : "unknown");
+          return;
         }
+        // A 402 here means the plan does not include follow-ups, and the user
+        // has just watched themselves tick a box, fill in a subject and a
+        // body, and press Send. Until 2026-08-28 that landed in a log line
+        // which is off unless debug is enabled — so the campaign went out and
+        // the follow-up they had configured simply never existed, with
+        // nothing anywhere saying so. A paying customer spent forty minutes
+        // in that state on the day they upgraded.
+        //
+        // The A/B branch above has handled the identical case correctly for
+        // months; this is the same shape.
+        if (resp && resp.status === 402) {
+          alert(t("alertFollowupProOnly"));
+          var _fEnable = document.getElementById("followup-enabled");
+          if (_fEnable && _fEnable.checked) {
+            _fEnable.checked = false;
+            _fEnable.dispatchEvent(new Event("change"));
+          }
+          track("feature_locked_followup");
+          return;
+        }
+        log("Follow-up creation failed:", resp ? resp.error : "unknown");
       }
     );
   }

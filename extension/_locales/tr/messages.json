@@ -391,6 +391,9 @@
   "alertAbTestProOnly": {
     "message": "A/B testi yalnızca Pro planda kullanılabilir."
   },
+  "alertFollowupProOnly": {
+    "message": "Otomatik takip e-postaları yalnızca Pro planda kullanılabilir. Kampanyanız yine de gönderilecek; takip e-postası zamanlanmadı."
+  },
   "alertScheduledSuccess": {
     "message": "Başarılı! $2 tarihinde $1 alıcıya gönderilecek."
   },
