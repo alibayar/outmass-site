@@ -4414,6 +4414,11 @@
     // hiding the one control that gets them anywhere. It now waits until
     // there is an account to onboard; pollReauthState calls back here after
     // the first successful sign-in.
+    // Already open? Leave it alone. This function used to run once at init;
+    // it now runs from the five-minute settings poll, and resetting _onbStep
+    // on every poll would walk somebody on step 3 back to step 1 while they
+    // were reading it. Found by the 0.2.3 release review.
+    if (overlay.style.display === "flex") return;
     chrome.storage.local.get(["onboardingDone", "user"], function (r) {
       if (r.onboardingDone || !r.user) return;
       _onbStep = 0;

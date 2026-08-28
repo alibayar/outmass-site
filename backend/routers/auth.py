@@ -449,9 +449,21 @@ def _alert_if_ours(stage: str, fields: dict, host: str = "") -> None:
     if fields.get("attributed_to") not in ("app", "microsoft"):
         return
     try:
+        import asyncio
+
         from routers.billing import _telegram_alert
 
-        _telegram_alert(
+        # _telegram_alert is a SYNCHRONOUS httpx.post with a 5s timeout, and
+        # every caller of this function is inside `async def auth_callback`.
+        # Called inline it blocks uvicorn's event loop for as long as Telegram
+        # takes — so a slow Telegram would stall every other request on the
+        # web service, including other people's sign-ins, while we report that
+        # one sign-in went wrong. Found by the 0.2.3 release review, in code
+        # that had already been live for a day.
+        #
+        # Off the loop when there is one; straight through when there is not,
+        # which is how the tests call it.
+        message = (
             "🔐 Sign-in failed on our side\n"
             f"stage: {stage}\n"
             f"reason: {fields.get('meaning') or fields.get('error') or 'unknown'}"
@@ -459,6 +471,14 @@ def _alert_if_ours(stage: str, fields: dict, host: str = "") -> None:
             f"blamed: {fields.get('attributed_to')}\n"
             f"host: {host or 'unknown'}"
         )
+        try:
+            loop = asyncio.get_running_loop()
+        except RuntimeError:
+            loop = None
+        if loop is None:
+            _telegram_alert(message)
+        else:
+            loop.run_in_executor(None, _telegram_alert, message)
     except Exception:  # noqa: BLE001
         # An alert that cannot be delivered must never take the callback with
         # it: the user is mid-sign-in and this is garnish.
