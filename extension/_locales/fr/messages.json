@@ -17,7 +17,7 @@
     "message": "Votre forfait envoie $1 e-mails par mois : les $2 destinataires restants prendraient encore environ $3 mois. Passez à un forfait supérieur pour les envoyer plus tôt."
   },
   "popupConsentExplainer": {
-    "message": "Microsoft demandera l'autorisation pour qu'OutMass envoie des e-mails et détecte les réponses depuis votre propre compte Outlook. OutMass ne lit jamais vos autres e-mails ; vos campagnes sont stockées en toute sécurité pour permettre la planification et les relances."
+    "message": "Microsoft demandera l'autorisation pour qu'OutMass envoie des e-mails depuis votre propre compte Outlook. Vos campagnes sont stockées en toute sécurité pour permettre la planification et les relances."
   },
   "appDesc": {
     "message": "Campagnes d'e-mails en masse directement depuis Outlook Web"

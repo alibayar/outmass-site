@@ -36,6 +36,7 @@ const suites = [
   require("./manifest-permissions.test.js"),
   require("./no-hardcoded-prices.test.js"),
   require("./ui-language-header.test.js"),
+  require("./first-signin-scope.test.js"),
 ];
 
 async function main() {

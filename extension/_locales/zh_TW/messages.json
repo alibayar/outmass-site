@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "Microsoft 會請您授權 OutMass 使用您自己的 Outlook 帳戶寄送郵件並偵測回覆。OutMass 絕不會讀取您的其他郵件；您的行銷活動會安全地儲存，讓排程與後續追蹤郵件得以運作。"
+    "message": "Microsoft 會請您授權 OutMass 使用您自己的 Outlook 帳戶寄送郵件。您的行銷活動會安全地儲存，讓排程與後續追蹤郵件得以運作。"
   },
   "appDesc": {
     "message": "直接從 Outlook Web 執行大量郵件行銷活動"

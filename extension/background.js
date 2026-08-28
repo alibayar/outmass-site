@@ -349,7 +349,60 @@ function startMSLogin(includeOneDrive, includeMailRead) {
   return flight;
 }
 
+/**
+ * Should THIS sign-in ask for Mail.Read, when the caller did not say?
+ *
+ * The server cannot answer it. /auth/login runs before anyone is
+ * authenticated, so FIRST_SIGNIN_INCLUDE_MAIL_READ is necessarily global: flip
+ * it off and every re-authentication gets the narrow ask too — the reconnect
+ * banner, an expired session, a dead Microsoft connection coming back. The
+ * callback then records has_mail_read_scope=false for somebody who HAD it and
+ * their refresh narrows to match, so reply detection stops without a word.
+ *
+ * The client is the only side that knows. Three states:
+ *
+ *   never connected here   -> narrow. A first-time user should not be asked to
+ *                             read their mail before sending anything.
+ *   connected, had it      -> ask. Preserving what they already granted is not
+ *                             a new permission prompt; Microsoft skips consent
+ *                             for scopes already authorised.
+ *   connected, narrow user -> narrow. Someone who signed in after the flip
+ *                             never granted it, and re-asking would put "Read
+ *                             your mail" back in front of exactly the person
+ *                             the change exists for.
+ *
+ * `hadMailRead` is written by the sidebar's /settings poll. Absent means "not
+ * observed yet", and for an install that has connected before, the safe
+ * reading of unknown is TODAY'S behaviour — ask — because over-asking an
+ * existing user changes nothing, while under-asking silently costs them a
+ * feature. Any failure resolves the same way.
+ */
+function _mailReadForReauth() {
+  return new Promise(function (resolve) {
+    try {
+      chrome.storage.local.get(
+        ["msEverConnected", "user", "hadMailRead"],
+        function (r) {
+          // `user` alone is not enough: it is cleared when a JWT goes stale,
+          // which is precisely the population re-authenticating here.
+          var everConnected = !!(r && (r.msEverConnected || r.user));
+          var hadMailRead = r ? r.hadMailRead : undefined;
+          resolve(everConnected && hadMailRead !== false);
+        }
+      );
+    } catch (e) {
+      resolve(true);
+    }
+  });
+}
+
 async function _startMSLoginInner(includeOneDrive, includeMailRead) {
+  // Undefined means "caller has no opinion" — a plain sign-in or the OneDrive
+  // flow. An explicit true is the Reports banner asking for Mail.Read on
+  // purpose, and must not be second-guessed.
+  if (includeMailRead === undefined) {
+    includeMailRead = await _mailReadForReauth();
+  }
   log("Starting MS OAuth flow (Web)...",
     includeOneDrive ? "with OneDrive scope" : includeMailRead ? "with Mail.Read scope" : "");
 
@@ -625,6 +678,11 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
           backendJwt: jwtToken,
           user: user,
           plan: plan,
+          // Durable on purpose: never cleared by msLogout or by the stale-JWT
+          // sweep, both of which drop `user`. It answers "has this install
+          // ever completed a Microsoft consent", which is what decides
+          // whether a later sign-in is a FIRST one — see _mailReadForReauth.
+          msEverConnected: true,
           // Fresh JWT → clear any pending session-expired flag so the
           // sidebar banner hides on next poll.
           sessionExpired: false,

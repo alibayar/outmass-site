@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "A Microsoft vai pedir permissão para o OutMass enviar e-mails e detetar respostas na sua própria conta do Outlook. O OutMass nunca lê os seus outros e-mails; as suas campanhas são guardadas em segurança para que o agendamento e os follow-ups funcionem."
+    "message": "A Microsoft vai pedir permissão para o OutMass enviar e-mails na sua própria conta do Outlook. As suas campanhas são guardadas em segurança para que o agendamento e os follow-ups funcionem."
   },
   "appDesc": {
     "message": "Campanhas de e-mail em massa diretamente a partir do Outlook Web"

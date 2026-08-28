@@ -376,6 +376,16 @@
           requiresReauth = !!(data && data.requires_reauth);
           summary = data.announcements_summary;
           hasMailRead = data && data.has_mail_read_scope;
+          // Remember it for the next sign-in. background.js cannot ask the
+          // server whether this person granted Mail.Read — /auth/login runs
+          // before anyone is authenticated — so the answer has to be cached
+          // on the client by whoever does have a session. Only a real boolean
+          // is stored; an errored poll must not be read as "narrow".
+          if (typeof hasMailRead === "boolean") {
+            try {
+              chrome.storage.local.set({ hadMailRead: hasMailRead });
+            } catch (e) { /* storage is a convenience here, never a gate */ }
+          }
         }
         // Apply the reauth banner FIRST, then the announcement signal, so the
         // strip's precedence check (reauth > offline > announcement) reads the
@@ -387,6 +397,14 @@
         );
         // Piggyback the announcement signal on the existing settings poll.
         updateAnnouncementSignal(summary);
+        // And the onboarding, which no longer runs at init. This poll is the
+        // one place that already knows a session exists, so it is where the
+        // tutorial gets its turn — after the sign-in it used to cover, not
+        // before. showOnboardingIfFirstRun re-checks onboardingDone, so a
+        // five-minute poll cannot re-open a wizard somebody finished.
+        if (!neverSignedIn && !sessionExpired && !requiresReauth) {
+          showOnboardingIfFirstRun();
+        }
       });
     });
   }
@@ -4390,8 +4408,14 @@
   function showOnboardingIfFirstRun() {
     var overlay = document.getElementById("onboarding-overlay");
     if (!overlay) return;
-    chrome.storage.local.get("onboardingDone", function (r) {
-      if (r.onboardingDone) return;
+    // Signed-in only. On a brand-new install this ran at init and put a
+    // full-screen tutorial about uploading a CSV over the sign-in banner -
+    // teaching the second step to somebody still standing on the first, and
+    // hiding the one control that gets them anywhere. It now waits until
+    // there is an account to onboard; pollReauthState calls back here after
+    // the first successful sign-in.
+    chrome.storage.local.get(["onboardingDone", "user"], function (r) {
+      if (r.onboardingDone || !r.user) return;
       _onbStep = 0;
       renderOnbStep();
       overlay.style.display = "flex";
@@ -4444,7 +4468,9 @@
     loadQuota();
     updateSendButton();
     loadTemplates();
-    showOnboardingIfFirstRun();
+    // showOnboardingIfFirstRun is NOT called here any more - it needs a
+    // session, and at init on a fresh install there is none. pollReauthState
+    // runs it once the settings poll confirms one.
     pollReauthState();
     loadAnnouncements();
     renderSenderIdentity();
