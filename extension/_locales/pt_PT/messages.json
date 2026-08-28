@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "A Microsoft vai pedir permissão para o OutMass enviar e-mails na sua própria conta do Outlook. As suas campanhas são guardadas em segurança para que o agendamento e os follow-ups funcionem."
+    "message": "O ecrã seguinte é da Microsoft, não nosso. Lista o que o OutMass pode fazer com a sua conta do Outlook — sobretudo enviar em seu nome. Nada acontece até aceitar, e pode revogar a permissão mais tarde nas definições da sua conta Microsoft."
   },
   "appDesc": {
     "message": "Campanhas de e-mail em massa diretamente a partir do Outlook Web"

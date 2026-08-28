@@ -17,7 +17,7 @@
     "message": "Planınız ayda $1 email gönderiyor; kalan $2 alıcı yaklaşık $3 ay daha sürer. Daha erken göndermek için planınızı yükseltin."
   },
   "popupConsentExplainer": {
-    "message": "Microsoft, OutMass'in kendi Outlook hesabınızdan e-posta göndermesi için izin isteyecek. Kampanyalarınız, zamanlama ve takip gönderimlerinin çalışabilmesi için güvenle saklanır."
+    "message": "Sıradaki ekran bizim değil, Microsoft'un. OutMass'in Outlook hesabınızla neler yapabileceğini listeler — başlıcası sizin adınıza e-posta göndermek. Siz onaylamadan hiçbir şey olmaz ve izni daha sonra Microsoft hesap ayarlarınızdan geri alabilirsiniz."
   },
   "appDesc": {
     "message": "Outlook Web üzerinden toplu e-posta kampanyaları"
