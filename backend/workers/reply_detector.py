@@ -51,10 +51,12 @@ days after the panel started reading it, and was quoted twice on
 2026-08-28 as a live blocker. Nothing depends on this file being
 right about the client - which is exactly how it stayed wrong.
 
-Privacy: we read message metadata only (from, receivedDateTime,
-internetMessageId). We never persist message bodies. Microsoft
-Graph's listing endpoint already filters down to those fields via
-$select; we don't even download the bodies.
+Privacy: we ask Microsoft for three fields per message - the sender
+address, the time it arrived, and the conversation id - and keep only
+what a match needs. Bodies are never downloaded; subjects are no
+longer even requested (they were, until 2026-08-28, and were thrown
+away unread). The only thing written back is a replied_at stamp on
+the contact row.
 """
 
 import logging
@@ -86,11 +88,16 @@ def _list_recent_messages(
     """Page through Inbox messages from the last N days, returning a
     flat list of {from_email, received_at, conversation_id} dicts.
 
-    We only $select the fields we need so payloads stay small.
+    $select carries exactly the three fields that leave this function, and
+    the reason is not payload size. Until 2026-08-28 it also asked for
+    `subject`, which nothing here read - Microsoft returned every subject
+    line in the user's inbox for a value we dropped on the floor. Asking for
+    less is the only version of "we do not read your mail" that survives
+    somebody reading this file, and the user-facing sentence now says so.
     """
     url = (
         f"{GRAPH_API_BASE}/me/mailFolders/Inbox/messages"
-        f"?$select=from,receivedDateTime,conversationId,subject"
+        f"?$select=from,receivedDateTime,conversationId"
         f"&$filter=receivedDateTime ge {since_iso}"
         f"&$orderby=receivedDateTime desc"
         f"&$top=50"

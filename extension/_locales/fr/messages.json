@@ -17,7 +17,7 @@
     "message": "Votre forfait envoie $1 e-mails par mois : les $2 destinataires restants prendraient encore environ $3 mois. Passez à un forfait supérieur pour les envoyer plus tôt."
   },
   "popupConsentExplainer": {
-    "message": "L'écran suivant est celui de Microsoft, pas le nôtre. Il indique ce qu'OutMass peut faire avec votre compte Outlook — principalement envoyer en votre nom. Rien ne se passe tant que vous n'acceptez pas, et vous pouvez révoquer l'autorisation depuis les paramètres de votre compte Microsoft."
+    "message": "L'écran suivant est celui de Microsoft, pas le nôtre. Il indique ce qu'OutMass peut faire avec votre compte Outlook — principalement envoyer en votre nom. Pour repérer les réponses, OutMass regarde qui vous a écrit et quand, jamais le contenu. Rien ne se passe tant que vous n'acceptez pas, et vous pouvez révoquer l'autorisation depuis les paramètres de votre compte Microsoft."
   },
   "appDesc": {
     "message": "Campagnes d'e-mails en masse directement depuis Outlook Web"

@@ -17,7 +17,7 @@
     "message": "您的套餐每月可发送 $1 封邮件，因此剩余的 $2 位收件人还需要约 $3 个月。如需更早发送，请升级套餐。"
   },
   "popupConsentExplainer": {
-    "message": "下一个页面来自 Microsoft，而不是我们。它会列出 OutMass 可以对您的 Outlook 帐户执行哪些操作——主要是代表您发送邮件。在您同意之前不会发生任何事情，之后也可以在 Microsoft 帐户设置中撤销该授权。"
+    "message": "下一个页面来自 Microsoft，而不是我们。它会列出 OutMass 可以对您的 Outlook 帐户执行哪些操作——主要是代表您发送邮件。为了识别回复，OutMass 只查看谁在什么时候给您写了信，从不查看内容。在您同意之前不会发生任何事情，之后也可以在 Microsoft 帐户设置中撤销该授权。"
   },
   "appDesc": {
     "message": "直接从 Outlook Web 发送批量邮件营销活动"

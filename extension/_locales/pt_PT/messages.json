@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "O ecrã seguinte é da Microsoft, não nosso. Lista o que o OutMass pode fazer com a sua conta do Outlook — sobretudo enviar em seu nome. Nada acontece até aceitar, e pode revogar a permissão mais tarde nas definições da sua conta Microsoft."
+    "message": "O ecrã seguinte é da Microsoft, não nosso. Lista o que o OutMass pode fazer com a sua conta do Outlook — sobretudo enviar em seu nome. Para detetar respostas, verifica quem lhe escreveu e quando, nunca o conteúdo. Nada acontece até aceitar, e pode revogar a permissão mais tarde nas definições da sua conta Microsoft."
   },
   "appDesc": {
     "message": "Campanhas de e-mail em massa diretamente a partir do Outlook Web"

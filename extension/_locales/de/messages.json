@@ -17,7 +17,7 @@
     "message": "Ihr Plan sendet $1 E-Mails pro Monat — die verbleibenden $2 Empfänger würden also noch etwa $3 Monate dauern. Upgraden Sie Ihren Plan, um sie früher zu senden."
   },
   "popupConsentExplainer": {
-    "message": "Der nächste Bildschirm gehört Microsoft, nicht uns. Er listet auf, was OutMass mit Ihrem Outlook-Konto tun darf — in erster Linie in Ihrem Namen senden. Es geschieht nichts, bevor Sie zustimmen, und Sie können die Berechtigung später in Ihren Microsoft-Kontoeinstellungen widerrufen."
+    "message": "Der nächste Bildschirm gehört Microsoft, nicht uns. Er listet auf, was OutMass mit Ihrem Outlook-Konto tun darf — in erster Linie in Ihrem Namen senden. Um Antworten zu erkennen, prüft OutMass, wer Ihnen wann geschrieben hat, niemals den Inhalt. Es geschieht nichts, bevor Sie zustimmen, und Sie können die Berechtigung später in Ihren Microsoft-Kontoeinstellungen widerrufen."
   },
   "appDesc": {
     "message": "Massen-E-Mail-Kampagnen direkt aus Outlook Web"
