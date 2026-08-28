@@ -46,7 +46,7 @@ function run() {
   );
 
   check(
-    /_mailReadForReauth[\s\S]{0,900}hadMailRead\s*!==\s*false/.test(background),
+    /_mailReadForReauth[\s\S]{0,1800}hadMailRead\s*!==\s*false/.test(background),
     "the unknown case no longer resolves to asking for Mail.Read; an " +
       "unobserved scope would be read as 'narrow' and cost an existing user " +
       "reply detection"
@@ -63,7 +63,7 @@ function run() {
   const logout = /async function msLogout\(\)[\s\S]{0,1200}?\n\}/.exec(background);
   check(logout !== null, "msLogout could not be located to check what it clears");
   check(
-    logout === null || !/msEverConnected/.test(logout[0]),
+    logout === null || !/msEverConnected\s*:/.test(logout[0]),
     "msLogout now clears msEverConnected — signing out would make the next " +
       "sign-in look like a first one and narrow a user who had the scope"
   );

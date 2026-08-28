@@ -280,7 +280,13 @@ def _renewal_dates(anchor: str | None, anchor_day) -> tuple:
         nxt = _shift_month(cur, day)
         if nxt is None:
             break
-        if nxt > today:
+        # `>= today`, not `> today`. check_monthly_reset deliberately holds
+        # the rollover all day waiting for Stripe's webhook, and Stripe
+        # charges at the subscription's creation TIME - so on the morning of
+        # a renewal there is legitimately no invoice yet. Treating today as
+        # already missed printed "renewal was due <today> and no invoice
+        # arrived" hours before the charge, every month, for every subscriber.
+        if nxt >= today:
             return last_due, nxt
         last_due = nxt
         cur = nxt
@@ -417,16 +423,20 @@ def _signin_gate_lines() -> list["Line"]:
     got_in = anon & known
     lost = anon - known
 
-    if not anon:
+    # NOT an early return. A window with no anonymous starts can still
+    # contain Microsoft-side failures, and returning here would have hidden
+    # exactly the failures this gate exists to surface.
+    no_starts = not anon
+    if no_starts:
         out.append(Line(INFO, "nobody started a sign-in in the last 30 days"))
-        return out
 
-    pct = round(100 * len(got_in) / len(anon))
-    out.append(Line(
+    pct = round(100 * len(got_in) / len(anon)) if anon else 0
+    if anon:
+        out.append(Line(
         PASS if not lost else CHECK,
-        f"30d: {len(anon)} people started a sign-in, {len(got_in)} reached an "
-        f"account ({pct}%)",
-    ))
+            f"30d: {len(anon)} people started a sign-in, {len(got_in)} reached "
+            f"an account ({pct}%)",
+        ))
     if lost:
         out.append(Line(
             INFO,

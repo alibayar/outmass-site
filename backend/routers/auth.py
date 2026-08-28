@@ -400,6 +400,17 @@ def _track_ms_auth_failed(
     to 2026-07-31 carried that one label, with in-window times up to 18
     minutes — nobody deliberates that long over a consent screen.
     """
+    # The operator alert goes FIRST, and is gated only on the host.
+    #
+    # It used to sit after the return below, which made it die with the
+    # PostHog key - and Railway gives each service its own variables, so a
+    # web service missing POSTHOG_API_KEY would have dropped every sign-in
+    # alert in silence. That per-service split is exactly how three payment
+    # alerts vanished on 07-29/30, recorded in _telegram_alert's own
+    # docstring. Two observability channels must not share one switch.
+    if _is_reportable_host(host):
+        _alert_if_ours(stage, fields, host)
+
     if not POSTHOG_API_KEY or not _is_reportable_host(host):
         return
     try:
@@ -425,8 +436,6 @@ def _track_ms_auth_failed(
         )
     except Exception:
         logger.warning("ms_auth_failed capture failed", exc_info=True)
-
-    _alert_if_ours(stage, fields, host)
 
 
 def _alert_if_ours(stage: str, fields: dict, host: str = "") -> None:

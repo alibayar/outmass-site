@@ -389,11 +389,23 @@ function _mailReadForReauth() {
   return new Promise(function (resolve) {
     try {
       chrome.storage.local.get(
-        ["msEverConnected", "user", "hadMailRead"],
+        ["msEverConnected", "user", "hadMailRead", "sessionExpired"],
         function (r) {
-          // `user` alone is not enough: it is cleared when a JWT goes stale,
-          // which is precisely the population re-authenticating here.
-          var everConnected = !!(r && (r.msEverConnected || r.user));
+          // Four ways to know this install has connected before, because no
+          // one of them survives every path. `user` is cleared when a JWT
+          // goes stale — the exact population re-authenticating here.
+          // `msEverConnected` is new in 0.2.3, so an install that UPDATES to
+          // it and then re-auths has never written one. `hadMailRead === true`
+          // could only have been observed by a signed-in session, and
+          // `sessionExpired` is set by the very expiry that dropped `user`.
+          // Missing all four is what a genuinely new install looks like.
+          var everConnected = !!(
+            r &&
+            (r.msEverConnected ||
+              r.user ||
+              r.hadMailRead === true ||
+              r.sessionExpired)
+          );
           var hadMailRead = r ? r.hadMailRead : undefined;
           resolve(everConnected && hadMailRead !== false);
         }
@@ -707,6 +719,12 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey) {
           // msLogout already clears all three together; this matches it.
           authState.monthlyLimit = null;
           authState.emailsSentThisMonth = 0;
+          // Same reasoning, one release later: hadMailRead is stored per
+          // install but answers a per-ACCOUNT question, and carrying the
+          // previous account's answer into the new one decides the next
+          // consent screen for somebody it was never observed on. Absent
+          // means "ask", which is the safe direction.
+          authState.hadMailRead = null;
         }
         chrome.storage.local.set(authState, function () {
           log("LOGIN_SUCCESS:", email);
@@ -952,6 +970,10 @@ async function msLogout() {
     // reconnect" banner. Clear it plus cached plan state so the next account
     // starts clean.
     sessionExpired: false,
+    // Per-account, like the plan beside it. msEverConnected is NOT
+    // cleared here on purpose — it records that this install has
+    // completed a consent at some point, which signing out does not undo.
+    hadMailRead: null,
     plan: "free",
     monthlyLimit: null,
     emailsSentThisMonth: 0,
