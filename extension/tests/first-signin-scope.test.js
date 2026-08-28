@@ -101,8 +101,13 @@ function run() {
       "install it reopens a full-screen CSV tutorial over the sign-in banner"
   );
 
+  // Anchored on init()'s whole body, not on the one line the call used to sit
+  // beside. A mutation test on 2026-08-28 put the call back two lines lower
+  // and the narrower version of this check passed it.
+  const init = /function init\(\)[\s\S]{0,2000}?\n  \}/.exec(sidebar);
+  check(init !== null, "init() could not be located to check what it calls");
   check(
-    !/loadTemplates\(\);\s*\n\s*showOnboardingIfFirstRun\(\);/.test(sidebar),
+    init === null || !/showOnboardingIfFirstRun\(\)/.test(init[0]),
     "showOnboardingIfFirstRun is called from init() again, which runs before " +
       "any session exists"
   );
