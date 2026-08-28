@@ -1264,59 +1264,27 @@ def expire_manual_promos():
 # guards (quota slice, daily cap, token refresh, suppression). No new send
 # path is introduced here — this task only changes campaign status.
 
-# Outer bound for the candidate QUERY only — the real age rule is per-user
-# and lives in _capped_in_last_quota_cycle() below. A fixed 14-day window was
-# wrong: the quota period is a rolling month anchored on the user's own
-# month_reset_date, so the gap between hitting the cap and the next reset is
-# anywhere from 0 to 31 days. Anyone who burned their quota early in their
-# cycle was already outside a 14-day window on reset day — and stayed
-# outside it forever, while the in-app text promised an automatic send.
-AUTO_RESUME_MAX_AGE_DAYS = 70
-
-
-def _capped_in_last_quota_cycle(created_at, user) -> bool:
-    """Was this campaign created within the user's current or previous quota
-    cycle?
-
-    Call AFTER check_monthly_reset, so month_reset_date is the current
-    anchor. "Previous cycle" is what makes the promise true: a campaign
-    capped anywhere inside the cycle that just ended gets resumed at the
-    reset that follows it, whether that was 2 days later or 30.
-
-    Anything older is left alone on purpose — that is the original guard's
-    intent (a months-old abandoned partial must never resurrect itself and
-    surprise-send a stale list). Those campaigns still show the Resume
-    button in Reports.
-    """
-    from models import user as user_model
-
-    if not created_at:
-        return False
-    anchor = user.get("month_reset_date")
-    if not anchor:
-        # No anchor to reason about (legacy row): fall back to a plain
-        # 31-day window rather than resuming something arbitrarily old.
-        cutoff = datetime.now(timezone.utc) - timedelta(days=31)
-    else:
-        if isinstance(anchor, str):
-            anchor = date.fromisoformat(anchor)
-        prev_cycle_start = user_model._add_months(anchor, -1)
-        cutoff = datetime(
-            prev_cycle_start.year,
-            prev_cycle_start.month,
-            prev_cycle_start.day,
-            tzinfo=timezone.utc,
-        )
-    if isinstance(created_at, str):
-        try:
-            created = datetime.fromisoformat(created_at.replace("Z", "+00:00"))
-        except ValueError:
-            return False
-    else:
-        created = created_at
-    if created.tzinfo is None:
-        created = created.replace(tzinfo=timezone.utc)
-    return created >= cutoff
+# The age rule that used to live here is gone (2026-08-28).
+#
+# It asked whether a campaign was created inside the user's current or
+# previous quota cycle, which meant auto-resume delivered exactly ONE extra
+# monthly batch and then went quiet - while the panel told the user the rest
+# would send automatically. A 10,000-row list on the free plan needs forty
+# batches; it was getting two.
+#
+# Two earlier versions of the same instinct are worth remembering, because
+# each was a real fix that created the next problem. A fixed 14-day window
+# came first, and was wrong because the quota period is a rolling month
+# anchored on the user's own month_reset_date: anyone who burned their quota
+# early in their cycle was outside the window on reset day, and stayed
+# outside it forever. The per-cycle rule that replaced it fixed that and
+# introduced the ceiling above.
+#
+# What guards the surprise-send now is not an age at all. `archived` is a
+# switch the user can reach from Reports, every capped batch emails them, and
+# a lost Microsoft connection skips the account until it is restored. An age
+# window stopped campaigns nobody had abandoned; those three stop the ones
+# somebody did.
 
 
 @celery.task
@@ -1325,9 +1293,9 @@ def auto_resume_partial_campaigns():
     quota headroom again.
 
     Guards:
-      - only campaigns created in the last AUTO_RESUME_MAX_AGE_DAYS days —
-        an old abandoned partial must never resurrect itself and
-        surprise-send
+      - archived campaigns are skipped; archiving is the user's stop switch
+        and replaced the age window on 2026-08-28, because the window was
+        also stopping campaigns nobody had abandoned
       - check_monthly_reset runs first, so the reset happens even if the
         user never logs in on their anniversary day
       - requires_reauth owners are skipped (retried on later runs once
@@ -1341,9 +1309,7 @@ def auto_resume_partial_campaigns():
     from models import contact as contact_model
     from models import user as user_model
 
-    campaigns = campaign_model.get_recent_partial_campaigns(
-        AUTO_RESUME_MAX_AGE_DAYS
-    )
+    campaigns = campaign_model.get_resumable_partial_campaigns()
     resumed = 0
     closed = 0
     users_cache: dict = {}
@@ -1357,11 +1323,6 @@ def auto_resume_partial_campaigns():
             continue
 
         user_model.check_monthly_reset(user)
-
-        # Age rule runs AFTER the reset so it compares against the fresh
-        # anchor (see _capped_in_last_quota_cycle).
-        if not _capped_in_last_quota_cycle(campaign.get("created_at"), user):
-            continue
 
         plan = user.get("plan", "free")
         if plan == "free":

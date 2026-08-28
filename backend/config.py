@@ -235,9 +235,13 @@ INACTIVITY_CANCEL_DAYS = int(os.getenv("INACTIVITY_CANCEL_DAYS", "90"))
 # out, and a daily-capped multi-day campaign rolls scheduled_for forward 24h
 # after every batch, so it carries the day it was last alive.
 #
-# Bounded because the codebase already learned this lesson once — see
-# _capped_in_last_quota_cycle: "a months-old abandoned partial must never
-# resurrect itself and surprise-send a stale list." Anything older than this
+# Bounded because the codebase already learned this lesson once, in the
+# auto-resume beat: "a months-old abandoned partial must never resurrect
+# itself and surprise-send a stale list." That rule was retired on
+# 2026-08-28 in favour of archiving plus a per-batch email, because an age
+# window was also stopping campaigns nobody had abandoned. THIS bound stays:
+# a dead token is not a user choosing to wait, and there is no per-batch
+# email on that path to keep them informed. Anything older than this
 # is left alone AND reported, so "nothing happened" and "deliberately skipped"
 # stay distinguishable.
 AUTH_RESUME_MAX_AGE_DAYS = int(os.getenv("AUTH_RESUME_MAX_AGE_DAYS", "7"))

@@ -117,6 +117,33 @@ Three decisions inside that helper worth keeping:
    quota came to be mis-stated in July - the string says "your plan sends $1"
    and stops.
 
+## 4b. The promise the message makes is now one the code keeps (2026-08-28)
+
+The 0.2.3 release review found `alertQuotaHorizon` unshippable, and it was
+right: `auto_resume_partial_campaigns` only resumed campaigns created inside
+the user's current or previous quota cycle, so a 10,000-row list on the free
+plan received two of the forty batches the sentence promised. Worse, the
+suffix only appears when the remainder exceeds one month's quota — so it was
+false at the smallest number it could ever print.
+
+Two ways out: soften the sentence, or make it true. Ali chose the second —
+"kaç ay sürerse sürsün otomatik biz handle edelim."
+
+So the age rule is gone. What guards the surprise-send it existed to prevent:
+
+- **archiving**, which the user can reach from Reports, and which the query
+  now respects — an age window stopped campaigns nobody had abandoned, and
+  archiving stops exactly the ones somebody did;
+- **an email on every capped batch**, so a campaign that runs for a year
+  announces itself twelve times instead of arriving as a surprise on month
+  nine;
+- **a dead Microsoft connection**, which already skips the account until it
+  is reconnected.
+
+Sequencing is automatic and in the right order: the backend deploys on push,
+the message ships with 0.2.3 through two store reviews. The behaviour is true
+before the sentence claiming it is ever seen.
+
 ## 5. Tests
 
 - `backend/tests/test_settings.py:42` asserts `FREE_UPLOAD_ROW_LIMIT == 250` —

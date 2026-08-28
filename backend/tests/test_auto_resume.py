@@ -31,7 +31,7 @@ def _run(campaigns, user, resumable, reset_side_effect=None):
     from workers import scheduled_worker
 
     with patch(
-        "models.campaign.get_recent_partial_campaigns", return_value=campaigns
+        "models.campaign.get_resumable_partial_campaigns", return_value=campaigns
     ), patch(
         "models.user.get_by_id", return_value=user
     ), patch(
@@ -140,17 +140,37 @@ def test_resumes_campaign_capped_early_in_the_previous_cycle():
     assert update.call_args.args[1]["status"] == "scheduled"
 
 
-def test_skips_campaign_older_than_the_previous_cycle():
-    """Anti-resurrection intent preserved: a partial from two cycles back is
-    left alone (Reports still offers Resume) rather than surprise-sending a
-    stale list."""
+def test_an_old_partial_still_resumes():
+    """Retired 2026-08-28: the age rule this test used to guard.
+
+    It asked whether the campaign was created inside the user's current or
+    previous quota cycle, which capped auto-resume at ONE extra monthly batch
+    while the panel promised the rest would go out automatically. A 10,000-row
+    list on the free plan needs forty batches and was getting two.
+
+    Ali's call: the user should not have to come back and press anything,
+    however many months it takes. The surprise-send that age window guarded
+    is now guarded by archiving, by an email on every capped batch, and by
+    skipping accounts whose Microsoft connection is dead.
+    """
     user = _user_with_anchor(anchor_days_ago=1)
     result, update = _run(
-        [_campaign(created_days_ago=75)], user, resumable=[{"id": "k1"}]
+        [_campaign(created_days_ago=400)], user, resumable=[{"id": "k1"}]
     )
 
-    assert result["resumed"] == 0
-    update.assert_not_called()
+    assert result["resumed"] == 1
+    update.assert_called()
+
+
+def test_the_query_asks_for_unarchived_partials_at_any_age():
+    """Archiving is the stop switch now, so the QUERY has to be the thing that
+    respects it - the beat never sees an archived row to skip."""
+    import inspect
+    from models import campaign as campaign_model
+
+    src = inspect.getsource(campaign_model.get_resumable_partial_campaigns)
+    assert '.eq("archived", False)' in src, "archived rows would resume"
+    assert "created_at" not in src, "an age filter is back in the query"
 
 
 def test_resumes_campaign_capped_late_in_the_cycle():
@@ -163,17 +183,3 @@ def test_resumes_campaign_capped_late_in_the_cycle():
     assert result["resumed"] == 1
 
 
-def test_missing_anchor_falls_back_to_a_bounded_window():
-    """Legacy row with no month_reset_date: still bounded, never unbounded."""
-    user = {**FAKE_USER, "emails_sent_this_month": 0, "month_reset_date": None}
-
-    recent, update_recent = _run(
-        [_campaign(created_days_ago=5)], user, resumable=[{"id": "k1"}]
-    )
-    assert recent["resumed"] == 1
-
-    old, update_old = _run(
-        [_campaign(created_days_ago=40)], user, resumable=[{"id": "k1"}]
-    )
-    assert old["resumed"] == 0
-    update_old.assert_not_called()

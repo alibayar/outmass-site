@@ -119,7 +119,8 @@ def test_follow_ups_are_recovered_the_same_way(alert):
 
 
 def test_an_old_stranded_campaign_is_left_alone_and_reported(alert):
-    """The hazard the codebase already named in _capped_in_last_quota_cycle:
+    """The hazard the auto-resume beat named first (and has since traded for
+    archiving plus a per-batch email):
     a months-old abandoned send must not resurrect itself into a stale list.
     Left alone, but NOT silently — silence is the failure this whole module
     exists to fix."""

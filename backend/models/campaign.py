@@ -7,24 +7,37 @@ from datetime import datetime, timedelta, timezone
 from database import get_db
 
 
-def get_recent_partial_campaigns(max_age_days: int = 14) -> list[dict]:
-    """Partial campaigns young enough to auto-resume.
+def get_resumable_partial_campaigns() -> list[dict]:
+    """Every partial campaign still waiting for quota, at any age.
 
     Used by the auto_resume_partial_campaigns beat: 'partial' campaigns
-    (quota-capped or transiently failed sends) get flipped back to
-    'scheduled' once the owner has quota headroom again. The age window
-    exists so a months-old abandoned partial can never resurrect itself
-    and surprise-send — only recent work-in-progress qualifies.
+    (quota-capped or transiently failed sends) go back to 'scheduled' once
+    the owner has headroom again.
+
+    There used to be an age window here, so that a months-old abandoned
+    partial could not resurrect itself and surprise-send. It also meant the
+    promise broke: a free user whose 10,000-row list needs forty monthly
+    batches got one, and then silence, while the panel told them the rest
+    would go out automatically. Ali's call, 2026-08-28 — the user should not
+    have to come back and press anything, however many months it takes.
+
+    What replaces the age gate is not nothing:
+
+      * `archived` is now the stop switch, and it is one the user can reach
+        from Reports. An age window stopped campaigns nobody had abandoned;
+        archiving stops exactly the ones somebody did.
+      * every capped batch emails the owner (routers/campaigns.py), so a
+        campaign that runs for a year announces itself twelve times rather
+        than arriving as a surprise on month nine.
+      * an owner who has lost their Microsoft connection is skipped by the
+        caller until they reconnect.
     """
-    cutoff = (
-        datetime.now(timezone.utc) - timedelta(days=max_age_days)
-    ).isoformat()
     result = (
         get_db()
         .table("campaigns")
         .select("*")
         .eq("status", "partial")
-        .gte("created_at", cutoff)
+        .eq("archived", False)
         .execute()
     )
     return result.data or []
