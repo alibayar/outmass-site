@@ -108,9 +108,14 @@ MS_GRAPH_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft
 # alarming line on the consent screen and the least justifiable for a tool
 # the user has not sent a single email with yet. It exists only for reply
 # detection, which cannot matter before the first campaign goes out.
-# Measured 2026-08-06: ~31% of first-time Chrome users and ~54% of
-# first-time Edge users never complete the consent screen, and publisher
-# verification (done 2026-06-24) did not move it.
+# Measured 2026-08-06, with the confounds removed on the same day (commit
+# 7b33863): first-time users COMPLETE at 69% on Chrome and 46% on Edge,
+# n=32/13, and the gap is not significant. So roughly a third of first-timers
+# are lost at the consent screen on BOTH browsers - this is not an Edge
+# problem. The earlier "Edge is broken" reading compared Edge first-timers
+# against Chrome REPEAT sign-ins, which skip consent entirely.
+#
+# Publisher verification (done 2026-06-24) did not move the number.
 MS_GRAPH_FIRST_SIGNIN_SCOPES = "https://graph.microsoft.com/Mail.Send https://graph.microsoft.com/User.Read offline_access"
 
 # Requested later, on its own, when the user opts into reply detection —

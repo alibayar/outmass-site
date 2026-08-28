@@ -30,15 +30,26 @@ FIRST_SIGNIN_INCLUDE_MAIL_READ still defaults to true, so every
 live user has the scope and the 403 branch below is unreachable in
 production.
 
-That is deliberate. The reason "Read your mail" should leave the
-first consent screen is real (it is the most alarming line shown to
-someone who has not sent anything yet), but a user who declines it
-loses reply detection SILENTLY: their follow-ups keep chasing
-people who already replied, and Reports shows a 0.0% reply rate
-that looks like a result rather than a missing permission. Nothing
-in the panel reads has_mail_read_scope today — /settings returns
-it, and no client asks. Building that is the precondition for the
-flip, not a follow-up to it.
+That was deliberate, and the precondition it waited on is now
+built. The reason "Read your mail" should leave the first consent
+screen is real: it is the most alarming line shown to someone who
+has not sent anything yet. The reason to wait was that a user who
+declines it would lose reply detection SILENTLY - follow-ups
+chasing people who already replied, and Reports showing a 0.0%
+reply rate that reads as a result rather than a missing
+permission.
+
+That gap closed in 0.2.0. The panel polls has_mail_read_scope and
+raises a banner offering one-click re-consent when it is false
+(extension/sidebar.js, updateRepliesBanner), migration 024 is
+applied and verified in production (docs/plans/migrations-applied
+.md, 2026-08-28), and the 403 branch below degrades to a skip
+rather than corrupting anything.
+
+This paragraph said "nothing in the panel reads it" for twenty
+days after the panel started reading it, and was quoted twice on
+2026-08-28 as a live blocker. Nothing depends on this file being
+right about the client - which is exactly how it stayed wrong.
 
 Privacy: we read message metadata only (from, receivedDateTime,
 internetMessageId). We never persist message bodies. Microsoft
