@@ -332,7 +332,15 @@ function startMSLogin(includeOneDrive, includeMailRead) {
     delete _authFlightHinted[key];
   }
 
-  var flight = _startMSLoginInner(includeOneDrive, includeMailRead);
+  // The flight key travels WITH the flight. _startMSLoginInner may widen
+  // includeMailRead for a returning user (see _mailReadForReauth), and
+  // deriving the window-watch key from the widened value there would arm
+  // "mailread" for a flight registered under "signin": _focusAuthWindow
+  // would then refuse to raise the window on a second click, and the
+  // cleanup below would leave a stale window id behind. Window identity
+  // belongs to the flight the CALLER started, not to the scopes it ended
+  // up requesting. Found by the 0.2.3 release review.
+  var flight = _startMSLoginInner(includeOneDrive, includeMailRead, key);
   _authFlightByKey[key] = flight;
   _authFlightStartedAt[key] = Date.now();
   // Only the flight that OWNS the key may clear it — a zombie settling late
@@ -396,7 +404,7 @@ function _mailReadForReauth() {
   });
 }
 
-async function _startMSLoginInner(includeOneDrive, includeMailRead) {
+async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey) {
   // Undefined means "caller has no opinion" — a plain sign-in or the OneDrive
   // flow. An explicit true is the Reports banner asking for Mail.Read on
   // purpose, and must not be second-guessed.
@@ -505,7 +513,8 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead) {
       // can focus it (see _armAuthWindowWatch). Armed per launch: the
       // auto-retry path re-launches and gets a NEW window.
       _armAuthWindowWatch(
-        includeOneDrive ? "onedrive" : includeMailRead ? "mailread" : "signin"
+        flightKey ||
+          (includeOneDrive ? "onedrive" : includeMailRead ? "mailread" : "signin")
       );
       chrome.identity.launchWebAuthFlow(
         { url: authUrl, interactive: true },

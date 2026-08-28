@@ -199,48 +199,66 @@ def test_a_renewal_that_passed_without_an_invoice_is_a_check():
     assert "no invoice arrived" in said[0].text
 
 
-def _posthog(rows):
-    """Stand in for the query endpoint with a fixed result set."""
-    resp = MagicMock()
-    resp.status_code = 200
-    resp.json.return_value = {"results": rows}
-    return resp
-
-
-def test_gate_two_counts_instead_of_asking_someone_to_count(monkeypatch):
-    """It used to print "PostHog, by hand" every morning to someone who was
-    never going to run the query by hand - and was still printing it on the
-    day two sign-ups turned out to have been refused."""
+def _gate2(monkeypatch, attempts, identified, blame=None):
+    """Stand in for the three reads GATE 2 makes, by label."""
     from workers import green_report
 
     monkeypatch.setattr(green_report, "POSTHOG_PERSONAL_API_KEY", "phx_test")
-    monkeypatch.setattr(green_report.httpx, "post", lambda *a, **k: _posthog([
-        ["oauth_started", "", 10],
-        ["login", "", 8],
-        ["ms_auth_failed", "user", 1],
-        ["ms_auth_failed", "microsoft", 1],
-    ]))
-    lines = green_report._signin_gate_lines()
+
+    def fake(hogql, label):
+        if "attempts" in label:
+            return [[a] for a in attempts]
+        if "identities" in label:
+            return [[a] for a in identified]
+        return blame or []
+
+    monkeypatch.setattr(green_report, "_posthog_rows", fake)
+    return green_report._signin_gate_lines()
+
+
+def test_gate_two_counts_people_not_oauth_calls(monkeypatch):
+    """It used to divide `login` by `oauth_started`, and both count flows
+    Microsoft passes without a consent screen at all - the OneDrive picker,
+    the Mail.Read banner, every re-auth. Under a heading naming the consent
+    screen that dragged the ratio toward a green tick."""
+    lines = _gate2(
+        monkeypatch,
+        attempts=["anon-1", "anon-2", "anon-3", "someone@example.com"],
+        identified=["anon-1", "anon-2"],
+    )
     text = " | ".join(ln.text for ln in lines)
-    assert "10 attempt(s), 8 completed (80%)" in text
-    assert "1 user" in text and "1 microsoft" in text
+    # The email id is a returning user; they already have an account.
+    assert "3 people started a sign-in, 2 reached an account (67%)" in text
+    assert "1 never did" in text
 
 
-def test_gate_two_only_raises_a_flag_for_losses_we_can_act_on(monkeypatch):
-    """A consent decline is a person choosing. Marking it as a problem would
-    train the reader to ignore the mark."""
+def test_gate_two_cannot_call_a_recovered_retry_a_loss(monkeypatch):
+    """One AADSTS650051 the extension auto-retries produced, under the old
+    arithmetic, "1 attempt, 1 completed (100%)" AND "lost: 1" - a loss larger
+    than the shortfall. Counting people makes the state unrepresentable: they
+    got in, so they are not lost."""
+    lines = _gate2(
+        monkeypatch,
+        attempts=["anon-1"],
+        identified=["anon-1"],
+        blame=[["microsoft", 1]],
+    )
+    ratio = [ln for ln in lines if "reached an account" in ln.text]
+    assert ratio and ratio[0].mark == "ok", ratio and ratio[0].text
+    assert not any("never did" in ln.text for ln in lines)
+    # The failure is still reported - as a class, not as a lost person.
+    assert any("1 microsoft" in ln.text for ln in lines)
+
+
+def test_gate_two_says_so_when_the_read_fails(monkeypatch):
+    """A gate that cannot read must not print a rate."""
     from workers import green_report
 
     monkeypatch.setattr(green_report, "POSTHOG_PERSONAL_API_KEY", "phx_test")
-    monkeypatch.setattr(green_report.httpx, "post", lambda *a, **k: _posthog([
-        ["oauth_started", "", 5],
-        ["login", "", 3],
-        ["ms_auth_failed", "user", 2],
-    ]))
+    monkeypatch.setattr(green_report, "_posthog_rows", lambda q, l: None)
     lines = green_report._signin_gate_lines()
-    ratio = [ln for ln in lines if "completed" in ln.text]
-    assert ratio and ratio[0].mark == "ok", "user declines are not our incident"
-    assert not any("our side of the line" in ln.text for ln in lines)
+    assert any(ln.mark == "check" and "unavailable" in ln.text for ln in lines)
+    assert not any("%" in ln.text for ln in lines)
 
 
 def test_gate_one_says_which_process_it_read():

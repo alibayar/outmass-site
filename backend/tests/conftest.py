@@ -132,6 +132,30 @@ class FakeSupabase:
 
 
 @pytest.fixture(autouse=True)
+def _no_live_posthog(monkeypatch):
+    """No test may query production analytics.
+
+    The reports read POSTHOG_PERSONAL_API_KEY at module scope, and a developer
+    who puts a real key in backend/.env - which is exactly what the key is FOR
+    since 2026-08-27 - silently turns every report test into a live HTTP call
+    against the production project. The 0.2.3 review's GATE 2 rewrite made it
+    three calls with 15s timeouts each and the suite went from seconds to two
+    and a half minutes, which is how this was noticed rather than the answers
+    being wrong.
+
+    Blanked by default; a test that wants the query path sets it back.
+    """
+    for module in ("workers.green_report", "workers.daily_report"):
+        try:
+            mod = __import__(module, fromlist=["POSTHOG_PERSONAL_API_KEY"])
+        except Exception:  # noqa: BLE001
+            continue
+        if hasattr(mod, "POSTHOG_PERSONAL_API_KEY"):
+            monkeypatch.setattr(mod, "POSTHOG_PERSONAL_API_KEY", "")
+    yield
+
+
+@pytest.fixture(autouse=True)
 def _forget_mail_read_column_probe():
     """models.ms_token caches "does user_tokens.has_mail_read_scope exist?"
     for the process lifetime (migration-024 guard). One test simulating the

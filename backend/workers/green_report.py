@@ -122,7 +122,8 @@ def _rows(db) -> list[dict]:
         .select(
             "email, plan, created_at, last_login_at, last_activity_at, "
             "last_seen_extension_version, stripe_customer_id, "
-            "stripe_subscription_id, month_reset_date, last_cycle_invoice_at, "
+            "stripe_subscription_id, month_reset_date, month_reset_anchor_day, "
+            "last_cycle_invoice_at, "
             "emails_sent_this_month, emails_sent_total, requires_reauth, "
             "manual_promo_until, preferred_language"
         )
@@ -243,29 +244,65 @@ def _rhythm_lines() -> list[Line]:
 STAMPING_SINCE = date(2026, 8, 15)
 
 
-def _next_renewal(anchor: str | None) -> date | None:
-    """The day this subscriber's next invoice is due, from their anchor.
+def _renewal_dates(anchor: str | None, anchor_day) -> tuple:
+    """(most recent renewal that has come due, next one still ahead).
 
-    One month on, clamped into short months the same way the quota does it
-    (a 31st anchor lands on the 30th, then finds the 31st again). Returns
-    None for a row with no anchor to reason from.
+    Two corrections from the 0.2.3 review, both of which made this function
+    quietly agree with itself while disagreeing with the quota engine.
+
+    It advanced ONE month and stopped. A subscriber two cycles stale therefore
+    had their first missed renewal reported as their next one - and if that
+    date happened to precede STAMPING_SINCE, the caller printed a cheerful
+    "nothing to see" over a renewal that never arrived. That is the exact
+    shape this file exists to refuse: literally true, and read as health.
+
+    And it took the day from month_reset_date, which is the CLAMPED value. A
+    31st anchor lands on the 28th in February, and re-deriving from that gives
+    the 28th forever after - the drift migration 029 added
+    month_reset_anchor_day to stop, reimplemented one layer up. The anchor day
+    is now passed in, exactly as models/user.py uses it.
     """
     if not anchor:
-        return None
+        return None, None
     try:
         a = date.fromisoformat(str(anchor)[:10])
     except ValueError:
-        return None
-    month = a.month + 1
-    year = a.year + (month > 12)
+        return None, None
+    try:
+        day = int(anchor_day) if anchor_day else a.day
+    except (TypeError, ValueError):
+        day = a.day
+
+    today = datetime.now(timezone.utc).date()
+    last_due = None
+    cur = a
+    for _ in range(400):  # bounded: ~33 years, and a legacy row cannot exceed it
+        nxt = _shift_month(cur, day)
+        if nxt is None:
+            break
+        if nxt > today:
+            return last_due, nxt
+        last_due = nxt
+        cur = nxt
+    return last_due, None
+
+
+def _shift_month(d: date, anchor_day: int):
+    """One month on from `d`, landing on anchor_day when the month is long
+    enough and on the last day of the month when it is not."""
+    month = d.month + 1
+    year = d.year + (month > 12)
     month = month - 12 if month > 12 else month
-    day = a.day
+    day = anchor_day
     while day > 28:
         try:
             return date(year, month, day)
         except ValueError:
             day -= 1
-    return date(year, month, day)
+    try:
+        return date(year, month, day)
+    except ValueError:
+        return None
 
 
 def _no_stamp_line(row: dict, anchor: str | None) -> "Line":
@@ -273,60 +310,38 @@ def _no_stamp_line(row: dict, anchor: str | None) -> "Line":
 
     Three very different states used to print the same "none yet", which is
     how a paid renewal came to look like a lost one:
-      * the renewal predates the stamping code - nothing to see, ever
-      * the next renewal has not come round yet - nothing to see, for now
-      * the renewal date has passed with no invoice - the one worth reading
+      * every renewal so far predates the stamping code - nothing to see
+      * the first renewal has not come round yet - nothing to see, for now
+      * a renewal has passed since stamping began with no invoice - read this
+
+    The judgement is on the LAST renewal that has come due, not the first.
+    Judging the first was the 0.2.3 review's finding: a subscriber stale by
+    two cycles had a missed renewal described as an upcoming one.
     """
     email = row.get("email")
-    due = _next_renewal(anchor)
-    today = datetime.now(timezone.utc).date()
-    if due is None:
+    last_due, next_due = _renewal_dates(anchor, row.get("month_reset_anchor_day"))
+    if last_due is None and next_due is None:
         return Line(INFO, f"{email}: no anchor to reason from")
-    if due < STAMPING_SINCE:
+    if last_due is None:
+        return Line(INFO, f"{email}: next renewal {next_due}, not due yet")
+    if last_due < STAMPING_SINCE:
+        # Nothing has come due since we started stamping. Name the next date
+        # that WILL prove the path - never a date already in the past.
         return Line(
             INFO,
-            f"{email}: renewed {due}, before stamping began "
-            f"{STAMPING_SINCE} — first provable renewal "
-            f"{_next_renewal(due.isoformat())}",
+            f"{email}: renewed {last_due}, before stamping began "
+            f"{STAMPING_SINCE} — first provable renewal {next_due}",
         )
-    if due > today:
-        return Line(INFO, f"{email}: next renewal {due}, not due yet")
     return Line(
         CHECK,
-        f"{email}: renewal was due {due} and no invoice arrived — check "
+        f"{email}: renewal was due {last_due} and no invoice arrived — check "
         "Stripe for this customer before assuming the webhook is at fault",
     )
 
 
-def _signin_gate_lines() -> list["Line"]:
-    """GATE 2, computed instead of delegated.
-
-    This line used to read "PostHog, by hand: oauth_started -> oauth_completed"
-    and carry a CHECK mark, which is a to-do item printed daily to someone who
-    was never going to run the query by hand. It was still saying it on
-    2026-08-27, the day two sign-ups were found to have been refused by
-    Microsoft and to have retried their way in unaided.
-
-    Denominator is `oauth_started` from the extension; numerator is the SERVER
-    `login`, not the client's `oauth_completed` - the client event is
-    race-lossy on builds before 0.1.28 and would flatter the ratio.
-
-    Losses are split by the side they belong to, because the response differs:
-    a consent decline is a person choosing, and app/microsoft failures are ours
-    to chase. Never raises; the report must go out even when this check cannot.
-    """
-    out = [Line(HEAD, "GATE 2 — Microsoft consent screen (#48)")]
-    if not POSTHOG_PERSONAL_API_KEY:
-        out.append(Line(CHECK, "not configured (POSTHOG_PERSONAL_API_KEY)"))
-        return out
-
-    hogql = (
-        "SELECT event, coalesce(toString(properties.attributed_to), '') AS who, "
-        "count() AS n FROM events "
-        "WHERE timestamp >= now() - INTERVAL 7 DAY "
-        "AND event IN ('oauth_started', 'login', 'ms_auth_failed') "
-        "GROUP BY event, who"
-    )
+def _posthog_rows(hogql: str, label: str):
+    """One HogQL read, or None. Never raises - the report must go out even
+    when a check cannot run."""
     try:
         resp = httpx.post(
             f"{POSTHOG_API_HOST}/api/projects/{POSTHOG_PROJECT_ID}/query/",
@@ -336,49 +351,112 @@ def _signin_gate_lines() -> list["Line"]:
         )
         if resp.status_code != 200:
             logger.warning(
-                "PostHog sign-in gate returned %s: %s",
-                resp.status_code, resp.text[:200],
+                "PostHog %s returned %s: %s", label, resp.status_code,
+                resp.text[:200],
             )
-            out.append(Line(CHECK, "check unavailable"))
-            return out
-        rows = resp.json().get("results") or []
+            return None
+        return resp.json().get("results") or []
     except Exception as e:  # noqa: BLE001
-        logger.warning("PostHog sign-in gate failed: %s", e)
+        logger.warning("PostHog %s failed: %s", label, e)
+        return None
+
+
+def _signin_gate_lines() -> list["Line"]:
+    """GATE 2, counting PEOPLE rather than OAuth calls.
+
+    The first automated version of this line counted `oauth_started` against
+    server `login`, and the 0.2.3 review found both halves measuring the wrong
+    population under a heading that names the consent screen:
+
+      * `oauth_started` fires for the OneDrive picker and the Mail.Read banner
+        as well as for sign-in, and `login` fires on every re-auth - flows
+        Microsoft passes WITHOUT showing a consent screen at all. They almost
+        never fail, so they inflated numerator and denominator together and
+        dragged the ratio toward a green tick. That is the same confound
+        config.py records having already been burned by once, this time
+        automated and stamped PASS.
+      * a `tenant_provisioning_race` the extension auto-retries produces one
+        failure and one login for one attempt, so the old arithmetic printed
+        "1 attempt, 1 completed (100%)" AND "lost: 1" beside it - a loss count
+        larger than the shortfall it was derived from.
+
+    Counting people removes both. PostHog keeps the original distinct_id on
+    each event, so one person appears under an anonymous id before sign-in and
+    under their email after; `$identify` carries `$anon_distinct_id`, which is
+    the only thread between the halves. A person who retried and got in is
+    linked, so they cannot be counted as lost - the recovery is invisible to
+    this line, which is exactly right: it asks who ended up with an account.
+
+    Thirty days, not seven. At roughly one sign-in a day a week is not a
+    reading, it is a rumour.
+    """
+    out = [Line(HEAD, "GATE 2 — Microsoft consent screen (#48)")]
+    if not POSTHOG_PERSONAL_API_KEY:
+        out.append(Line(CHECK, "not configured (POSTHOG_PERSONAL_API_KEY)"))
+        return out
+
+    tried = _posthog_rows(
+        "SELECT DISTINCT distinct_id FROM events WHERE event='oauth_started' "
+        "AND timestamp >= now() - INTERVAL 30 DAY",
+        "sign-in gate (attempts)",
+    )
+    linked = _posthog_rows(
+        "SELECT DISTINCT toString(properties.$anon_distinct_id) AS a "
+        "FROM events WHERE event='$identify' "
+        "AND timestamp >= now() - INTERVAL 30 DAY",
+        "sign-in gate (identities)",
+    )
+    if tried is None or linked is None:
         out.append(Line(CHECK, "check unavailable"))
         return out
 
-    started = sum(n for ev, _who, n in rows if ev == "oauth_started")
-    completed = sum(n for ev, _who, n in rows if ev == "login")
-    blame = {}
-    for ev, who, n in rows:
-        if ev == "ms_auth_failed":
-            blame[who or "unknown"] = blame.get(who or "unknown", 0) + n
+    # An id that is already an email is a returning user signing in again;
+    # they have an account, so they are not part of this question.
+    anon = {r[0] for r in tried if r and r[0] and "@" not in str(r[0])}
+    known = {str(r[0]) for r in linked if r and r[0] and r[0] != "None"}
+    got_in = anon & known
+    lost = anon - known
 
-    if not started:
-        out.append(Line(INFO, "no sign-in attempts in the last 7 days"))
+    if not anon:
+        out.append(Line(INFO, "nobody started a sign-in in the last 30 days"))
         return out
 
-    pct = round(100 * completed / started)
-    ours = blame.get("app", 0) + blame.get("microsoft", 0)
+    pct = round(100 * len(got_in) / len(anon))
     out.append(Line(
-        PASS if not ours else CHECK,
-        f"7d: {started} attempt(s), {completed} completed ({pct}%)",
+        PASS if not lost else CHECK,
+        f"30d: {len(anon)} people started a sign-in, {len(got_in)} reached an "
+        f"account ({pct}%)",
     ))
-    if blame:
+    if lost:
         out.append(Line(
             INFO,
-            "lost: " + ", ".join(
-                f"{n} {who}" for who, n in sorted(
-                    blame.items(), key=lambda kv: -kv[1]
-                )
-            ),
+            f"{len(lost)} never did — anyone who uninstalled and reinstalled "
+            "gets a new anonymous id, so this is a floor",
         ))
-    if ours:
+
+    # The failure classes are reported separately and NOT as a ratio: most of
+    # the people above never produce a failure event at all. Microsoft's window
+    # opens and nothing comes back, which is the bucket it never explains.
+    blame = _posthog_rows(
+        "SELECT coalesce(toString(properties.attributed_to), 'unknown') AS who, "
+        "count() AS n FROM events WHERE event='ms_auth_failed' "
+        "AND timestamp >= now() - INTERVAL 30 DAY GROUP BY who",
+        "sign-in gate (attribution)",
+    )
+    if blame:
+        counts = {str(w): int(n) for w, n in blame}
         out.append(Line(
-            CHECK,
-            f"{ours} of those were on our side of the line — the ones worth "
-            "chasing; a decline is a person choosing",
+            INFO,
+            "failure classes (30d): "
+            + ", ".join(f"{n} {w}" for w, n in sorted(counts.items(), key=lambda kv: -kv[1])),
         ))
+        ours = counts.get("app", 0) + counts.get("microsoft", 0)
+        if ours:
+            out.append(Line(
+                CHECK,
+                f"{ours} of those were on our side of the line — the ones "
+                "worth chasing; a decline is a person choosing",
+            ))
     return out
 
 
