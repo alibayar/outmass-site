@@ -17,7 +17,7 @@
     "message": "Planınız ayda $1 email gönderiyor; kalan $2 alıcı yaklaşık $3 ay daha sürer. Daha erken göndermek için planınızı yükseltin."
   },
   "popupConsentExplainer": {
-    "message": "Sıradaki ekran bizim değil, Microsoft'un. OutMass'in Outlook hesabınızla neler yapabileceğini listeler — başlıcası sizin adınıza e-posta göndermek. Yanıtları fark etmek için size kimin ne zaman yazdığına bakar, ne yazdığına asla. Siz onaylamadan hiçbir şey olmaz ve izni daha sonra Microsoft hesap ayarlarınızdan geri alabilirsiniz."
+    "message": "Sıradaki ekran bizim değil, Microsoft'un. OutMass'in Outlook hesabınızla neler yapabileceğini listeler — başlıcası sizin adınıza e-posta göndermek. Yanıt tespiti açıkken yalnızca size kimin ne zaman yazdığına bakar; mesajlarınızın içeriğini asla okumaz. Siz onaylamadan hiçbir şey olmaz ve izni daha sonra Microsoft hesap ayarlarınızdan geri alabilirsiniz."
   },
   "appDesc": {
     "message": "Outlook Web üzerinden toplu e-posta kampanyaları"

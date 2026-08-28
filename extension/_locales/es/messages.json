@@ -17,7 +17,7 @@
     "message": "Tu plan envía $1 correos al mes, así que los $2 destinatarios restantes tardarían unos $3 meses más. Mejora tu plan para enviarlos antes."
   },
   "popupConsentExplainer": {
-    "message": "La siguiente pantalla es de Microsoft, no nuestra. Enumera lo que OutMass puede hacer con tu cuenta de Outlook — sobre todo enviar en tu nombre. Para detectar respuestas mira quién te ha escrito y cuándo, nunca lo que dice. No ocurre nada hasta que aceptas, y puedes retirar el permiso más adelante desde la configuración de tu cuenta de Microsoft."
+    "message": "La siguiente pantalla es de Microsoft, no nuestra. Enumera lo que OutMass puede hacer con tu cuenta de Outlook — sobre todo enviar en tu nombre. La detección de respuestas, cuando está activa, mira solo quién te ha escrito y cuándo; nunca lee el contenido de tus mensajes. No ocurre nada hasta que aceptas, y puedes retirar el permiso más adelante desde la configuración de tu cuenta de Microsoft."
   },
   "appDesc": {
     "message": "Campañas de correo masivo directamente desde Outlook Web"

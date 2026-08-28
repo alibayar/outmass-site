@@ -85,11 +85,13 @@ function run() {
   const primer = (en.popupConsentExplainer || {}).message || "";
   check(primer.length > 0, "popupConsentExplainer is missing from en");
   check(
-    !/detect replies|read.{0,15}repl/i.test(primer),
-    "the consent primer promises reply detection again. After the flag flips " +
-      "the first screen does not ask for it, and before the flip the sentence " +
-      "advertises the alarming permission to someone who has not seen the " +
-      "screen yet"
+    !/ask[^.]{0,80}(repl|read your mail)/i.test(primer),
+    "the consent primer says Microsoft will ASK for reply detection. That " +
+      "sentence goes false the moment FIRST_SIGNIN_INCLUDE_MAIL_READ flips, " +
+      "and before the flip it advertises the alarming permission to someone " +
+      "who has not seen the screen yet. Describing what the feature does, " +
+      "conditioned on it being on, is fine and is the reassurance that " +
+      "permission needs"
   );
 
   // ── onboarding must not cover the sign-in banner ──

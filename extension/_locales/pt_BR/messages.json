@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "A próxima tela é da Microsoft, não nossa. Ela lista o que o OutMass pode fazer com a sua conta do Outlook — principalmente enviar em seu nome. Para detectar respostas, ele verifica quem escreveu para você e quando, nunca o conteúdo. Nada acontece até você aceitar, e depois você pode revogar a permissão nas configurações da sua conta Microsoft."
+    "message": "A próxima tela é da Microsoft, não nossa. Ela lista o que o OutMass pode fazer com a sua conta do Outlook — principalmente enviar em seu nome. A detecção de respostas, quando está ativa, verifica apenas quem escreveu para você e quando; nunca lê o conteúdo das suas mensagens. Nada acontece até você aceitar, e depois você pode revogar a permissão nas configurações da sua conta Microsoft."
   },
   "appDesc": {
     "message": "Campanhas de e-mail em massa direto do Outlook Web"

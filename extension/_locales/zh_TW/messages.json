@@ -3,7 +3,7 @@
     "message": "OutMass"
   },
   "popupConsentExplainer": {
-    "message": "下一個畫面來自 Microsoft，不是我們。上面會列出 OutMass 可以對您的 Outlook 帳戶執行哪些操作——主要是代表您寄送郵件。為了辨識回覆，OutMass 只查看誰在什麼時候寫信給您，從不查看內容。在您同意之前不會發生任何事，之後也可以在 Microsoft 帳戶設定中撤銷這項授權。"
+    "message": "下一個畫面來自 Microsoft，不是我們。上面會列出 OutMass 可以對您的 Outlook 帳戶執行哪些操作——主要是代表您寄送郵件。回覆偵測啟用時，只查看誰在什麼時候寫信給您；它從不讀取郵件的內容。在您同意之前不會發生任何事，之後也可以在 Microsoft 帳戶設定中撤銷這項授權。"
   },
   "appDesc": {
     "message": "直接從 Outlook Web 執行大量郵件行銷活動"
