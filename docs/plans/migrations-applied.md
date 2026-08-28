@@ -11,6 +11,7 @@ production code path *proved* it — not that somebody remembers it.
 
 | migration | applied | verified |
 |---|---|---|
+| 024_mail_read_scope_flag | before 2026-08-28, Ali (date unrecorded) | ✅ 2026-08-28 — information_schema query on `user_tokens.has_mail_read_scope` run by Ali in the Supabase SQL editor: `true` |
 | 031_last_cycle_invoice_at | 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — the green report ran in prod SELECTing the column by name; also the information_schema query below, all four true |
 | 030_preferred_language | by 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — green report's "know their language" line read it; query confirms |
 | 029_month_reset_anchor_day | by 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — information_schema query run by Ali in the Supabase SQL editor: `applied = true` |
@@ -21,6 +22,26 @@ OPTIONAL: since commit ad68d01 the write path self-heals — creation writes
 the anchor and each row's first rollover fills a NULL — so its answer only
 says how many rows are still waiting for their first rollover, not whether
 anything is wrong.
+
+## 024, and the gap it exposed
+
+024 was applied at some unrecorded point and only *checked* on 2026-08-28,
+because the sign-in leak review needed to know whether the column existed
+before proposing anything that depends on it. The code has always been guarded
+against its absence (`ms_token.py` selects columns defensively so an unrun 024
+returns a row WITHOUT the field rather than raising), which is good engineering
+and is also exactly why nobody noticed the status was unknown for two weeks.
+
+The lesson is the one this file already states, arriving from a new direction:
+a guard that makes a missing migration invisible makes the ledger the ONLY
+place its status can live. Migrations with guards need the row here more than
+the ones that would crash.
+
+**Why it matters now:** `has_mail_read_scope` is the precondition for task #24
+- moving the "Read your mail" permission off the first consent screen. The
+panel has to be able to tell a user that reply detection is off before we make
+declining it easy, and it cannot do that without this column. That half is now
+confirmed present.
 
 ## Why "the code runs fine" is NOT proof for 028/029
 
