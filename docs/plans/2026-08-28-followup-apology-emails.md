@@ -372,6 +372,10 @@ to run when the campaign finishes. I do not have what you wrote on Friday —
 it was lost with the error, which is part of the same bug — so I would
 rather ask than guess at your words.
 
+There is no hurry: the follow-up goes out after the campaign finishes, so
+any time in the next fortnight works and it will still land three days
+behind the last email, exactly as it would have.
+
 If you would rather leave it, that is fine too, and nothing else changes.
 
 Sorry to start this way.
