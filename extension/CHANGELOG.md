@@ -31,6 +31,14 @@ All notable user-facing changes to the OutMass Chrome Extension.
   sent. The panel now says the feature needs Pro, unticks the switch, and
   sends your campaign exactly as it would have otherwise.
 
+- **Scheduled sending suggested the wrong time, everywhere but one.** Turning
+  it on offered "tomorrow at 9am" — but the suggestion was built in UTC and
+  then read back as your own clock, so it arrived shifted by however far you
+  are from Greenwich. London saw 8am, Berlin 7am, Istanbul 6am, and Beijing
+  one in the morning. A suggestion is something most people accept, so this
+  had been quietly choosing bad send times for anyone not sitting on UTC.
+  It now offers nine in YOUR morning.
+
 - **Small fixes.** The plan list offers only the plans you can actually buy
   from where you are standing, and the button comes back if you close the
   payment page without paying. A sign-in window left open and closed much

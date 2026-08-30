@@ -2793,12 +2793,39 @@
       if (scheduleCheckbox.checked) {
         track("schedule_send_enabled");
         scheduleFields.classList.add("visible");
-        // Set default to tomorrow 9:00
+        // Default to tomorrow 09:00 — in the USER'S morning, not in UTC.
+        //
+        // This used to end with toISOString().slice(0, 16), which is the
+        // one conversion a datetime-local input must never be given. The
+        // date is built in local time, toISOString re-renders that instant
+        // in UTC, and the input then reads the UTC string back as local —
+        // so the default arrived shifted by the reader's own offset, and
+        // only a user sitting on UTC ever saw 09:00:
+        //
+        //   London  08:00      Istanbul 06:00
+        //   Berlin  07:00      Beijing  01:00
+        //
+        // A Chinese user opening "Scheduled sending" was offered one in the
+        // morning as the obvious choice, and a default is a suggestion most
+        // people accept. Found 2026-08-30 while working out which timezone
+        // a customer had scheduled her own campaign from — her 07:30 UTC
+        // was 08:30 in London, half an hour past the 08:00 this bug had
+        // put in front of her.
+        //
+        // Built field by field instead. datetime-local wants a wall-clock
+        // string with no zone, which is exactly what these getters return;
+        // there is no correct way to reach it through an ISO instant.
         var tomorrow = new Date();
         tomorrow.setDate(tomorrow.getDate() + 1);
         tomorrow.setHours(9, 0, 0, 0);
+        var _p2 = function (n) { return (n < 10 ? "0" : "") + n; };
         var dtInput = document.getElementById("schedule-datetime");
-        dtInput.value = tomorrow.toISOString().slice(0, 16);
+        dtInput.value =
+          tomorrow.getFullYear() +
+          "-" + _p2(tomorrow.getMonth() + 1) +
+          "-" + _p2(tomorrow.getDate()) +
+          "T" + _p2(tomorrow.getHours()) +
+          ":" + _p2(tomorrow.getMinutes());
         updateScheduleParsed();
       } else {
         scheduleFields.classList.remove("visible");

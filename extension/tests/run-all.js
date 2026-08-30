@@ -39,6 +39,7 @@ const suites = [
   require("./first-signin-scope.test.js"),
   require("./auth-flight-settle.test.js"),
   require("./auth-flow-context.test.js"),
+  require("./local-datetime.test.js"),
 ];
 
 async function main() {
