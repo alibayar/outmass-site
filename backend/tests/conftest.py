@@ -225,6 +225,11 @@ FAKE_USER = {
     "cross_campaign_dedup_enabled": True,
     "cross_campaign_dedup_days": 60,
     "requires_reauth": False,
+    # Present because the real column always is: it is stamped on login
+    # and on authenticated activity. auto_resume holds campaigns whose
+    # owner has no recent value, so a fixture without one would make
+    # every resume test assert the dormant path by accident.
+    "last_activity_at": datetime.now(timezone.utc).isoformat(),
     "reauth_reason": None,
 }
 

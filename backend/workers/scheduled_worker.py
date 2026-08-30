@@ -15,6 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 import httpx
 
 from config import (
+    AUTO_RESUME_DORMANT_DAYS,
     BACKEND_URL,
     FREE_PLAN_MONTHLY_LIMIT,
     GRAPH_API_BASE,
@@ -1287,6 +1288,34 @@ def expire_manual_promos():
 # somebody did.
 
 
+def _owner_is_dormant(user: dict) -> bool:
+    """Has this campaign's owner been away longer than we keep sending for?
+
+    NULL counts as dormant. last_activity_at is stamped on login and on
+    authenticated activity, so anyone who owns a campaign has one; a missing
+    value is a row we cannot vouch for, and the safe direction for a decision
+    that puts mail in someone else's outbox is "not yet". It self-heals: one
+    sign-in writes the column and the next run resumes.
+
+    An unparseable value is treated the same way, for the same reason.
+    """
+    last = user.get("last_activity_at")
+    if not last:
+        return True
+    try:
+        seen = datetime.fromisoformat(str(last).replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning(
+            "auto_resume: unparseable last_activity_at %r for user %s — holding",
+            last, user.get("id"),
+        )
+        return True
+    if seen.tzinfo is None:
+        seen = seen.replace(tzinfo=timezone.utc)
+    age = datetime.now(timezone.utc) - seen
+    return age > timedelta(days=AUTO_RESUME_DORMANT_DAYS)
+
+
 @celery.task
 def auto_resume_partial_campaigns():
     """Flip recent 'partial' campaigns to 'scheduled' when the owner has
@@ -1296,6 +1325,9 @@ def auto_resume_partial_campaigns():
       - archived campaigns are skipped; archiving is the user's stop switch
         and replaced the age window on 2026-08-28, because the window was
         also stopping campaigns nobody had abandoned
+      - owners not seen in AUTO_RESUME_DORMANT_DAYS are HELD, not stopped:
+        the campaign stays 'partial', and signing in refreshes
+        last_activity_at so the next run resumes it with nothing to press
       - check_monthly_reset runs first, so the reset happens even if the
         user never logs in on their anniversary day
       - requires_reauth owners are skipped (retried on later runs once
@@ -1312,6 +1344,7 @@ def auto_resume_partial_campaigns():
     campaigns = campaign_model.get_resumable_partial_campaigns()
     resumed = 0
     closed = 0
+    dormant = 0
     users_cache: dict = {}
 
     for campaign in campaigns:
@@ -1323,6 +1356,15 @@ def auto_resume_partial_campaigns():
             continue
 
         user_model.check_monthly_reset(user)
+
+        # AFTER check_monthly_reset on purpose. Rolling the quota period is
+        # the one thing this beat does for a user who never logs in on their
+        # anniversary day, and that property is documented above; skipping
+        # dormant owners any earlier would take it away from exactly the
+        # people it was written for.
+        if _owner_is_dormant(user):
+            dormant += 1
+            continue
 
         plan = user.get("plan", "free")
         if plan == "free":
@@ -1353,4 +1395,8 @@ def auto_resume_partial_campaigns():
         "checked": len(campaigns),
         "resumed": resumed,
         "closed_as_sent": closed,
+        # Reported, not merely skipped: "nobody was due" and "three lists are
+        # waiting for their owners to come back" are different states, and
+        # only one of them is worth a look.
+        "held_owner_dormant": dormant,
     }

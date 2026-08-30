@@ -129,6 +129,7 @@ REGISTRY: tuple[Var, ...] = (
     Var("AI_GENERATION_MONTHLY_LIMIT", (WEB,), False, "defaults to 50"),
     Var("PLAN_DROP_NOTICE_DAYS", (WEB,), False, "defaults to 14"),
     Var("AUTH_RESUME_MAX_AGE_DAYS", (WEB, WORKER), False, "defaults to 7"),
+    Var("AUTO_RESUME_DORMANT_DAYS", (WORKER,), False, "defaults to 30; owner must have been seen this recently for auto-resume to continue"),
     Var("INACTIVITY_NUDGE_DAYS", (WORKER,), False, "defaults to 30"),
 
     # ── Read by config.py and consumed by nothing ──

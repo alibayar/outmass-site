@@ -183,3 +183,134 @@ def test_resumes_campaign_capped_late_in_the_cycle():
     assert result["resumed"] == 1
 
 
+# ── The owner's dormancy, not the campaign's age ──
+#
+# The age window came off on 2026-08-28 so a long campaign could finish
+# itself. That left nothing measuring whether anyone was still there: a list
+# abandoned in May would keep sending itself in September, because `archived`
+# is a switch its owner has to know about and go press — and the person we
+# worry about is exactly the one who stopped coming back.
+#
+# So the measure moved from the campaign to the owner. Rolling 30 days from
+# last_activity_at, deliberately NOT the billing period: quota resets on the
+# anniversary, so "seen since the last reset?" would be a near-zero window at
+# the very moment resume becomes possible.
+#
+# Holding is not stopping. The campaign stays 'partial', so one sign-in
+# refreshes last_activity_at and the next hourly run resumes it.
+
+
+def _seen(days_ago):
+    return (datetime.now(timezone.utc) - timedelta(days=days_ago)).isoformat()
+
+
+def test_holds_when_owner_has_been_away_too_long():
+    user = {**FAKE_USER, "emails_sent_this_month": 0, "last_activity_at": _seen(45)}
+    result, update = _run([_campaign()], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 0
+    assert result["held_owner_dormant"] == 1
+    # Held, not stopped: nothing was written, so the campaign is still
+    # 'partial' and still a candidate the moment they come back.
+    update.assert_not_called()
+
+
+def test_resumes_for_an_owner_seen_recently():
+    user = {**FAKE_USER, "emails_sent_this_month": 0, "last_activity_at": _seen(3)}
+    result, update = _run([_campaign()], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 1
+    assert result["held_owner_dormant"] == 0
+    assert update.call_args.args[1]["status"] == "scheduled"
+
+
+def test_a_months_old_campaign_still_resumes_for_an_active_owner():
+    """The 08-28 promise, unchanged: age is not the measure. A campaign from
+    May finishes itself as long as its owner is still around."""
+    user = {**FAKE_USER, "emails_sent_this_month": 0, "last_activity_at": _seen(1)}
+    result, _ = _run(
+        [_campaign(created_days_ago=117)], user, resumable=[{"id": "k1"}]
+    )
+
+    assert result["resumed"] == 1
+
+
+def test_missing_last_activity_holds():
+    """NULL is not 'assume they are here'. last_activity_at is stamped on
+    login and on authenticated activity, so anyone who owns a campaign has
+    one; a missing value is a row we cannot vouch for, and the safe direction
+    for a decision that puts mail in someone else's outbox is 'not yet'."""
+    user = {**FAKE_USER, "emails_sent_this_month": 0}
+    user.pop("last_activity_at", None)
+    result, update = _run([_campaign()], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 0
+    assert result["held_owner_dormant"] == 1
+    update.assert_not_called()
+
+
+def test_unparseable_last_activity_holds():
+    user = {**FAKE_USER, "emails_sent_this_month": 0, "last_activity_at": "yesterday"}
+    result, _ = _run([_campaign()], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 0
+    assert result["held_owner_dormant"] == 1
+
+
+def test_naive_last_activity_is_read_as_utc():
+    """Postgres can hand back a timestamp without an offset. Treating that as
+    naive-local would raise on the subtraction and take the unparseable path,
+    holding a user who is in fact here."""
+    naive = (datetime.now(timezone.utc) - timedelta(days=2)).replace(tzinfo=None)
+    user = {
+        **FAKE_USER,
+        "emails_sent_this_month": 0,
+        "last_activity_at": naive.isoformat(),
+    }
+    result, _ = _run([_campaign()], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 1
+
+
+def test_the_quota_period_still_rolls_for_a_dormant_owner():
+    """The dormancy check sits AFTER check_monthly_reset on purpose.
+
+    Rolling the quota period is the one thing this beat does for a user who
+    never logs in on their anniversary day — that is why the reset is called
+    here at all. Skipping dormant owners any earlier would take the property
+    away from exactly the people it was written for. This test exists because
+    the first draft of the dormancy gate deleted the call outright.
+    """
+    from unittest.mock import patch
+
+    from workers import scheduled_worker
+
+    user = {**FAKE_USER, "emails_sent_this_month": 10, "last_activity_at": _seen(60)}
+
+    with patch(
+        "models.campaign.get_resumable_partial_campaigns", return_value=[_campaign()]
+    ), patch("models.user.get_by_id", return_value=user), patch(
+        "models.user.check_monthly_reset"
+    ) as reset, patch(
+        "models.contact.get_resumable_contacts", return_value=[{"id": "k1"}]
+    ), patch("models.campaign.update_campaign"):
+        result = scheduled_worker.auto_resume_partial_campaigns()
+
+    reset.assert_called_once()
+    assert result["held_owner_dormant"] == 1
+
+
+def test_dormancy_is_checked_after_the_reauth_guard():
+    """A dormant owner who ALSO needs to reconnect is counted once, as a
+    reauth skip. Otherwise the two counters double-count the same row and
+    'held_owner_dormant' stops meaning what its name says."""
+    user = {
+        **FAKE_USER,
+        "emails_sent_this_month": 0,
+        "requires_reauth": True,
+        "last_activity_at": _seen(90),
+    }
+    result, _ = _run([_campaign()], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 0
+    assert result["held_owner_dormant"] == 0

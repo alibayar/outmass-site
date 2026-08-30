@@ -246,6 +246,34 @@ INACTIVITY_CANCEL_DAYS = int(os.getenv("INACTIVITY_CANCEL_DAYS", "90"))
 # stay distinguishable.
 AUTH_RESUME_MAX_AGE_DAYS = int(os.getenv("AUTH_RESUME_MAX_AGE_DAYS", "7"))
 
+# How recently the OWNER must have been here for auto-resume to keep going.
+#
+# On 2026-08-28 the age window on partial campaigns was removed, because a
+# free user whose 10,000-row list needs forty monthly batches got one batch
+# and then silence while the panel promised the rest would follow. The
+# campaign's age was the wrong thing to measure: it stopped campaigns nobody
+# had abandoned.
+#
+# But something did have to replace it, and `archived` alone does not. It is
+# a switch the user has to know about and go press — and the person we are
+# worried about is precisely the one who stopped coming back. A list nobody
+# has looked at since June should not keep sending itself in September just
+# because its owner never found the Archive button.
+#
+# So the measure moved from the CAMPAIGN's age to the OWNER's. Ali's call,
+# 2026-08-30: if they have been here in the last month, keep going; if not,
+# hold. Rolling 30 days, deliberately NOT aligned to the billing period —
+# quota resets on the anniversary, so "have they been here since the last
+# reset?" would be a near-zero window at exactly the moment resume becomes
+# possible, and would stop nearly everyone on the very day they qualify.
+# Rolling 30 days is also what daily_report already means by "active".
+#
+# Holding is not stopping. The campaign stays 'partial', so signing in
+# refreshes last_activity_at and the next hourly run picks it up again with
+# nothing to press. The panel says so on the campaign row, so a returning
+# user reads "open OutMass to continue" rather than discovering it.
+AUTO_RESUME_DORMANT_DAYS = int(os.getenv("AUTO_RESUME_DORMANT_DAYS", "30"))
+
 # How long the panel keeps saying "your plan ended" after a drop to Free.
 #
 # The notice is not the notification — the email sent at the moment of the
