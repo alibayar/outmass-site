@@ -131,6 +131,7 @@ sign-in and sending.
 | `AUTH_RESUME_MAX_AGE_DAYS` | web, worker | no | defaults to 7 |
 | `AUTO_RESUME_DORMANT_DAYS` | worker | no | defaults to 30; owner must have been seen this recently for auto-resume to continue |
 | `AUTO_RESUME_BACKOFF_HOURS` | worker | no | defaults to 6; minimum gap between attempts on the same partial campaign |
+| `RAILWAY_GIT_COMMIT_SHA` | web | no | injected by Railway itself, not set by hand; absent means the health endpoint answers 'unknown', which is honest rather than misleading |
 | `INACTIVITY_NUDGE_ENABLED` | worker | no | defaults to false, so the nudge emails do not go out until it is set |
 | `INACTIVITY_NUDGE_DAYS` | worker | no | defaults to 30 |
 

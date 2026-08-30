@@ -3,6 +3,7 @@ OutMass — FastAPI Application
 """
 
 import logging
+import os
 import traceback
 from typing import Annotated
 
@@ -458,9 +459,22 @@ async def health_check():
     # which is exactly what hid three payment-failure alerts on 07-29/07-30.
     # The daily report reads this endpoint so the gap shows up in the report
     # instead of being discovered by comparing Stripe to Telegram by hand.
+    # `commit` answers "is the code I just pushed actually running", which
+    # until now could only be read off the Railway dashboard — and the
+    # dashboard reports what Railway BELIEVES it deployed, not what is
+    # serving. Every deploy-order incident this project has had came from
+    # that gap: migration 026 was granted eleven minutes after its shield was
+    # committed and about six hours before the shield was deployed, and a
+    # customer's promo quietly evaporated in between.
+    #
+    # Railway injects RAILWAY_GIT_COMMIT_SHA into every service. Absent
+    # locally and in CI, where "unknown" is the honest answer rather than a
+    # misleading one. Short form because that is what a person compares
+    # against `git log --oneline`.
     return {
         "status": "ok",
         "version": "0.1.0",
         "service": "outmass-api",
+        "commit": (os.getenv("RAILWAY_GIT_COMMIT_SHA") or "unknown")[:7],
         "alerts": bool(TELEGRAM_BOT_TOKEN and TELEGRAM_CHAT_ID),
     }

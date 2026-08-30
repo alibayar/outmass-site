@@ -155,6 +155,10 @@ REGISTRY: tuple[Var, ...] = (
     # Listed so nobody copies them into a third service believing they matter.
     # Deliberately not deleted: two of them are the config for inactivity
     # tiers that are designed but not built.
+    Var("RAILWAY_GIT_COMMIT_SHA", (WEB,), False,
+        "injected by Railway itself, not set by hand; absent means the "
+        "health endpoint answers 'unknown', which is honest rather than "
+        "misleading"),
     Var("FRONTEND_URL", (), False, "nothing reads it", shared=False),
     Var("INACTIVITY_PAUSE_DAYS", (), False, "the 60-day pause tier is not implemented", shared=False),
     Var("INACTIVITY_CANCEL_DAYS", (), False, "the 90-day cancel tier is not implemented", shared=False),
