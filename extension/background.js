@@ -516,6 +516,19 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
   if (includeMailRead) {
     authUrl += "&include_mail_read=true";
   }
+  // Which build is asking. /auth/login runs before anyone is authenticated
+  // and opens in a browser window, so the X-Extension-Version header that
+  // backendFetch sends everywhere else cannot reach it — it rides on the URL
+  // instead, like ext and aid.
+  //
+  // The server uses it to tell a client that can decide for itself whether
+  // to request Mail.Read from one that cannot. Without it, "a new build
+  // asking for the narrow first-time consent" and "an old build that has
+  // never heard of the question" look identical: both simply omit
+  // include_mail_read. Handing the narrow consent to the second kind would
+  // strip reply detection from a returning user and leave their next
+  // refresh asking for a scope they no longer hold.
+  authUrl += "&v=" + encodeURIComponent(chrome.runtime.getManifest().version);
 
   return new Promise((resolve) => {
     // One-shot auto-retry guard. The auth window's first navigation is our own

@@ -46,7 +46,16 @@ def test_first_signin_scopes_drop_only_mail_read():
 # ── /auth/login ──
 
 
-def _authorize_scope(client, **params):
+# A build new enough to decide for itself whether it needs Mail.Read. The
+# helper sends it by default because that is the interesting case; the tests
+# below that care about an OLD client pass v=None or an older string
+# explicitly, because that is the case the gate exists for.
+NEW_CLIENT = "0.2.3"
+
+
+def _authorize_scope(client, v=NEW_CLIENT, **params):
+    if v is not None:
+        params["v"] = v
     resp = client.get(
         "/auth/login",
         params={"ext": CHROME_EXT, **params},
@@ -88,13 +97,77 @@ def test_onedrive_upgrade_still_composes_with_the_narrow_base(client):
     )
 
 
+# ── the version gate: who is allowed to be given less ──
+#
+# The flag used to be owed a flip "once 0.2.3 is on both stores and enough
+# people have updated" — a condition nothing in the system could evaluate and
+# only a human could remember, weeks later, after two store reviews on
+# someone else's schedule. These tests are what replaced that condition, so
+# that flipping the flag is safe on the day it is wanted.
+
+
+def test_a_client_too_old_to_ask_keeps_the_wide_scope(client):
+    """The whole reason /auth/login reads a version.
+
+    A pre-0.2.3 panel has no code for "should this sign-in include
+    Mail.Read". It never sends include_mail_read, so a RETURNING user on that
+    build looks exactly like a new user on a modern one. Hand it the narrow
+    consent and that user loses reply detection — and their next refresh asks
+    Microsoft for a scope they no longer hold, which is AADSTS65001 and a
+    dead sign-in.
+    """
+    with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
+        scope = _authorize_scope(client, v=None)
+    assert "Mail.Read" in scope, (
+        "a client that cannot ask for Mail.Read was given the narrow consent"
+    )
+    assert scope == MS_GRAPH_SCOPES
+
+
+def test_an_older_numbered_client_also_keeps_it(client):
+    with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
+        assert _authorize_scope(client, v="0.2.2") == MS_GRAPH_SCOPES
+
+
+def test_an_unreadable_version_is_treated_as_old(client):
+    """Someone else's request, a proxy rewriting the query, a hand-typed URL:
+    unknown is not a reason to give less."""
+    with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
+        assert _authorize_scope(client, v="nonsense") == MS_GRAPH_SCOPES
+
+
+def test_a_double_digit_patch_is_not_read_as_older(client):
+    """String comparison would say "0.2.10" < "0.2.3" and quietly keep the
+    wide ask for everyone who had updated furthest."""
+    with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
+        assert "Mail.Read" not in _authorize_scope(client, v="0.2.10")
+
+
+def test_the_flag_still_wins_for_a_new_client(client):
+    """The gate narrows who the flag applies to; it does not override it.
+    With the flag on — today — even a modern client gets the wide ask."""
+    with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", True):
+        assert _authorize_scope(client, v=NEW_CLIENT) == MS_GRAPH_SCOPES
+
+
+def test_an_old_client_asking_explicitly_is_still_honoured(client):
+    """Version gates who may be given LESS, never who may ask for more. A
+    pre-0.2.3 client upgrading for OneDrive or reply detection still gets
+    what it asked for."""
+    with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
+        scope = _authorize_scope(client, v=None, include_mail_read="true")
+    assert "Mail.Read" in scope
+
+
 # ── state round-trip ──
 
 
 def test_state_records_what_was_asked_for(client):
     with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
         resp = client.get(
-            "/auth/login", params={"ext": CHROME_EXT}, follow_redirects=False
+            "/auth/login",
+            params={"ext": CHROME_EXT, "v": NEW_CLIENT},
+            follow_redirects=False,
         )
     from urllib.parse import parse_qs, urlparse
 

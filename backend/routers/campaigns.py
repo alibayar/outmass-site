@@ -15,6 +15,7 @@ import logging
 import re
 import urllib.parse
 from datetime import datetime, timedelta, timezone
+from typing import Annotated
 
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
@@ -521,6 +522,10 @@ async def upload_contacts(
     body: UploadContactsRequest,
     request: Request,
     user: dict = Depends(get_current_user),
+    # Sent by backendFetch on every authenticated call since 0.1.x
+    # (extension/background.js:910). Absent means a build we cannot vouch
+    # for, which reads as old.
+    x_extension_version: Annotated[str | None, Header()] = None,
 ):
     campaign = campaign_model.get_campaign(campaign_id)
     if not campaign or campaign["user_id"] != user["id"]:
@@ -529,7 +534,7 @@ async def upload_contacts(
     plan = user_model.effective_plan(user)
     # Same number for every plan; the helper stays the single source so this
     # cannot drift from /settings the way the inline copy of this dict could.
-    row_limit = upload_limit_for_plan(plan)
+    row_limit = upload_limit_for_plan(plan, x_extension_version)
 
     contacts: list[dict] = []
 

@@ -42,6 +42,7 @@ from config import (
     JWT_EXPIRATION_HOURS,
     JWT_SECRET,
     FIRST_SIGNIN_INCLUDE_MAIL_READ,
+    FIRST_SIGNIN_MIN_CLIENT,
     MS_GRAPH_FIRST_SIGNIN_SCOPES,
     MS_GRAPH_MAIL_READ_SCOPE,
     MS_GRAPH_ONEDRIVE_SCOPES,
@@ -49,6 +50,8 @@ from config import (
     MS_TOKEN_ENDPOINT,
     POSTHOG_API_KEY,
 )
+from utils.client_version import client_at_least
+
 from models import audit
 from models import ms_token as ms_token_model
 from models import user as user_model
@@ -706,6 +709,11 @@ async def login_redirect(
     include_onedrive: bool = Query(False),
     aid: str | None = Query(None),
     include_mail_read: bool = Query(False),
+    # The calling extension's version (0.2.3+). This endpoint runs before
+    # anyone is authenticated and opens in a browser window, so there is no
+    # X-Extension-Version header to read — it rides on the URL the same way
+    # `ext` and `aid` already do. Older clients simply do not send one.
+    v: str | None = Query(None),
 ):
     """Redirect user to Microsoft login. Used by extension launchWebAuthFlow.
 
@@ -729,20 +737,40 @@ async def login_redirect(
     detection is the only thing that needs it, and it cannot matter before
     the user's first campaign — whereas "Read your mail" on a consent
     screen shown to someone who has sent nothing yet is the most alarming
-    line there. Gated by FIRST_SIGNIN_INCLUDE_MAIL_READ so the narrow ask
-    only starts when that variable is flipped; until then this endpoint
-    behaves exactly as it did.
+    line there.
+
+    `v` is the caller's extension version, and it is what makes
+    FIRST_SIGNIN_INCLUDE_MAIL_READ safe to flip. A build older than
+    FIRST_SIGNIN_MIN_CLIENT cannot ask for Mail.Read when it needs it — it
+    has no code for the question — so handing it the narrow consent would
+    strip reply detection from a returning user and leave their next refresh
+    requesting a scope they no longer hold (AADSTS65001, a dead sign-in).
+    Those clients keep the wide ask whatever the flag says; the flag governs
+    only builds that can speak for themselves.
+
+    That is the point of reading a version here. The flag used to be owed a
+    flip "once 0.2.3 is on both stores and enough people have updated" — a
+    condition nothing in the system could evaluate and only a human could
+    remember, weeks later. It can now be flipped the day it is wanted,
+    because the clients it would have hurt are excluded by construction
+    rather than by timing.
     """
     chosen_ext = ext if ext in ALLOWED_EXTENSION_IDS else AZURE_EXTENSION_ID
     # `aid` is the extension's opaque attempt id (0.1.27+). Older clients
     # simply don't send one — the failure is still reported, just without
     # the link back to their oauth_started event.
     safe_aid = aid if aid and re.fullmatch(r"[A-Za-z0-9_-]{6,40}", aid) else None
-    # Ask for Mail.Read when the flag says to (today's behaviour) OR when the
-    # client is explicitly upgrading for reply detection. Both cases must be
-    # recorded in `state`, because the token exchange has to request exactly
-    # what /authorize did — a mismatch is AADSTS65001 and a dead sign-in.
-    wants_mail_read = FIRST_SIGNIN_INCLUDE_MAIL_READ or include_mail_read
+    # Ask for Mail.Read when the client is explicitly upgrading for reply
+    # detection, when the flag says to, or when the caller is too old to have
+    # an opinion. Every case must be recorded in `state`, because the token
+    # exchange has to request exactly what /authorize did — a mismatch is
+    # AADSTS65001 and a dead sign-in.
+    client_decides = client_at_least(v, FIRST_SIGNIN_MIN_CLIENT)
+    wants_mail_read = (
+        include_mail_read
+        or not client_decides
+        or FIRST_SIGNIN_INCLUDE_MAIL_READ
+    )
     state = _encode_state(
         chosen_ext,
         include_onedrive=include_onedrive,

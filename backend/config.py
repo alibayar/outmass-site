@@ -360,17 +360,50 @@ def monthly_limit_for_plan(plan: str) -> int:
     }.get(plan, FREE_PLAN_MONTHLY_LIMIT)
 
 
-def upload_limit_for_plan(plan: str) -> int:
+# The panel that can explain the new ceiling. A list larger than the monthly
+# quota is accepted in full and sent over several months, and 0.2.3 is the
+# first build that says how many — an older panel implies the remainder
+# clears at the next reset, which would be a promise we do not keep.
+UPLOAD_LIMIT_MIN_CLIENT = (0, 2, 3)
+
+# The first build that decides for itself whether a sign-in should ask for
+# Mail.Read, and says so on the /auth/login URL. Everything older is silent
+# on the question and must therefore keep the wide ask: a returning user on
+# an older panel who was handed the narrow consent would lose reply
+# detection, and their next refresh would request a scope they no longer
+# hold (AADSTS65001, a dead sign-in).
+FIRST_SIGNIN_MIN_CLIENT = (0, 2, 3)
+
+
+def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
     """Per-upload CSV row limit for a plan name.
 
-    With UPLOAD_LIMIT_FOLLOWS_QUOTA on, the same ceiling for everyone and the
-    monthly quota does the gating. Off (the default until 0.2.3 is published),
-    the original per-plan limits. Unknown/None plan → free either way.
+    The CLIENT decides, not a switch we have to remember to throw. A panel
+    that can explain a multi-month send gets the single ceiling; an older one
+    keeps the per-plan limits it knows how to describe. Unknown or missing
+    version reads as older, which is today's behaviour.
 
-    Read at call time, not import time, so the flag can be flipped in one
-    place and every caller — the upload endpoint and /settings — agrees.
+    This used to hang on UPLOAD_LIMIT_FOLLOWS_QUOTA alone, and that flag was
+    owed a flip "once 0.2.3 is published on both stores and most people have
+    updated" — a condition nothing in the system could evaluate and only a
+    human could remember, weeks later, after two store reviews on someone
+    else's schedule. The version is in the request already
+    (X-Extension-Version, extension/background.js:910), so the question can
+    simply be asked per call.
+
+    The flag survives as a one-directional override: true means the new
+    ceiling for everyone, including clients that cannot explain it. It can
+    widen and never narrow, so leaving it alone is always safe and there is
+    nothing to track.
+
+    Read at call time, not import time, so every caller — the upload endpoint
+    and /settings — agrees.
     """
-    if UPLOAD_LIMIT_FOLLOWS_QUOTA:
+    from utils.client_version import client_at_least
+
+    if UPLOAD_LIMIT_FOLLOWS_QUOTA or client_at_least(
+        client_version, UPLOAD_LIMIT_MIN_CLIENT
+    ):
         return CSV_UPLOAD_ROW_LIMIT
     return {
         "pro": PRO_UPLOAD_ROW_LIMIT,

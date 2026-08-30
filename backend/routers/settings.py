@@ -7,7 +7,9 @@ POST   /settings/suppression  → add email to suppression list
 DELETE /settings/suppression  → remove email from suppression list
 """
 
-from fastapi import APIRouter, Depends, HTTPException
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, Header, HTTPException
 from pydantic import BaseModel
 
 from config import monthly_limit_for_plan, upload_limit_for_plan
@@ -39,7 +41,12 @@ class SuppressionRequest(BaseModel):
 
 
 @router.get("")
-async def get_settings(user: dict = Depends(get_current_user)):
+async def get_settings(
+    user: dict = Depends(get_current_user),
+    # The panel draws its upload limit from this response, so it has to be
+    # told the number that will actually be enforced for the build asking.
+    x_extension_version: Annotated[str | None, Header()] = None,
+):
     """Get user settings."""
     # Roll the quota period over if it elapsed. The sidebar polls THIS
     # endpoint for the quota bar and its client-side pre-send guard — without
@@ -70,7 +77,7 @@ async def get_settings(user: dict = Depends(get_current_user)):
         # Plan-derived limits, so the extension reads them from the backend
         # instead of hardcoding — raising a limit needs no extension update.
         "monthly_limit": monthly_limit_for_plan(plan),
-        "upload_limit": upload_limit_for_plan(plan),
+        "upload_limit": upload_limit_for_plan(plan, x_extension_version),
         "track_opens": user.get("track_opens", True),
         "track_clicks": user.get("track_clicks", True),
         "unsubscribe_text": user.get("unsubscribe_text", "Unsubscribe"),
