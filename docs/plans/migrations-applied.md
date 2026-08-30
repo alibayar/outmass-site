@@ -11,6 +11,7 @@ production code path *proved* it — not that somebody remembers it.
 
 | migration | applied | verified |
 |---|---|---|
+| 033_follow_up_sends | 2026-08-30, Ali (in chat) | ✅ 2026-08-30 — `SELECT count(*) FROM follow_up_sends;` returned 0 in the Supabase editor. A named SELECT on the table itself: if it did not exist the statement would have errored rather than answered. |
 | 032_comp_plan | 2026-08-30, Ali (in chat) | ✅ 2026-08-30 — a named SELECT in the Supabase editor returned `comp_plan` and `comp_plan_until` WITH VALUES for Helene@circularworkplaces.com (`pro`, `2026-09-28`), which proves both columns exist and accept writes. Stronger than information_schema: a `.get()` path could not have produced that row. |
 | 024_mail_read_scope_flag | before 2026-08-28, Ali (date unrecorded) | ✅ 2026-08-28 — information_schema query on `user_tokens.has_mail_read_scope` run by Ali in the Supabase SQL editor: `true` |
 | 031_last_cycle_invoice_at | 2026-08-15, Ali (in chat) | ✅ 2026-08-15 — the green report ran in prod SELECTing the column by name; also the information_schema query below, all four true |
