@@ -12,6 +12,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel
 
 from config import ANTHROPIC_API_KEY, AI_GENERATION_MONTHLY_LIMIT
+from models import user as user_model
 from database import get_db
 from routers.auth import get_current_user
 
@@ -71,7 +72,7 @@ async def generate_email(
     user: dict = Depends(get_current_user),
 ):
     """Generate email content using AI. Pro plan only, rate-limited per month."""
-    if user.get("plan", "free") != "pro":
+    if user_model.effective_plan(user) != "pro":
         raise HTTPException(
             status_code=402,
             detail={

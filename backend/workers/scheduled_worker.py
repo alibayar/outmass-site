@@ -69,7 +69,7 @@ def process_scheduled_campaigns():
         # stay blocked on LAST period's counter forever.
         user_model.check_monthly_reset(user)
         sent_this_month = user.get("emails_sent_this_month", 0)
-        plan = user.get("plan", "free")
+        plan = user_model.effective_plan(user)
         if plan == "free":
             limit = FREE_PLAN_MONTHLY_LIMIT
         elif plan == "starter":
@@ -1462,7 +1462,7 @@ def auto_resume_partial_campaigns():
             dormant += 1
             continue
 
-        plan = user.get("plan", "free")
+        plan = user_model.effective_plan(user)
         if plan == "free":
             limit = FREE_PLAN_MONTHLY_LIMIT
         elif plan == "starter":

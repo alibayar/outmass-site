@@ -179,7 +179,7 @@ async def create_campaign(
 
     # Scheduled sending requires Starter+ plan
     if body.scheduled_for:
-        plan = user.get("plan", "free")
+        plan = user_model.effective_plan(user)
         if plan == "free":
             raise HTTPException(
                 status_code=402,
@@ -343,7 +343,7 @@ async def export_campaign_csv(
     user: dict = Depends(get_current_user),
 ):
     """Export campaign contacts as CSV. Requires Standard+ plan."""
-    plan = user.get("plan", "free")
+    plan = user_model.effective_plan(user)
     if plan == "free":
         raise HTTPException(
             status_code=402,
@@ -526,7 +526,7 @@ async def upload_contacts(
     if not campaign or campaign["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    plan = user.get("plan", "free")
+    plan = user_model.effective_plan(user)
     # Same number for every plan; the helper stays the single source so this
     # cannot drift from /settings the way the inline copy of this dict could.
     row_limit = upload_limit_for_plan(plan)
@@ -724,7 +724,7 @@ async def send_campaign(
     # re-authed) could be wrongly blocked by LAST period's counter.
     user_model.check_monthly_reset(user)
     sent_this_month = user.get("emails_sent_this_month", 0)
-    plan = user.get("plan", "free")
+    plan = user_model.effective_plan(user)
 
     pending = contact_model.get_resumable_contacts(campaign_id)
     if not pending:
@@ -1392,7 +1392,7 @@ async def create_followup(
     if not campaign or campaign["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
-    if user.get("plan", "free") not in ("pro",):
+    if user_model.effective_plan(user) not in ("pro",):
         raise HTTPException(
             status_code=402,
             detail={
@@ -1450,7 +1450,7 @@ async def create_ab_test(
     user: dict = Depends(get_current_user),
 ):
     """Create an A/B test for a campaign. Pro plan only."""
-    if user.get("plan", "free") != "pro":
+    if user_model.effective_plan(user) != "pro":
         raise HTTPException(
             status_code=402,
             detail={

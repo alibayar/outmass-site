@@ -46,7 +46,11 @@ async def get_settings(user: dict = Depends(get_current_user)):
     # the check here, a user who maxed out last period keeps seeing (and being
     # blocked by) last period's counter until they happen to re-login.
     user_model.check_monthly_reset(user)
-    plan = user.get("plan", "free")
+    # What they may DO. The subscription is returned beside it as
+    # billing_plan; the panel has drawn its plan label and quota bar from this
+    # one field since 0.1.x, and a comped user reading "Starter, 2,500" while
+    # the server lets them send 10,000 would be the confusing half of honest.
+    plan = user_model.effective_plan(user)
     # Announcements live on a hot, critical path (the sidebar polls /settings
     # for quota + reauth state). Never let an announcements-table hiccup — e.g.
     # migration 020 lagging a backend deploy, or a transient DB error — take
@@ -59,6 +63,9 @@ async def get_settings(user: dict = Depends(get_current_user)):
         "email": user.get("email", ""),
         "name": user.get("name", ""),
         "plan": plan,
+        # The subscription itself, for anything that must speak about money
+        # rather than about features. No shipped client reads it yet.
+        "billing_plan": user.get("plan") or "free",
         "emails_sent_this_month": user.get("emails_sent_this_month", 0),
         # Plan-derived limits, so the extension reads them from the backend
         # instead of hardcoding — raising a limit needs no extension update.

@@ -352,6 +352,43 @@ def next_reset_date(user: dict) -> date | None:
     return _month_shift(reset_date, 1, _anchor_day(user, reset_date))
 
 
+def effective_plan(user: dict) -> str:
+    """The plan whose FEATURES this user may use right now.
+
+    users.plan is the billing truth and Stripe owns it — the
+    customer.subscription.updated handler rewrites it from the price on every
+    renewal. A complimentary upgrade written there is therefore reverted
+    within the month, silently. So a comp lives in comp_plan /
+    comp_plan_until (migration 032) and only this function merges the two.
+
+    The split is the point. Everything that decides what someone may DO calls
+    this; everything that reports what they PAY keeps reading users.plan. That
+    is why daily_report still counts a comped Starter as a paying Starter, and
+    why MRR does not move when we give one away.
+
+    Expires by arithmetic — no beat task, nothing to undo, no half-applied
+    state. A missing or unparseable comp_plan_until reads as expired, which
+    fails toward the plan they actually pay for.
+    """
+    until = user.get("comp_plan_until")
+    comp = user.get("comp_plan")
+    if not until or not comp:
+        return user.get("plan") or "free"
+    try:
+        expires = datetime.fromisoformat(str(until).replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning(
+            "effective_plan: unreadable comp_plan_until %r for user %s",
+            until, user.get("id"),
+        )
+        return user.get("plan") or "free"
+    if expires.tzinfo is None:
+        expires = expires.replace(tzinfo=timezone.utc)
+    if datetime.now(timezone.utc) >= expires:
+        return user.get("plan") or "free"
+    return comp
+
+
 def check_monthly_reset(
     user: dict,
     today: date | None = None,
