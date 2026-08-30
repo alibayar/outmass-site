@@ -314,3 +314,117 @@ def test_dormancy_is_checked_after_the_reauth_guard():
 
     assert result["resumed"] == 0
     assert result["held_owner_dormant"] == 0
+
+
+# ── Spacing the attempts out ──
+#
+# The beat went from daily to two-hourly on 2026-08-30 so a campaign whose
+# quota came back at 07:00 would not wait twenty-three hours while the panel
+# promised it would continue by itself.
+#
+# That turns one attempt a day into twelve at a campaign that cannot succeed.
+# The failure that prompted it was Graph refusing to send from a mailbox at
+# all — most likely Microsoft already restricting a new account — so twelve
+# attempts a day would be us worsening a user's standing with their own
+# provider, on their behalf, silently.
+#
+# campaigns.updated_at (migration 025) already records the last attempt:
+# every path that parks a campaign writes it. No new column.
+
+
+def _campaign_attempted(hours_ago, cid="c1"):
+    c = _campaign(cid)
+    c["updated_at"] = (
+        datetime.now(timezone.utc) - timedelta(hours=hours_ago)
+    ).isoformat()
+    return c
+
+
+def test_a_campaign_attempted_an_hour_ago_is_left_alone():
+    user = {**FAKE_USER, "emails_sent_this_month": 0}
+    result, update = _run([_campaign_attempted(1)], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 0
+    assert result["held_backoff"] == 1
+    update.assert_not_called()
+
+
+def test_a_campaign_attempted_long_enough_ago_resumes():
+    user = {**FAKE_USER, "emails_sent_this_month": 0}
+    result, update = _run([_campaign_attempted(10)], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 1
+    assert result["held_backoff"] == 0
+    assert update.call_args.args[1]["status"] == "scheduled"
+
+
+def test_a_missing_updated_at_does_not_hold():
+    """The opposite reading of a missing field from _owner_is_dormant, on
+    purpose. There, absence meant 'we cannot vouch that anyone is here' and
+    holding was safe. Here it means 'no evidence of a recent attempt', and
+    holding on that would strand a campaign forever on a row we cannot read.
+    """
+    user = {**FAKE_USER, "emails_sent_this_month": 0}
+    campaign = _campaign()
+    campaign.pop("updated_at", None)
+    result, _ = _run([campaign], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 1
+    assert result["held_backoff"] == 0
+
+
+def test_an_unreadable_updated_at_does_not_hold():
+    user = {**FAKE_USER, "emails_sent_this_month": 0}
+    campaign = _campaign()
+    campaign["updated_at"] = "sometime last week"
+    result, _ = _run([campaign], user, resumable=[{"id": "k1"}])
+
+    assert result["resumed"] == 1
+
+
+def test_a_naive_updated_at_is_read_as_utc():
+    """Postgres can hand back a timestamp with no offset. Treating it as
+    naive-local would raise on the subtraction, take the unreadable path, and
+    retry a campaign the backoff was meant to space out."""
+    naive = (datetime.now(timezone.utc) - timedelta(hours=1)).replace(tzinfo=None)
+    campaign = _campaign()
+    campaign["updated_at"] = naive.isoformat()
+    user = {**FAKE_USER, "emails_sent_this_month": 0}
+    result, _ = _run([campaign], user, resumable=[{"id": "k1"}])
+
+    assert result["held_backoff"] == 1
+
+
+def test_the_backoff_is_checked_before_the_user_is_loaded():
+    """Cheapest guard first: a backed-off campaign must cost no DB read.
+
+    With a two-hourly beat this is the common path, not the rare one — most
+    passes will find nothing due and should do almost nothing.
+    """
+    from unittest.mock import patch
+
+    from workers import scheduled_worker
+
+    with patch(
+        "models.campaign.get_resumable_partial_campaigns",
+        return_value=[_campaign_attempted(1)],
+    ), patch("models.user.get_by_id") as get_by_id, patch(
+        "models.user.check_monthly_reset"
+    ), patch(
+        "models.contact.get_resumable_contacts", return_value=[{"id": "k1"}]
+    ), patch("models.campaign.update_campaign"):
+        result = scheduled_worker.auto_resume_partial_campaigns()
+
+    get_by_id.assert_not_called()
+    assert result["held_backoff"] == 1
+
+
+def test_backoff_and_dormancy_are_counted_separately():
+    """A dormant owner whose campaign was also just attempted is counted once,
+    under the backoff — otherwise the two numbers double-count one row and
+    neither means what its name says."""
+    user = {**FAKE_USER, "emails_sent_this_month": 0, "last_activity_at": _seen(90)}
+    result, _ = _run([_campaign_attempted(1)], user, resumable=[{"id": "k1"}])
+
+    assert result["held_backoff"] == 1
+    assert result["held_owner_dormant"] == 0

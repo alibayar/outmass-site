@@ -130,6 +130,7 @@ sign-in and sending.
 | `PLAN_DROP_NOTICE_DAYS` | web | no | defaults to 14 |
 | `AUTH_RESUME_MAX_AGE_DAYS` | web, worker | no | defaults to 7 |
 | `AUTO_RESUME_DORMANT_DAYS` | worker | no | defaults to 30; owner must have been seen this recently for auto-resume to continue |
+| `AUTO_RESUME_BACKOFF_HOURS` | worker | no | defaults to 6; minimum gap between attempts on the same partial campaign |
 | `INACTIVITY_NUDGE_DAYS` | worker | no | defaults to 30 |
 
 The plan and upload limits are the numbers CLAUDE.md points at: `config.py` is

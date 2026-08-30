@@ -211,11 +211,27 @@ celery.conf.beat_schedule = {
     },
     "auto-resume-partial-campaigns": {
         "task": "workers.scheduled_worker.auto_resume_partial_campaigns",
-        # 06:00 UTC daily — after the maintenance window. Flips quota-capped
-        # 'partial' campaigns back to 'scheduled' once the owner's rolling
-        # reset (or an upgrade) restored headroom; the regular send beat then
-        # finishes them. Removes the manual Resume click after a quota cap.
-        "schedule": crontab(hour=6, minute=0),
+        # Every two hours. Flips 'partial' campaigns back to 'scheduled' once
+        # the owner's rolling reset (or an upgrade) restored headroom; the
+        # regular send beat then finishes them. Removes the manual Resume
+        # click after a quota cap.
+        #
+        # It was 06:00 daily until 2026-08-30. Two things were wrong with a
+        # single daily slot:
+        #
+        #   * a campaign whose quota returned at 07:00 waited twenty-three
+        #     hours while the panel said it would continue automatically;
+        #   * 06:00 UTC is OUR hour. Every resumed campaign for every user in
+        #     the world went out at 06:05 UTC — 02:05 for the user whose
+        #     incident prompted this. Spreading the slot does not fix that
+        #     (quota eligibility flips at 00:00 UTC because month_reset_date
+        #     is a DATE), and the real fix is to read users.timezone, which
+        #     the send path does not do yet. This at least stops us picking
+        #     one hour for everyone.
+        #
+        # Frequency without a backoff would mean twelve attempts a day at a
+        # campaign that cannot succeed — see AUTO_RESUME_BACKOFF_HOURS.
+        "schedule": crontab(minute=0, hour="*/2"),
     },
     "green-check": {
         "task": "workers.green_report.send_green_report",

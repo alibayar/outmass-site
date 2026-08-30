@@ -15,6 +15,7 @@ from datetime import date, datetime, timedelta, timezone
 import httpx
 
 from config import (
+    AUTO_RESUME_BACKOFF_HOURS,
     AUTO_RESUME_DORMANT_DAYS,
     BACKEND_URL,
     FREE_PLAN_MONTHLY_LIMIT,
@@ -1342,6 +1343,38 @@ def expire_manual_promos():
 # somebody did.
 
 
+def _recently_attempted(campaign: dict) -> bool:
+    """Was this campaign tried too recently to try again?
+
+    Keyed on campaigns.updated_at (migration 025), which every path that
+    parks a campaign writes. That makes it a record of the last attempt
+    without inventing a column to keep true.
+
+    A missing or unreadable value returns False — do NOT skip. This is the
+    opposite of _owner_is_dormant's reading of a missing field, and
+    deliberately: there, absence meant "we cannot vouch that anyone is here",
+    and the safe direction was to hold. Here, absence means "no evidence of a
+    recent attempt", and holding on that would strand a campaign forever on a
+    row we simply cannot read. updated_at is NOT NULL since 025, so this is a
+    fallback rather than a real path.
+    """
+    ts = campaign.get("updated_at")
+    if not ts:
+        return False
+    try:
+        last = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning(
+            "auto_resume: unreadable updated_at %r on campaign %s — not backing off",
+            ts, campaign.get("id"),
+        )
+        return False
+    if last.tzinfo is None:
+        last = last.replace(tzinfo=timezone.utc)
+    age = datetime.now(timezone.utc) - last
+    return age < timedelta(hours=AUTO_RESUME_BACKOFF_HOURS)
+
+
 def _owner_is_dormant(user: dict) -> bool:
     """Has this campaign's owner been away longer than we keep sending for?
 
@@ -1382,6 +1415,9 @@ def auto_resume_partial_campaigns():
       - owners not seen in AUTO_RESUME_DORMANT_DAYS are HELD, not stopped:
         the campaign stays 'partial', and signing in refreshes
         last_activity_at so the next run resumes it with nothing to press
+      - a campaign attempted within AUTO_RESUME_BACKOFF_HOURS is left alone,
+        so a run that cannot succeed is retried at that interval rather than
+        on every pass of a two-hourly beat
       - check_monthly_reset runs first, so the reset happens even if the
         user never logs in on their anniversary day
       - requires_reauth owners are skipped (retried on later runs once
@@ -1399,9 +1435,15 @@ def auto_resume_partial_campaigns():
     resumed = 0
     closed = 0
     dormant = 0
+    backed_off = 0
     users_cache: dict = {}
 
     for campaign in campaigns:
+        # Cheapest guard first — it needs no user lookup.
+        if _recently_attempted(campaign):
+            backed_off += 1
+            continue
+
         uid = campaign.get("user_id")
         if uid not in users_cache:
             users_cache[uid] = user_model.get_by_id(uid)
@@ -1453,4 +1495,5 @@ def auto_resume_partial_campaigns():
         # waiting for their owners to come back" are different states, and
         # only one of them is worth a look.
         "held_owner_dormant": dormant,
+        "held_backoff": backed_off,
     }

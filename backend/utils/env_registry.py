@@ -130,6 +130,7 @@ REGISTRY: tuple[Var, ...] = (
     Var("PLAN_DROP_NOTICE_DAYS", (WEB,), False, "defaults to 14"),
     Var("AUTH_RESUME_MAX_AGE_DAYS", (WEB, WORKER), False, "defaults to 7"),
     Var("AUTO_RESUME_DORMANT_DAYS", (WORKER,), False, "defaults to 30; owner must have been seen this recently for auto-resume to continue"),
+    Var("AUTO_RESUME_BACKOFF_HOURS", (WORKER,), False, "defaults to 6; minimum gap between attempts on the same partial campaign"),
     Var("INACTIVITY_NUDGE_DAYS", (WORKER,), False, "defaults to 30"),
 
     # ── Read by config.py and consumed by nothing ──

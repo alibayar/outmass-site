@@ -274,6 +274,27 @@ AUTH_RESUME_MAX_AGE_DAYS = int(os.getenv("AUTH_RESUME_MAX_AGE_DAYS", "7"))
 # user reads "open OutMass to continue" rather than discovering it.
 AUTO_RESUME_DORMANT_DAYS = int(os.getenv("AUTO_RESUME_DORMANT_DAYS", "30"))
 
+# How long to leave a partial campaign alone after its last attempt.
+#
+# The resume beat went from daily to two-hourly on 2026-08-30, because a
+# campaign whose quota came back at 07:00 was waiting twenty-three hours
+# while the panel promised it would continue by itself. That fixed the
+# waiting and created a different problem: a campaign that cannot succeed
+# now gets twelve attempts a day instead of one.
+#
+# It is not a theoretical cost. The failure we had just found was Graph
+# refusing to send from a mailbox at all — and the likeliest reason for that
+# is Microsoft already restricting a new account. Retrying twelve times a day
+# would be us making a user's standing with their own provider worse, on
+# their behalf, without telling them.
+#
+# campaigns.updated_at (migration 025) is enough to space the attempts out:
+# every path that parks a campaign writes it. No new column, no new state to
+# keep true. The cost is that a quota-capped campaign whose owner UPGRADES to
+# unblock it also waits — the manual Resume button in Reports is the
+# immediate path for that, and it does not go through this beat.
+AUTO_RESUME_BACKOFF_HOURS = int(os.getenv("AUTO_RESUME_BACKOFF_HOURS", "6"))
+
 # How long the panel keeps saying "your plan ended" after a drop to Free.
 #
 # The notice is not the notification — the email sent at the moment of the
