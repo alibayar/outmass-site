@@ -1166,7 +1166,7 @@
     "message": "Microsoft está saturado en este momento. Vuelva a intentarlo en un minuto."
   },
   "authMsProvisioning": {
-    "message": "Microsoft todavía está configurando el acceso para tu organización. Vuelve a intentarlo en un momento."
+    "message": "Microsoft todavía está configurando el acceso para su organización. Vuelva a intentarlo en un momento."
   },
   "authMsUnknownCode": {
     "message": "El inicio de sesión falló por un motivo que no habíamos visto antes. Vuelva a intentarlo — si sigue ocurriendo, escriba a support@getoutmass.com y lo revisaremos."

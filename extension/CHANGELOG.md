@@ -2,6 +2,65 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.2.3 — 2026-08-30
+
+- **OutMass no longer asks Microsoft for your subject lines.** Reply
+  detection needs to know that someone answered, not what the conversation
+  was about — but it asked Microsoft for the subject of the matching message
+  anyway, and then did nothing with it. That request is gone. The note shown
+  before the Microsoft permission screen now says so plainly: reply
+  detection looks at who wrote to you and when, and never at what they
+  wrote.
+
+- **The sign-in explanation is calmer, and in your language.** That same
+  note used to recite the permission names, which reads as a warning rather
+  than an explanation to someone arriving there for the first time. It now
+  says what the next screen is, what OutMass will be able to do, that
+  nothing happens until you accept, and that you can withdraw it later — in
+  all thirteen languages the panel speaks.
+
+- **Follow-ups and A/B subject testing now say PRO on the control itself.**
+  Both are Pro features and both looked like ordinary switches: you could
+  tick one, close the panel, and believe it was on. They now carry a PRO
+  badge, the same as the pricing page has always shown.
+
+- **A follow-up your plan does not include now tells you, instead of
+  vanishing.** The server refused to create it and the panel said nothing at
+  all, leaving the switch ticked and the text you had written on screen.
+  Five people had follow-ups set up this way that were never going to be
+  sent. The panel now says the feature needs Pro, unticks the switch, and
+  sends your campaign exactly as it would have otherwise.
+
+- **Small fixes.** The plan list offers only the plans you can actually buy
+  from where you are standing, and the button comes back if you close the
+  payment page without paying. A sign-in window left open and closed much
+  later no longer reports a second failure against whichever account you
+  have signed into by then. And when Microsoft is still setting OutMass up
+  inside a brand-new organisation — a short race on their side that clears
+  in seconds — OutMass waits and tries once more by itself instead of
+  blaming itself and stopping.
+
+### Already live, whichever version you are on
+
+These two are server-side, so they reached you without an update.
+
+- **A follow-up on a paced campaign no longer closes itself before the
+  campaign has sent anything.** A campaign that goes out over days — either
+  scheduled ahead or spread by a daily cap — could have its follow-up fall
+  due before the first email had left. Finding nobody to follow up with, it
+  marked itself finished: nothing sent, switch still reading as on, and no
+  second attempt. A follow-up now waits for the campaign, and counts its
+  delay from when the last recipient actually received the first email.
+  Nothing changes for a campaign that goes out at once.
+
+- **One refused message no longer condemns the rest of your list.** If
+  Microsoft refused a send part-way through a scheduled campaign because of
+  the mailbox rather than the recipient, every remaining address was marked
+  permanently undeliverable — out of reach of both Resume and the automatic
+  retry — and the campaign then reported itself as sent. It now stops,
+  leaves the untouched recipients waiting, and records why, so the campaign
+  carries on from where it stopped.
+
 ## v0.2.2 — 2026-08-15
 
 - **OutMass will write to you in the language you read it in.** Every email

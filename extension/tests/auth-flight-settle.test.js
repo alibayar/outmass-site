@@ -111,6 +111,37 @@ function run() {
     );
   }
 
+  // ── and the name the guard reads is the flag, not something else ──
+  //
+  // This is the check the suite did not have, and its absence let the guard
+  // ship dead. Everything above asserts POSITION — the guard appears before
+  // the retry, before the report, not on the success path — and position is
+  // exactly what a scope bug leaves intact.
+  //
+  // What actually happened: eighty lines below the guard, inside the same
+  // function, sat `var settled = String(errorMsg)`. `var` hoists to the top
+  // of its function, so from handleResult's first line onwards `settled` was
+  // that local, and `undefined` where the guard read it. Five mutations went
+  // red against a guard that could never fire once.
+  //
+  // A single declaration per flag is a crude rule and a sufficient one:
+  // these two names exist to be read across the whole flight, so a second
+  // binding anywhere in the file is either a shadow or a rename waiting to
+  // become one.
+  const FLIGHT_FLAGS = ["settled", "retried"];
+  for (const flag of FLIGHT_FLAGS) {
+    const declared = (
+      src.match(new RegExp("\\b(?:var|let|const)\\s+" + flag + "\\b", "g")) || []
+    ).length;
+    check(
+      declared === 1,
+      `\`${flag}\` is declared ${declared} times in background.js. The flight ` +
+        "reads it across the whole promise; a second declaration shadows the " +
+        "first from the top of whichever function holds it, and every read in " +
+        "between silently becomes undefined. Rename the other one."
+    );
+  }
+
   // ── the timeout still sets the flag the guard reads ──
   const timeoutAt = src.indexOf('reason: "auth_timeout"');
   check(timeoutAt !== -1, "the auth_timeout report is gone");

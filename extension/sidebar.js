@@ -3598,6 +3598,16 @@
           function (r) {
             if (r && r.data && r.data.checkout_url) {
               window.open(r.data.checkout_url, "_blank");
+              // Re-enabled even though this is the success branch. The
+              // in-flight guard above exists to stop two Stripe sessions
+              // being opened for one intent, and that risk ends the moment
+              // the round trip returns — but the row is NOT redrawn here the
+              // way the prorated branch is, so leaving it disabled makes the
+              // button dead for good. window.open inside an async callback
+              // is also blockable, and a user whose popup was swallowed
+              // comes back to a control that no longer answers, on the one
+              // path in the panel that leads to a payment.
+              btn.disabled = false;
             } else if (r && r.data && r.data.modified) {
               // A caller with a live subscription is upgraded IN PLACE:
               // the backend has already run Subscription.modify with

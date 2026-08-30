@@ -684,7 +684,15 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
         // need an admin to approve OutMass" — never appears, even though it
         // is exactly what that user needs. Consent walls are the single
         // biggest sign-in leak we have measured.
-        var settled = String(errorMsg);
+        // Named for what it holds, not for a state. It used to be called
+        // `settled`, which is also the name of the flight-completion flag in
+        // the enclosing scope — and `var` hoists, so from the top of
+        // handleResult onwards this local shadowed it. The settle guard
+        // added earlier the same day therefore read `undefined` and never
+        // fired once. Its test could not see that: the test asserts the
+        // guard's POSITION in the source, and position is exactly what a
+        // scope bug leaves intact.
+        var backendError = String(errorMsg);
         // The backend's own name for this failure class, added 2026-08-10.
         // It saw Microsoft's actual response; everything below is inference
         // from the sentence it produced. Absent when the backend predates
@@ -695,10 +703,10 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
         // else, so an unmapped code would just look handled without being.
         // Consent (65001/65004/90094) is the one with real text, and it is
         // also the single biggest sign-in leak we have measured.
-        var isConsent = /AADSTS(65001|65004|90094)\b/.test(settled) ||
-          /consent/i.test(settled);
+        var isConsent = /AADSTS(65001|65004|90094)\b/.test(backendError) ||
+          /consent/i.test(backendError);
         // The AADSTS number is the stable grouping key regardless.
-        var aadsts = (settled.match(/AADSTS\d+/) || [null])[0];
+        var aadsts = (backendError.match(/AADSTS\d+/) || [null])[0];
 
         // Auto-retry ONCE when Microsoft was still provisioning us.
         //
@@ -722,7 +730,7 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
           return;
         }
 
-        var result = { error: settled };
+        var result = { error: backendError };
         if (msCode) result.msCode = msCode;
         if (isConsent) result.errorCode = "consent_declined";
         finish(result);
@@ -730,7 +738,7 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
           "oauth_failed",
           failureContext({
             reason: "backend_error",
-            code: settled.slice(0, 64),
+            code: backendError.slice(0, 64),
             aadsts: aadsts,
             // Correlates the client's view with ms_auth_failed's `meaning`,
             // so a funnel breakdown no longer has to parse an English

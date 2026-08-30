@@ -1,10 +1,14 @@
 {
   "manifest_version": 3,
   "name": "__MSG_appName__",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "__MSG_appDesc__",
   "default_locale": "en",
-  "permissions": ["storage", "alarms", "identity"],
+  "permissions": [
+    "storage",
+    "alarms",
+    "identity"
+  ],
   "host_permissions": [
     "https://outlook.live.com/*",
     "https://outlook.office.com/*",
@@ -24,8 +28,12 @@
         "https://outlook.office365.com/*",
         "https://outlook.cloud.microsoft/*"
       ],
-      "js": ["content_script.js"],
-      "css": ["styles/content.css"],
+      "js": [
+        "content_script.js"
+      ],
+      "css": [
+        "styles/content.css"
+      ],
       "run_at": "document_idle"
     }
   ],
@@ -39,7 +47,9 @@
   },
   "web_accessible_resources": [
     {
-      "resources": ["sidebar.html"],
+      "resources": [
+        "sidebar.html"
+      ],
       "matches": [
         "https://outlook.live.com/*",
         "https://outlook.office.com/*",
