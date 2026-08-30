@@ -13,6 +13,24 @@
       }
     }
   },
+  "sendProgressLine": {
+    "message": "Envoi en cours… $1 sur $2 pour l'instant"
+  },
+  "sendDoneLine": {
+    "message": "Terminé — les $1 e-mails sont partis."
+  },
+  "sendPartialLine": {
+    "message": "$1 sur $2 sont partis. Le reste est enregistré et continue tout seul."
+  },
+  "sendStillGoingLine": {
+    "message": "Envoi toujours en cours. Vous pouvez fermer — le résultat sera dans les Rapports."
+  },
+  "followupDelayHint": {
+    "message": "Compté à partir du moment où chaque personne reçoit votre e-mail, et non du début de la campagne."
+  },
+  "reportsFollowupExplain": {
+    "message": "Chaque personne reçoit une relance $1 jours après votre e-mail."
+  },
   "alertQuotaHorizon": {
     "message": "Votre forfait envoie $1 e-mails par mois : les $2 destinataires restants prendraient encore environ $3 mois. Passez à un forfait supérieur pour les envoyer plus tôt."
   },
@@ -407,13 +425,13 @@
     "message": "Échec de l'envoi !\n\nErreur : "
   },
   "alertAbSendSuccess": {
-    "message": "Succès ! $1 e-mails envoyés (A/B test).\nL'objet gagnant sera envoyé automatiquement."
+    "message": "Envoi à $1 destinataires (test A/B).\nL'objet gagnant sera envoyé automatiquement."
   },
   "alertPartialSend": {
-    "message": "$1 e-mails envoyés, $2 erreurs.\n\nPremière erreur : "
+    "message": "Envoi à $1 destinataires. $2 n'ont pas pu être mis en file.\n\nPremière erreur : "
   },
   "alertSendSuccess": {
-    "message": "Succès ! $1 e-mails envoyés."
+    "message": "Envoi à $1 destinataires. Cela se poursuit en arrière-plan — le résultat s'affichera ci-dessous."
   },
   "alertLimitReached": {
     "message": "Vous avez atteint la limite de votre plan ($1 e-mails/mois).\nVeuillez changer de plan."

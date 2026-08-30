@@ -1984,6 +1984,93 @@
     return "\n\n" + line;
   }
 
+  // ── What actually happened to the send ──
+  //
+  // POST /campaigns/{id}/send hands the whole recipient loop to a background
+  // task and returns immediately, so `queued` is an intention: how many the
+  // server accepted, before a single message has been attempted. The panel
+  // announced that number as "Success! N emails sent."
+  //
+  // On 2026-08-30 a new user was told 9 emails had been sent when 2 had.
+  // Microsoft refused the third, the loop stopped, and nothing anywhere
+  // corrected the claim — she had no way to learn it except by opening
+  // Reports and comparing two numbers.
+  //
+  // So the alert now says what is starting, and this watches for what
+  // finished. Deliberately a line under the button rather than a second
+  // modal: the answer arrives seconds or minutes later, and a dialog that
+  // appears while someone is typing the next campaign is worse than the
+  // silence it replaces.
+  var _sendWatchTimer = null;
+
+  function clearSendStatus() {
+    if (_sendWatchTimer) {
+      clearTimeout(_sendWatchTimer);
+      _sendWatchTimer = null;
+    }
+    var el = document.getElementById("send-status");
+    if (el) el.textContent = "";
+  }
+
+  function setSendStatus(key, args) {
+    var el = document.getElementById("send-status");
+    if (!el) return;
+    var line = t(key, args);
+    // t() returns the key itself when a translation is missing; showing that
+    // is worse than showing nothing.
+    el.textContent = line && line !== key ? line : "";
+  }
+
+  function startSendWatch(campaignId, queued) {
+    if (!campaignId) return;
+    clearSendStatus();
+    setSendStatus("sendProgressLine", [String(0), String(queued)]);
+
+    // Sends are paced at ~2s per recipient, so anything sizeable outlives a
+    // reasonable watch. Give it a minute, then hand off to Reports rather
+    // than poll for an hour.
+    var deadline = Date.now() + 60000;
+    var TERMINAL = { sent: 1, partial: 1, failed_auth: 1, cancelled: 1 };
+
+    var poll = function () {
+      chrome.runtime.sendMessage(
+        { type: "GET_CAMPAIGN_STATS", campaignId: campaignId },
+        function (resp) {
+          var stats = (resp && resp.data) || null;
+          if (!stats) {
+            // A failed read is not a failed send. Say nothing rather than
+            // invent an outcome.
+            clearSendStatus();
+            return;
+          }
+          var sent = stats.sent_count || 0;
+          var total = stats.total_contacts || queued;
+
+          if (TERMINAL[stats.status]) {
+            if (sent >= total && total > 0) {
+              setSendStatus("sendDoneLine", [String(sent)]);
+            } else {
+              setSendStatus("sendPartialLine", [String(sent), String(total)]);
+            }
+            _sendWatchTimer = null;
+            return;
+          }
+
+          if (Date.now() >= deadline) {
+            setSendStatus("sendStillGoingLine");
+            _sendWatchTimer = null;
+            return;
+          }
+
+          setSendStatus("sendProgressLine", [String(sent), String(total)]);
+          _sendWatchTimer = setTimeout(poll, 3000);
+        }
+      );
+    };
+
+    _sendWatchTimer = setTimeout(poll, 3000);
+  }
+
   // B.2: cache of existing campaign names (lowercase) for duplicate warning
   var _cachedCampaignNames = null;
 
@@ -2390,6 +2477,7 @@
               "They stay saved and will be sent automatically after your monthly reset. To send them sooner, upgrade your plan.";
           }
           alert(cappedMsg + quotaHorizonSuffix(skipped));
+          startSendWatch(campaignId, queued);
           track("send_completed", {
             recipient_count: _recipientCount,
             campaign_id: campaignId || null,
@@ -2398,18 +2486,21 @@
           });
         } else if (hasAbTest) {
           alert(t("alertAbSendSuccess", [String(queued)]));
+          startSendWatch(campaignId, queued);
           track("send_completed", {
             recipient_count: _recipientCount,
             campaign_id: campaignId || null,
           });
         } else if (sendErrors.length > 0) {
           alert(t("alertPartialSend", [String(queued), String(sendErrors.length)]) + sendErrors[0].error);
+          startSendWatch(campaignId, queued);
           track("send_completed", {
             recipient_count: _recipientCount,
             campaign_id: campaignId || null,
           });
         } else {
           alert(t("alertSendSuccess", [String(queued)]));
+          startSendWatch(campaignId, queued);
           track("send_completed", {
             recipient_count: _recipientCount,
             campaign_id: campaignId || null,
@@ -3115,7 +3206,19 @@
         // Follow-up status
         var followupEl = document.getElementById("followup-status");
         if (stats.pending_followups > 0) {
-          followupEl.textContent = stats.pending_followups + t("reportsFollowupPending");
+          // A bare count cannot tell a bump due tonight from one due next
+          // week, and since follow-ups trail a paced campaign rather than
+          // firing together at the end, "pending" is a state someone can sit
+          // in for days with nothing to read. The delay says what is being
+          // waited for.
+          var fuText = stats.pending_followups + t("reportsFollowupPending");
+          if (stats.followup_delay_days) {
+            var explain = t("reportsFollowupExplain", [String(stats.followup_delay_days)]);
+            if (explain && explain !== "reportsFollowupExplain") {
+              fuText += " — " + explain;
+            }
+          }
+          followupEl.textContent = fuText;
         } else {
           followupEl.textContent = "";
         }

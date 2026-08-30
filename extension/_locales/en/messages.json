@@ -393,13 +393,13 @@
     "message": "Send failed!\n\nError: "
   },
   "alertAbSendSuccess": {
-    "message": "Success! $1 emails sent (A/B test).\nThe winning subject line will be sent automatically."
+    "message": "Sending to $1 recipients (A/B test).\nThe winning subject line will be sent automatically."
   },
   "alertPartialSend": {
-    "message": "$1 emails sent, $2 errors occurred.\n\nFirst error: "
+    "message": "Sending to $1 recipients. $2 could not be queued.\n\nFirst error: "
   },
   "alertSendSuccess": {
-    "message": "Success! $1 emails sent."
+    "message": "Sending to $1 recipients. It runs in the background — the result appears below."
   },
   "alertLimitReached": {
     "message": "You've reached your plan limit ($1 emails/month).\nPlease upgrade your plan."
@@ -860,6 +860,24 @@
         "content": "$2"
       }
     }
+  },
+  "sendProgressLine": {
+    "message": "Sending… $1 of $2 so far"
+  },
+  "sendDoneLine": {
+    "message": "Done — all $1 emails went out."
+  },
+  "sendPartialLine": {
+    "message": "$1 of $2 went out. The rest are saved and continue by themselves."
+  },
+  "sendStillGoingLine": {
+    "message": "Still sending. You can close this — Reports will show the result."
+  },
+  "followupDelayHint": {
+    "message": "Counted from when each person receives your email, not from when the campaign starts."
+  },
+  "reportsFollowupExplain": {
+    "message": "Each person is followed up $1 days after they receive your email."
   },
   "alertQuotaHorizon": {
     "message": "Your plan sends $1 emails a month, so the remaining $2 recipients would take about $3 more months. Upgrade to send them sooner."

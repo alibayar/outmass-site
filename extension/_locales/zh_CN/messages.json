@@ -13,6 +13,24 @@
       }
     }
   },
+  "sendProgressLine": {
+    "message": "发送中… 目前 $2 位中已发送 $1 位"
+  },
+  "sendDoneLine": {
+    "message": "完成 — $1 封邮件已全部发出。"
+  },
+  "sendPartialLine": {
+    "message": "$2 位中已发出 $1 位。其余已保存，会自动继续。"
+  },
+  "sendStillGoingLine": {
+    "message": "仍在发送。您可以关闭，结果会显示在报告中。"
+  },
+  "followupDelayHint": {
+    "message": "从每位收件人收到邮件时开始计算，而不是从邮件系列开始时计算。"
+  },
+  "reportsFollowupExplain": {
+    "message": "每位收件人会在收到您的邮件 $1 天后收到跟进邮件。"
+  },
   "alertQuotaHorizon": {
     "message": "您的套餐每月可发送 $1 封邮件，因此剩余的 $2 位收件人还需要约 $3 个月。如需更早发送，请升级套餐。"
   },
@@ -407,13 +425,13 @@
     "message": "发送失败！\n\n错误："
   },
   "alertAbSendSuccess": {
-    "message": "成功！已发送 $1 封邮件（A/B 测试）。\n获胜主题将自动发送。"
+    "message": "正在向 $1 位收件人发送（A/B 测试）。\n获胜的主题行将自动发送。"
   },
   "alertPartialSend": {
-    "message": "已发送 $1 封邮件，出现 $2 个错误。\n\n首个错误："
+    "message": "正在向 $1 位收件人发送。有 $2 位无法加入队列。\n\n首个错误："
   },
   "alertSendSuccess": {
-    "message": "成功！已发送 $1 封邮件。"
+    "message": "正在向 $1 位收件人发送。发送在后台进行，结果会显示在下方。"
   },
   "alertLimitReached": {
     "message": "您已达到计划上限（$1 封邮件/月）。\n请升级您的计划。"

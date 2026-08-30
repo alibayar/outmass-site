@@ -13,6 +13,24 @@
       }
     }
   },
+  "sendProgressLine": {
+    "message": "Gönderiliyor… şu ana kadar $2 kişiden $1'i"
+  },
+  "sendDoneLine": {
+    "message": "Bitti — $1 e-postanın tamamı gönderildi."
+  },
+  "sendPartialLine": {
+    "message": "$2 kişiden $1'ine gönderildi. Kalanlar kayıtlı ve kendiliğinden devam edecek."
+  },
+  "sendStillGoingLine": {
+    "message": "Gönderim sürüyor. Kapatabilirsiniz; sonucu Raporlar'da göreceksiniz."
+  },
+  "followupDelayHint": {
+    "message": "Her kişinin e-postayı aldığı andan itibaren sayılır, kampanyanın başladığı andan değil."
+  },
+  "reportsFollowupExplain": {
+    "message": "Her kişiye, e-postayı almasından $1 gün sonra takip gönderilir."
+  },
   "alertQuotaHorizon": {
     "message": "Planınız ayda $1 email gönderiyor; kalan $2 alıcı yaklaşık $3 ay daha sürer. Daha erken göndermek için planınızı yükseltin."
   },
@@ -407,13 +425,13 @@
     "message": "Gönderim başarısız!\n\nHata: "
   },
   "alertAbSendSuccess": {
-    "message": "Başarılı! $1 e-posta gönderildi (A/B testi).\nKazanan konu satırı otomatik olarak gönderilecek."
+    "message": "$1 alıcıya gönderiliyor (A/B testi).\nKazanan konu satırı otomatik olarak gönderilecek."
   },
   "alertPartialSend": {
-    "message": "$1 e-posta gönderildi, $2 hata oluştu.\n\nİlk hata: "
+    "message": "$1 alıcıya gönderiliyor. $2 tanesi sıraya alınamadı.\n\nİlk hata: "
   },
   "alertSendSuccess": {
-    "message": "Başarılı! $1 e-posta gönderildi."
+    "message": "$1 alıcıya gönderiliyor. Arka planda sürüyor; sonucu aşağıda göreceksiniz."
   },
   "alertLimitReached": {
     "message": "Plan limitinize ulaştınız ($1 e-posta/ay).\nLütfen planınızı yükseltin."

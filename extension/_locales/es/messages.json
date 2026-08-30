@@ -13,6 +13,24 @@
       }
     }
   },
+  "sendProgressLine": {
+    "message": "Enviando… $1 de $2 hasta ahora"
+  },
+  "sendDoneLine": {
+    "message": "Listo: los $1 correos han salido."
+  },
+  "sendPartialLine": {
+    "message": "Han salido $1 de $2. El resto queda guardado y continúa por sí solo."
+  },
+  "sendStillGoingLine": {
+    "message": "Todavía enviando. Puede cerrar esto; el resultado aparecerá en Informes."
+  },
+  "followupDelayHint": {
+    "message": "Se cuenta desde que cada persona recibe su correo, no desde que empieza la campaña."
+  },
+  "reportsFollowupExplain": {
+    "message": "Cada persona recibe un seguimiento $1 días después de su correo."
+  },
   "alertQuotaHorizon": {
     "message": "Tu plan envía $1 correos al mes, así que los $2 destinatarios restantes tardarían unos $3 meses más. Mejora tu plan para enviarlos antes."
   },
@@ -407,13 +425,13 @@
     "message": "¡Error en el envío!\n\nError: "
   },
   "alertAbSendSuccess": {
-    "message": "¡Listo! $1 correos enviados (A/B test).\nEl asunto ganador se enviará automáticamente."
+    "message": "Enviando a $1 destinatarios (prueba A/B).\nEl asunto ganador se enviará automáticamente."
   },
   "alertPartialSend": {
-    "message": "$1 correos enviados, $2 errores.\n\nPrimer error: "
+    "message": "Enviando a $1 destinatarios. $2 no se pudieron poner en cola.\n\nPrimer error: "
   },
   "alertSendSuccess": {
-    "message": "¡Listo! $1 correos enviados."
+    "message": "Enviando a $1 destinatarios. Continúa en segundo plano; verá el resultado abajo."
   },
   "alertLimitReached": {
     "message": "Has alcanzado el límite de tu plan ($1 correos/mes).\nMejora tu plan para continuar."

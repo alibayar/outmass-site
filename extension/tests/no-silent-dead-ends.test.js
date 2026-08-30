@@ -28,6 +28,93 @@ function run() {
   const failures = [];
   const check = (cond, label) => { if (!cond) failures.push(label); };
 
+
+  // ── the send that announced an outcome it could not know ──
+  //
+  // POST /campaigns/{id}/send hands the recipient loop to a background task
+  // and returns at once, so `queued` is how many the server ACCEPTED —
+  // before a single message has been attempted. The panel announced that
+  // number as "Success! N emails sent."
+  //
+  // On 2026-08-30 a user was told 9 had been sent when 2 had: Microsoft
+  // refused the third, the loop stopped, and nothing corrected the claim.
+  // She could only have found out by opening Reports and comparing two
+  // numbers she had no reason to doubt.
+  //
+  // The alerts now describe what is starting, and startSendWatch polls for
+  // what finished. This guard is about the second half, because the first
+  // half is the kind that regresses by addition: a fifth success branch,
+  // written later, that alerts and never watches. The user is then back to a
+  // claim with nothing behind it — and every existing test would still pass,
+  // because the alert is there.
+  const sendSrc = read("sidebar.js");
+  const SEND_ALERTS = [
+    'alert(t("alertSendSuccess"',
+    'alert(t("alertAbSendSuccess"',
+    'alert(t("alertPartialSend"',
+    "alert(cappedMsg + quotaHorizonSuffix(skipped))",
+  ];
+  SEND_ALERTS.forEach((call) => {
+    const at = sendSrc.indexOf(call);
+    check(at !== -1, `sidebar.js no longer contains \`${call}\` — if the send branches were reshaped, this guard needs reshaping with them`);
+    if (at === -1) return;
+    // 150, not 400. The first version of this check used a wide window and
+    // passed every mutation: the branches sit next to each other, so a
+    // window generous enough to clear one alert's track() call reaches into
+    // the NEXT branch and finds ITS startSendWatch. A guard that cannot fail
+    // is worse than no guard, because it reads as coverage.
+    const after = sendSrc.slice(at, at + 150);
+    check(
+      after.includes("startSendWatch("),
+      `sidebar.js: the branch alerting with \`${call}\` does not start the ` +
+        "send watch, so it announces a send and never reports what happened " +
+        "to it — which is the whole defect this pair of changes closed"
+    );
+  });
+
+  // A failed send must NOT start a watch: there is no campaign to poll, and
+  // a progress line under a failure reads as though something is still
+  // happening.
+  const failedBranch = sendSrc.slice(
+    sendSrc.indexOf('alert(t("alertSendError")'),
+    sendSrc.indexOf('alert(t("alertSendError")') + 400
+  );
+  // Counted, not just located. Four branches queue something and four must
+  // watch; a fifth call means one was added where nothing was queued.
+  // The trailing `);` is what separates the four CALLS from the one
+  // definition, `function startSendWatch(campaignId, queued) {`, which the
+  // first version of this line counted as a fifth call and went red on
+  // untouched source.
+  const watchCalls = (sendSrc.match(/startSendWatch\(campaignId, queued\);/g) || []).length;
+  check(
+    watchCalls === SEND_ALERTS.length,
+    `sidebar.js starts the send watch ${watchCalls} times for ` +
+      `${SEND_ALERTS.length} branches that queue a send. Fewer means a branch ` +
+      "announces a send and never reports what happened to it; more means one " +
+      "was started where nothing was queued."
+  );
+
+  check(
+    !failedBranch.includes("startSendWatch("),
+    "sidebar.js starts the send watch on the all-failed branch — there is " +
+      "nothing to watch, and a progress line under a failure says the " +
+      "opposite of what happened"
+  );
+
+  // And the watch has to stop. An unbounded poll on a campaign that never
+  // reaches a terminal status would run for as long as the panel is open.
+  const watchBody = sendSrc.slice(
+    sendSrc.indexOf("function startSendWatch("),
+    sendSrc.indexOf("function startSendWatch(") + 2200
+  );
+  check(
+    /deadline\s*=\s*Date\.now\(\)\s*\+/.test(watchBody) &&
+      /sendStillGoingLine/.test(watchBody),
+    "startSendWatch no longer has a deadline that hands off to Reports — a " +
+      "campaign that never reaches a terminal status would be polled for as " +
+      "long as the panel stays open"
+  );
+
   // ── popup: "Open Campaign Panel" into a tab that predates this build ──
   //
   // Chrome kills the content script in every already-open tab when the
@@ -252,3 +339,15 @@ function run() {
 }
 
 module.exports = { run };
+
+// Running this file directly used to do nothing at all — it exported run and
+// never called it, so `node no-silent-dead-ends.test.js` exited 0 whatever
+// the source said. That silently passed a mutation run for twenty minutes
+// and is the same shape as the defects the file exists to catch: an exit
+// code that reads as an answer and is not one.
+if (require.main === module) {
+  const { failures } = run();
+  failures.forEach((f) => console.error("FAIL:", f));
+  console.log(failures.length ? "no-silent-dead-ends FAILED" : "no-silent-dead-ends ok");
+  process.exit(failures.length ? 1 : 0);
+}

@@ -393,13 +393,13 @@
     "message": "傳送失敗！\n\n錯誤："
   },
   "alertAbSendSuccess": {
-    "message": "已完成！已傳送 $1 封郵件（A/B 測試）。\n勝出的主旨將會自動傳送。"
+    "message": "正在向 $1 位收件者寄送（A/B 測試）。\n勝出的主旨列將自動寄出。"
   },
   "alertPartialSend": {
-    "message": "已傳送 $1 封郵件，發生 $2 個錯誤。\n\n第一個錯誤："
+    "message": "正在向 $1 位收件者寄送。有 $2 位無法加入佇列。\n\n第一個錯誤："
   },
   "alertSendSuccess": {
-    "message": "已完成！已傳送 $1 封郵件。"
+    "message": "正在向 $1 位收件者寄送。寄送在背景進行，結果會顯示在下方。"
   },
   "alertLimitReached": {
     "message": "您已達方案上限（每月 $1 封郵件）。\n請升級您的方案。"
@@ -852,6 +852,24 @@
         "content": "$2"
       }
     }
+  },
+  "sendProgressLine": {
+    "message": "寄送中… 目前 $2 位中已寄出 $1 位"
+  },
+  "sendDoneLine": {
+    "message": "完成 — $1 封郵件已全部寄出。"
+  },
+  "sendPartialLine": {
+    "message": "$2 位中已寄出 $1 位。其餘已儲存，會自動繼續。"
+  },
+  "sendStillGoingLine": {
+    "message": "仍在寄送。您可以關閉，結果會顯示在報告中。"
+  },
+  "followupDelayHint": {
+    "message": "從每位收件者收到郵件時開始計算，而不是從行銷活動開始時計算。"
+  },
+  "reportsFollowupExplain": {
+    "message": "每位收件者會在收到您的郵件 $1 天後收到跟進郵件。"
   },
   "alertQuotaHorizon": {
     "message": "您的方案每月可傳送 $1 封郵件，因此剩餘的 $2 位收件者還需要約 $3 個月。若想提早寄出，請升級您的方案。"

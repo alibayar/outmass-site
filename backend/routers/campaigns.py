@@ -335,6 +335,18 @@ async def campaign_stats(
         "engaged_rate": engaged_rate,
         "reply_rate": reply_rate,
         "pending_followups": pending_followups,
+        # How long after each recipient receives the campaign their follow-up
+        # goes out. The panel had a bare count, which cannot tell a bump due
+        # tonight from one due next week — and since follow-ups now trail a
+        # paced campaign rather than firing together at the end, "pending"
+        # is a state a user can sit in for days without being able to see
+        # why. The first scheduled one is enough: the panel creates one per
+        # send, and a campaign carrying several would still be described
+        # correctly by the soonest.
+        "followup_delay_days": next(
+            (f.get("delay_days") for f in followups if f["status"] == "scheduled"),
+            None,
+        ),
     }
 
 

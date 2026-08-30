@@ -46,6 +46,20 @@ All notable user-facing changes to the OutMass Chrome Extension.
   email. It is now asked for separately, later, when you turn reply
   detection on. Nothing changes if you already signed in.
 
+- **"Sent" now means sent.** Pressing Send used to answer "Success! 42
+  emails sent" the instant the server accepted the job — before a single
+  message had been attempted. If something then went wrong part-way, nothing
+  ever corrected it: one person was told 9 had gone out when 2 had. The
+  message now says what is starting, and a line under the button follows the
+  send and tells you what actually happened — all of them, or how many, or
+  that it is still running and Reports will have the answer.
+
+- **Follow-ups say what the delay counts from.** "After how many days?" now
+  adds that the clock starts when each person receives your email, not when
+  the campaign begins — which matters if you spread a campaign over days. And
+  a campaign with a follow-up waiting says the same thing in Reports instead
+  of only showing a count.
+
 - **Scheduled sending suggested the wrong time, everywhere but one.** Turning
   it on offered "tomorrow at 9am" — but the suggestion was built in UTC and
   then read back as your own clock, so it arrived shifted by however far you

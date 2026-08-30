@@ -393,13 +393,13 @@
     "message": "Falha no envio!\n\nErro: "
   },
   "alertAbSendSuccess": {
-    "message": "Pronto! $1 e-mails enviados (teste A/B).\nO assunto vencedor será enviado automaticamente."
+    "message": "A enviar para $1 destinatários (teste A/B).\nO assunto vencedor será enviado automaticamente."
   },
   "alertPartialSend": {
-    "message": "$1 e-mails enviados, $2 erros.\n\nPrimeiro erro: "
+    "message": "A enviar para $1 destinatários. $2 não puderam entrar na fila.\n\nPrimeiro erro: "
   },
   "alertSendSuccess": {
-    "message": "Pronto! $1 e-mails enviados."
+    "message": "A enviar para $1 destinatários. Continua em segundo plano — o resultado aparece abaixo."
   },
   "alertLimitReached": {
     "message": "Atingiu o limite do seu plano ($1 e-mails/mês).\nFaça upgrade do plano para continuar."
@@ -852,6 +852,24 @@
         "content": "$2"
       }
     }
+  },
+  "sendProgressLine": {
+    "message": "A enviar… $1 de $2 até agora"
+  },
+  "sendDoneLine": {
+    "message": "Pronto — todos os $1 e-mails saíram."
+  },
+  "sendPartialLine": {
+    "message": "Saíram $1 de $2. Os restantes ficam guardados e continuam sozinhos."
+  },
+  "sendStillGoingLine": {
+    "message": "Ainda a enviar. Pode fechar — o resultado aparecerá nos Relatórios."
+  },
+  "followupDelayHint": {
+    "message": "Contado a partir do momento em que cada pessoa recebe o seu e-mail, não do início da campanha."
+  },
+  "reportsFollowupExplain": {
+    "message": "Cada pessoa recebe um follow-up $1 dias depois de receber o seu e-mail."
   },
   "alertQuotaHorizon": {
     "message": "O seu plano envia $1 e-mails por mês, pelo que os $2 destinatários restantes demorariam mais cerca de $3 meses. Faça upgrade do seu plano para os enviar mais cedo."

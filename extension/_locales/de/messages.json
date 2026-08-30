@@ -13,6 +13,24 @@
       }
     }
   },
+  "sendProgressLine": {
+    "message": "Wird gesendet … bisher $1 von $2"
+  },
+  "sendDoneLine": {
+    "message": "Fertig — alle $1 E-Mails sind raus."
+  },
+  "sendPartialLine": {
+    "message": "$1 von $2 sind raus. Der Rest ist gespeichert und läuft von selbst weiter."
+  },
+  "sendStillGoingLine": {
+    "message": "Wird noch gesendet. Sie können das schließen — das Ergebnis steht in den Berichten."
+  },
+  "followupDelayHint": {
+    "message": "Gezählt ab dem Moment, in dem die jeweilige Person Ihre E-Mail erhält, nicht ab dem Start der Kampagne."
+  },
+  "reportsFollowupExplain": {
+    "message": "Jede Person erhält $1 Tage nach Ihrer E-Mail eine Nachfassnachricht."
+  },
   "alertQuotaHorizon": {
     "message": "Ihr Plan sendet $1 E-Mails pro Monat — die verbleibenden $2 Empfänger würden also noch etwa $3 Monate dauern. Upgraden Sie Ihren Plan, um sie früher zu senden."
   },
@@ -407,13 +425,13 @@
     "message": "Senden fehlgeschlagen!\n\nFehler: "
   },
   "alertAbSendSuccess": {
-    "message": "Erfolg! $1 E-Mails gesendet (A/B-Test).\nDie beste Betreffzeile wird automatisch versendet."
+    "message": "Wird an $1 Empfänger gesendet (A/B-Test).\nDie erfolgreichere Betreffzeile wird automatisch versendet."
   },
   "alertPartialSend": {
-    "message": "$1 E-Mails gesendet, $2 Fehler aufgetreten.\n\nErster Fehler: "
+    "message": "Wird an $1 Empfänger gesendet. $2 konnten nicht eingereiht werden.\n\nErster Fehler: "
   },
   "alertSendSuccess": {
-    "message": "Erfolg! $1 E-Mails gesendet."
+    "message": "Wird an $1 Empfänger gesendet. Das läuft im Hintergrund — das Ergebnis erscheint unten."
   },
   "alertLimitReached": {
     "message": "Sie haben Ihr Planlimit erreicht ($1 E-Mails/Monat).\nBitte upgraden Sie Ihren Plan."
