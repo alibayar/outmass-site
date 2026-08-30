@@ -289,9 +289,17 @@ OutMass
 # Helene — the email to send (written 2026-08-30, for Monday 31 Aug)
 
 **From** support@getoutmass.com · **BCC** outmassapp@outlook.com
-**Send** Monday 31 August, around 09:00 London (08:00 UTC). She is in
-Croydon; her campaign starts Tuesday morning, so Monday gives her a day to
-reply before it does.
+**Send** Tuesday 1 September, 10:15 Istanbul = 08:15 London — fifteen
+minutes before her campaign's first five go out at 08:30 her time.
+
+Monday 31 August was the obvious slot and is wrong: it is the last Monday
+in August, which is the UK summer bank holiday, and she is in Croydon. The
+email would have landed on a day off and been read on Tuesday anyway,
+underneath three days of backlog.
+
+The copy says "it starts this morning" rather than naming the date, which
+is only true on the 1st. If this slips to another day, change that line
+back before sending.
 
 **Facts checked against the database on 2026-08-30, not against the events:**
 
@@ -348,9 +356,9 @@ test you turned on a few minutes earlier is also Pro, and that one does show
 a message when it is declined. The follow-up showing nothing was a bug, and
 it is fixed in the next update.
 
-Your campaign itself is fine. It starts on Tuesday 1 September and is set to
-go out to five people a day, so the 66 should finish around the 14th.
-Nothing has been sent yet, and nothing has been lost.
+Your campaign itself is fine. It starts this morning and is set to go out to
+five people a day, so the 66 should finish around the 14th. Nothing has been
+sent yet, and nothing has been lost.
 
 Two things I have done.
 
