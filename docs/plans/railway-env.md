@@ -125,7 +125,7 @@ sign-in and sending.
 | `STARTER_UPLOAD_ROW_LIMIT` | web | no | defaults to 2500; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
 | `PRO_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
 | `UPLOAD_LIMIT_FOLLOWS_QUOTA` | web | no | defaults to false, and no longer needs flipping: the client's version decides (0.3.0+ gets the single ceiling). True is a one-directional override that lifts it for older clients too |
-| `CSV_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000; the single ceiling used once the flag is on |
+| `CSV_UPLOAD_ROW_LIMIT` | web, worker | no | defaults to 10000; the single ceiling once a client is new enough, and the bound on the follow-up worker's two large reads |
 | `AI_GENERATION_MONTHLY_LIMIT` | web | no | defaults to 50 |
 | `PLAN_DROP_NOTICE_DAYS` | web | no | defaults to 14 |
 | `AUTH_RESUME_MAX_AGE_DAYS` | web, worker | no | defaults to 7 |

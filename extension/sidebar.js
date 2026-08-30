@@ -2002,6 +2002,12 @@
   // appears while someone is typing the next campaign is worse than the
   // silence it replaces.
   var _sendWatchTimer = null;
+  // Which watch owns the status line. clearSendStatus cancels a PENDING
+  // timeout, but not a sendMessage callback already in flight — so a second
+  // send started within the minute could have the first watch's reply land
+  // on top of its own. Same idiom as _pickerGeneration elsewhere in this
+  // file.
+  var _sendWatchGen = 0;
 
   function clearSendStatus() {
     if (_sendWatchTimer) {
@@ -2024,6 +2030,7 @@
   function startSendWatch(campaignId, queued) {
     if (!campaignId) return;
     clearSendStatus();
+    var myGen = ++_sendWatchGen;
     setSendStatus("sendProgressLine", [String(0), String(queued)]);
 
     // Sends are paced at ~2s per recipient, so anything sizeable outlives a
@@ -2036,11 +2043,18 @@
       chrome.runtime.sendMessage(
         { type: "GET_CAMPAIGN_STATS", campaignId: campaignId },
         function (resp) {
+          // A newer send has taken the line; this reply is about a campaign
+          // the user has moved on from.
+          if (myGen !== _sendWatchGen) return;
           var stats = (resp && resp.data) || null;
           if (!stats) {
-            // A failed read is not a failed send. Say nothing rather than
-            // invent an outcome.
-            clearSendStatus();
+            // A failed read is not a failed send, so do not claim one — but
+            // do not go blank either. The alert a moment ago said the result
+            // would appear here, and an empty line under that promise reads
+            // as the panel having forgotten. This sentence stays true
+            // whatever happened and points at the place that knows.
+            setSendStatus("sendStillGoingLine");
+            _sendWatchTimer = null;
             return;
           }
           var sent = stats.sent_count || 0;

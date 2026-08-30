@@ -14,6 +14,7 @@ import httpx
 
 from config import (
     BACKEND_URL,
+    CSV_UPLOAD_ROW_LIMIT,
     GRAPH_API_BASE,
     OUTBOUND_HTTP_TIMEOUT,
     QUOTA_CHARGE_BATCH,
@@ -133,11 +134,15 @@ def process_followups():
         sent_count = 0
         quota_charged = 0
         failed_count = 0
+        bumped: set = set()
+        skipped: set = set()
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in contacts:
                 if contact.get("unsubscribed"):
+                    skipped.add(contact["id"])
                     continue
                 if contact.get("email", "").lower() in suppressed_emails:
+                    skipped.add(contact["id"])
                     continue
 
                 try:
@@ -155,6 +160,7 @@ def process_followups():
                     # second bump impossible, but only for a row that got
                     # written — and the cost of losing one is emailing a
                     # person twice from their own mailbox.
+                    bumped.add(contact["id"])
                     try:
                         followup_model.record_bump(followup["id"], contact["id"])
                     except Exception:  # noqa: BLE001
@@ -218,7 +224,18 @@ def process_followups():
         # open for the rest; the old unconditional close is what made the
         # first five recipients the only ones ever followed up.
         if sent_count > 0 or failed_count == 0:
-            already |= {c["id"] for c in contacts}
+            # Only what was actually handled. The first version folded in
+            # every candidate, including the ones whose send raised and the
+            # ones skipped as unsubscribed or suppressed — so a run that
+            # delivered nine and failed one could close the follow-up and
+            # drop that tenth person for good, contradicting the comment
+            # directly above about retrying transient failures next hour.
+            #
+            # Deliberate skips DO belong here: a suppressed contact still
+            # matches the filtered query, so leaving them out would make
+            # _work_remains answer True forever and the follow-up would
+            # never close.
+            already |= bumped | skipped
             if not _work_remains(db, followup, already):
                 followup_model.update_followup_status(followup["id"], "sent")
         total_sent += sent_count
@@ -301,8 +318,18 @@ def _get_filtered_contacts(
         cutoff = datetime.now(timezone.utc) - timedelta(days=delay_days)
         query = query.lte("sent_at", cutoff.isoformat())
 
-    result = query.execute()
-    return result.data
+    # Same ceiling and the same reason as get_bumped_contact_ids: a short
+    # read here means part of the list is never followed up, and nothing
+    # would say so.
+    result = query.limit(CSV_UPLOAD_ROW_LIMIT).execute()
+    rows = result.data or []
+    if len(rows) >= CSV_UPLOAD_ROW_LIMIT:
+        logger.error(
+            "campaign %s matched at least %s follow-up candidates — the read "
+            "is at its ceiling and may be truncated",
+            campaign_id, CSV_UPLOAD_ROW_LIMIT,
+        )
+    return rows
 
 
 def _send_followup_email(

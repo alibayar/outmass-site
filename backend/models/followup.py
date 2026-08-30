@@ -4,7 +4,12 @@ OutMass — Follow-up model helpers
 
 from datetime import datetime, timedelta, timezone
 
+import logging
+
+from config import CSV_UPLOAD_ROW_LIMIT
 from database import get_db
+
+logger = logging.getLogger(__name__)
 
 
 def create_followup(
@@ -74,14 +79,31 @@ def get_bumped_contact_ids(followup_id: str) -> set[str]:
     Returned as a set because the caller does one membership test per
     candidate contact.
     """
+    # Bounded explicitly, like every other large read in this codebase
+    # (routers/campaigns.py uses the same ceiling for a campaign's contacts).
+    # PostgREST applies a server-side maximum whether or not we ask for one,
+    # and this is the query that must never come back short: a missing id
+    # here reads as "not bumped yet", which is a second email from someone
+    # else's mailbox.
     result = (
         get_db()
         .table("follow_up_sends")
         .select("contact_id")
         .eq("follow_up_id", followup_id)
+        .limit(CSV_UPLOAD_ROW_LIMIT)
         .execute()
     )
-    return {row["contact_id"] for row in (result.data or [])}
+    rows = result.data or []
+    if len(rows) >= CSV_UPLOAD_ROW_LIMIT:
+        # Never silent. A truncated memory would look exactly like a fresh
+        # follow-up, and the beat would start again from the top.
+        logger.error(
+            "follow-up %s has at least %s recorded bumps — the read is at its "
+            "ceiling and may be truncated. Do NOT let this run send again "
+            "until the query is paginated.",
+            followup_id, CSV_UPLOAD_ROW_LIMIT,
+        )
+    return {row["contact_id"] for row in rows}
 
 
 def record_bump(followup_id: str, contact_id: str) -> None:

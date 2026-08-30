@@ -863,7 +863,7 @@
     "message": "$2 位中已寄出 $1 位。其餘已儲存，會自動繼續。"
   },
   "sendStillGoingLine": {
-    "message": "仍在寄送。您可以關閉，結果會顯示在報告中。"
+    "message": "仍在寄送。您可以關閉，結果會顯示在報表中。"
   },
   "followupDelayHint": {
     "message": "從每位收件者收到郵件時開始計算，而不是從行銷活動開始時計算。"
