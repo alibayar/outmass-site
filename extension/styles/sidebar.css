@@ -724,6 +724,30 @@ body {
   border-top: 1px solid #edebe9;
 }
 
+/* Pro-only marker on a control the panel still lets you open.
+ *
+ * A/B testing and follow-ups are both Pro. Until 2026-08-28 neither said so
+ * anywhere in the panel: a Starter user ticked the box, wrote a subject and a
+ * body, pressed Send, and the follow-up was refused by the API and swallowed
+ * by the client. The pricing page had it right all along - but nobody reads
+ * the pricing page in the middle of building a campaign.
+ *
+ * Deliberately not translated. "PRO" is the plan's name in every locale, and
+ * fourteen new strings for two glyphs would be fourteen chances to drift.
+ */
+.pro-tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 1px 5px;
+  border-radius: 3px;
+  background: #f3e8ff;
+  color: #6b21a8;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.4px;
+  vertical-align: middle;
+}
+
 .ab-test-toggle {
   display: flex;
   align-items: center;
