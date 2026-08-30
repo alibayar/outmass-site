@@ -1,8 +1,21 @@
 # Follow-up silent failure — the five emails
 
 **Send from** support@getoutmass.com, **BCC** outmassapp@outlook.com.
-**Before sending:** grant each account one month of Pro (`manual_promo_until`),
-so the email is describing something already true rather than promising it.
+
+**Before sending:** grant each account one month of Pro (`manual_promo_until`).
+The wording says "is on Pro", not "will be" — it only reads correctly if the
+grant lands first, and that is deliberate.
+
+**Dates checked 2026-08-30.** These were drafted on the 28th, and every
+"today" in them had gone stale by the time they were read two days later.
+The relative dates are gone now; only fixed ones remain. If they are still
+unsent a week from now, re-read them anyway — an apology that misdates
+itself is a second small error sitting on top of the first.
+
+**When:** drafted on a Sunday. Our own rhythm data puts 85% of user activity
+in Mon–Thu, so a Monday morning send gets read and acted on where a Sunday
+one gets skimmed and buried. Helene's is the only one with any urgency, and
+two days have already passed on it.
 
 ## What happened, for the record
 
@@ -32,7 +45,7 @@ not claim a number.
 | tony@skylineprp.com | 20 Jul 17:37 | 60 recipients, 6 min later |
 | marketing@bellmed.com | 14 Jul 20:26 | 1,822 on 17 Jul |
 | faisal@samaed.com | 25 Jun 16:48 | 485 recipients, 20 min later |
-| Helene@circularworkplaces.com | 28 Aug 11:58 | 66 recipients, today |
+| Helene@circularworkplaces.com | 28 Aug 11:58 | 66 recipients, 28 Aug |
 
 lucia and tony are both at skylineprp.com and pay separately. They will compare
 notes, so the two emails must say the same thing — they do, apart from the
@@ -46,8 +59,8 @@ campaign detail.
 
 Hi Lucia,
 
-I found a bug in OutMass today and you are one of the people it affected, so I
-want to tell you before you find it yourself.
+I found a bug in OutMass and you are one of the people it affected, so I want
+to tell you before you find it yourself.
 
 When you turned on "Auto follow-up for non-openers" on 16 July and sent your
 110-recipient campaign nine minutes later, the follow-up was never created.
@@ -60,8 +73,8 @@ entirely on us.
 
 Two things I have done:
 
-Your account is on **Pro for the next month, at no charge** — starting today,
-nothing to do at your end. Your follow-ups will now actually be created, along
+Your account is on **Pro for the next month, at no charge** — nothing to do
+at your end. Your follow-ups will now actually be created, along
 with A/B subject testing and the AI writer. If it is useful, keep it; if not,
 you drop back to Starter automatically and nothing changes.
 
@@ -85,8 +98,8 @@ OutMass
 
 Hi Tony,
 
-I found a bug in OutMass today and you are one of the people it affected, so I
-want to tell you before you find it yourself.
+I found a bug in OutMass and you are one of the people it affected, so I want
+to tell you before you find it yourself.
 
 When you turned on "Auto follow-up for non-openers" on 20 July and sent your
 60-recipient campaign six minutes later, the follow-up was never created.
@@ -99,8 +112,8 @@ entirely on us.
 
 Two things I have done:
 
-Your account is on **Pro for the next month, at no charge** — starting today,
-nothing to do at your end. Your follow-ups will now actually be created, along
+Your account is on **Pro for the next month, at no charge** — nothing to do
+at your end. Your follow-ups will now actually be created, along
 with A/B subject testing and the AI writer. If it is useful, keep it; if not,
 you drop back to Starter automatically and nothing changes.
 
@@ -124,8 +137,8 @@ OutMass
 
 Hello,
 
-I found a bug in OutMass today and your account is one of the ones it affected,
-so I want to tell you before you find it yourself.
+I found a bug in OutMass and your account is one of the ones it affected, so I
+want to tell you before you find it yourself.
 
 You turned on "Auto follow-up for non-openers" on 14 July, and the campaigns
 you sent after that — including the 1,822-recipient send on 17 July — went out
@@ -139,8 +152,8 @@ entirely on us.
 
 Two things I have done:
 
-Your account is on **Pro for the next month, at no charge** — starting today,
-nothing to do at your end. Follow-ups will now actually be created, along with
+Your account is on **Pro for the next month, at no charge** — nothing to do
+at your end. Follow-ups will now actually be created, along with
 A/B subject testing and the AI writer. If it is useful, keep it; if not, you
 drop back to Starter automatically and nothing changes.
 
@@ -164,8 +177,8 @@ OutMass
 
 Hi Faisal,
 
-I found a bug in OutMass today and your account is one of the ones it affected,
-so I want to tell you before you find it yourself.
+I found a bug in OutMass and your account is one of the ones it affected, so I
+want to tell you before you find it yourself.
 
 When you turned on "Auto follow-up for non-openers" on 25 June and sent your
 485-recipient campaign twenty minutes later, the follow-up was never created.
@@ -178,8 +191,8 @@ entirely on us.
 
 Two things I have done:
 
-Your account is on **Pro for the next month, at no charge** — starting today,
-nothing to do at your end. Follow-ups will now actually be created, along with
+Your account is on **Pro for the next month, at no charge** — nothing to do
+at your end. Follow-ups will now actually be created, along with
 A/B subject testing and the AI writer. If it is useful, keep it; if not, you
 drop back to Starter automatically and nothing changes.
 
@@ -203,23 +216,23 @@ OutMass
 
 Hi Helene,
 
-Thank you for subscribing this morning. I owe you a correction on the same day,
+Thank you for subscribing on Friday. I owe you a correction two days later,
 which is not the introduction I would have chosen.
 
-You turned on "Auto follow-up for non-openers" at 11:58, and your 66-recipient
-campaign went out at 12:19. The campaign sent fine — but the follow-up was
+On Friday you turned on "Auto follow-up for non-openers" at 11:58, and your
+66-recipient campaign went out at 12:19. The campaign sent fine — but the follow-up was
 never created. Automatic follow-ups are a Pro feature and you subscribed to
 Starter, and the panel never said so: it let you tick the box, write the
 follow-up, and press Send, then stayed quiet when our server declined to
 schedule it.
 
-I only found this because I was looking at how your first day had gone.
+I found it while looking at how your first day had gone.
 
 The limit was correct. Staying quiet about it was not, and that part is
 entirely on us.
 
-So your account is on **Pro for the next month, at no charge** — starting
-today, nothing to do at your end. Your follow-ups will now actually be created,
+So your account is on **Pro for the next month, at no charge** — nothing to
+do at your end. Your follow-ups will now actually be created,
 along with A/B subject testing and the AI writer. If it is useful, keep it; if
 not, you drop back to the Starter plan you paid for and nothing changes.
 
