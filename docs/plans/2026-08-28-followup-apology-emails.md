@@ -282,3 +282,89 @@ Sorry to start this way.
 
 Ali
 OutMass
+
+
+---
+
+# Helene — the email to send (written 2026-08-30, for Monday 31 Aug)
+
+**From** support@getoutmass.com · **BCC** outmassapp@outlook.com
+**Send** Monday 31 August, around 09:00 London (08:00 UTC). She is in
+Croydon; her campaign starts Tuesday morning, so Monday gives her a day to
+reply before it does.
+
+**Facts checked against the database on 2026-08-30, not against the events:**
+
+| | |
+|---|---|
+| campaign | scheduled for 1 Sep 07:30 UTC (08:30 her time), 5/day, 66 recipients, **none sent** |
+| finishes | around 14 September |
+| plan | Starter, paid 28 Aug 12:18 UTC |
+| comp | Pro until 28 September, applied 2026-08-30 |
+
+**What she was told at the time, and what she was not.** She turned on A/B
+subject testing at 11:37 and the follow-up at 11:58. Both are Pro. The A/B
+refusal alerts (`sidebar.js:2216`) so she probably saw that one; the
+follow-up refusal did not, which is the bug. The email says so in that order
+— claiming she was told nothing about either would be wrong, and she would
+know it.
+
+**Why we cannot simply switch it on for her.** `maybeCreateFollowup` is only
+reachable from the send flow (`sidebar.js:2267`, `:2421`); the panel has no
+way to attach a follow-up to a campaign that already exists. Her Pro comp
+fixes every future campaign and cannot fix this one, so this one needs her
+text and our hands. That asymmetry is the reason the email asks for
+something rather than just announcing a gift.
+
+**Do not** offer to write the follow-up for her. The text she wrote on
+Friday was never persisted anywhere — it lived in two DOM inputs and was
+dropped on the 402 — so anything we composed would be our marketing copy
+going out from her mailbox to her prospects under her name.
+
+---
+
+**Subject:** Your follow-up wasn't set up — my fault, and it's fixed
+
+Hi Helene,
+
+Thank you for subscribing on Friday. I owe you a correction three days in,
+which is not the introduction I would have picked.
+
+When you set up the automatic follow-up at 11:58, it was never created. It
+is a Pro feature and you had just subscribed to Starter — but the panel
+didn't say so. It let you tick the box, write the follow-up, and carry on,
+and then said nothing at all when our server declined it. The A/B subject
+test you turned on a few minutes earlier is also Pro, and that one did tell
+you; the follow-up staying silent was a bug, and it is fixed in the version
+going out this week.
+
+Your campaign itself is fine. It is scheduled for Tuesday morning and set to
+go out to five people a day, so the 66 will finish around the 14th. Nothing
+has been sent yet, and nothing has been lost.
+
+Two things I have done.
+
+**Your account is on Pro until 28 September, at no charge** — that is the
+day your next Starter payment is due, so it makes a natural point to decide.
+Follow-ups, A/B subject testing and the AI writer all work now. If you want
+to keep Pro, upgrade before then; if not, do nothing and you stay on Starter
+exactly as you are.
+
+And the panel now labels both Pro controls, so you can see which is which
+before you rely on one.
+
+There is one thing Pro cannot fix by itself. The panel can only attach a
+follow-up while a campaign is being sent, and yours is already scheduled —
+so this campaign's follow-up has to be added from my side. If you still want
+it, reply with the subject and the message you'd like the follow-up to say,
+and how many days after the first email it should go, and I will set it up
+to run when the campaign finishes. I do not have what you wrote on Friday —
+it was lost with the error, which is part of the same bug — so I would
+rather ask than guess at your words.
+
+If you would rather leave it, that is fine too, and nothing else changes.
+
+Sorry to start this way.
+
+Ali
+OutMass
