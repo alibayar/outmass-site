@@ -1,12 +1,12 @@
 """The CSV ceiling is decided by the client, not by a switch we must remember.
 
 A list larger than the monthly quota is accepted in full and sent over
-several months. Only 0.2.3 says how many months; an older panel implies the
+several months. Only 0.3.0 says how many months; an older panel implies the
 remainder clears at the next reset, which would be a promise we do not keep —
 so an older panel keeps the per-plan limits it knows how to describe.
 
 This replaced a condition nothing could evaluate. UPLOAD_LIMIT_FOLLOWS_QUOTA
-was owed a flip "once 0.2.3 is published on both stores and most people have
+was owed a flip "once 0.3.0 is published on both stores and most people have
 updated", which is not a thing a program can check and is exactly the kind of
 debt that gets paid late or not at all. The version is in the request already
 (X-Extension-Version, sent by backendFetch on every authenticated call), so
@@ -29,7 +29,7 @@ from config import (
     upload_limit_for_plan,
 )
 
-NEW = "0.2.3"
+NEW = "0.3.0"
 OLD = "0.2.2"
 
 
@@ -74,12 +74,24 @@ def test_a_new_client_gets_the_single_ceiling_whatever_the_plan(plan):
     assert upload_limit_for_plan(plan, NEW) == CSV_UPLOAD_ROW_LIMIT
 
 
-def test_a_double_digit_patch_is_not_read_as_older():
-    """String comparison would put "0.2.10" below "0.2.3" and withhold the
-    ceiling from precisely the people who had updated furthest."""
-    assert upload_limit_for_plan("free", "0.2.10") == CSV_UPLOAD_ROW_LIMIT
+def test_a_double_digit_version_is_not_read_as_older():
+    """The illustration has to be a version where text and numbers DISAGREE.
+
+    Against a (0, 3, 0) gate, "0.10.0" is the case: as text it sorts BELOW
+    "0.3.0" — '1' precedes '3' — while as numbers it is seven minor versions
+    above. A string comparison would withhold the feature from exactly the
+    people who had updated furthest.
+
+    This test previously used "0.2.10" against a (0, 2, 3) gate, and the
+    version bump turned it red, correctly: 0.2.10 is genuinely below 0.3.0,
+    so the old example had stopped illustrating anything.
+    """
+    assert upload_limit_for_plan("free", "0.10.0") == CSV_UPLOAD_ROW_LIMIT
     assert upload_limit_for_plan("free", "0.3.0") == CSV_UPLOAD_ROW_LIMIT
+    assert upload_limit_for_plan("free", "0.3.10") == CSV_UPLOAD_ROW_LIMIT
     assert upload_limit_for_plan("free", "1.0.0") == CSV_UPLOAD_ROW_LIMIT
+    # And the other side of the boundary still holds.
+    assert upload_limit_for_plan("free", "0.2.10") == FREE_UPLOAD_ROW_LIMIT
 
 
 # ── the override only ever widens ──
@@ -93,7 +105,7 @@ def test_the_flag_lifts_the_ceiling_for_an_older_client_too():
 
 def test_the_flag_cannot_take_the_ceiling_away_from_a_new_client():
     """One-directional. There is no combination of flag and version that
-    gives a 0.2.3 client less than the ceiling, so nothing about leaving the
+    gives a 0.3.0 client less than the ceiling, so nothing about leaving the
     flag alone can hurt anyone."""
     for flag in (True, False):
         with patch.object(config, "UPLOAD_LIMIT_FOLLOWS_QUOTA", flag):

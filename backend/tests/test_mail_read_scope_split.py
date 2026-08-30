@@ -50,7 +50,7 @@ def test_first_signin_scopes_drop_only_mail_read():
 # helper sends it by default because that is the interesting case; the tests
 # below that care about an OLD client pass v=None or an older string
 # explicitly, because that is the case the gate exists for.
-NEW_CLIENT = "0.2.3"
+NEW_CLIENT = "0.3.0"
 
 
 def _authorize_scope(client, v=NEW_CLIENT, **params):
@@ -99,7 +99,7 @@ def test_onedrive_upgrade_still_composes_with_the_narrow_base(client):
 
 # ── the version gate: who is allowed to be given less ──
 #
-# The flag used to be owed a flip "once 0.2.3 is on both stores and enough
+# The flag used to be owed a flip "once 0.3.0 is on both stores and enough
 # people have updated" — a condition nothing in the system could evaluate and
 # only a human could remember, weeks later, after two store reviews on
 # someone else's schedule. These tests are what replaced that condition, so
@@ -109,7 +109,7 @@ def test_onedrive_upgrade_still_composes_with_the_narrow_base(client):
 def test_a_client_too_old_to_ask_keeps_the_wide_scope(client):
     """The whole reason /auth/login reads a version.
 
-    A pre-0.2.3 panel has no code for "should this sign-in include
+    A pre-0.3.0 panel has no code for "should this sign-in include
     Mail.Read". It never sends include_mail_read, so a RETURNING user on that
     build looks exactly like a new user on a modern one. Hand it the narrow
     consent and that user loses reply detection — and their next refresh asks
@@ -136,11 +136,23 @@ def test_an_unreadable_version_is_treated_as_old(client):
         assert _authorize_scope(client, v="nonsense") == MS_GRAPH_SCOPES
 
 
-def test_a_double_digit_patch_is_not_read_as_older(client):
-    """String comparison would say "0.2.10" < "0.2.3" and quietly keep the
-    wide ask for everyone who had updated furthest."""
+def test_a_double_digit_version_is_not_read_as_older(client):
+    """The illustration has to be a version where text and numbers DISAGREE.
+
+    Against a (0, 3, 0) gate, "0.10.0" is the case: as text it sorts BELOW
+    "0.3.0" — '1' precedes '3' — while as numbers it is seven minor versions
+    above. A string comparison would withhold the feature from exactly the
+    people who had updated furthest.
+
+    This test previously used "0.2.10" against a (0, 2, 3) gate, and the
+    version bump turned it red, correctly: 0.2.10 is genuinely below 0.3.0,
+    so the old example had stopped illustrating anything.
+    """
     with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
-        assert "Mail.Read" not in _authorize_scope(client, v="0.2.10")
+        assert "Mail.Read" not in _authorize_scope(client, v="0.10.0")
+        assert "Mail.Read" not in _authorize_scope(client, v="0.3.10")
+        # And the other side of the boundary: genuinely older stays wide.
+        assert "Mail.Read" in _authorize_scope(client, v="0.2.10")
 
 
 def test_the_flag_still_wins_for_a_new_client(client):
@@ -152,7 +164,7 @@ def test_the_flag_still_wins_for_a_new_client(client):
 
 def test_an_old_client_asking_explicitly_is_still_honoured(client):
     """Version gates who may be given LESS, never who may ask for more. A
-    pre-0.2.3 client upgrading for OneDrive or reply detection still gets
+    pre-0.3.0 client upgrading for OneDrive or reply detection still gets
     what it asked for."""
     with patch.object(auth_module, "FIRST_SIGNIN_INCLUDE_MAIL_READ", False):
         scope = _authorize_scope(client, v=None, include_mail_read="true")

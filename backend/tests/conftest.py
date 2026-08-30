@@ -152,7 +152,7 @@ def _no_live_posthog(monkeypatch):
     The reports read POSTHOG_PERSONAL_API_KEY at module scope, and a developer
     who puts a real key in backend/.env - which is exactly what the key is FOR
     since 2026-08-27 - silently turns every report test into a live HTTP call
-    against the production project. The 0.2.3 review's GATE 2 rewrite made it
+    against the production project. The 0.3.0 review's GATE 2 rewrite made it
     three calls with 15s timeouts each and the suite went from seconds to two
     and a half minutes, which is how this was noticed rather than the answers
     being wrong.

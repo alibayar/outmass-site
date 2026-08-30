@@ -339,7 +339,7 @@ function startMSLogin(includeOneDrive, includeMailRead, context) {
   // would then refuse to raise the window on a second click, and the
   // cleanup below would leave a stale window id behind. Window identity
   // belongs to the flight the CALLER started, not to the scopes it ended
-  // up requesting. Found by the 0.2.3 release review.
+  // up requesting. Found by the 0.3.0 release review.
   // `context` rides along for the same reason `key` does — so the events
   // this flight emits can say which control started it. A re-click that
   // JOINS this flight keeps the first click's context, which is correct:
@@ -398,7 +398,7 @@ function _mailReadForReauth() {
           // Four ways to know this install has connected before, because no
           // one of them survives every path. `user` is cleared when a JWT
           // goes stale — the exact population re-authenticating here.
-          // `msEverConnected` is new in 0.2.3, so an install that UPDATES to
+          // `msEverConnected` is new in 0.3.0, so an install that UPDATES to
           // it and then re-auths has never written one. `hadMailRead === true`
           // could only have been observed by a signed-in session, and
           // `sessionExpired` is set by the very expiry that dropped `user`.

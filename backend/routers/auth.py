@@ -470,7 +470,7 @@ def _alert_if_ours(stage: str, fields: dict, host: str = "") -> None:
         # Called inline it blocks uvicorn's event loop for as long as Telegram
         # takes — so a slow Telegram would stall every other request on the
         # web service, including other people's sign-ins, while we report that
-        # one sign-in went wrong. Found by the 0.2.3 release review, in code
+        # one sign-in went wrong. Found by the 0.3.0 release review, in code
         # that had already been live for a day.
         #
         # Off the loop when there is one; straight through when there is not,
@@ -709,7 +709,7 @@ async def login_redirect(
     include_onedrive: bool = Query(False),
     aid: str | None = Query(None),
     include_mail_read: bool = Query(False),
-    # The calling extension's version (0.2.3+). This endpoint runs before
+    # The calling extension's version (0.3.0+). This endpoint runs before
     # anyone is authenticated and opens in a browser window, so there is no
     # X-Extension-Version header to read — it rides on the URL the same way
     # `ext` and `aid` already do. Older clients simply do not send one.
@@ -749,7 +749,7 @@ async def login_redirect(
     only builds that can speak for themselves.
 
     That is the point of reading a version here. The flag used to be owed a
-    flip "once 0.2.3 is on both stores and enough people have updated" — a
+    flip "once 0.3.0 is on both stores and enough people have updated" — a
     condition nothing in the system could evaluate and only a human could
     remember, weeks later. It can now be flipped the day it is wanted,
     because the clients it would have hurt are excluded by construction

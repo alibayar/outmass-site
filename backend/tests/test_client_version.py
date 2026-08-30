@@ -10,6 +10,10 @@ import pytest
 
 from utils.client_version import client_at_least, parse_version
 
+# Deliberately NOT one of the live gates (config.UPLOAD_LIMIT_MIN_CLIENT,
+# config.FIRST_SIGNIN_MIN_CLIENT). This file tests the comparison itself, and
+# tying it to a real gate would mean editing it on every release for no gain
+# — and would quietly turn a test of the helper into a test of the config.
 V023 = (0, 2, 3)
 
 

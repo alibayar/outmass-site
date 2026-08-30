@@ -247,7 +247,7 @@ STAMPING_SINCE = date(2026, 8, 15)
 def _renewal_dates(anchor: str | None, anchor_day) -> tuple:
     """(most recent renewal that has come due, next one still ahead).
 
-    Two corrections from the 0.2.3 review, both of which made this function
+    Two corrections from the 0.3.0 review, both of which made this function
     quietly agree with itself while disagreeing with the quota engine.
 
     It advanced ONE month and stopped. A subscriber two cycles stale therefore
@@ -321,7 +321,7 @@ def _no_stamp_line(row: dict, anchor: str | None) -> "Line":
       * a renewal has passed since stamping began with no invoice - read this
 
     The judgement is on the LAST renewal that has come due, not the first.
-    Judging the first was the 0.2.3 review's finding: a subscriber stale by
+    Judging the first was the 0.3.0 review's finding: a subscriber stale by
     two cycles had a missed renewal described as an upcoming one.
     """
     email = row.get("email")
@@ -371,7 +371,7 @@ def _signin_gate_lines() -> list["Line"]:
     """GATE 2, counting PEOPLE rather than OAuth calls.
 
     The first automated version of this line counted `oauth_started` against
-    server `login`, and the 0.2.3 review found both halves measuring the wrong
+    server `login`, and the 0.3.0 review found both halves measuring the wrong
     population under a heading that names the consent screen:
 
       * `oauth_started` fires for the OneDrive picker and the Mail.Read banner

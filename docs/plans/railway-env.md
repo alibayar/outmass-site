@@ -117,14 +117,14 @@ sign-in and sending.
 | `MAILERSEND_FROM_EMAIL` | web, worker | no | defaults to support@getoutmass.com |
 | `MAILERSEND_FROM_NAME` | web, worker | no | defaults to the support sender name |
 | `MAILERSEND_TO_EMAIL` | web | no | feedback forwarding defaults to support@getoutmass.com |
-| `FIRST_SIGNIN_INCLUDE_MAIL_READ` | web | no | defaults to true; read only by routers/auth.py, so web alone. Safe to flip since the version gate (0.2.3+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication |
+| `FIRST_SIGNIN_INCLUDE_MAIL_READ` | web | no | defaults to true; read only by routers/auth.py, so web alone. Safe to flip since the version gate (0.3.0+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication |
 | `FREE_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 250 |
 | `STARTER_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 2500 |
 | `PRO_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 10000 |
-| `FREE_UPLOAD_ROW_LIMIT` | web | no | defaults to 250; in force for clients older than 0.2.3, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
-| `STARTER_UPLOAD_ROW_LIMIT` | web | no | defaults to 2500; in force for clients older than 0.2.3, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
-| `PRO_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000; in force for clients older than 0.2.3, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
-| `UPLOAD_LIMIT_FOLLOWS_QUOTA` | web | no | defaults to false, and no longer needs flipping: the client's version decides (0.2.3+ gets the single ceiling). True is a one-directional override that lifts it for older clients too |
+| `FREE_UPLOAD_ROW_LIMIT` | web | no | defaults to 250; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
+| `STARTER_UPLOAD_ROW_LIMIT` | web | no | defaults to 2500; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
+| `PRO_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
+| `UPLOAD_LIMIT_FOLLOWS_QUOTA` | web | no | defaults to false, and no longer needs flipping: the client's version decides (0.3.0+ gets the single ceiling). True is a one-directional override that lifts it for older clients too |
 | `CSV_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000; the single ceiling used once the flag is on |
 | `AI_GENERATION_MONTHLY_LIMIT` | web | no | defaults to 50 |
 | `PLAN_DROP_NOTICE_DAYS` | web | no | defaults to 14 |

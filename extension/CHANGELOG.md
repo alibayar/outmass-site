@@ -2,7 +2,7 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
-## v0.2.3 — 2026-08-30
+## v0.3.0 — 2026-08-31
 
 - **OutMass no longer asks Microsoft for your subject lines.** Reply
   detection needs to know that someone answered, not what the conversation

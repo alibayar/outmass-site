@@ -19,7 +19,7 @@ def test_get_settings_exposes_plan_limits(client, auth_bypass, fake_db):
     resp = client.get("/settings")
     data = resp.json()
     assert data["monthly_limit"] == 250
-    # Flag off until 0.2.3 publishes, so the per-plan limit still answers.
+    # Flag off until 0.3.0 publishes, so the per-plan limit still answers.
     assert data["upload_limit"] == 250
 
 
@@ -53,7 +53,7 @@ def test_plan_limit_values_are_current():
     assert monthly_limit_for_plan("garbage") == 250
     # The 2026-08-25 change ships dark: with the flag off, every plan keeps
     # the limit it has today. A paying user must not lose upload room while
-    # the flag waits for the 0.2.3 store release.
+    # the flag waits for the 0.3.0 store release.
     assert UPLOAD_LIMIT_FOLLOWS_QUOTA is False
     assert upload_limit_for_plan("pro") == 10000
     assert upload_limit_for_plan("starter") == 2500

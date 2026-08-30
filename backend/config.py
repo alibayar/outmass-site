@@ -335,9 +335,9 @@ PRO_UPLOAD_ROW_LIMIT = int(os.getenv("PRO_UPLOAD_ROW_LIMIT", "10000"))
 # sits next to MAX_CSV_SIZE_BYTES.
 #
 # It ships DARK, like INACTIVITY_NUDGE_ENABLED. The extension only learned to
-# say how many months the leftovers really take in 0.2.3; releasing the limit
+# say how many months the leftovers really take in 0.3.0; releasing the limit
 # before that build reaches both stores would tell users their remainder clears
-# in one monthly reset. Set UPLOAD_LIMIT_FOLLOWS_QUOTA=true on the day 0.2.3
+# in one monthly reset. Set UPLOAD_LIMIT_FOLLOWS_QUOTA=true on the day 0.3.0
 # publishes — the flag defaults off so forgetting it changes nothing, which is
 # the safe direction to forget in.
 #
@@ -361,10 +361,10 @@ def monthly_limit_for_plan(plan: str) -> int:
 
 
 # The panel that can explain the new ceiling. A list larger than the monthly
-# quota is accepted in full and sent over several months, and 0.2.3 is the
+# quota is accepted in full and sent over several months, and 0.3.0 is the
 # first build that says how many — an older panel implies the remainder
 # clears at the next reset, which would be a promise we do not keep.
-UPLOAD_LIMIT_MIN_CLIENT = (0, 2, 3)
+UPLOAD_LIMIT_MIN_CLIENT = (0, 3, 0)
 
 # The first build that decides for itself whether a sign-in should ask for
 # Mail.Read, and says so on the /auth/login URL. Everything older is silent
@@ -372,7 +372,7 @@ UPLOAD_LIMIT_MIN_CLIENT = (0, 2, 3)
 # an older panel who was handed the narrow consent would lose reply
 # detection, and their next refresh would request a scope they no longer
 # hold (AADSTS65001, a dead sign-in).
-FIRST_SIGNIN_MIN_CLIENT = (0, 2, 3)
+FIRST_SIGNIN_MIN_CLIENT = (0, 3, 0)
 
 
 def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
@@ -384,7 +384,7 @@ def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
     version reads as older, which is today's behaviour.
 
     This used to hang on UPLOAD_LIMIT_FOLLOWS_QUOTA alone, and that flag was
-    owed a flip "once 0.2.3 is published on both stores and most people have
+    owed a flip "once 0.3.0 is published on both stores and most people have
     updated" — a condition nothing in the system could evaluate and only a
     human could remember, weeks later, after two store reviews on someone
     else's schedule. The version is in the request already
