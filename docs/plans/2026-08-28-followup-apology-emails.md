@@ -321,26 +321,36 @@ Friday was never persisted anywhere — it lived in two DOM inputs and was
 dropped on the 402 — so anything we composed would be our marketing copy
 going out from her mailbox to her prospects under her name.
 
+**Four things deliberately vague.** This is being scheduled rather than sent
+by hand, so every phrase that counts days from today is a staleness trap —
+the same one that made the first version of this file say her campaign had
+gone out. "Three days in" became "almost immediately after"; "Tuesday
+morning" became the date. And two claims were narrowed to what can be
+verified: the next update is not promised for "this week" because two store
+review queues decide that, and the A/B message is described as something the
+product shows rather than something she saw, because an alert() leaves no
+trace and I cannot know.
+
 ---
 
 **Subject:** Your follow-up wasn't set up — my fault, and it's fixed
 
 Hi Helene,
 
-Thank you for subscribing on Friday. I owe you a correction three days in,
-which is not the introduction I would have picked.
+Thank you for subscribing on Friday. I owe you a correction almost
+immediately after, which is not the introduction I would have picked.
 
 When you set up the automatic follow-up at 11:58, it was never created. It
 is a Pro feature and you had just subscribed to Starter — but the panel
 didn't say so. It let you tick the box, write the follow-up, and carry on,
 and then said nothing at all when our server declined it. The A/B subject
-test you turned on a few minutes earlier is also Pro, and that one did tell
-you; the follow-up staying silent was a bug, and it is fixed in the version
-going out this week.
+test you turned on a few minutes earlier is also Pro, and that one does show
+a message when it is declined. The follow-up showing nothing was a bug, and
+it is fixed in the next update.
 
-Your campaign itself is fine. It is scheduled for Tuesday morning and set to
-go out to five people a day, so the 66 will finish around the 14th. Nothing
-has been sent yet, and nothing has been lost.
+Your campaign itself is fine. It starts on Tuesday 1 September and is set to
+go out to five people a day, so the 66 should finish around the 14th.
+Nothing has been sent yet, and nothing has been lost.
 
 Two things I have done.
 
@@ -350,8 +360,8 @@ Follow-ups, A/B subject testing and the AI writer all work now. If you want
 to keep Pro, upgrade before then; if not, do nothing and you stay on Starter
 exactly as you are.
 
-And the panel now labels both Pro controls, so you can see which is which
-before you rely on one.
+And the next update labels both Pro controls, so you can see which is which
+before relying on one.
 
 There is one thing Pro cannot fix by itself. The panel can only attach a
 follow-up while a campaign is being sent, and yours is already scheduled —
