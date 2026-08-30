@@ -235,6 +235,28 @@ def get_resumable_contacts(campaign_id: str) -> list[dict]:
     return result.data
 
 
+def get_last_sent_at(campaign_id: str) -> str | None:
+    """When the LAST recipient of this campaign received it, or None.
+
+    A campaign is not an instant. A daily-capped one delivers over days or
+    weeks, and "follow up three days later" has to mean three days after the
+    recipient got it — not three days after the campaign row was created,
+    which for a paced send can fall before a single email has gone out.
+    """
+    result = (
+        get_db()
+        .table("contacts")
+        .select("sent_at")
+        .eq("campaign_id", campaign_id)
+        .not_.is_("sent_at", "null")
+        .order("sent_at", desc=True)
+        .limit(1)
+        .execute()
+    )
+    rows = result.data or []
+    return rows[0].get("sent_at") if rows else None
+
+
 def mark_opened(contact_id: str):
     get_db().table("contacts").update(
         {"opened_at": _now_iso()}

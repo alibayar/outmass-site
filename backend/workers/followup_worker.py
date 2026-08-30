@@ -8,6 +8,7 @@ import logging
 import re
 import time
 import urllib.parse
+from datetime import datetime, timedelta, timezone
 
 import httpx
 
@@ -43,6 +44,10 @@ def process_followups():
 
     db = get_db()
     total_sent = 0
+    # Counted rather than silently skipped: "no follow-ups were due" and
+    # "three are waiting for their campaigns to finish" are different states.
+    waiting_on_campaign = 0
+    waiting_on_delay = 0
 
     for followup in pending:
         campaign = campaign_model.get_campaign(followup["campaign_id"])
@@ -55,12 +60,67 @@ def process_followups():
             followup_model.update_followup_status(followup["id"], "cancelled")
             continue
 
+        # ── Is the campaign this follows even finished? ──
+        #
+        # follow_ups.scheduled_for is stamped now + delay_days at CREATION
+        # (models/followup.py), which silently assumed the campaign goes out
+        # at once. Scheduled sends and daily caps break that assumption, and
+        # the old code then closed the follow-up over the gap: no contact was
+        # 'sent' yet, `contacts` came back empty, and the branch below marked
+        # the follow-up 'sent' — permanently, having emailed nobody.
+        #
+        # A live example, 2026-08-28. A customer scheduled 66 recipients for
+        # four days later, paced at 5 a day — a fortnight of sending — and
+        # turned on a follow-up. Had it been created (a plan gate refused it,
+        # which is the only reason this was not the outcome), it would have
+        # come due on day three, found zero sent recipients, and closed
+        # itself. She would have been told nothing, and the toggle would have
+        # read as on.
+        #
+        # So: wait for the campaign, and measure the delay from when the LAST
+        # recipient actually received it. For an ordinary instant send that is
+        # the send itself, to the second — this changes nothing there.
+        if campaign.get("archived"):
+            # Archiving is the user's stop switch everywhere else; a bump for
+            # a campaign they have put away is not something to keep waiting
+            # to send.
+            followup_model.update_followup_status(followup["id"], "cancelled")
+            continue
+
+        if contact_model.get_resumable_contacts(followup["campaign_id"]):
+            # Still going out. Left untouched rather than rescheduled: the
+            # row stays due, the next hourly run looks again, and nothing has
+            # to be kept true in a second place.
+            waiting_on_campaign += 1
+            continue
+
+        last_sent = contact_model.get_last_sent_at(followup["campaign_id"])
+        if last_sent:
+            try:
+                sent_at = datetime.fromisoformat(str(last_sent).replace("Z", "+00:00"))
+                if sent_at.tzinfo is None:
+                    sent_at = sent_at.replace(tzinfo=timezone.utc)
+                due_at = sent_at + timedelta(days=followup.get("delay_days") or 0)
+                if datetime.now(timezone.utc) < due_at:
+                    waiting_on_delay += 1
+                    continue
+            except ValueError:
+                # Unreadable timestamp: fall through on scheduled_for alone,
+                # which is what every follow-up ran on before this change.
+                logger.warning(
+                    "follow-up %s: unreadable sent_at %r on campaign %s",
+                    followup["id"], last_sent, followup["campaign_id"],
+                )
+
         # Get contacts filtered by condition
         contacts = _get_filtered_contacts(
             db, followup["campaign_id"], followup["condition"]
         )
 
         if not contacts:
+            # Genuinely nobody to bump — the campaign has finished and every
+            # recipient opened, replied, unsubscribed or failed. Reached only
+            # now that the two guards above have ruled out "not yet".
             followup_model.update_followup_status(followup["id"], "sent")
             continue
 
@@ -157,7 +217,12 @@ def process_followups():
             followup_model.update_followup_status(followup["id"], "sent")
         total_sent += sent_count
 
-    return {"processed": len(pending), "sent": total_sent}
+    return {
+        "processed": len(pending),
+        "sent": total_sent,
+        "waiting_on_campaign": waiting_on_campaign,
+        "waiting_on_delay": waiting_on_delay,
+    }
 
 
 def _get_filtered_contacts(db, campaign_id: str, condition: str) -> list[dict]:

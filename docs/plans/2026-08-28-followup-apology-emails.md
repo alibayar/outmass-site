@@ -45,7 +45,7 @@ not claim a number.
 | tony@skylineprp.com | 20 Jul 17:37 | 60 recipients, 6 min later |
 | marketing@bellmed.com | 14 Jul 20:26 | 1,822 on 17 Jul |
 | faisal@samaed.com | 25 Jun 16:48 | 485 recipients, 20 min later |
-| Helene@circularworkplaces.com | 28 Aug 11:58 | 66 recipients, 28 Aug |
+| Helene@circularworkplaces.com | 28 Aug 11:58 | 66 recipients — SCHEDULED for 1 Sep, 5/day; none sent yet |
 
 lucia and tony are both at skylineprp.com and pay separately. They will compare
 notes, so the two emails must say the same thing — they do, apart from the
@@ -211,6 +211,41 @@ OutMass
 ---
 
 ## Helene@circularworkplaces.com
+
+> **DO NOT SEND THIS DRAFT. Corrected 2026-08-30 from the database.**
+>
+> It was written on the 28th from PostHog's `send_completed`, and that event
+> means the server ACCEPTED the send, not that anything went out. The
+> campaign row says otherwise:
+>
+> | | |
+> |---|---|
+> | status | `scheduled` |
+> | scheduled_for | 2026-09-01 07:30 UTC (Tue, 08:30 her time) |
+> | daily_send_cap | 5 |
+> | sent_count | 0 of 66 — every contact still `pending` |
+>
+> So she scheduled it herself for the Tuesday and paced it at five a day: a
+> fortnight of sending, finishing around 14 September. **Not one email has
+> gone out.** Two sentences below are therefore false — "the campaign sent
+> fine" and "Your campaign went out to all 66 people" — and one of them was
+> going to a customer who would have known immediately that we had not
+> looked.
+>
+> What it changes, beyond the wording:
+>
+> * **Nothing has been lost.** The apology is about a follow-up that was
+>   never created, not about a send that went wrong.
+> * **A follow-up now would be worse than none.** Until the fix of
+>   2026-08-30, the worker read "no contact sent yet" as "nobody left to
+>   bump" and closed the follow-up permanently. Hers would have come due
+>   before her campaign began.
+> * **There is no hurry.** Her campaign starts on the Tuesday and runs a
+>   fortnight, so the follow-up matters around the 14th, not today.
+>
+> Rewrite this section once the plan is settled; the other four are
+> unaffected, their campaigns did send.
+
 
 **Subject:** Your follow-up did not get scheduled — that was our fault
 
