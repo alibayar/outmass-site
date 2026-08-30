@@ -273,7 +273,7 @@
     showSection("loading");
 
     track("signin_clicked", { context: "popup" });
-    chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (response) {
+    chrome.runtime.sendMessage({ type: "MS_LOGIN", context: "popup" }, function (response) {
       if (chrome.runtime.lastError) {
         showError(chrome.runtime.lastError.message);
         return;

@@ -171,7 +171,7 @@
       repliesBtn.textContent = "…";
       track("signin_clicked", { context: "replies_off_banner", scope: "mail_read" });
       var hintTimer = showSigninHintAfter(60000);
-      chrome.runtime.sendMessage({ type: "MS_LOGIN_MAIL_READ" }, function (resp) {
+      chrome.runtime.sendMessage({ type: "MS_LOGIN_MAIL_READ", context: "replies_off_banner" }, function (resp) {
         clearSigninHint(hintTimer);
         repliesBtn.disabled = false;
         repliesBtn.textContent = t("repliesOffBannerCta");
@@ -238,7 +238,7 @@
       // usual cause while they are still looking at it. Cleared on every
       // exit path below so it can never outlive the attempt.
       var hintTimer = showSigninHintAfter(60000);
-      chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+      chrome.runtime.sendMessage({ type: "MS_LOGIN", context: "reauth_banner" }, function (resp) {
         clearSigninHint(hintTimer);
         reauthBtn.disabled = false;
         reauthBtn.textContent = t("reauthBannerCta");
@@ -615,7 +615,7 @@
       btn.disabled = true;
       track("signin_clicked", { context: "sending_as" });
       var hintTimer = showSigninHintAfter(60000);
-      chrome.runtime.sendMessage({ type: "MS_LOGIN" }, function (resp) {
+      chrome.runtime.sendMessage({ type: "MS_LOGIN", context: "sending_as" }, function (resp) {
         clearSigninHint(hintTimer);
         btn.disabled = false;
         btn.textContent = prevLabel;
@@ -3950,7 +3950,7 @@
           _oneDriveAuthAttempted = true;
           _closeOneDrivePicker();
           chrome.runtime.sendMessage(
-            { type: "MS_LOGIN_ONEDRIVE" },
+            { type: "MS_LOGIN_ONEDRIVE", context: "onedrive_picker" },
             function (loginResp) {
               if (loginResp && !loginResp.error) {
                 _openOneDrivePicker();
@@ -4061,7 +4061,7 @@
           // Incremental consent: launch a fresh OAuth flow that adds
           // Files.Read.All / Files.ReadWrite to the existing grant.
           chrome.runtime.sendMessage(
-            { type: "MS_LOGIN_ONEDRIVE" },
+            { type: "MS_LOGIN_ONEDRIVE", context: "onedrive_share_link" },
             function (loginResp) {
               if (loginResp && !loginResp.error) {
                 _requestShareLink(itemId, true);

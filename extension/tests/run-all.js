@@ -38,6 +38,7 @@ const suites = [
   require("./ui-language-header.test.js"),
   require("./first-signin-scope.test.js"),
   require("./auth-flight-settle.test.js"),
+  require("./auth-flow-context.test.js"),
 ];
 
 async function main() {

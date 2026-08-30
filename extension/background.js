@@ -282,7 +282,7 @@ function _newAuthAttemptId() {
   }
 }
 
-function startMSLogin(includeOneDrive, includeMailRead) {
+function startMSLogin(includeOneDrive, includeMailRead, context) {
   // Three flights, three keys. They must not share one: a user who is
   // granting Mail.Read from the Reports banner while a plain sign-in is
   // somehow open should get their own window, not silently join a flow
@@ -340,7 +340,11 @@ function startMSLogin(includeOneDrive, includeMailRead) {
   // cleanup below would leave a stale window id behind. Window identity
   // belongs to the flight the CALLER started, not to the scopes it ended
   // up requesting. Found by the 0.2.3 release review.
-  var flight = _startMSLoginInner(includeOneDrive, includeMailRead, key);
+  // `context` rides along for the same reason `key` does — so the events
+  // this flight emits can say which control started it. A re-click that
+  // JOINS this flight keeps the first click's context, which is correct:
+  // the window belongs to whoever opened it.
+  var flight = _startMSLoginInner(includeOneDrive, includeMailRead, key, context);
   _authFlightByKey[key] = flight;
   _authFlightStartedAt[key] = Date.now();
   // Only the flight that OWNS the key may clear it — a zombie settling late
@@ -416,7 +420,7 @@ function _mailReadForReauth() {
   });
 }
 
-async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey) {
+async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, context) {
   // Undefined means "caller has no opinion" — a plain sign-in or the OneDrive
   // flow. An explicit true is the Reports banner asking for Mail.Read on
   // purpose, and must not be second-guessed.
@@ -438,9 +442,37 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey) {
   const elapsed = function () {
     return Math.round((Date.now() - startedAt) / 1000);
   };
+  // Which control started this flight. Until 2026-08-30 only
+  // signin_clicked carried it, and the OAuth events did not — so a funnel
+  // built on oauth_started/oauth_failed could not tell three very
+  // different populations apart:
+  //
+  //   1. a tenant or admin genuinely blocking consent — the leak we are
+  //      trying to measure;
+  //   2. someone closing the sign-in window — abandonment;
+  //   3. someone opening the "change sender" switcher out of curiosity and
+  //      backing out — not a sign-in attempt at all.
+  //
+  // All three land as oauth_failed, and Chrome labels 2 and 3 identically
+  // (`consent_declined` means "window closed without a redirect", not "the
+  // user pressed No" — see handleResult). On 2026-08-30 a single user
+  // produced one of each in forty minutes, and both of their "failures"
+  // were 2 and 3. Counting those against sign-in intent overstates the
+  // leak with people who were never blocked.
+  //
+  // "unspecified" rather than omitting the field: an ABSENT context means
+  // a client older than this change, a present-but-unspecified one means a
+  // call site we forgot to label. Those are different bugs.
+  const flowContext = context || "unspecified";
+
   const failureContext = function (extra) {
     return Object.assign(
-      { attempt_id: attemptId, attempt_no: attemptNo, seconds: elapsed() },
+      {
+        attempt_id: attemptId,
+        attempt_no: attemptNo,
+        seconds: elapsed(),
+        context: flowContext,
+      },
       extra
     );
   };
@@ -450,6 +482,7 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey) {
     with_mail_read: !!includeMailRead,
     attempt_id: attemptId,
     attempt_no: attemptNo,
+    context: flowContext,
   });
 
   // Extension tells backend where to redirect at the end (passed via state)
@@ -1061,7 +1094,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
 
   switch (message.type) {
     case "MS_LOGIN":
-      startMSLogin().then(function (result) {
+      startMSLogin(false, undefined, message.context).then(function (result) {
         sendResponse(result);
       });
       return true; // async
@@ -1502,7 +1535,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
     case "MS_LOGIN_MAIL_READ":
       // Turns reply detection back on for a user who signed in without
       // Mail.Read. Same incremental consent as OneDrive above.
-      startMSLogin(false, true).then(function (result) {
+      startMSLogin(false, true, message.context).then(function (result) {
         sendResponse(result);
       });
       return true;
@@ -1512,7 +1545,7 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       // scopes added on top of the existing Mail grant. Microsoft
       // shows the consent screen for ONLY the new scopes (scopes
       // the user already approved are skipped automatically).
-      startMSLogin(true).then(function (result) {
+      startMSLogin(true, undefined, message.context).then(function (result) {
         sendResponse(result);
       });
       return true;
