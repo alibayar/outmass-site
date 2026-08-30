@@ -129,6 +129,16 @@ Sorry about this.
 Ali
 OutMass
 
+**One paragraph deliberately removed.** The draft explained a second bug —
+follow-ups closing early on daily-capped campaigns, which both of theirs are.
+It was cut because they never met it: the plan gate stopped them long before
+that code could run. Confessing a bug in a feature they could not use puts
+"this thing has had several problems" in front of someone at the exact moment
+we hand it to them, and buys nothing back. The behaviour it described is also
+the intuitive one — each person gets theirs three days after they receive the
+first email — so it needs no warning. Only the old behaviour was surprising,
+and they never saw it.
+
 ---
 
 ## marketing@bellmed.com
@@ -534,12 +544,12 @@ OutMass
 
 ## marketing@bellmed.com
 
-**Subject:** Your follow-ups were never created — two bugs, both fixed
+**Subject:** The follow-ups you set up in July were never created
 
 Hello,
 
-I found two bugs in OutMass that affected your account, and both are the kind
-you would have had no way of seeing.
+I found a bug in OutMass that affected your account, and it is the kind you
+would have had no way of seeing.
 
 On 14 July you turned on the automatic follow-up for non-openers. It was
 never created: it is a Pro feature and you are on Starter — but the panel
@@ -547,22 +557,15 @@ didn't say so. It let you tick the box, write the message, and press send,
 and then said nothing at all when our server declined it. Your campaigns went
 out as they should; the follow-ups simply never existed.
 
-The second one would have caught you even on Pro. Both of your July
-campaigns — the 1,822 on the 17th and the 990 on the 27th — are set to send
-50 a day, which spreads them over weeks. A follow-up on a campaign like that
-used to come due before most of the list had even received the first email,
-find almost nobody to follow up with, and mark itself finished. "Three days
-later" meant three days after the campaign, not after each person received
-it. It now reaches each recipient on their own three days and keeps going
-until everyone has had theirs.
-
-The plan limit was correct. Staying silent about it was not, and neither was
-the timing. The next update also labels both Pro-only controls with a PRO
-badge, so you can see which is which before relying on one.
+The limit was correct. Staying silent about it was not, and that part is
+entirely on us. The next update says it out loud: both Pro-only controls now
+carry a PRO badge, and a follow-up that cannot be created tells you at that
+moment instead of never.
 
 **Your account is on Pro until 29 September, at no charge.** Nothing to do at
-your end. Follow-ups, A/B subject testing and the AI writer all work now, and
-follow-ups on a paced campaign now behave the way you would expect.
+your end. Follow-ups, A/B subject testing and the AI writer all work now, on
+anything you send from here. If it is useful, keep it; if not, do nothing and
+you stay on Starter exactly as you are.
 
 One thing I have deliberately not done: I have not gone back and fired the
 July follow-ups. Between the two campaigns that would be well over a thousand
