@@ -117,7 +117,7 @@ sign-in and sending.
 | `MAILERSEND_FROM_EMAIL` | web, worker | no | defaults to support@getoutmass.com |
 | `MAILERSEND_FROM_NAME` | web, worker | no | defaults to the support sender name |
 | `MAILERSEND_TO_EMAIL` | web | no | feedback forwarding defaults to support@getoutmass.com |
-| `FIRST_SIGNIN_INCLUDE_MAIL_READ` | web, worker | no | defaults to true. Safe to flip since the version gate (0.2.3+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication |
+| `FIRST_SIGNIN_INCLUDE_MAIL_READ` | web | no | defaults to true; read only by routers/auth.py, so web alone. Safe to flip since the version gate (0.2.3+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication |
 | `FREE_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 250 |
 | `STARTER_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 2500 |
 | `PRO_PLAN_MONTHLY_LIMIT` | web, worker | no | defaults to 10000 |

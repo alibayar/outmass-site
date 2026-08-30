@@ -128,8 +128,12 @@ REGISTRY: tuple[Var, ...] = (
     Var("MAILERSEND_FROM_EMAIL", (WEB, WORKER), False, "defaults to support@getoutmass.com"),
     Var("MAILERSEND_FROM_NAME", (WEB, WORKER), False, "defaults to the support sender name"),
     Var("MAILERSEND_TO_EMAIL", (WEB,), False, "feedback forwarding defaults to support@getoutmass.com"),
-    Var("FIRST_SIGNIN_INCLUDE_MAIL_READ", (WEB, WORKER), False, 
-        "defaults to true. Safe to flip since the version gate (0.2.3+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication"),
+    # WEB alone. The two mentions in workers/reply_detector.py are prose in
+    # comments, not reads — which is exactly the kind of thing that puts a
+    # role in this column by mistake and then sends an operator to set a
+    # variable on a service that never looks at it.
+    Var("FIRST_SIGNIN_INCLUDE_MAIL_READ", (WEB,), False,
+        "defaults to true; read only by routers/auth.py, so web alone. Safe to flip since the version gate (0.2.3+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication"),
     Var("FREE_PLAN_MONTHLY_LIMIT", (WEB, WORKER), False, "defaults to 250"),
     Var("STARTER_PLAN_MONTHLY_LIMIT", (WEB, WORKER), False, "defaults to 2500"),
     Var("PRO_PLAN_MONTHLY_LIMIT", (WEB, WORKER), False, "defaults to 10000"),
