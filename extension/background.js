@@ -538,6 +538,39 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey) {
       if (chrome.runtime.lastError) {
         const m = String(chrome.runtime.lastError.message || "");
         log("Auth flow error:", m);
+
+        // A flight that already timed out has nothing left to report.
+        //
+        // The 5-minute ceiling above resolves the promise and fires
+        // oauth_failed(auth_timeout). Chrome, meanwhile, answers only when
+        // the user finally closes the abandoned window — which can be much
+        // later. On 2026-08-30 a user opened a window at 12:01, signed in
+        // through a SECOND window at 12:03, worked for half an hour, and
+        // closed the first one at 12:33: chrome.runtime.lastError arrived
+        // 1,909 seconds into a flight that had been declared dead at 300.
+        // Two things went wrong when that answer landed:
+        //
+        //   * it fired a SECOND oauth_failed for one attempt, so every
+        //     abandoned window is counted twice in the funnel — and the
+        //     consent-leak measurement reads those counts;
+        //   * track() stamps the CURRENT distinct_id, and by then the user
+        //     had signed in under a different account. The failure was
+        //     recorded against an account 43 seconds old that had done
+        //     nothing wrong.
+        //
+        // The auth_page_failed branch below is worse than a bad number: it
+        // calls launch() again, so a zombie flight could open a fresh
+        // Microsoft sign-in window minutes after the user gave up on it.
+        //
+        // The SUCCESS path deliberately does not get this guard. A late
+        // redirect still carries a real JWT, and storing it is the entire
+        // reason the timeout only releases the UI instead of cancelling the
+        // flow — see the comment on `settled` above.
+        if (settled) {
+          log("Auth error arrived after the flight settled — ignoring:", m);
+          return;
+        }
+
         // Classify the Chrome WebAuthFlow error so the UI can show a helpful,
         // localized message instead of a raw string. The big one is
         // consent-declined: work/school (M365) tenants block end-user consent

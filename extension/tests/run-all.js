@@ -37,6 +37,7 @@ const suites = [
   require("./no-hardcoded-prices.test.js"),
   require("./ui-language-header.test.js"),
   require("./first-signin-scope.test.js"),
+  require("./auth-flight-settle.test.js"),
 ];
 
 async function main() {
