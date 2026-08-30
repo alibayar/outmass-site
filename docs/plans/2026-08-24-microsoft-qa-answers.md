@@ -35,6 +35,24 @@ has said June, July and August in the same week, so only this line counts.
 |---|---|---|---|---|
 | 2026-08-24 | In development | August CY2026 | September CY2026 | 29 May 2026 |
 | 2026-08-27 | In development | August CY2026 | September CY2026 | 29 May 2026 |
+| 2026-08-31 | In development | August CY2026 | September CY2026 | 29 May 2026 |
+
+**2026-08-31: the August preview window closes today with the card
+untouched since May.** That is not proof of a slip — Microsoft moves the
+status when rollout begins, not when a date passes — but "preview in August"
+and "still In development on the 31st" cannot both stay true for much longer.
+Worth a check on the first working days of September: if GA arrives on time
+the positioning shift stops being a plan and becomes urgent, and if the dates
+move we get more room than we budgeted for. Either way we should learn it from
+this API rather than from a headline.
+
+The description field, read in full today, is also narrower than the feature
+name suggests: "Mail Merge (Basic) will be improved upon to allow fields to be
+replaced by values per email address ... the emails can further be
+personalized to include content such as their name." Merge fields, and nothing
+said about tracking, reply detection, follow-ups, scheduling, pacing or
+reporting. That is the same silence this file already insists we describe as
+silence — "Microsoft has not said", never "it cannot do".
 
 **Nothing has moved.** "In development" is Microsoft's own word for *not
 rolling out yet*; the states after it are "Rolling out" and "Launched". So the
