@@ -31,6 +31,21 @@ All notable user-facing changes to the OutMass Chrome Extension.
   sent. The panel now says the feature needs Pro, unticks the switch, and
   sends your campaign exactly as it would have otherwise.
 
+- **A list larger than your monthly limit is no longer refused at the door.**
+  800 recipients on a plan that sends 250 a month used to be rejected
+  outright, so you never got to see the product work at all. Any plan can now
+  upload up to 10,000 in one go. The monthly limit still decides how many
+  actually leave — the rest wait for your next reset — and the panel tells you
+  up front roughly how many months that will take, rather than implying they
+  all go at once.
+
+- **OutMass no longer asks to read your mail when you first sign in.**
+  Reply detection is the only feature that needs it, and it cannot matter
+  before you have sent anything — yet "Read your mail" was the most alarming
+  line on a permission screen shown to someone who had not sent a single
+  email. It is now asked for separately, later, when you turn reply
+  detection on. Nothing changes if you already signed in.
+
 - **Scheduled sending suggested the wrong time, everywhere but one.** Turning
   it on offered "tomorrow at 9am" — but the suggestion was built in UTC and
   then read back as your own clock, so it arrived shifted by however far you
