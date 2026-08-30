@@ -884,7 +884,19 @@ async def _run_campaign_send(
     """
     sent_count = 0
     errors = []
-    token_expired_midbatch = False
+    # Renamed from token_expired_midbatch on 2026-08-30. The old name
+    # asserted a diagnosis the code cannot make: 401 and 403 arrive on the
+    # same branch, and a 403 from sendMail is usually not the token at all
+    # — it is Microsoft refusing to send from that mailbox. Two campaigns
+    # stopped this way that day, 17 and 9 minutes after a fresh sign-in,
+    # and the name sent the first reading of the logs down the wrong path.
+    auth_stopped_midbatch = False
+    # What Graph actually said, kept for the end-of-send log. Until this was
+    # added the one branch that halts a whole campaign recorded the least:
+    # `errors` is never appended to here, so the summary printed
+    # "failed=0 first_error=[]" and the status code was lost.
+    abort_status = None
+    abort_error = ""
     # The quota counter is bumped once on the happy path and once more in the
     # failure handler, so recipients sent before a mid-batch crash still count.
     # Without this flag ANY exception raised after the first bump charges the
@@ -992,10 +1004,23 @@ async def _run_campaign_send(
                     else:
                         sc = result.get("status_code")
                         if sc in (401, 403):
-                            # Token died mid-batch — auth failure that hits every
-                            # remaining send. Stop and leave the rest 'pending'
-                            # (resumable); Resume refreshes the token and finishes.
-                            token_expired_midbatch = True
+                            # Not this RECIPIENT being refused — the mailbox or
+                            # the token. Either way it hits every remaining
+                            # send, so stop and leave the rest 'pending'
+                            # (resumable) rather than burning the list one
+                            # doomed request at a time.
+                            #
+                            # 401 and 403 mean different things and we cannot
+                            # tell them apart afterwards without this log line.
+                            # 401: the access token is dead, and Resume gets a
+                            # fresh one. 403: Microsoft is refusing the send —
+                            # a new consumer mailbox under an anti-abuse limit,
+                            # SendAs denied, a blocked account — and Resume
+                            # will hit exactly the same wall until whatever it
+                            # is clears.
+                            auth_stopped_midbatch = True
+                            abort_status = sc
+                            abort_error = str(result.get("error") or "")[:200]
                             break
                         contact_model.mark_failed(contact["id"], _classify_failure(sc))
                         errors.append(contact.get("email"))
@@ -1037,16 +1062,18 @@ async def _run_campaign_send(
         # the quota gets charged twice.
         logging.getLogger(__name__).warning(
             "campaign %s finished: sent=%s failed=%s quota_capped=%s "
-            "token_expired=%s first_error=%s",
+            "auth_stopped=%s abort_status=%s abort_error=%s first_error=%s",
             campaign_id,
             sent_count,
             len(errors),
             quota_capped,
-            token_expired_midbatch,
+            auth_stopped_midbatch,
+            abort_status,
+            abort_error,
             errors[:1],
         )
 
-        if token_expired_midbatch:
+        if auth_stopped_midbatch:
             campaign_model.update_campaign(campaign_id, {"status": "partial"})
         elif ab_test and ab_remaining:
             ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})

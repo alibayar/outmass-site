@@ -134,6 +134,13 @@ def process_scheduled_campaigns():
         sent_count = 0
         quota_charged = 0
         errors = []
+        # See the 401/403 branch below. Tracked separately from `errors`
+        # because a stop leaves that list EMPTY, and the final status is
+        # computed from it — without this flag an auth stop would close the
+        # campaign as 'sent' with most of the list unsent.
+        auth_stopped = False
+        abort_status = None
+        abort_error = ""
 
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for contact in pending:
@@ -201,9 +208,42 @@ def process_scheduled_campaigns():
                                     exc_info=True,
                                 )
                     else:
-                        contact_model.mark_failed(
-                            contact["id"], _classify_failure(result.get("status_code"))
-                        )
+                        sc = result.get("status_code")
+                        if sc in (401, 403):
+                            # The same reading the immediate send path has had
+                            # all along (routers/campaigns.py): 401/403 is the
+                            # mailbox or the token, not this recipient, and it
+                            # will hit every remaining send.
+                            #
+                            # This path did NOT agree, and the disagreement was
+                            # destructive. _classify_failure maps any 4xx to
+                            # 'failed' (utils/send_classify.py) — permanent —
+                            # and get_resumable_contacts only ever returns
+                            # 'pending' and 'deferred'. So a 403 here marked
+                            # every remaining recipient unreachable FOREVER:
+                            # neither the Resume button nor the auto-resume
+                            # beat could touch them again, and the next beat
+                            # run then closed the campaign as 'sent' because
+                            # nothing resumable was left. The user would have
+                            # read "sent" over a list that was half delivered,
+                            # with nothing anywhere saying otherwise.
+                            #
+                            # Found 2026-08-30 before it fired: two campaigns
+                            # from a user's first hour stopped this way in the
+                            # immediate path (which leaves 'pending'), and the
+                            # 06:00 UTC resume would have run them through
+                            # THIS loop the next morning.
+                            auth_stopped = True
+                            abort_status = sc
+                            abort_error = str(result.get("error") or "")[:200]
+                            logger.warning(
+                                "campaign %s stopped at contact %s: Graph %s %s "
+                                "— %s recipients left pending",
+                                campaign["id"], contact["id"], sc, abort_error,
+                                len(pending) - sent_count,
+                            )
+                            break
+                        contact_model.mark_failed(contact["id"], _classify_failure(sc))
                         errors.append(contact["email"])
                 except Exception:
                     # Network/timeout: transient, retryable on next run.
@@ -236,7 +276,11 @@ def process_scheduled_campaigns():
         # same beat loop continues tomorrow until the list is exhausted.
         # (Re-query rather than arithmetic: suppression/unsubscribe skips
         # above mean len(pending) isn't a reliable "what's left" signal.)
-        if daily_cap > 0:
+        # An auth stop is not "today's batch is done". Rolling the schedule
+        # forward 24h would hide a blocked mailbox as an ordinary paced
+        # campaign, so fall through to 'partial' and let the resume paths —
+        # and their owner-activity gate — decide when to try again.
+        if daily_cap > 0 and not auth_stopped:
             still_pending = contact_model.get_resumable_contacts(campaign["id"])
             if still_pending:
                 next_run = (
@@ -249,7 +293,17 @@ def process_scheduled_campaigns():
                 total_sent += sent_count
                 continue
 
-        final_status = "sent" if not errors and not quota_capped else "partial"
+        final_status = (
+            "partial"
+            if auth_stopped or errors or quota_capped
+            else "sent"
+        )
+        logger.info(
+            "campaign %s finished: sent=%s failed=%s quota_capped=%s "
+            "auth_stopped=%s abort_status=%s abort_error=%s status=%s",
+            campaign["id"], sent_count, len(errors), quota_capped,
+            auth_stopped, abort_status, abort_error, final_status,
+        )
         campaign_model.update_campaign(campaign["id"], {"status": final_status})
         total_sent += sent_count
 
