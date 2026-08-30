@@ -367,14 +367,40 @@ def get_fresh_access_token(user_id: str) -> str | None:
     if not refresh_token:
         return None
 
+    # Refuse the round trip rather than blame the user for it.
+    #
+    # This is the Web flow (see the module docstring): a confidential app
+    # registration, so Microsoft rejects a refresh without the secret. Sending
+    # it anyway returns 400 invalid_client, and the handler below reads any
+    # 4xx as "this user's refresh token is dead" — it flags requires_reauth
+    # and emails them to reconnect an account that is fine. check_user_tokens
+    # walks every unflagged user with a token row daily, so one unset variable
+    # on one service becomes a false reconnect notice to the entire base.
+    #
+    # The startup check already names the missing variable and pings Telegram
+    # (utils/config_guard -> env_registry.check_env), but an alert cannot stop
+    # the beat that runs before anyone reads it. Returning here does: the
+    # sends pause, nothing is written to any user row, and the operator has
+    # the alert.
+    #
+    # routers/auth.py:869 has refused the code exchange on the same condition
+    # all along. This is the other half of that.
+    if not AZURE_CLIENT_SECRET:
+        logger.error(
+            "AZURE_CLIENT_SECRET is unset on this service — skipping the "
+            "refresh for user %s instead of flagging them requires_reauth. "
+            "See the ENV GAP alert from startup.",
+            user_id,
+        )
+        return None
+
     data = {
         "client_id": AZURE_CLIENT_ID,
         "grant_type": "refresh_token",
         "refresh_token": refresh_token,
         "scope": refresh_scopes,
+        "client_secret": AZURE_CLIENT_SECRET,
     }
-    if AZURE_CLIENT_SECRET:
-        data["client_secret"] = AZURE_CLIENT_SECRET
 
     try:
         resp = httpx.post(

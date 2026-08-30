@@ -166,3 +166,131 @@ def test_refresh_5xx_does_not_flag_user(fake_db):
     flag_updates = [u for u in user_table.update_calls
                     if u.get("requires_reauth") is True]
     assert flag_updates == [], "5xx failure must not flag the user"
+
+
+def test_invalid_client_flags_with_its_own_reason(fake_db):
+    """The branch the registry entry for AZURE_CLIENT_SECRET is about.
+
+    invalid_client is what Microsoft answers when a confidential app sends a
+    refresh without its secret — a SERVER-side fault wearing the same 4xx as
+    a genuinely dead user token. It is classified separately so an operator
+    reading reauth_reason can tell "this user must reconnect" from "we are
+    misconfigured", which are opposite instructions.
+    """
+    from models.ms_token import get_fresh_access_token
+
+    user_id = FAKE_USER["id"]
+    fake_db.set_table(
+        "user_tokens",
+        _UserTokensTable(rows=[{
+            "access_token": "expired",
+            "refresh_token": "a_perfectly_good_refresh_token",
+        }]),
+    )
+    user_table = _UserTable(rows=[FAKE_USER])
+    fake_db.set_table("users", user_table)
+
+    def _mock_httpx_post(*a, **kw):
+        resp = MagicMock()
+        resp.status_code = 400
+        resp.text = '{"error":"invalid_client","error_description":"AADSTS7000218"}'
+        return resp
+
+    with patch("httpx.get", side_effect=lambda *a, **kw: MagicMock(status_code=401)), \
+         patch("httpx.post", side_effect=_mock_httpx_post):
+        token = get_fresh_access_token(user_id)
+
+    assert token is None
+    flag_updates = [u for u in user_table.update_calls
+                    if u.get("requires_reauth") is True]
+    assert len(flag_updates) == 1, user_table.update_calls
+    assert flag_updates[0]["reauth_reason"] == "invalid_client"
+
+
+def test_a_missing_client_secret_pauses_instead_of_blaming_every_user(fake_db):
+    """One unset variable on one service must not email the whole base.
+
+    Without the guard this path sends a secretless refresh, Microsoft answers
+    invalid_client, and the handler above flags requires_reauth and sends a
+    "reconnect your account" email — to a user whose account is fine, and
+    then to the next one, daily, for as long as the variable is unset. The
+    startup check names the variable and alerts, but it cannot stop the beat
+    that runs before anyone reads it.
+
+    So: no HTTP call at all, and — the load-bearing assertion — no write to
+    the user row.
+    """
+    from models.ms_token import get_fresh_access_token
+
+    user_id = FAKE_USER["id"]
+    fake_db.set_table(
+        "user_tokens",
+        _UserTokensTable(rows=[{
+            "access_token": "expired",
+            "refresh_token": "a_perfectly_good_refresh_token",
+        }]),
+    )
+    user_table = _UserTable(rows=[FAKE_USER])
+    fake_db.set_table("users", user_table)
+
+    posts = []
+
+    with patch("httpx.get", side_effect=lambda *a, **kw: MagicMock(status_code=401)), \
+         patch("httpx.post", side_effect=lambda *a, **kw: posts.append(kw) or MagicMock()), \
+         patch("models.ms_token.AZURE_CLIENT_SECRET", ""):
+        token = get_fresh_access_token(user_id)
+
+    assert token is None, "the caller must still see a failed refresh"
+    assert posts == [], "no secretless request should reach Microsoft"
+    assert not [u for u in user_table.update_calls if "requires_reauth" in u], (
+        "our own misconfiguration was written onto the user: "
+        f"{user_table.update_calls}"
+    )
+
+
+def test_the_refresh_actually_carries_the_client_secret(fake_db):
+    """Nothing else asserts the secret reaches Microsoft.
+
+    Found by mutation: deleting the client_secret line from the refresh
+    payload left the whole suite green. In production that is the same
+    outcome as the unset variable — a confidential app sending a secretless
+    refresh, 400 invalid_client, and every active user flagged
+    requires_reauth and emailed to reconnect an account that is fine — except
+    that no startup check would name it and no operator alert would fire,
+    because from the environment's point of view nothing is missing.
+
+    So the guard above protects against a missing VARIABLE and this protects
+    against a missing LINE. They fail the same way and only one of them
+    announces itself.
+    """
+    from models.ms_token import get_fresh_access_token
+
+    fake_db.set_table(
+        "user_tokens",
+        _UserTokensTable(rows=[{
+            "access_token": "expired",
+            "refresh_token": "a_perfectly_good_refresh_token",
+        }]),
+    )
+    fake_db.set_table("users", _UserTable(rows=[FAKE_USER]))
+
+    sent = {}
+
+    def _capture(*a, **kw):
+        sent.update(kw.get("data") or {})
+        resp = MagicMock()
+        resp.status_code = 200
+        resp.json.return_value = {"access_token": "fresh", "refresh_token": "rotated"}
+        return resp
+
+    with patch("httpx.get", side_effect=lambda *a, **kw: MagicMock(status_code=401)), \
+         patch("httpx.post", side_effect=_capture), \
+         patch("models.ms_token.AZURE_CLIENT_SECRET", "the-configured-secret"):
+        token = get_fresh_access_token(FAKE_USER["id"])
+
+    assert token == "fresh"
+    assert sent.get("client_secret") == "the-configured-secret", (
+        "the refresh went to Microsoft without its client_secret; this is the "
+        f"Web (confidential) flow, so it will be rejected. Sent: {sorted(sent)}"
+    )
+    assert sent.get("grant_type") == "refresh_token"

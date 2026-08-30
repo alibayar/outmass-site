@@ -83,7 +83,7 @@ sign-in and sending.
 | `STRIPE_WEBHOOK_SECRET` | web | **yes** | every Stripe webhook is rejected — a customer pays and never gets their plan |
 | `STRIPE_STARTER_PRICE_ID` (or `STRIPE_STANDARD_PRICE_ID`) | web | **yes** | the plan catalogue comes back empty and the panel silently falls back to its old single hardcoded-Starter button |
 | `STRIPE_PRO_PRICE_ID` | web | **yes** | same as the Starter price id — the catalogue is all-or-nothing |
-| `AZURE_CLIENT_SECRET` | web | **yes** | the OAuth token exchange fails and nobody can sign in |
+| `AZURE_CLIENT_SECRET` | web, worker | **yes** | web: the OAuth token exchange fails and nobody can sign in. worker: every token refresh returns invalid_client, which ms_token treats as a reauth reason — so every active user is flagged requires_reauth AND emailed a 'reconnect your account' notice that is not true, while scheduled sends, follow-ups and reply detection all stop |
 | `REDIS_TLS_VERIFY` | web, worker, beat | no | defaults to false, keeping the certificate check off; set true to verify the broker (2026-08-27) |
 | `REDIS_URL` | worker, beat | **yes** | the worker talks to a localhost broker that is not there — no scheduled send, no follow-up, no auto-resume, and no error anywhere |
 | `BACKEND_URL` | web, worker, beat | **yes** | tracking pixels, click links, unsubscribe links and Stripe redirect URLs are stamped into outgoing mail pointing at localhost |
@@ -104,7 +104,7 @@ sign-in and sending.
 | `JWT_SECRET` | web, worker, beat | no | config.py raises — the service will not start |
 | `STRIPE_PORTAL_CONFIG_ID` | web | no | Stripe's default portal configuration is used |
 | `STRIPE_TEAM_PRICE_ID` | web | no | the unsold Team tier is unbuyable, which it already is |
-| `AZURE_CLIENT_ID` | web | no | falls back to the live app registration id |
+| `AZURE_CLIENT_ID` | web, worker | no | falls back to the live app registration id; the worker needs it for token refresh (see `AZURE_CLIENT_SECRET`) |
 | `AZURE_REDIRECT_URI` | web | no | derived from the backend URL |
 | `AZURE_EXTENSION_ID` | web | no | falls back to the store extension id |
 | `ALLOWED_EXTENSION_IDS` | web | no | falls back to the store extension id |
@@ -131,6 +131,7 @@ sign-in and sending.
 | `AUTH_RESUME_MAX_AGE_DAYS` | web, worker | no | defaults to 7 |
 | `AUTO_RESUME_DORMANT_DAYS` | worker | no | defaults to 30; owner must have been seen this recently for auto-resume to continue |
 | `AUTO_RESUME_BACKOFF_HOURS` | worker | no | defaults to 6; minimum gap between attempts on the same partial campaign |
+| `INACTIVITY_NUDGE_ENABLED` | worker | no | defaults to false, so the nudge emails do not go out until it is set |
 | `INACTIVITY_NUDGE_DAYS` | worker | no | defaults to 30 |
 
 The plan and upload limits are the numbers CLAUDE.md points at: `config.py` is
@@ -147,6 +148,7 @@ but not built.
 | `FRONTEND_URL` | nothing reads it |
 | `INACTIVITY_PAUSE_DAYS` | the 60-day pause tier is not implemented |
 | `INACTIVITY_CANCEL_DAYS` | the 90-day cancel tier is not implemented |
+| `INACTIVITY_AUTOCANCEL_ENABLED` | the switch for those two tiers; nothing reads the value yet |
 
 ---
 

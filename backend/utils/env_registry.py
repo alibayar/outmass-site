@@ -78,7 +78,18 @@ REGISTRY: tuple[Var, ...] = (
         "back to its old single hardcoded-Starter button",
         aliases=("STRIPE_STANDARD_PRICE_ID",)),
     Var("STRIPE_PRO_PRICE_ID", (WEB,), True, "same as STRIPE_STARTER_PRICE_ID — the catalogue is all-or-nothing"),
-    Var("AZURE_CLIENT_SECRET", (WEB,), True, "the OAuth token exchange fails and nobody can sign in"),
+    # (WEB, WORKER), not web alone. models/ms_token.py builds the refresh
+    # request with these two, and get_fresh_access_token is called by
+    # scheduled_worker, followup_worker and reply_detector — every one a
+    # worker task. Registered web-only until 2026-08-30, which made the
+    # generated doc actively dangerous: someone tidying the worker panel by
+    # it would have removed a secret the worker cannot run without.
+    Var("AZURE_CLIENT_SECRET", (WEB, WORKER), True,
+        "web: the OAuth token exchange fails and nobody can sign in. worker: "
+        "every token refresh returns invalid_client, which ms_token treats as "
+        "a reauth reason — so every active user is flagged requires_reauth AND "
+        "emailed a 'reconnect your account' notice that is not true, while "
+        "scheduled sends, follow-ups and reply detection all stop"),
     Var("REDIS_TLS_VERIFY", (WEB, WORKER, BEAT), False,
         "defaults to false, keeping the certificate check off; set true to verify the broker (2026-08-27)"),
     Var("REDIS_URL", (WORKER, BEAT), True,
@@ -101,7 +112,7 @@ REGISTRY: tuple[Var, ...] = (
     # ── Has a real default; drift is possible but cheap ──
     Var("STRIPE_PORTAL_CONFIG_ID", (WEB,), False, "Stripe's default portal configuration is used"),
     Var("STRIPE_TEAM_PRICE_ID", (WEB,), False, "the unsold Team tier is unbuyable, which it already is"),
-    Var("AZURE_CLIENT_ID", (WEB,), False, "falls back to the live app registration id"),
+    Var("AZURE_CLIENT_ID", (WEB, WORKER), False, "falls back to the live app registration id; the worker needs it for token refresh (see AZURE_CLIENT_SECRET)"),
     Var("AZURE_REDIRECT_URI", (WEB,), False, "derived from BACKEND_URL"),
     Var("AZURE_EXTENSION_ID", (WEB,), False, "falls back to the store extension id"),
     Var("ALLOWED_EXTENSION_IDS", (WEB,), False, "falls back to the store extension id"),
@@ -131,6 +142,10 @@ REGISTRY: tuple[Var, ...] = (
     Var("AUTH_RESUME_MAX_AGE_DAYS", (WEB, WORKER), False, "defaults to 7"),
     Var("AUTO_RESUME_DORMANT_DAYS", (WORKER,), False, "defaults to 30; owner must have been seen this recently for auto-resume to continue"),
     Var("AUTO_RESUME_BACKOFF_HOURS", (WORKER,), False, "defaults to 6; minimum gap between attempts on the same partial campaign"),
+    Var("INACTIVITY_NUDGE_ENABLED", (WORKER,), False,
+        "defaults to false, so the nudge emails do not go out until it is set; "
+        "absent from this registry until 2026-08-30 because config.py reads it "
+        "through _env_bool, which the completeness test could not see"),
     Var("INACTIVITY_NUDGE_DAYS", (WORKER,), False, "defaults to 30"),
 
     # ── Read by config.py and consumed by nothing ──
@@ -141,6 +156,10 @@ REGISTRY: tuple[Var, ...] = (
     Var("FRONTEND_URL", (), False, "nothing reads it", shared=False),
     Var("INACTIVITY_PAUSE_DAYS", (), False, "the 60-day pause tier is not implemented", shared=False),
     Var("INACTIVITY_CANCEL_DAYS", (), False, "the 90-day cancel tier is not implemented", shared=False),
+    Var("INACTIVITY_AUTOCANCEL_ENABLED", (), False,
+        "the switch for those two tiers; nothing reads the value yet, so "
+        "setting it today does nothing — it exists so the flip is one Railway "
+        "change when the tiers are built", shared=False),
 )
 
 BY_NAME = {v.name: v for v in REGISTRY}

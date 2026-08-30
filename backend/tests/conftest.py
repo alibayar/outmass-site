@@ -23,6 +23,20 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 # exceptions as production $exception events (three failing-test KeyErrors
 # leaked into the live error report during the 0.1.26 cut, 2026-07-18).
 os.environ["POSTHOG_API_KEY"] = ""
+
+# A configured service is the default a test should assume.
+#
+# models/ms_token.py refuses the refresh outright when this is unset,
+# rather than sending a secretless request that Microsoft answers with
+# invalid_client — which the handler would read as "this user's token is
+# dead" and flag them requires_reauth. That guard is correct and it is
+# tested; it also means nine tests of the refresh path would otherwise be
+# exercising the misconfigured branch while appearing to test the real
+# one. Set HERE, before any project import, for the same reason as the
+# line above: config.py binds these at import time.
+#
+# The unset case has its own test, which patches the constant back to "".
+os.environ.setdefault("AZURE_CLIENT_SECRET", "test-client-secret")
 try:  # belt & braces: hard-disable the client too
     import posthog
 

@@ -6,6 +6,7 @@ is 100% right, and gets trusted the same way. These tests are what make
 the registry fails here, and so does a registry entry the doc never mentions.
 """
 import ast
+import pathlib
 import os
 import re
 from pathlib import Path
@@ -35,11 +36,24 @@ def _our_files():
 
 
 def _env_names_read_by(source: str) -> set[str]:
-    """Every literal os.getenv("NAME") in a file, found by parsing.
+    """Every literal environment read in a file, found by parsing.
 
     Parsed rather than grepped, for the reason test_config_guard learned the
     hard way: a substring cannot tell live code from a comment, and this
     check's entire job is to notice a real new variable.
+
+    Two shapes count. os.getenv("NAME") is the obvious one. The other is a
+    local wrapper — config.py has _env_bool, which reads os.getenv itself and
+    coerces the result. Until 2026-08-30 only the first shape was recognised,
+    so two variables sat outside the registry with nothing complaining:
+    INACTIVITY_NUDGE_ENABLED, which is set on the live worker, and
+    INACTIVITY_AUTOCANCEL_ENABLED, whose whole purpose is to be flipped on
+    later. Both were invisible to the one test written to stop exactly that.
+
+    Matching on the _env prefix rather than a list of names is deliberate: a
+    future _env_int or _env_list is covered the moment it is written, with no
+    second place to remember. test_a_new_env_helper_cannot_hide_behind_its_name
+    holds the naming convention that makes the prefix sufficient.
     """
     names = set()
     for node in ast.walk(ast.parse(source)):
@@ -52,7 +66,8 @@ def _env_names_read_by(source: str) -> set[str]:
             and isinstance(func.value, ast.Name)
             and func.value.id == "os"
         )
-        if is_getenv and node.args and isinstance(node.args[0], ast.Constant):
+        is_wrapper = isinstance(func, ast.Name) and func.id.startswith("_env")
+        if (is_getenv or is_wrapper) and node.args and isinstance(node.args[0], ast.Constant):
             if isinstance(node.args[0].value, str):
                 names.add(node.args[0].value)
     return names
@@ -64,6 +79,51 @@ def test_the_parser_can_tell_code_from_a_comment():
     assert _env_names_read_by('# os.getenv("COMMENTED")') == set()
     assert _env_names_read_by('x = \'os.getenv("QUOTED")\'') == set()
     assert _env_names_read_by("os.getenv(name)") == set()
+
+
+def test_the_parser_sees_reads_that_go_through_a_wrapper():
+    """The hole that let two variables out of the registry."""
+    assert _env_names_read_by('_env_bool("FLAG", False)') == {"FLAG"}
+    # Named by prefix, so a helper added later is covered on the day it lands.
+    assert _env_names_read_by('_env_int("COUNT", 3)') == {"COUNT"}
+    assert _env_names_read_by('# _env_bool("COMMENTED")') == set()
+    assert _env_names_read_by("_env_bool(name)") == set()
+    # Not every underscore call is an environment read.
+    assert _env_names_read_by('_encode("NOT_A_VAR")') == set()
+
+
+def test_a_new_env_helper_cannot_hide_behind_its_name():
+    """The prefix rule above is only sufficient while the convention holds.
+
+    A wrapper called something else — read_flag(), _cfg() — would put its
+    variables back outside the registry, silently, which is the exact failure
+    the wrapper support was added to close. So find every function in
+    config.py that reads os.getenv off one of its own parameters, and require
+    it to be named for what it is.
+    """
+    tree = ast.parse((BACKEND / "config.py").read_text(encoding="utf-8"))
+    offenders = []
+    for fn in [n for n in ast.walk(tree) if isinstance(n, ast.FunctionDef)]:
+        params = {a.arg for a in fn.args.args}
+        reads_a_param = any(
+            isinstance(c, ast.Call)
+            and isinstance(c.func, ast.Attribute)
+            and c.func.attr == "getenv"
+            and c.args
+            and isinstance(c.args[0], ast.Name)
+            and c.args[0].id in params
+            for c in ast.walk(fn)
+        )
+        if reads_a_param and not fn.name.startswith("_env"):
+            offenders.append(fn.name)
+
+    assert not offenders, (
+        f"config.py defines {offenders}, which read an environment variable "
+        "named by their caller but are not called _env*. _env_names_read_by "
+        "recognises wrappers by that prefix, so every variable passed to "
+        "these is invisible to the registry completeness check. Rename them, "
+        "or teach the parser about them explicitly"
+    )
 
 
 def test_every_variable_the_code_reads_is_in_the_registry():
@@ -276,4 +336,79 @@ def test_the_doc_cannot_become_a_public_page():
         "docs/_config.yml no longer excludes plans/ — every internal doc in "
         "there, including the full list of infrastructure settings, would be "
         "published to getoutmass.com on the next site build"
+    )
+
+
+# ── Roles, checked against the import graph instead of memory ──
+
+
+def _config_names_reachable_from(start_dir: str) -> set[str]:
+    """Config constants a service can reach, following local imports.
+
+    One module's `from config import X` is easy to see; the mistake this
+    catches is transitive. models/ms_token.py imports AZURE_CLIENT_SECRET and
+    three worker tasks import ms_token, so the worker depends on a secret its
+    own files never name.
+    """
+    names: set[str] = set()
+    seen: set[pathlib.Path] = set()
+    frontier = list((BACKEND / start_dir).glob("*.py"))
+
+    while frontier:
+        path = frontier.pop()
+        if path in seen or not path.exists():
+            continue
+        seen.add(path)
+        tree = ast.parse(path.read_text(encoding="utf-8"))
+        for node in ast.walk(tree):
+            if not isinstance(node, ast.ImportFrom) or not node.module:
+                continue
+            if node.module == "config":
+                names |= {a.name for a in node.names}
+            elif node.module.split(".")[0] in ("models", "utils", "workers", "database"):
+                frontier.append(BACKEND / (node.module.replace(".", "/") + ".py"))
+    return names
+
+
+def test_a_variable_the_worker_can_reach_is_registered_for_the_worker():
+    """The roles column is what an operator prunes a Railway panel by, so a
+    wrong one is worse than no entry at all: it tells them to delete
+    something.
+
+    AZURE_CLIENT_SECRET was registered web-only until 2026-08-30 while
+    ms_token needed it on the worker for every token refresh. Nothing was
+    broken — the live panel had it — but anyone tidying by the generated doc
+    would have removed it, and then every refresh returns invalid_client,
+    which ms_token treats as a reauth reason: every active user flagged
+    requires_reauth and emailed a reconnect notice that is not true, with
+    scheduled sends, follow-ups and reply detection stopped. Found by hand.
+    This is that reasoning, mechanised.
+
+    Import reachability over-approximates — a name can be imported for
+    inspection rather than use. The one such case is Stripe: green_report
+    reads STRIPE_SECRET_KEY only to say whether it is a test or a live key,
+    and config_guard already states the fact in a named constant. The
+    exemption is derived from that constant rather than listed here, so a
+    worker that one day really does call Stripe changes one place and this
+    test starts asking for the roles.
+    """
+    from utils.config_guard import _ROLES_THAT_NEVER_CALL_STRIPE
+
+    stripe_exempt = reg.WORKER in _ROLES_THAT_NEVER_CALL_STRIPE
+
+    missing = []
+    for name in sorted(_config_names_reachable_from("workers")):
+        var = reg.BY_NAME.get(name)
+        if var is None or not var.roles or reg.WORKER in var.roles:
+            continue
+        if stripe_exempt and name.startswith("STRIPE_"):
+            continue
+        missing.append((name, var.roles))
+
+    assert not missing, (
+        "the worker can reach these variables but the registry does not list "
+        f"it as needing them: {missing}. Either add {reg.WORKER!r} to the "
+        "roles, or — if the name is only inspected and never used to call "
+        "anything — say so where config_guard says it about Stripe, so the "
+        "exemption is a fact in the code rather than a line in this test"
     )
