@@ -62,6 +62,44 @@ def get_pending_followups() -> list[dict]:
     return result.data
 
 
+def get_bumped_contact_ids(followup_id: str) -> set[str]:
+    """Contacts this follow-up has already emailed.
+
+    A follow-up no longer runs once. On a paced campaign it trails the send,
+    bumping each recipient on their own clock, so every run has to know who
+    it has already covered — otherwise the people bumped on Monday are
+    bumped again on Tuesday, from their own mailbox, which is the worst
+    outcome this feature has available.
+
+    Returned as a set because the caller does one membership test per
+    candidate contact.
+    """
+    result = (
+        get_db()
+        .table("follow_up_sends")
+        .select("contact_id")
+        .eq("follow_up_id", followup_id)
+        .execute()
+    )
+    return {row["contact_id"] for row in (result.data or [])}
+
+
+def record_bump(followup_id: str, contact_id: str) -> None:
+    """Write down that this contact has been followed up.
+
+    Called immediately after the send succeeds, never before: a row here
+    that did not correspond to a delivered email would silently drop someone
+    from the campaign's follow-up for good, and a missing row costs at most
+    one duplicate that the primary key then refuses anyway.
+    """
+    (
+        get_db()
+        .table("follow_up_sends")
+        .insert({"follow_up_id": followup_id, "contact_id": contact_id})
+        .execute()
+    )
+
+
 def update_followup_status(followup_id: str, status: str):
     get_db().table("follow_ups").update({"status": status}).eq(
         "id", followup_id

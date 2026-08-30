@@ -52,14 +52,16 @@ All notable user-facing changes to the OutMass Chrome Extension.
 
 These two are server-side, so they reached you without an update.
 
-- **A follow-up on a paced campaign no longer closes itself before the
-  campaign has sent anything.** A campaign that goes out over days — either
-  scheduled ahead or spread by a daily cap — could have its follow-up fall
-  due before the first email had left. Finding nobody to follow up with, it
-  marked itself finished: nothing sent, switch still reading as on, and no
-  second attempt. A follow-up now waits for the campaign, and counts its
-  delay from when the last recipient actually received the first email.
-  Nothing changes for a campaign that goes out at once.
+- **"Follow up 3 days later" now means three days after each person
+  received it.** For a campaign that goes out in one go, that is what it
+  always meant. For one spread over days — scheduled ahead, or paced by a
+  daily limit — it did not: 66 recipients at 5 a day take a fortnight, and
+  the follow-up either fell due before the first email had even left (and
+  then marked itself finished, having emailed nobody) or arrived for
+  everyone at once at the end, sixteen days late for whoever was first on
+  the list. The follow-up now trails the campaign, going out to each
+  recipient on their own three days, and stops only once everyone has had
+  theirs. Nothing changes for a campaign that goes out at once.
 
 - **One refused message no longer condemns the rest of your list.** If
   Microsoft refused a send part-way through a scheduled campaign because of

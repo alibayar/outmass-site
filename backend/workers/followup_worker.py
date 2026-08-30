@@ -87,40 +87,27 @@ def process_followups():
             followup_model.update_followup_status(followup["id"], "cancelled")
             continue
 
-        if contact_model.get_resumable_contacts(followup["campaign_id"]):
-            # Still going out. Left untouched rather than rescheduled: the
-            # row stays due, the next hourly run looks again, and nothing has
-            # to be kept true in a second place.
-            waiting_on_campaign += 1
-            continue
+        delay_days = followup.get("delay_days") or 0
+        already = followup_model.get_bumped_contact_ids(followup["id"])
 
-        last_sent = contact_model.get_last_sent_at(followup["campaign_id"])
-        if last_sent:
-            try:
-                sent_at = datetime.fromisoformat(str(last_sent).replace("Z", "+00:00"))
-                if sent_at.tzinfo is None:
-                    sent_at = sent_at.replace(tzinfo=timezone.utc)
-                due_at = sent_at + timedelta(days=followup.get("delay_days") or 0)
-                if datetime.now(timezone.utc) < due_at:
-                    waiting_on_delay += 1
-                    continue
-            except ValueError:
-                # Unreadable timestamp: fall through on scheduled_for alone,
-                # which is what every follow-up ran on before this change.
-                logger.warning(
-                    "follow-up %s: unreadable sent_at %r on campaign %s",
-                    followup["id"], last_sent, followup["campaign_id"],
-                )
-
-        # Get contacts filtered by condition
-        contacts = _get_filtered_contacts(
-            db, followup["campaign_id"], followup["condition"]
-        )
+        # Everyone whose own delay has elapsed and who has not been bumped.
+        contacts = [
+            c
+            for c in _get_filtered_contacts(
+                db, followup["campaign_id"], followup["condition"], delay_days
+            )
+            if c["id"] not in already
+        ]
 
         if not contacts:
-            # Genuinely nobody to bump — the campaign has finished and every
-            # recipient opened, replied, unsubscribed or failed. Reached only
-            # now that the two guards above have ruled out "not yet".
+            # Nobody due right now. That is not the same as being finished:
+            # the campaign may still be sending, or the people it has already
+            # reached may still be inside their delay. Closing over either
+            # would end the follow-up for everyone who had not had their turn
+            # yet — the exact failure this whole design replaced.
+            if _work_remains(db, followup, already):
+                waiting_on_campaign += 1
+                continue
             followup_model.update_followup_status(followup["id"], "sent")
             continue
 
@@ -163,6 +150,19 @@ def process_followups():
                         unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
                     sent_count += 1
+                    # Written down before anything else that can fail. The
+                    # primary key on (follow_up_id, contact_id) makes a
+                    # second bump impossible, but only for a row that got
+                    # written — and the cost of losing one is emailing a
+                    # person twice from their own mailbox.
+                    try:
+                        followup_model.record_bump(followup["id"], contact["id"])
+                    except Exception:  # noqa: BLE001
+                        logger.exception(
+                            "follow-up %s: bump to contact %s delivered but "
+                            "NOT recorded — they may be emailed again",
+                            followup["id"], contact["id"],
+                        )
                     # Batched: a follow-up run can cover a whole campaign's
                     # list, and a deploy mid-loop would otherwise leave every
                     # delivered follow-up uncharged.
@@ -213,8 +213,14 @@ def process_followups():
         # original campaign, so their addresses are valid and the failures are
         # transient. A genuinely dead token is caught before this loop
         # (failed_auth), so this cannot retry forever.
+        # Closed only when nothing is coming. A run that bumped today's
+        # batch of a fortnight-long campaign has done its job and must stay
+        # open for the rest; the old unconditional close is what made the
+        # first five recipients the only ones ever followed up.
         if sent_count > 0 or failed_count == 0:
-            followup_model.update_followup_status(followup["id"], "sent")
+            already |= {c["id"] for c in contacts}
+            if not _work_remains(db, followup, already):
+                followup_model.update_followup_status(followup["id"], "sent")
         total_sent += sent_count
 
     return {
@@ -225,8 +231,51 @@ def process_followups():
     }
 
 
-def _get_filtered_contacts(db, campaign_id: str, condition: str) -> list[dict]:
+def _work_remains(db, followup: dict, already: set) -> bool:
+    """Is anyone still owed a follow-up, now or later?
+
+    Two ways to be owed one. The campaign may still be sending, so people who
+    have not received the original yet cannot possibly be due. And of those
+    who have received it, some may still be inside their delay.
+
+    A follow-up is closed only when neither is true, because closing is
+    permanent: `status` leaves 'scheduled' and get_pending_followups never
+    returns the row again.
+
+    Errs toward staying open. A query that fails here returns True, so the
+    next hourly run asks again — an extra pass costs two selects, and a
+    wrong close costs every recipient who had not had their turn.
+    """
+    from models import contact as contact_model
+
+    try:
+        if contact_model.get_resumable_contacts(followup["campaign_id"]):
+            return True
+        pending = _get_filtered_contacts(
+            db, followup["campaign_id"], followup["condition"]
+        )
+        return any(c["id"] not in already for c in pending)
+    except Exception:  # noqa: BLE001
+        logger.exception(
+            "follow-up %s: could not tell whether work remains — staying open",
+            followup.get("id"),
+        )
+        return True
+
+
+def _get_filtered_contacts(
+    db,
+    campaign_id: str,
+    condition: str,
+    delay_days: int | None = None,
+) -> list[dict]:
     """Get contacts matching the follow-up condition.
+
+    With `delay_days`, only those whose OWN delay has elapsed — measured from
+    contacts.sent_at, the moment that recipient received the original. That
+    is what "follow up 3 days later" means to the person who set it, and for
+    a campaign paced over a fortnight it is the only reading that is true for
+    more than the last batch.
 
     A recipient who REPLIED is always excluded, regardless of condition:
     bumping someone mid-conversation reads as spam and is the #1 thing
@@ -247,6 +296,10 @@ def _get_filtered_contacts(db, campaign_id: str, condition: str) -> list[dict]:
         query = query.is_("opened_at", "null")
     elif condition == "not_clicked":
         query = query.is_("clicked_at", "null")
+
+    if delay_days is not None:
+        cutoff = datetime.now(timezone.utc) - timedelta(days=delay_days)
+        query = query.lte("sent_at", cutoff.isoformat())
 
     result = query.execute()
     return result.data
