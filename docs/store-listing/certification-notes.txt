@@ -1,0 +1,39 @@
+OutMass adds mail merge (personalised bulk email) to Outlook on the web.
+Messages are sent from the signed-in user's own Microsoft mailbox through
+Microsoft Graph. Nothing is sent from our servers.
+
+TEST ACCOUNT
+Username: <FILL IN>
+Password: <FILL IN>
+Any free Outlook.com account works just as well. No payment is required to
+test: the free plan sends 250 emails a month, and every step below is on it.
+
+WHERE THE INTERFACE APPEARS - please read this first
+The content script runs ONLY on outlook.live.com, outlook.office.com,
+outlook.office365.com and outlook.cloud.microsoft. On any other page the
+extension does nothing and shows nothing, so it cannot be evaluated from a
+blank tab or from the toolbar alone.
+
+STEPS
+1. Install the extension, then open https://outlook.live.com and sign in to
+   Outlook with the account above.
+2. Click the OutMass toolbar icon and choose "Sign in with Microsoft".
+   Microsoft's own consent screen opens; accept it.
+3. Return to the Outlook tab and open the side panel, either from the
+   toolbar popup or with the small round "OM" button we place at the edge of
+   the Outlook page.
+4. In the panel, upload a recipient CSV. Two rows is enough - a header of
+   email,firstName and two addresses you control.
+5. Write a subject and body. You can insert {{firstName}} to personalise
+   them. Press "Send test" to mail a preview to yourself.
+6. "Send" runs the campaign. The Reports tab shows what was delivered.
+
+PERMISSIONS AND WHY
+- Mail.Send: to send the campaign from the signed-in mailbox.
+- Mail.Read: asked for separately, and only if the user turns reply
+  detection on. It reads the sender and date of incoming mail so follow-ups
+  stop chasing people who already replied. It never reads message content.
+- storage, alarms, identity; host access to the four Outlook domains above
+  and to our own API at api.getoutmass.com.
+
+No remote code is downloaded or executed. Everything runs from the package.
