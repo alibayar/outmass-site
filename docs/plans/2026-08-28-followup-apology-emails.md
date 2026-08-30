@@ -398,10 +398,19 @@ OutMass
 
 # lucia, tony, bellmed — the three emails (written 2026-08-30)
 
-**From** outmassapp@outlook.com · **Send** Tuesday 1 September, 09:30 New
-York = 16:30 Istanbul. All three are US Eastern (lucia and tony in New York,
-bellmed in Tampa). 1 September is an ordinary Tuesday there — US Labor Day
-2026 is the 7th.
+**From** outmassapp@outlook.com · **Send** Monday 31 August, 09:00 New York
+= 16:00 Istanbul. All three are US Eastern (lucia and tony in New York,
+bellmed in Tampa).
+
+Monday, not Tuesday, and the reason is tony: he has been unable to send for
+24 days and has paid for two of them. A day matters to him and to nobody
+else here. The UK bank holiday that pushed Helene's email to Tuesday is
+England-only; 31 August is an ordinary working Monday in the US, and Labor
+Day 2026 is the 7th.
+
+Moving the day costs nothing here because none of the three contains a
+relative date — every reference is fixed (16 July, 6 August, 29 September).
+Helene's needed rewording for the same move; these do not.
 
 **Checked against the database on 2026-08-30, not against the events.** The
 first version of the Helene draft was written from PostHog's send_completed
