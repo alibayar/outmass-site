@@ -392,3 +392,176 @@ Sorry to start this way.
 
 Ali
 OutMass
+
+
+---
+
+# lucia, tony, bellmed — the three emails (written 2026-08-30)
+
+**From** outmassapp@outlook.com · **Send** Tuesday 1 September, 09:30 New
+York = 16:30 Istanbul. All three are US Eastern (lucia and tony in New York,
+bellmed in Tampa). 1 September is an ordinary Tuesday there — US Labor Day
+2026 is the 7th.
+
+**Checked against the database on 2026-08-30, not against the events.** The
+first version of the Helene draft was written from PostHog's send_completed
+and said her campaign had gone out when it had not. These were re-derived
+from the campaign rows.
+
+| | lucia | tony | bellmed |
+|---|---|---|---|
+| plan | Starter | Starter | Starter |
+| last seen | 20 Aug | **6 Aug** | 26 Aug |
+| sent this month | 0 | 0 | 566 |
+| connection | fine | **requires_reauth** | fine |
+| extension | 0.2.2 | **0.2.0** | 0.2.2 |
+| the campaign | 16 Jul, 110, all delivered | 20 Jul, 60, all delivered | 17 Jul, 1,822 and 27 Jul, 990 — both paced at 50/day |
+
+**Three decisions behind these drafts.**
+
+*No retro-firing.* A follow-up created now would bump everyone already past
+their three days in one go: 11 for lucia, 95 for tony across five campaigns,
+and **1,224** for bellmed. Six-week-late mail leaving their own mailboxes, at
+that volume, is the thing we spent 2026-08-30 deciding not to do to them. The
+emails say the feature works from here rather than offering to reach back.
+
+*tony leads with the reconnect.* He has been disconnected since around 6
+August and has paid for two of those weeks. That costs him more than the
+follow-up did, and burying it under an apology about something else would be
+the wrong order.
+
+*29 September for all three.* Their renewals fall on the 14th, 16th and 20th
+of September, too close to anchor to; the one after overshoots to nearly
+seven weeks. A flat month matches what was promised and sits beside Helene's
+29 days.
+
+**lucia and tony work at the same company and pay separately.** They will
+compare. The middle of both emails is deliberately the same wording; only the
+opening differs, and it differs for a reason either of them can see.
+
+---
+
+## lucia@skylineprp.com
+
+**Subject:** The follow-up on your July campaign was never created
+
+Hi Lucia,
+
+I found a bug in OutMass that affected your account, and I would rather you
+heard it from me.
+
+On 16 July you turned on the automatic follow-up for non-openers, wrote it,
+and sent your 110-recipient campaign nine minutes later. The campaign itself
+went out to all 110. The follow-up was never created: it is a Pro feature and
+you are on Starter — but the panel didn't say so. It let you tick the box,
+write the message, and press send, and then said nothing at all when our
+server declined it.
+
+The limit was correct. Staying silent about it was not, and that part is
+entirely on us. The next update says it out loud: both Pro-only controls now
+carry a PRO badge, and a follow-up that cannot be created tells you at that
+moment instead of never.
+
+**Your account is on Pro until 29 September, at no charge.** Nothing to do at
+your end. Follow-ups, A/B subject testing and the AI writer all work now, on
+anything you send from here. If it is useful, keep it; if not, do nothing and
+you stay on Starter exactly as you are.
+
+One thing I have deliberately not done: I have not gone back and fired the
+July follow-up. It would reach people six weeks after the original, which I
+don't think would land well for you. If you disagree, say so and I will set
+it up — it is your list and your call.
+
+Sorry about this.
+
+Ali
+OutMass
+
+---
+
+## tony@skylineprp.com
+
+**Subject:** Your OutMass account needs reconnecting — and I owe you a fix
+
+Hi Tony,
+
+Two things, and the first one is costing you money.
+
+**Your Microsoft connection has expired.** It happened around 6 August, and
+since then OutMass has not been able to send anything from your account —
+while your subscription has carried on. Opening the OutMass panel in Outlook
+and signing in again is all it takes; nothing else is lost, and your
+campaigns and lists are where you left them.
+
+The second thing is a bug of ours. On 20 July you turned on the automatic
+follow-up for non-openers, wrote it, and sent your 60-recipient campaign six
+minutes later. The campaign went out to all 60. The follow-up was never
+created: it is a Pro feature and you are on Starter — but the panel didn't
+say so. It let you tick the box, write the message, and press send, and then
+said nothing at all when our server declined it.
+
+The limit was correct. Staying silent about it was not, and that part is
+entirely on us. The next update says it out loud: both Pro-only controls now
+carry a PRO badge, and a follow-up that cannot be created tells you at that
+moment instead of never.
+
+**Your account is on Pro until 29 September, at no charge.** Nothing to do at
+your end beyond reconnecting. Follow-ups, A/B subject testing and the AI
+writer all work now, on anything you send from here.
+
+One thing I have deliberately not done: I have not gone back and fired the
+July follow-ups. They would reach people six weeks after the original, which
+I don't think would land well for you. If you disagree, say so and I will set
+them up.
+
+If reconnecting does not work, reply to this and I will look at it directly.
+
+Sorry about this.
+
+Ali
+OutMass
+
+---
+
+## marketing@bellmed.com
+
+**Subject:** Your follow-ups were never created — two bugs, both fixed
+
+Hello,
+
+I found two bugs in OutMass that affected your account, and both are the kind
+you would have had no way of seeing.
+
+On 14 July you turned on the automatic follow-up for non-openers. It was
+never created: it is a Pro feature and you are on Starter — but the panel
+didn't say so. It let you tick the box, write the message, and press send,
+and then said nothing at all when our server declined it. Your campaigns went
+out as they should; the follow-ups simply never existed.
+
+The second one would have caught you even on Pro. Both of your July
+campaigns — the 1,822 on the 17th and the 990 on the 27th — are set to send
+50 a day, which spreads them over weeks. A follow-up on a campaign like that
+used to come due before most of the list had even received the first email,
+find almost nobody to follow up with, and mark itself finished. "Three days
+later" meant three days after the campaign, not after each person received
+it. It now reaches each recipient on their own three days and keeps going
+until everyone has had theirs.
+
+The plan limit was correct. Staying silent about it was not, and neither was
+the timing. The next update also labels both Pro-only controls with a PRO
+badge, so you can see which is which before relying on one.
+
+**Your account is on Pro until 29 September, at no charge.** Nothing to do at
+your end. Follow-ups, A/B subject testing and the AI writer all work now, and
+follow-ups on a paced campaign now behave the way you would expect.
+
+One thing I have deliberately not done: I have not gone back and fired the
+July follow-ups. Between the two campaigns that would be well over a thousand
+people hearing from you six weeks after the original, in one go, and I don't
+think that would serve you. If you want any part of it, tell me which
+campaign and I will set it up properly.
+
+Sorry about this.
+
+Ali
+OutMass
