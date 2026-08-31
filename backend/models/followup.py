@@ -6,7 +6,7 @@ from datetime import datetime, timedelta, timezone
 
 import logging
 
-from config import CSV_UPLOAD_ROW_LIMIT
+from config import SUPABASE_MAX_ROWS
 from database import get_db
 
 logger = logging.getLogger(__name__)
@@ -90,18 +90,18 @@ def get_bumped_contact_ids(followup_id: str) -> set[str]:
         .table("follow_up_sends")
         .select("contact_id")
         .eq("follow_up_id", followup_id)
-        .limit(CSV_UPLOAD_ROW_LIMIT)
+        .limit(SUPABASE_MAX_ROWS)
         .execute()
     )
     rows = result.data or []
-    if len(rows) >= CSV_UPLOAD_ROW_LIMIT:
+    if len(rows) >= SUPABASE_MAX_ROWS:
         # Never silent. A truncated memory would look exactly like a fresh
         # follow-up, and the beat would start again from the top.
         logger.error(
             "follow-up %s has at least %s recorded bumps — the read is at its "
             "ceiling and may be truncated. Do NOT let this run send again "
             "until the query is paginated.",
-            followup_id, CSV_UPLOAD_ROW_LIMIT,
+            followup_id, SUPABASE_MAX_ROWS,
         )
     return {row["contact_id"] for row in rows}
 

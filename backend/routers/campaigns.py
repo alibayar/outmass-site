@@ -31,6 +31,7 @@ from config import (
     RATE_LIMIT_WAIT_SECONDS,
     QUOTA_CHARGE_BATCH,
     SEND_DELAY_SECONDS,
+    SUPABASE_MAX_ROWS,
     upload_limit_for_plan,
     MAX_CSV_SIZE_BYTES,
 )
@@ -300,7 +301,7 @@ async def campaign_stats(
             db.table("contacts")
             .select("id, opened_at, clicked_at, replied_at")
             .eq("campaign_id", campaign_id)
-            .limit(10000)
+            .limit(SUPABASE_MAX_ROWS)
             .execute()
         )
         for row in engaged_rows.data or []:
@@ -1103,11 +1104,23 @@ async def _run_campaign_send(
             # stranded a Starter's 250 capped recipients invisibly —
             # discovered 2026-07-25 when their promised auto-resume never
             # fired (the campaign had closed as 'sent' on 07-20).
+            # `errors` and `quota_capped` describe the ONE list fetched at
+            # the top of this function, and that list is capped at
+            # SUPABASE_MAX_ROWS. On 2026-06-30 a 1,020-recipient campaign
+            # therefore sent a clean 1,000, saw no errors and no quota cap,
+            # and closed itself 'sent' with twenty people who had never been
+            # read out of the table at all. Nothing reopens 'sent', so they
+            # were simply gone.
+            #
+            # The count is not paged, and it runs only when the answer would
+            # otherwise be 'sent'.
             campaign_model.update_campaign(
                 campaign_id,
                 {
                     "status": "sent"
-                    if not errors and not quota_capped
+                    if not errors
+                    and not quota_capped
+                    and not contact_model.has_resumable_contacts(campaign_id)
                     else "partial"
                 },
             )

@@ -30,7 +30,14 @@ def _campaign(cap):
     }
 
 
-def _run_worker(cap, resumable_side_effect):
+def _run_worker(cap, resumable_side_effect, still_resumable=False):
+    """`still_resumable` is what the COUNT says after this pass.
+
+    The worker no longer decides from the list it just sent: that read is
+    capped at SUPABASE_MAX_ROWS, so a full page and a finished campaign
+    look identical. Both the reschedule branch and the close-out call
+    has_resumable_contacts(), and this is its answer.
+    """
     from workers import scheduled_worker
 
     sent_ids = []
@@ -40,6 +47,7 @@ def _run_worker(cap, resumable_side_effect):
          patch("models.user.get_by_id", return_value=dict(FAKE_STARTER_USER)), \
          patch("workers.scheduled_worker.get_fresh_access_token", return_value="tok"), \
          patch("models.contact.get_resumable_contacts", side_effect=resumable_side_effect), \
+         patch("models.contact.has_resumable_contacts", return_value=still_resumable), \
          patch("models.contact.mark_sent", side_effect=lambda cid: sent_ids.append(cid)), \
          patch("models.campaign.increment_stat"), \
          patch("models.campaign.update_campaign", side_effect=lambda cid, payload: updates.append(payload)), \
@@ -56,6 +64,7 @@ def test_cap_limits_todays_batch_and_requeues_tomorrow(fake_db):
     sent_ids, updates = _run_worker(
         cap=2,
         resumable_side_effect=[_contacts(5), _contacts(3)],
+        still_resumable=True,
     )
 
     assert len(sent_ids) == 2

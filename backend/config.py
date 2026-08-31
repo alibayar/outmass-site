@@ -348,6 +348,20 @@ UPLOAD_LIMIT_FOLLOWS_QUOTA = (
     os.getenv("UPLOAD_LIMIT_FOLLOWS_QUOTA", "false").strip().lower() == "true"
 )
 CSV_UPLOAD_ROW_LIMIT = int(os.getenv("CSV_UPLOAD_ROW_LIMIT", "10000"))
+
+# PostgREST's server-side ceiling on rows returned by ONE request
+# (Supabase dashboard -> Settings -> API -> Max rows; 1000 on this
+# project, read 2026-08-31).
+#
+# It is not ours to choose per query. PostgREST serves
+# min(requested_limit, max_rows), so .limit(10000) still yields 1000 and
+# a truncation guard written against the larger number can never fire —
+# which is exactly what the 2026-08-30 follow-up guards did. Any alarm
+# about a short read has to compare against THIS number.
+#
+# Raising it in the dashboard moves the cliff; it does not remove one.
+# The durable fix is that no code decides "finished" from a list read.
+SUPABASE_MAX_ROWS = int(os.getenv("SUPABASE_MAX_ROWS", "1000"))
 MAX_CSV_SIZE_BYTES = 5 * 1024 * 1024  # 5 MB
 
 

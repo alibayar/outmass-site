@@ -2,12 +2,16 @@
 OutMass — Contact model helpers
 """
 
+import logging
 import re
 from datetime import datetime, timezone
 from uuid import UUID
 
+from config import SUPABASE_MAX_ROWS
 from database import get_db
 from utils.email_classifier import is_role_account, is_disposable
+
+logger = logging.getLogger(__name__)
 
 # Simple email regex for validation
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9._%+\-]+@[a-zA-Z0-9.\-]+\.[a-zA-Z]{2,}$")
@@ -119,8 +123,33 @@ def bulk_insert(
     }
 
 
+def _warn_if_truncated(rows: list, what: str, campaign_id: str) -> list:
+    """Say so when a read came back exactly at the server ceiling.
+
+    PostgREST returns a short list and no error, so a truncated read is
+    indistinguishable from a complete one unless something checks the length.
+    Nothing did, and campaign 91e7ce08 sent 1000 of 1020 recipients and then
+    reported itself finished.
+
+    This only makes the loss audible. It cannot make the read complete — the
+    caller must never decide "there is nothing left" from a list.
+    """
+    if len(rows) >= SUPABASE_MAX_ROWS:
+        logger.error(
+            "%s for campaign %s came back at the %s-row server ceiling and is "
+            "almost certainly truncated. Do NOT treat this list as the whole "
+            "population; count_resumable_contacts is the honest answer.",
+            what, campaign_id, SUPABASE_MAX_ROWS,
+        )
+    return rows
+
+
 def get_pending_contacts(campaign_id: str) -> list[dict]:
-    """Get all pending (unsent) contacts for a campaign."""
+    """Get all pending (unsent) contacts for a campaign.
+
+    Bounded explicitly at the server ceiling so the bound is visible here
+    rather than applied invisibly by PostgREST.
+    """
     result = (
         get_db()
         .table("contacts")
@@ -128,9 +157,10 @@ def get_pending_contacts(campaign_id: str) -> list[dict]:
         .eq("campaign_id", campaign_id)
         .eq("status", "pending")
         .eq("unsubscribed", False)
+        .limit(SUPABASE_MAX_ROWS)
         .execute()
     )
-    return result.data
+    return _warn_if_truncated(result.data or [], "get_pending_contacts", campaign_id)
 
 
 def get_contact(contact_id: str) -> dict | None:
@@ -230,9 +260,55 @@ def get_resumable_contacts(campaign_id: str) -> list[dict]:
         .eq("campaign_id", campaign_id)
         .in_("status", ["pending", "deferred"])
         .eq("unsubscribed", False)
+        .limit(SUPABASE_MAX_ROWS)
         .execute()
     )
-    return result.data
+    return _warn_if_truncated(
+        result.data or [], "get_resumable_contacts", campaign_id
+    )
+
+
+def count_resumable_contacts(campaign_id: str) -> int:
+    """How many recipients this campaign could still be sent to.
+
+    A COUNT, and that is the entire point. Every list read above is capped at
+    SUPABASE_MAX_ROWS, so len(get_resumable_contacts(...)) answers "how big was
+    the page", not "how many are there". A count aggregate is computed
+    server-side and is not paged, so it is the only honest answer to the one
+    question the close-out asks: is this campaign actually finished.
+    """
+    result = (
+        get_db()
+        .table("contacts")
+        .select("id", count="exact")
+        .eq("campaign_id", campaign_id)
+        .in_("status", ["pending", "deferred"])
+        .eq("unsubscribed", False)
+        .limit(1)
+        .execute()
+    )
+    return result.count or 0
+
+
+def has_resumable_contacts(campaign_id: str) -> bool:
+    """count_resumable_contacts, failing CLOSED.
+
+    Every caller is deciding whether to write 'sent', and 'sent' is terminal:
+    no beat, sweep or endpoint in this product selects a 'sent' campaign, and
+    nothing compares sent_count to total_contacts. 'partial' is recoverable —
+    auto-resume picks it up and closes it properly once a later count comes
+    back zero. So when the count cannot be taken, the safe answer is "yes,
+    there is more", not "no".
+    """
+    try:
+        return count_resumable_contacts(campaign_id) > 0
+    except Exception:  # noqa: BLE001
+        logger.warning(
+            "could not count resumable contacts for campaign %s — treating the "
+            "campaign as unfinished, which auto-resume will correct",
+            campaign_id, exc_info=True,
+        )
+        return True
 
 
 def get_last_sent_at(campaign_id: str) -> str | None:
@@ -283,15 +359,20 @@ def mark_unsubscribed(contact_id: str):
 
 
 def get_all_contacts(campaign_id: str) -> list[dict]:
-    """Get all contacts for a campaign (for CSV export)."""
+    """Get all contacts for a campaign (for CSV export).
+
+    Bounded and audible: a silently short export hands the user a file that
+    looks complete and is not.
+    """
     result = (
         get_db()
         .table("contacts")
         .select("*")
         .eq("campaign_id", campaign_id)
+        .limit(SUPABASE_MAX_ROWS)
         .execute()
     )
-    return result.data
+    return _warn_if_truncated(result.data or [], "get_all_contacts", campaign_id)
 
 
 def get_campaign_contacts_count(campaign_id: str) -> int:

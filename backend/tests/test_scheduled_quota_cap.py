@@ -36,7 +36,8 @@ def _campaign(cap=None):
     }
 
 
-def _run(pending_count, already_sent, cap=None, resumable_after=None):
+def _run(pending_count, already_sent, cap=None, resumable_after=None,
+         still_resumable=False):
     """Run one beat pass. `already_sent` sets how much quota is used up."""
     from workers import scheduled_worker
 
@@ -51,6 +52,7 @@ def _run(pending_count, already_sent, cap=None, resumable_after=None):
          patch("models.user.get_by_id", return_value=user), \
          patch("workers.scheduled_worker.get_fresh_access_token", return_value="tok"), \
          patch("models.contact.get_resumable_contacts", side_effect=side_effect), \
+         patch("models.contact.has_resumable_contacts", return_value=still_resumable), \
          patch("models.contact.mark_sent", side_effect=lambda cid: sent_ids.append(cid)), \
          patch("models.campaign.increment_stat"), \
          patch("models.campaign.update_campaign", side_effect=lambda cid, p: updates.append(p)), \
@@ -96,6 +98,7 @@ def test_daily_cap_campaign_within_quota_still_requeues(fake_db):
         already_sent=FREE_PLAN_MONTHLY_LIMIT - 100,
         cap=2,
         resumable_after=_contacts(3),
+        still_resumable=True,
     )
 
     assert len(sent_ids) == 2

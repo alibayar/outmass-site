@@ -52,6 +52,7 @@ def test_clean_send_lands_on_sent_and_charges_quota_once():
          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: increments.append(n)), \
          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)), \
+         patch("models.contact.has_resumable_contacts", return_value=False), \
          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
         asyncio.run(campaigns_router._run_campaign_send(
             campaign_id="camp-clean",
@@ -268,4 +269,57 @@ def test_logging_is_not_shadowed_inside_the_send_path():
         f"function-local 'import logging' at {offenders} shadows the "
         "module-level import for the entire function — this exact pattern "
         "raised UnboundLocalError on every completed send in 9a8153f"
+    )
+
+
+def test_a_clean_send_that_left_people_behind_does_not_close_sent():
+    """The row-cap case, which is what made the count necessary.
+
+    `errors` and `quota_capped` describe the ONE page of recipients fetched
+    before the loop, and PostgREST caps that page at SUPABASE_MAX_ROWS (1000
+    on this project). So a 1,020-recipient campaign could send a flawless
+    1,000 and arrive here with every flag clean while twenty people had never
+    been read out of the table at all.
+
+    It closed 'sent', and nothing in this product reopens 'sent': no beat,
+    sweep or endpoint selects it, and nothing compares sent_count to
+    total_contacts. Campaign 91e7ce08 lost twenty recipients exactly this way
+    on 2026-06-30; 49587d65 lost ninety more on 07-20.
+
+    The in-memory flags cannot see it. Only a count can, so only a count
+    decides.
+    """
+    import asyncio
+
+    from routers import campaigns as campaigns_router
+
+    updates = []
+
+    async def _ok(**kwargs):
+        return {"success": True}
+
+    with patch("models.contact.mark_sent"), \
+         patch("models.campaign.increment_stat"), \
+         patch("models.campaign.update_campaign",
+               side_effect=lambda cid, payload: updates.append(payload)), \
+         patch("models.user.increment_sent_count"), \
+         patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)), \
+         patch("models.contact.has_resumable_contacts", return_value=True), \
+         patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
+        asyncio.run(campaigns_router._run_campaign_send(
+            campaign_id="camp-truncated",
+            campaign={"id": "camp-truncated", "subject": "Hi", "body": "Hello",
+                      "attachments": []},
+            send_list=[_contact("c1", "a@example.com"), _contact("c2", "b@example.com")],
+            ab_test=None,
+            half=0,
+            ab_remaining=[],
+            access_token="tok",
+            user=dict(FAKE_STARTER_USER),
+            suppressed_emails=set(),
+        ))
+
+    assert updates[-1] == {"status": "partial"}, (
+        f"a send with recipients still resumable must close 'partial', got "
+        f"{updates[-1]} — 'sent' is terminal and those people are lost"
     )

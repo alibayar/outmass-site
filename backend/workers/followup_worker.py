@@ -14,7 +14,7 @@ import httpx
 
 from config import (
     BACKEND_URL,
-    CSV_UPLOAD_ROW_LIMIT,
+    SUPABASE_MAX_ROWS,
     GRAPH_API_BASE,
     OUTBOUND_HTTP_TIMEOUT,
     QUOTA_CHARGE_BATCH,
@@ -321,13 +321,13 @@ def _get_filtered_contacts(
     # Same ceiling and the same reason as get_bumped_contact_ids: a short
     # read here means part of the list is never followed up, and nothing
     # would say so.
-    result = query.limit(CSV_UPLOAD_ROW_LIMIT).execute()
+    result = query.limit(SUPABASE_MAX_ROWS).execute()
     rows = result.data or []
-    if len(rows) >= CSV_UPLOAD_ROW_LIMIT:
+    if len(rows) >= SUPABASE_MAX_ROWS:
         logger.error(
             "campaign %s matched at least %s follow-up candidates — the read "
             "is at its ceiling and may be truncated",
-            campaign_id, CSV_UPLOAD_ROW_LIMIT,
+            campaign_id, SUPABASE_MAX_ROWS,
         )
     return rows
 

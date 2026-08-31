@@ -282,8 +282,10 @@ def process_scheduled_campaigns():
         # campaign, so fall through to 'partial' and let the resume paths —
         # and their owner-activity gate — decide when to try again.
         if daily_cap > 0 and not auth_stopped:
-            still_pending = contact_model.get_resumable_contacts(campaign["id"])
-            if still_pending:
+            # A count rather than a whole page: this only ever asked a
+            # yes/no question, and the page it used to pull could be 1,000
+            # rows wide.
+            if contact_model.has_resumable_contacts(campaign["id"]):
                 next_run = (
                     datetime.now(timezone.utc) + timedelta(days=1)
                 ).isoformat()
@@ -294,9 +296,15 @@ def process_scheduled_campaigns():
                 total_sent += sent_count
                 continue
 
+        # The three flags all describe the page fetched for this pass. Only
+        # the database knows whether anyone is left; ask it last, so the round
+        # trip happens only when the answer would otherwise be 'sent'.
         final_status = (
             "partial"
-            if auth_stopped or errors or quota_capped
+            if auth_stopped
+            or errors
+            or quota_capped
+            or contact_model.has_resumable_contacts(campaign["id"])
             else "sent"
         )
         logger.info(
@@ -514,8 +522,19 @@ def evaluate_ab_tests():
         # Get remaining pending contacts (those without ab_variant)
         remaining = contact_model.get_pending_contacts(ab_test["campaign_id"])
         if not remaining:
+            # get_pending_contacts excludes 'deferred', so "no pending" is not
+            # "nothing left" — a campaign holding only deferred recipients
+            # would close here as finished. has_resumable_contacts covers both
+            # statuses and is what every other close-out in this file now uses.
             ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
-            campaign_model.update_campaign(ab_test["campaign_id"], {"status": "sent"})
+            campaign_model.update_campaign(
+                ab_test["campaign_id"],
+                {
+                    "status": "partial"
+                    if contact_model.has_resumable_contacts(ab_test["campaign_id"])
+                    else "sent"
+                },
+            )
             continue
 
         # Suppression list
@@ -554,14 +573,27 @@ def evaluate_ab_tests():
                     # Override campaign subject with winning subject
                     campaign_copy = dict(campaign)
                     campaign_copy["subject"] = winning_subject
-                    result = _send_email(
+                    # NOT `result`: that name holds the ab_tests query
+                    # response fetched before the loop, and the function's
+                    # final line reads result.data from it. Rebinding it here
+                    # made evaluate_ab_tests raise AttributeError on every
+                    # pass that actually sent a winner — after the emails had
+                    # gone out and the statuses were written, so the damage
+                    # was a beat task erroring rather than lost mail. It has
+                    # never fired in production only because the Pro gate
+                    # meant no real user has ever created an A/B test.
+                    #
+                    # Third time this shape has bitten: `import logging`
+                    # inside an except on 2026-08-06, `var settled` shadowing
+                    # its outer `let` on 2026-08-30, and this.
+                    send_result = _send_email(
                         client=client,
                         access_token=access_token,
                         campaign=campaign_copy,
                         contact=contact,
                         unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
-                    if result["success"]:
+                    if send_result["success"]:
                         contact_model.mark_sent(contact["id"])
                         campaign_model.increment_stat(ab_test["campaign_id"], "sent_count")
                         sent_count += 1
@@ -593,7 +625,7 @@ def evaluate_ab_tests():
                         # retry it) and flip the campaign to 'partial' — never
                         # silently drop most of the list while reporting 'sent'.
                         contact_model.mark_failed(
-                            contact["id"], _classify_failure(result.get("status_code"))
+                            contact["id"], _classify_failure(send_result.get("status_code"))
                         )
                         errors.append(contact.get("email"))
                 except Exception:
@@ -622,7 +654,12 @@ def evaluate_ab_tests():
         ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
         # 'partial' (not 'sent') when any send failed, so the Resume button
         # surfaces and the still-pending/deferred contacts can be retried.
-        final_status = "sent" if not errors else "partial"
+        final_status = (
+            "sent"
+            if not errors
+            and not contact_model.has_resumable_contacts(ab_test["campaign_id"])
+            else "partial"
+        )
         campaign_model.update_campaign(ab_test["campaign_id"], {"status": final_status})
         total_sent += sent_count
 

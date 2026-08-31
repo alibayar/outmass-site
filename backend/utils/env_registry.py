@@ -142,6 +142,8 @@ REGISTRY: tuple[Var, ...] = (
     Var("PRO_UPLOAD_ROW_LIMIT", (WEB,), False, "defaults to 10000; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off"),
     Var("UPLOAD_LIMIT_FOLLOWS_QUOTA", (WEB,), False, 
         "defaults to false, and no longer needs flipping: the client's version decides (0.3.0+ gets the single ceiling). True is a one-directional override that lifts it for older clients too"),
+    Var("SUPABASE_MAX_ROWS", (WEB, WORKER), False,
+        "defaults to 1000 and MUST match Supabase -> Settings -> API -> Max rows; every truncation alarm is measured against it, so a stale value here makes those alarms lie"),
     Var("CSV_UPLOAD_ROW_LIMIT", (WEB, WORKER), False,
         "defaults to 10000; the single ceiling once a client is new enough, and the bound on the follow-up worker's two large reads"),
     Var("AI_GENERATION_MONTHLY_LIMIT", (WEB,), False, "defaults to 50"),
