@@ -91,6 +91,31 @@ The threads we found from search are mostly **already answered**:
 | 1822752 "limit of recipients" | accepted answer, from 2024 | skip |
 | 5945262 "Complete mail merge features" | open, no accepted answer — but the moderator already posted the roadmap card (preview Aug 2026 / GA Sept 2026, ID 423047) | answer, trimmed |
 
+**2026-08-31: thread 5945262 is now LOCKED.** Asked 13 July, answered by us
+on 24 August, commented on by a 13k-reputation regular on the 25th, locked
+within the week. Locking leaves voting and takes away comments, replies and
+following; Microsoft's own page says administrators lock threads on a timer
+so they cannot go stale, and only a moderator can briefly reopen one.
+
+So our answer is frozen exactly as posted, and we cannot correct, extend or
+follow up on it — ever. Two things follow.
+
+First, an answer here has to be right on the day it is written, because
+there is no second draft. The roadmap dates in ours were deliberately left
+to the moderator's card for that reason, and that judgement now looks like
+the load-bearing one: had we typed "GA September" ourselves, it would be
+frozen into the page whether or not September holds.
+
+Second, this is the strongest evidence yet for the rule below. A thread can
+be shut a week after we reach it, so the whole return on this channel comes
+from being early enough that the answer accrues search traffic before the
+lock — never from the conversation, which has a short and unannounced
+deadline.
+
+The one remaining action on a locked thread is a vote. Hornblower409's
+comment sits at zero; upvoting it is the only acknowledgement the platform
+still allows, and he took real trouble over it.
+
 **The lesson for this channel:** its value is being early on a fresh question,
 not retrofitting old ones. Every thread above was answered within days of being
 asked. Set a watch on the Outlook tags and answer new mail-merge questions on
