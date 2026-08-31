@@ -1,0 +1,460 @@
+# Post-Microsoft Strategy Review — 2026-08-31
+
+Internal. `docs/plans/` is excluded from the public Jekyll site.
+
+Written the morning after the 0.3.0 store cut, to answer: *what changes when
+Microsoft ships native Mail Merge (Advanced)?*
+
+**Revision 2**, after a four-lens adversarial review (15 challenges survived
+cross-examination, 8 were refuted). The central thesis held. Nine supporting
+claims did not, and the recommendation changed materially. Corrections are marked
+**[R2]** so the first draft's errors stay visible rather than being quietly tidied
+away.
+
+---
+
+## TL;DR
+
+1. Microsoft's roadmap item **423047** (GA September 2026) covers **per-recipient
+   field personalisation only**. It commoditises the **free half** of OutMass and
+   does not touch the paid half.
+2. The paid half has **real demand**: up to 8 of our senders configured a follow-up
+   and sent; ≤9 tried A/B; 6 pressed AI Generate.
+3. **Not one of them ever got the feature.** All three sit behind a Pro tier that
+   has never had a subscriber in five months.
+4. **[R2] But "nobody was told" is only true of follow-ups.** The A/B and AI walls
+   have shown a visible alert since **2026-04-16**, with Pro purchasable since
+   04-17. Four and a half months of visible wall, live checkout, **zero Pro sales**.
+5. So the thing that is falsified is not "users don't want it" — it is
+   **"a bare alert converts."** All three walls state a rule and offer no price, no
+   button, no path. Fixing that is item 1 below.
+6. **[R2] The first draft's plan — measure one cycle, decide at month end — does
+   not survive.** September's realistic wall-hit pool is **2–5 people**. At that n,
+   observing zero upgrades is the likeliest outcome whether the true rate is 5% or
+   25%. The plan would fire its "demote to Starter" rule by noise, one month late,
+   after Microsoft's GA.
+7. **[R3] And then the retention query landed, and it outranks all of the above.**
+   Only **two accounts ever** have sent campaigns in more than one calendar month.
+   July → August retention is **1 of 13 (8%)**. The longest relationship any real
+   user has had with OutMass is **25 days**. The only follow-up ever created was on
+   the founder's own test account — **no real user has ever received one.**
+8. So the September priority is not the paywall. **It is asking the ~20 dormant
+   users why they left** — one afternoon, no code, and the only instrument that
+   returns a reason instead of another ratio.
+
+---
+
+## 1. What Microsoft actually ships
+
+Roadmap **423047**, "Mail Merge (Advanced)" — preview Aug 2026, **GA September
+2026**. Verified unchanged since 29 May (log in
+`2026-08-24-microsoft-qa-answers.md`).
+
+Its description covers one thing: letting the basic mail merge in new Outlook pull
+**per-recipient fields**. Nothing in the entry mentions open or click tracking,
+reply detection, follow-up sequences, scheduling, pacing, or reporting.
+
+Also unchanged: **Exchange Online's limits** — 10,000 recipients/24h, 1,000 per
+message, 30 messages/minute. Microsoft's own guidance still points bulk senders at
+third parties. Advanced Mail Merge raises none of them.
+
+**Read:** Microsoft is about to give away the part we give away, and is not
+building the part we charge for.
+
+---
+
+## 2. What we measured
+
+### Who we have (Supabase, 2026-08-31)
+
+| plan | comp_plan | count |
+|---|---|---|
+| free | — | 54 |
+| starter | **pro** | 4 |
+| starter | — | 4 |
+| pro | — | **2 — the founder's own test accounts** |
+
+**Real Pro subscribers: zero**, in the five months since the gate was written.
+Every argument here rests on this, and it is confirmed.
+
+### The funnel (PostHog, all time)
+
+| step | people |
+|---|---|
+| `onboarding_completed` | 55 |
+| `sidebar_opened` | 53 |
+| `recipients_uploaded` | 37 |
+| `test_send_completed` | 21 |
+| `send_completed` | **26** |
+
+**[R2] The 26 is contaminated.** It includes `bayar_ali@hotmail.com` and three
+`freya_jowin*` accounts created hours apart on 2026-08-30 with `_th` and `_vn`
+suffixes — almost certainly region tests. If so the real denominator is **22**, and
+every ratio below gets *stronger*. **Open question for Ali.**
+
+### Demand, and what happened to it
+
+| feature | gate | tried | got it | was the refusal visible? |
+|---|---|---|---|---|
+| Follow-ups (toggled, then sent) | Pro | **≤8** | **0** | **No — silent until 2026-08-28** |
+| A/B test | Pro | **≤9** | **0** | **[R2] Yes, since 2026-04-16** |
+| AI writer (pressed Generate) | Pro | **6** | **0** | **[R2] Yes, since 2026-04-16** |
+
+**[R2] Corrections to the first draft:**
+
+- **"12 tried A/B" is at most 9.** Three of the twelve have zero `oauth_completed`
+  and zero `send_completed` ever. `/campaigns/{id}/ab-test` sits behind
+  `Depends(get_current_user)` (`campaigns.py:1470`), so an unauthenticated session
+  cannot reach the 402. The first draft applied this exclusion to the follow-up
+  column and then not to the one beside it.
+- **Refusals observed vs inferred.** `feature_locked_followup` has **zero events,
+  all time** — its tracker was only written on 08-28. The A/B branch has no
+  `track()` at all (`sidebar.js:2316`). Only the AI writer has *observed* refusals:
+  6, every one `error_code=feature_locked`, not a single technical failure.
+  The honest ledger is **6 observed, ≤17 inferred.** Do not say "26 refusals".
+
+### How many people actually hit the follow-up 402
+
+| measure | figure |
+|---|---|
+| `followup_enabled` events | 20 events / 14 people |
+| toggled **then sent within the hour** | **8 people** |
+| distinct attempt *episodes* | 11 |
+| **402s actually observed** | **0** |
+
+`followup_enabled` fires on a checkbox `change` (`sidebar.js:2988`), so it counts
+exploring. Only "toggled then sent" can reach `maybeCreateFollowup()`. Of the other
+six: five never sent at all; bellmed's toggle was 3 days from their next send, far
+outside the window.
+
+**Still an upper bound**, and permanently so: `maybeCreateFollowup()` also returns
+early and silently when the follow-up subject or body is empty (`sidebar.js:3009`),
+with nothing tracking it. See §6, hardening.
+
+### Who they are
+
+| user | campaigns | follow-up attempts | client today |
+|---|---|---|---|
+| marketing@hrds.com | 18 | 1 | **0.2.0** (08-28) |
+| faisal@samaed.com | 14 | 2 | **0.3.0** (today) |
+| partnerships@lebedevaeducation.com | 8 | 2 | 0.1.22 (gone since 07-03) |
+| tony@skylineprp.com | 6 | 1 | **0.2.0** (08-10) |
+| premierconsortium@outlook.com | 3 | **3** | 0.2.2 (08-19) |
+| lucia@skylineprp.com | 1 | 1 | **0.3.0** (today) |
+| Helene@circularworkplaces.com | 1 | 1 | 0.2.2 (08-28) |
+| collabs@identitycollectives.com | 1 | 1 | 0.2.2 (08-17) |
+
+**[R2] Three corrections here.** Our most frequent sender is **not** hrds —
+`hrcargosolutionexpress@outlook.com` has 31 sends and never touched follow-ups.
+Only **premierconsortium** genuinely retried across sessions; lebedeva's three
+toggles were two episodes on one day (two of them 4.4 seconds apart). And the
+first draft called bellmed's exclusion "toggled after their last send" — bellmed
+sent again on 07-17 and 07-27; the exclusion stands on the 60-minute window, not
+on that reason.
+
+---
+
+## 2.5 Retention — **[R3] the thing neither draft measured**
+
+Both earlier drafts argued about *monetisation*. Ali's retention query, run
+2026-08-31, says we have been arguing about the wrong layer.
+
+**Only two accounts in the product's entire history have sent campaigns in more
+than one calendar month** — `faisal@samaed.com` (Jun + Jul) and
+`tony@skylineprp.com` (Jul + Aug). Both have since stopped: faisal's last campaign
+is **20 July**, tony's **6 August**.
+
+| | |
+|---|---|
+| Real accounts that ever created a campaign | **24** |
+| Active in ≥2 calendar months | **2** |
+| July → August retention | **1 of 13 — 8%** |
+| Longest relationship, any real user | **25 days** (faisal, 25 Jun – 20 Jul) |
+| Monthly active senders | Jun 3 → Jul 13 → **Aug 7** |
+| First campaign in May or June, still sending after 20 July | **0 of 6** |
+
+Every user is the same shape: a burst of 1–34 campaigns over 0–25 days, then
+silence. hrcargo sent **34 campaigns in 14 days** and vanished. hrds sent **20 in
+12 days** and has not been back since 28 August. These are not tyre-kickers
+sampling the product — they are people doing sustained real work, who then leave.
+
+**The honest counter-reading**, which deserves stating: mail merge may be
+*inherently* bursty. A recruiter runs a hiring campaign, then has nothing to send
+for two months. That is the job's rhythm, not churn, and GMass and Mailmeteor live
+with it too.
+
+The evidence against that reading: our May and June cohort has had **two to four
+months** to come back on a long cycle, and **not one has**. With n=24 on a
+five-month-old product this is a strong indication rather than a proof, but it is
+the way the evidence points.
+
+**What this does to the comp experiment.** Three of the four accounts granted Pro
+yesterday were already dormant when we granted it — tony (last campaign 6 Aug),
+bellmed (27 Jul), lucia (16 Jul). Only Helene is recent (28 Aug), and her one
+campaign sent zero. The four emails now in flight are therefore **reactivation**
+emails, not a feature experiment. That is still worth doing — arguably more so —
+but it is not the retention read the first draft claimed it was.
+
+---
+
+## 3. Why nothing was delivered
+
+`POST /campaigns/{id}/followups` (`routers/campaigns.py:1412`):
+
+```python
+if user_model.effective_plan(user) not in ("pro",):
+    raise HTTPException(status_code=402, ...)
+```
+
+That gate has existed since **2026-03-29** (`8e483bc`). We have never had a Pro
+subscriber, so every attempt hit it.
+
+For **follow-ups only**, the extension swallowed that 402 into a `log()` line —
+off unless debug is enabled — until **2026-08-28**. The user ticked the box, wrote
+a follow-up, pressed Send, watched the campaign go out, and got **no indication**
+that the follow-up did not exist.
+
+**[R2] For A/B and the AI writer this was never true.** Both 402 branches have
+called `alert()` since **2026-04-16** (`fcf69a8`), and Pro has been purchasable
+from the popup since 04-17.
+
+**This is the most consequential correction in the document.** A visible wall ran
+for four and a half months, in front of ≤9 A/B users and 6 AI users, with a working
+checkout beside it, and sold **nothing**.
+
+**[R2] Also anachronistic:** the first draft argued the AI button should carry a
+`PRO` tag "like A/B and follow-up do". Both those tags were added **2026-08-30**
+(`2dfae55`) — *after every toggle event in the dataset*. During the entire
+measurement window **all three features looked free.** The AI tag is still worth
+adding; the contrast used to justify it was not real.
+
+---
+
+## 4. What the walls actually say
+
+> "Automatic follow-ups are only available on the Pro plan. Your campaign will
+> still be sent — the follow-up was not scheduled."
+> "A/B testing is only available on the Pro plan."
+> "AI email writer is only available on the Pro plan."
+
+Each states a rule. **None offers a price, a link, or a button.** The user learns
+they cannot have the thing and is handed no way to get it. This breaks the
+project's own rule for user-visible messages (`CLAUDE.md`): *"kullanıcı bunu
+okuyunca ne YAPACAĞINI biliyor mu?"*
+
+**[R2] Where the upgrade clicks actually come from** — the first draft guessed
+"the quota banner or the pricing link". Measured:
+
+| context | clicks | people |
+|---|---|---|
+| `account_tab` | 19 | 12 |
+| `popup` | 10 | 8 |
+| `modal` | 1 | 1 |
+| `quota_modal` | 1 | 1 |
+| `plan_picker` | 1 | 1 |
+
+The load-bearing half holds — **not one upgrade click in the product's history came
+from a feature wall.** The descriptive half was wrong: they come from the account
+tab and the popup, and exactly one ever came from the quota modal.
+
+**[R2] And the upgrade surface sells the wrong thing.** `upgradeModalFeatures`
+reads *"Detailed reports + priority support"*, and `buildPlanRows` renders only
+name, price and quota (`sidebar.js:3678-3720`). **No upgrade surface in the product
+mentions follow-ups, A/B or the AI writer.** Only the website has ever said Pro
+includes them. So even a correctly wired wall would route a follow-up-hungry
+75-recipient sender to a page selling 10,000 emails they do not need.
+
+---
+
+## 5. The competitor comparison — **[R2] substantially rewritten**
+
+The first draft concluded "our tier shape matches the market, so the shape is not
+the defect", using GMass and Mailmeteor. Both legs were weak.
+
+**GMass is Gmail-only.** Our own repo says so
+(`docs/blog/gmass-for-outlook.html`: it "does not support Outlook, Microsoft 365,
+or Exchange Online accounts"). Its $29.95 → $39.95 ladder reflects Gmail economics
+and validates nothing about Outlook buyers.
+
+**Mailmeteor is not an analogy — it is a rival selling exactly what we cannot.**
+`mailmeteor.com/products/microsoft-outlook`, read 2026-08-31, sells Outlook mail
+merge with *"Track real-time open, clicks and replies"* and *"Send auto-follow-ups
+based on recipient activity (e.g., if no reply in 3 days)"*, at **$17.99 Premium**.
+
+So the corrected picture:
+
+| | platform | follow-ups from |
+|---|---|---|
+| GMass | Gmail only | $39.95 — not comparable |
+| Mailmeteor | **Outlook too** | **$17.99 — and they actually deliver it** |
+| OutMass | Outlook Web | **$19 — never once delivered** |
+
+The first draft also said our Pro was "cheaper than both". **False:** $19 > $17.99.
+
+**[R2] Stale public claim.** `docs/blog/mailmeteor-alternative-for-outlook.html`
+still asserts Mailmeteor "is not an Outlook-native mail-merge tool". Their own
+product page contradicts that today. Under the claims-follow-product rule this
+needs correcting — the rule applies to claims about competitors as much as about
+ourselves.
+
+---
+
+## 6. Recommendation — **[R2] changed**
+
+### Do not change pricing in September — but on one leg, not three
+
+The surviving reason is sufficient: **we have never observed a paywall that offers
+a path.** Changing the mechanism and the price in the same month learns nothing
+from either.
+
+The other two reasons are gone or weakened. "The shape matches the market" now
+rests on one comparable, and that comparable is a competitor who *delivers* the
+feature. And the comp cohort is thinner than claimed: comping Helene, tony, lucia
+and bellmed removes **four of our eight proven demanders** from the very pool the
+experiment needs.
+
+### "Measure one cycle, decide at month end" does not survive
+
+Wall-hitter run rate, ever: **June 2, July 3, August 3.** September then loses
+Helene, tony, lucia and bellmed to the comp, lebedeva to churn, and possibly hrds
+to a stale 0.2.0 client. Realistic exposure: **2–5 people.**
+
+At n=3, zero upgrades is the modal outcome whether the true rate is 5% or 25%.
+The pre-registered rule *"if almost none convert → move follow-ups to Starter"*
+would therefore fire on noise, with high probability, **one month later and after
+Microsoft's GA**. That is the worst available outcome: pay the delay, still guess.
+
+### **[R3] But the paywall is not the September priority**
+
+§2.5 changes the ordering. Monthly retention is **8%**. A follow-up feature is
+worth nothing to someone who runs one campaign and never returns, and a 14-day
+trial is worth nothing to someone who does not come back within 14 days.
+
+Fixing the paywall is still right — it is cheap, and item 1 closes a trap that
+would *bill* people for a plan that does not unlock what they clicked. But it
+optimises the conversion of a cohort that leaves either way. **The September
+question is not "will the paywall convert." It is "why does nobody come back."**
+
+The one action that answers it costs a day and no code: **ask them.** We have
+roughly twenty dormant accounts with working email addresses, and a working
+practice for exactly this — the five apology emails set the precedent. One short
+"what stopped you?" email, async, no calls, is the only instrument that returns
+a *reason* rather than another ratio.
+
+### Instead: make the wall a trial, not a bounce
+
+The machinery exists and we already run it by hand. `comp_plan` /
+`comp_plan_until` (migration 032, applied and verified) merged by
+`effective_plan()`, expiring by arithmetic with no beat task and nothing to undo.
+Yesterday's four grants *are* manual one-month Pro trials.
+
+Automate it at the wall: the upgrade modal offers **"Try Pro free for 14 days"**;
+one endpoint sets `comp_plan='pro'`, `comp_plan_until = now + 14d`; one trial per
+account, guarded by `comp_plan_until` being null. **No price change, no Stripe
+change, no migration, fully reversible.**
+
+That turns each September wall-hit from one bit (bounced / paid) into several: do
+they *use* follow-ups when they can, do their campaigns improve, do they pay at
+expiry. Same tiny n, far more information — and it is the only version of September
+that satisfies §7's own imperative for a single non-comped user.
+
+Then **defer the demote-to-Starter decision until a real n exists.** Treat
+September as qualitative. Do not pre-register a threshold that noise will trip.
+
+### This week
+
+**[R3] Re-ordered after the retention finding.**
+
+| # | change | user-visible? |
+|---|---|---|
+| **1** | **"What stopped you?" email to the ~20 dormant accounts.** The only instrument that returns a reason. One day, no code. | **yes — needs approval; BCC outmassapp@** |
+| 2 | Route the three 402 branches through `showUpgradeModal()`; suppress the quota sentence; **filter the catalogue to plans that unlock the feature** | **yes — needs approval** |
+| 3 | Make the upgrade surfaces name what Pro contains (follow-ups, A/B, AI) | **yes — needs approval; 14 locale files** |
+| 4 | `track("feature_locked_ab")` on the A/B 402 branch | no — ship now |
+| 5 | Trial-at-wall — **demoted**: a 14-day trial cannot help a cohort with 8% monthly retention | **yes — needs approval** |
+| 6 | Correct the Mailmeteor blog claim | **yes — public content** |
+
+**Item 1's catalogue filter is not optional.** `buildPlanRows` shows every plan
+above the user's own, so a Free user hitting the *follow-up* wall would be offered
+**Starter** — they could pay $9 and still not get follow-ups. Shipping items 1–2
+without the filter replaces a silent failure with a **billed** one, strictly worse
+than today.
+
+### Cheap hardening
+
+- **`track("followup_abandoned_empty")`** at `sidebar.js:3009`. This one line is
+  the only reason "8" must keep being called an upper bound, and it distinguishes
+  *giving up while composing* from *hitting the paywall* — different problems,
+  different fixes. The A/B path has the same silent guard (`:2303`).
+- **Do NOT add a `feature_locked_ai` event.** `ai_email_generate_failed` already
+  fires with `error_code` *before* the 402 branch (`sidebar.js:2677`); a second
+  event would double-count the only refusal signal we have. (The R1 appendix asked
+  for one — this corrects it.)
+- **Guard the empty plan catalogue.** `buildPlanRows` `return`s inside its
+  `forEach` when `Intl` throws on a currency. If every row fails, the modal renders
+  with no plans and no way forward — in a dialog about to become our primary
+  conversion surface, in fourteen locales.
+- **Add an internal-account exclusion list to `scripts/ask.py`** —
+  `bayar_ali@hotmail.com`, the three `freya_jowin*`, `outmassapp@outlook.com`,
+  `mstest404@outlook.com`, `outmass.review`. There is none today, which is why the
+  denominator question in §2 is open at all.
+
+---
+
+## 7. On Microsoft, finally
+
+Microsoft is about to commoditise mail merge — the half we already give away. Our
+answer has always been "we own everything after Send." That answer is still correct
+on the merits: Microsoft is not building it, SecureMailMerge refuses to by design.
+
+But **we have never sold it to anyone**, and — the correction that matters — for
+two of the three features that was not because nobody was told. They were told,
+plainly, for four and a half months, next to a working checkout, and nobody bought.
+
+**[R3] And the retention data says even that is the second question.** Microsoft's
+GA is a threat to a product that keeps its users. At **8% monthly retention** and a
+longest-ever relationship of **25 days**, we lose people faster than Microsoft could
+take them. Advanced Mail Merge shipping in September changes very little about a
+funnel that empties itself every four weeks.
+
+So the honest statement is not the one either earlier draft reached:
+
+> **We do not yet have a retention problem caused by a missing differentiator. We
+> have a retention problem, full stop — and we have never asked anyone why.**
+
+Microsoft's September is a deadline for the *install* reason, and worth the two
+days in §6 items 2–4. But the thing that decides whether OutMass exists in six
+months is item 1, and it costs an afternoon.
+
+---
+
+## Open questions for Ali
+
+1. Are `bayar_ali@hotmail.com` and the three `freya_jowin*` accounts yours? If so
+   the sender denominator is 22, not 26, and every ratio improves.
+2. Who owns the 2026-04-21 follow-up — the only one ever created?
+   ```sql
+   SELECT f.id, f.created_at, f.status, u.email, u.plan
+   FROM follow_ups f JOIN users u ON u.id = f.user_id;
+   ```
+3. Does anyone come back? Retention is the one thing this review never measured.
+   ```sql
+   SELECT u.email, u.plan, count(*) AS kampanya,
+          min(c.created_at)::date AS ilk, max(c.created_at)::date AS son,
+          sum(c.sent_count) AS toplam_gonderim
+   FROM campaigns c JOIN users u ON u.id = c.user_id
+   GROUP BY u.email, u.plan ORDER BY kampanya DESC;
+   ```
+
+---
+
+## Sources
+
+- Roadmap 423047 — verification log in `2026-08-24-microsoft-qa-answers.md`
+- PostHog (EU project), queried 2026-08-31 via `backend/scripts/ask.py`
+- `routers/campaigns.py:1412`, `:1470`; `routers/ai.py:75`; `sidebar.js:2316`,
+  `:2677`, `:3009`, `:3398`, `:3678`; `sidebar.html:133`
+- Commits `8e483bc` (gate, 03-29), `fcf69a8` (A/B + AI alerts, 04-16),
+  `2dfae55` (PRO tags, 08-30)
+- mailmeteor.com/products/microsoft-outlook, gmass.co/pricing — read 2026-08-31
+- `2026-07-06-competitive-analysis-securemailmerge.md`
