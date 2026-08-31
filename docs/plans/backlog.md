@@ -1209,6 +1209,18 @@ exit strategy is growing MRR.
     Center, replace their auto-generated OutMass copy with the audited
     G2 short+long text and check the screenshots. Bonus unlocked: reply
     access to user reviews + visits/downloads metrics.
+    - **APP SUBMISSION REJECTED 2026-08-31 — the door is closed, do not
+      retry.** Submitting OutMass 0.2.2 as an app came back REJECTED with a
+      category rule, not a quality note: *"Chrome Extensions are not currently
+      allowed on the Softonic website... we only accept standalone web
+      applications at this time."* So there is no corrected version to
+      resubmit — nothing about our package changes the answer. The mail
+      invites a "corrected version"; that invitation is boilerplate and does
+      not apply. Their note says they review content policies regularly, so
+      the only thing that reopens this is a policy change on their side, or
+      OutMass gaining a standalone web app. **Re-check only if one of those
+      two happens.** The claimed COMPANY page from 08-19 is unaffected and
+      still ours — the 5-minute copy fix above is still worth doing.
   - **GetApp + Software Advice: submitted 2026-08-21, "Under review, 1-2
     business days"** (→ expect ~08-24/25). Full channel profiles done the
     same evening: default+category descriptions, screenshots with
