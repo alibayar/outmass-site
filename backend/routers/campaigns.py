@@ -19,7 +19,7 @@ from typing import Annotated
 
 import httpx
 from fastapi import APIRouter, BackgroundTasks, Depends, Header, HTTPException, Request
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from config import (
     BACKEND_URL,
@@ -32,6 +32,7 @@ from config import (
     QUOTA_CHARGE_BATCH,
     SEND_DELAY_SECONDS,
     SUPABASE_MAX_ROWS,
+    FOLLOWUP_LOCKED_MIN_CLIENT,
     upload_limit_for_plan,
     MAX_CSV_SIZE_BYTES,
 )
@@ -44,6 +45,7 @@ from models import followup as followup_model
 from models import user as user_model
 from routers.auth import get_current_user
 from utils import welcome_email
+from utils.client_version import client_at_least
 from utils.merge_tags import CONTACT_TAGS, find_malformed_tags, find_unknown_tags
 from utils.send_classify import _classify_failure  # re-exported for the send loop
 
@@ -81,7 +83,11 @@ class UploadContactsRequest(BaseModel):
 
 
 class CreateFollowupRequest(BaseModel):
-    delay_days: int = 3
+    # Bounded. The panel sends parseInt(value, 10) || 3, which passes a typed
+    # -1 straight through the input's min="1" — and a negative delay puts the
+    # follow-up's due moment BEFORE the campaign, so it goes out on the next
+    # beat instead of days later. 365 is well past any real cadence.
+    delay_days: int = Field(3, ge=1, le=365)
     subject: str
     body: str
     condition: str = "not_opened"
@@ -346,6 +352,18 @@ async def campaign_stats(
         # correctly by the soonest.
         "followup_delay_days": next(
             (f.get("delay_days") for f in followups if f["status"] == "scheduled"),
+            None,
+        ),
+        # A follow-up written for this campaign that the plan could not run.
+        # Inert until activated; surfaced so the panel can say it is there
+        # rather than leaving the user to remember writing it.
+        "locked_followup": next(
+            (
+                {"id": f["id"], "delay_days": f.get("delay_days"),
+                 "subject": f.get("subject")}
+                for f in followups
+                if f["status"] == "locked"
+            ),
             None,
         ),
     }
@@ -1417,12 +1435,37 @@ async def create_followup(
     campaign_id: str,
     body: CreateFollowupRequest,
     user: dict = Depends(get_current_user),
+    x_extension_version: Annotated[str | None, Header()] = None,
 ):
     campaign = campaign_model.get_campaign(campaign_id)
     if not campaign or campaign["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
     if user_model.effective_plan(user) not in ("pro",):
+        # The only moment a follow-up could ever be attached was the instant
+        # Send was pressed. Refusing here threw away a subject line and a body
+        # the user had just written, and left that campaign with no second
+        # chance on any plan — including after they upgraded. Save it instead,
+        # inert, and let them press activate when they can run it.
+        #
+        # Only for clients that know what the answer means. An older panel
+        # reads any 200 as "your follow-up is scheduled", which is the silent
+        # failure this replaces, so it keeps the 402 and its alert.
+        if client_at_least(x_extension_version, FOLLOWUP_LOCKED_MIN_CLIENT):
+            locked = followup_model.create_followup(
+                campaign_id=campaign_id,
+                user_id=user["id"],
+                delay_days=body.delay_days,
+                subject=body.subject,
+                body=body.body,
+                condition=body.condition,
+                status="locked",
+            )
+            return {
+                "followup_id": locked["id"],
+                "locked": True,
+                "required_plan": "pro",
+            }
         raise HTTPException(
             status_code=402,
             detail={
@@ -1439,6 +1482,10 @@ async def create_followup(
         subject=body.subject,
         body=body.body,
         condition=body.condition,
+        # Explicit, not the model default. The locked path a few lines up
+        # passes its status too, and one of the two relying on a default is
+        # how the wrong one quietly inherits a change to it.
+        status="scheduled",
     )
     return {"followup_id": followup["id"]}
 
@@ -1454,6 +1501,86 @@ async def list_followups(
 
     followups = followup_model.get_campaign_followups(campaign_id)
     return {"followups": followups}
+
+
+@router.post("/{campaign_id}/followups/{followup_id}/activate")
+async def activate_followup(
+    campaign_id: str,
+    followup_id: str,
+    confirm_immediate: bool = False,
+    user: dict = Depends(get_current_user),
+):
+    """Turn a saved-but-locked follow-up into a running one.
+
+    Never automatic. A follow-up written weeks ago and forgotten, firing
+    because the account changed plan, would be our mistake sent under the
+    user's name — so activation is always a deliberate press, and this is the
+    endpoint behind it.
+
+    The one hazard is timing. A follow-up is due per recipient at their own
+    sent_at + delay_days, so on a campaign that finished a while ago every one
+    of those moments has already passed and activating does not schedule
+    anything: it sends, at once, to everyone still eligible. That is a
+    legitimate thing to want and an unacceptable thing to discover, so it
+    needs `confirm_immediate` and the caller is told the number first.
+    """
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    if user_model.effective_plan(user) not in ("pro",):
+        raise HTTPException(
+            status_code=402,
+            detail={
+                "error": "feature_locked",
+                "message": "Follow-up ozelligi sadece Pro planda kullanilabilir",
+                "required_plan": "pro",
+            },
+        )
+
+    if campaign.get("archived"):
+        # The worker cancels an archived campaign's follow-up before anything
+        # else (followup_worker.py:83). Activating here would return 200, say
+        # "Follow-up started", and be silently undone on the next beat —
+        # nothing sent, and the user told something untrue.
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "campaign_archived"},
+        )
+
+    followups = followup_model.get_campaign_followups(campaign_id)
+    followup = next((f for f in followups if f["id"] == followup_id), None)
+    if not followup:
+        raise HTTPException(status_code=404, detail="Follow-up not found")
+    if followup["status"] != "locked":
+        # Already running, already sent, or cancelled. Activating any of those
+        # again would duplicate a send, so this is a 409 rather than a no-op.
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "not_locked", "status": followup["status"]},
+        )
+
+    # `or 0`, matching followup_worker.py:91 exactly. Both sides must read a
+    # falsy delay_days the same way: 0 is falsy, so `or 3` would have this
+    # guard count against a three-day cutoff while the worker sends against
+    # a zero-day one. That is the one direction the warning can UNDERSTATE
+    # — it would report nobody due, skip the confirmation, and let a whole
+    # finished list go out with nothing asked.
+    delay_days = followup.get("delay_days") or 0
+    due_now = followup_model.count_due_immediately(campaign_id, delay_days)
+    if due_now > 0 and not confirm_immediate:
+        raise HTTPException(
+            status_code=409,
+            detail={
+                "error": "would_send_immediately",
+                "count": due_now,
+                "delay_days": delay_days,
+            },
+        )
+
+    followup_model.update_followup_status(followup_id, "scheduled")
+    return {"followup_id": followup_id, "status": "scheduled",
+            "sending_immediately_to": due_now}
 
 
 @router.delete("/{campaign_id}/followups/{followup_id}")

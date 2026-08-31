@@ -14,6 +14,10 @@
  *                         backend/routers/auth.py to compare both sides)
  *   no-hardcoded-prices — no locale or markup holds a literal price, and the
  *                         Intl path that shows the real one still exists
+ *   locked-followup     — a follow-up saved because the plan cannot run
+ *                         it must never be reported as scheduled, and
+ *                         activating one that would send AT ONCE must
+ *                         show the recipient count first
  *   feature-wall-offer  — a locked-feature wall must offer a plan that
  *                         actually unlocks it; selling Starter on a Pro wall
  *                         would be a BILLED failure, worse than the silent
@@ -45,6 +49,7 @@ const suites = [
   require("./auth-flow-context.test.js"),
   require("./local-datetime.test.js"),
   require("./feature-wall-offer.test.js"),
+  require("./locked-followup.test.js"),
 ];
 
 async function main() {

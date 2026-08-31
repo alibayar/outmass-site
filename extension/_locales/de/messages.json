@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "Jede Person erhält $1 Tage nach Ihrer E-Mail eine Nachfassnachricht."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "Ihre Nachfass-E-Mail wurde gespeichert, benötigt aber den Pro-Tarif. Nach einem Upgrade können Sie sie im Bericht dieser Kampagne starten."
+  },
+  "reportsFollowupSaved": {
+    "message": "Für diese Kampagne ist eine Nachfass-E-Mail gespeichert, sie läuft aber noch nicht."
+  },
+  "btnActivateFollowup": {
+    "message": "Nachfass-E-Mail starten"
+  },
+  "alertFollowupActivated": {
+    "message": "Nachfass-E-Mail gestartet."
+  },
+  "confirmFollowupImmediate": {
+    "message": "Diese Kampagne liegt weit genug zurück, dass die Nachfass-E-Mail für $1 Empfänger bereits fällig ist — sie erhalten sie sofort. Fortfahren?"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "Diese Nachfass-E-Mail läuft bereits."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "Die Nachfass-E-Mail konnte nicht gestartet werden. Bitte versuchen Sie es erneut."
+  },
   "alertQuotaHorizon": {
     "message": "Ihr Plan sendet $1 E-Mails pro Monat — die verbleibenden $2 Empfänger würden also noch etwa $3 Monate dauern. Upgraden Sie Ihren Plan, um sie früher zu senden."
   },

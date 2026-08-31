@@ -1331,6 +1331,17 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "ACTIVATE_FOLLOWUP":
+      backendFetch(
+        "/campaigns/" + message.campaignId + "/followups/" +
+          message.followupId + "/activate?confirm_immediate=" +
+          (message.confirmImmediate ? "true" : "false"),
+        { method: "POST" }
+      ).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "CREATE_FOLLOWUP":
       backendFetch("/campaigns/" + message.campaignId + "/followups", {
         method: "POST",

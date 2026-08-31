@@ -885,6 +885,27 @@
   "reportsFollowupExplain": {
     "message": "Each person is followed up $1 days after they receive your email."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "Your follow-up has been saved, but it needs the Pro plan to run. Upgrade and you can start it from this campaign's report."
+  },
+  "reportsFollowupSaved": {
+    "message": "A follow-up is saved for this campaign but is not running yet."
+  },
+  "btnActivateFollowup": {
+    "message": "Start follow-up"
+  },
+  "alertFollowupActivated": {
+    "message": "Follow-up started."
+  },
+  "confirmFollowupImmediate": {
+    "message": "This campaign was sent long enough ago that the follow-up is already due for $1 recipients — they will receive it right away. Continue?"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "This follow-up is already running."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "The follow-up could not be started. Please try again."
+  },
   "alertQuotaHorizon": {
     "message": "Your plan sends $1 emails a month, so the remaining $2 recipients would take about $3 more months. Upgrade to send them sooner."
   },

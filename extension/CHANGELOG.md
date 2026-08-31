@@ -2,6 +2,37 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.3.1 — 2026-09-01
+
+- **A locked feature now tells you what it costs and how to get it.** Turning
+  on follow-ups, A/B subject testing or the AI writer on a plan that does not
+  include them used to produce a message naming the plan and nothing else — no
+  price, no button, nowhere to go. All three now open the same panel the
+  monthly limit uses, showing the plans that actually unlock what you clicked,
+  with their prices. Only those: a plan that would not give you the feature is
+  no longer offered.
+
+- **A follow-up you set up is no longer thrown away.** Until now the single
+  moment a follow-up could be attached to a campaign was the instant you
+  pressed Send. If your plan could not run it, the subject line and text you
+  had just written were discarded, and that campaign could never have one —
+  even after upgrading. Your follow-up is now saved with the campaign and
+  waits. When your plan can run it, the campaign's report offers to start it.
+
+  Nothing starts by itself. If starting one would reach people immediately —
+  which happens when a campaign finished long enough ago that the follow-up
+  is already due — you are told how many before anything is sent.
+
+- **"Write with AI" now says PRO**, like the follow-up and A/B controls beside
+  it, instead of looking free until you press Generate.
+
+- **Large campaigns no longer stop short and report themselves finished.** A
+  campaign with more than a thousand recipients could send part of the list,
+  find nothing wrong, and close as sent — leaving the rest unsent with no way
+  to reach them. Such a campaign is now marked partial and finishes on its
+  own. This affected uncapped campaigns over a thousand recipients; campaigns
+  with a daily limit were never affected.
+
 ## v0.3.0 — 2026-08-31
 
 - **OutMass no longer asks Microsoft for your subject lines.** Reply

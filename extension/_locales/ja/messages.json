@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "各受信者には、メールを受け取ってから $1 日後にフォローアップが送られます。"
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "フォローアップは保存されましたが、実行にはProプランが必要です。アップグレードすると、このキャンペーンのレポートから開始できます。"
+  },
+  "reportsFollowupSaved": {
+    "message": "このキャンペーンにはフォローアップが保存されていますが、まだ実行されていません。"
+  },
+  "btnActivateFollowup": {
+    "message": "フォローアップを開始"
+  },
+  "alertFollowupActivated": {
+    "message": "フォローアップを開始しました。"
+  },
+  "confirmFollowupImmediate": {
+    "message": "このキャンペーンは送信からの経過が長く、$1 件の宛先はすでにフォローアップの時期です。すぐに届きます。続行しますか？"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "このフォローアップはすでに実行中です。"
+  },
+  "alertFollowupActivateFailed": {
+    "message": "フォローアップを開始できませんでした。もう一度お試しください。"
+  },
   "alertQuotaHorizon": {
     "message": "現在のプランは月に $1 通まで送信できるため、残りの $2 件はさらに約 $3 か月かかります。より早く送信したい場合は、プランをアップグレードしてください。"
   },

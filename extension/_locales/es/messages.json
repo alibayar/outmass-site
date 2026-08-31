@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "Cada persona recibe un seguimiento $1 días después de su correo."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "Tu seguimiento se ha guardado, pero necesita el plan Pro para ejecutarse. Mejora tu plan y podrás iniciarlo desde el informe de esta campaña."
+  },
+  "reportsFollowupSaved": {
+    "message": "Hay un seguimiento guardado para esta campaña, pero todavía no está activo."
+  },
+  "btnActivateFollowup": {
+    "message": "Iniciar seguimiento"
+  },
+  "alertFollowupActivated": {
+    "message": "Seguimiento iniciado."
+  },
+  "confirmFollowupImmediate": {
+    "message": "Esta campaña se envió hace suficiente tiempo como para que el seguimiento ya corresponda a $1 destinatarios: lo recibirán de inmediato. ¿Continuar?"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "Este seguimiento ya está activo."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "No se pudo iniciar el seguimiento. Inténtalo de nuevo."
+  },
   "alertQuotaHorizon": {
     "message": "Tu plan envía $1 correos al mes, así que los $2 destinatarios restantes tardarían unos $3 meses más. Mejora tu plan para enviarlos antes."
   },

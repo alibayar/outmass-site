@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "Chaque personne reçoit une relance $1 jours après votre e-mail."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "Votre relance a été enregistrée, mais elle nécessite le forfait Pro. Après la mise à niveau, vous pourrez la lancer depuis le rapport de cette campagne."
+  },
+  "reportsFollowupSaved": {
+    "message": "Une relance est enregistrée pour cette campagne mais n'est pas encore active."
+  },
+  "btnActivateFollowup": {
+    "message": "Lancer la relance"
+  },
+  "alertFollowupActivated": {
+    "message": "Relance lancée."
+  },
+  "confirmFollowupImmediate": {
+    "message": "Cette campagne est assez ancienne pour que la relance soit déjà due pour $1 destinataires — ils la recevront immédiatement. Continuer ?"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "Cette relance est déjà active."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "Impossible de lancer la relance. Veuillez réessayer."
+  },
   "alertQuotaHorizon": {
     "message": "Votre forfait envoie $1 e-mails par mois : les $2 destinataires restants prendraient encore environ $3 mois. Passez à un forfait supérieur pour les envoyer plus tôt."
   },

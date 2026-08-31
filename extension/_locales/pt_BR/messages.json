@@ -877,6 +877,27 @@
   "reportsFollowupExplain": {
     "message": "Cada pessoa recebe um follow-up $1 dias depois de receber seu e-mail."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "Seu follow-up foi salvo, mas precisa do plano Pro para funcionar. Faça o upgrade e você poderá iniciá-lo pelo relatório desta campanha."
+  },
+  "reportsFollowupSaved": {
+    "message": "Há um follow-up salvo para esta campanha, mas ele ainda não está ativo."
+  },
+  "btnActivateFollowup": {
+    "message": "Iniciar follow-up"
+  },
+  "alertFollowupActivated": {
+    "message": "Follow-up iniciado."
+  },
+  "confirmFollowupImmediate": {
+    "message": "Esta campanha foi enviada há tempo suficiente para que o follow-up já esteja no prazo de $1 destinatários — eles vão recebê-lo imediatamente. Continuar?"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "Este follow-up já está ativo."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "Não foi possível iniciar o follow-up. Tente novamente."
+  },
   "alertQuotaHorizon": {
     "message": "Seu plano envia $1 e-mails por mês, então os $2 destinatários restantes levariam cerca de $3 meses a mais. Faça upgrade do seu plano para enviá-los antes."
   },

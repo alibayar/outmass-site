@@ -877,6 +877,27 @@
   "reportsFollowupExplain": {
     "message": "每位收件者會在收到您的郵件 $1 天後收到跟進郵件。"
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "您的追蹤信已儲存，但需要 Pro 方案才能執行。升級後即可從此行銷活動的報表中啟動。"
+  },
+  "reportsFollowupSaved": {
+    "message": "此行銷活動已儲存一封追蹤信，但尚未執行。"
+  },
+  "btnActivateFollowup": {
+    "message": "啟動追蹤信"
+  },
+  "alertFollowupActivated": {
+    "message": "追蹤信已啟動。"
+  },
+  "confirmFollowupImmediate": {
+    "message": "此行銷活動寄出已久，$1 位收件者的追蹤時間已到——他們會立即收到。要繼續嗎？"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "此追蹤信已在執行中。"
+  },
+  "alertFollowupActivateFailed": {
+    "message": "無法啟動追蹤信，請再試一次。"
+  },
   "alertQuotaHorizon": {
     "message": "您的方案每月可傳送 $1 封郵件，因此剩餘的 $2 位收件者還需要約 $3 個月。若想提早寄出，請升級您的方案。"
   },

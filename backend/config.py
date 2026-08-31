@@ -388,6 +388,13 @@ UPLOAD_LIMIT_MIN_CLIENT = (0, 3, 0)
 # hold (AADSTS65001, a dead sign-in).
 FIRST_SIGNIN_MIN_CLIENT = (0, 3, 0)
 
+# From this client on, a follow-up configured without Pro is SAVED
+# (status 'locked') and answered 200 instead of 402. Older panels have
+# no idea what 'locked' means and would read the 200 as "created" —
+# the exact silent failure this feature exists to end — so they keep
+# getting the 402 and its alert.
+FOLLOWUP_LOCKED_MIN_CLIENT = (0, 3, 1)
+
 
 def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
     """Per-upload CSV row limit for a plan name.

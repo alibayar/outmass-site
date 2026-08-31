@@ -19,7 +19,14 @@ def create_followup(
     subject: str,
     body: str,
     condition: str = "not_opened",
+    status: str = "scheduled",
 ) -> dict:
+    """Create a follow-up.
+
+    `status='locked'` stores a configuration the account cannot run yet. The
+    worker's queries select 'scheduled', so a locked row is inert — it sends
+    nothing, is counted in no pending total, and waits to be activated.
+    """
     scheduled_for = datetime.now(timezone.utc) + timedelta(days=delay_days)
     result = (
         get_db()
@@ -32,7 +39,7 @@ def create_followup(
                 "subject": subject,
                 "body": body,
                 "condition": condition,
-                "status": "scheduled",
+                "status": status,
                 "scheduled_for": scheduled_for.isoformat(),
             }
         )
@@ -51,6 +58,33 @@ def get_campaign_followups(campaign_id: str) -> list[dict]:
         .execute()
     )
     return result.data
+
+
+def count_due_immediately(campaign_id: str, delay_days: int) -> int:
+    """How many recipients a follow-up activated NOW would go to at once.
+
+    A follow-up is due per recipient at their own sent_at + delay_days. On a
+    campaign that finished weeks ago every one of those moments is already in
+    the past, so activating it is not scheduling anything — it is sending,
+    immediately, to everyone. Nobody may discover that after the fact.
+
+    An upper bound: it does not subtract people who have replied or already
+    been bumped, both of which the worker excludes. Overstating the number is
+    the safe direction for a confirmation prompt.
+    """
+    cutoff = (datetime.now(timezone.utc) - timedelta(days=delay_days)).isoformat()
+    result = (
+        get_db()
+        .table("contacts")
+        .select("id", count="exact")
+        .eq("campaign_id", campaign_id)
+        .eq("status", "sent")
+        .eq("unsubscribed", False)
+        .lte("sent_at", cutoff)
+        .limit(1)
+        .execute()
+    )
+    return result.count or 0
 
 
 def get_pending_followups() -> list[dict]:
@@ -95,13 +129,20 @@ def get_bumped_contact_ids(followup_id: str) -> set[str]:
     )
     rows = result.data or []
     if len(rows) >= SUPABASE_MAX_ROWS:
-        # Never silent. A truncated memory would look exactly like a fresh
-        # follow-up, and the beat would start again from the top.
-        logger.error(
-            "follow-up %s has at least %s recorded bumps — the read is at its "
-            "ceiling and may be truncated. Do NOT let this run send again "
-            "until the query is paginated.",
-            followup_id, SUPABASE_MAX_ROWS,
+        # Fail CLOSED, not loudly. This set is the memory of who has already
+        # been followed up; a contact missing from it reads as "not bumped
+        # yet" and gets a second email from the customer's own mailbox. An
+        # earlier version logged this and returned the truncated set anyway,
+        # which is a warning in a log nobody is reading at the moment the
+        # duplicate goes out.
+        #
+        # Raising skips this follow-up for this run and leaves it for the next
+        # beat. That is a delay; the alternative is mail somebody twice.
+        raise RuntimeError(
+            f"follow-up {followup_id} has at least {SUPABASE_MAX_ROWS} recorded "
+            f"bumps, so this read is at the server ceiling and cannot be "
+            f"trusted as the full set. Refusing to compute who still needs a "
+            f"follow-up from a partial memory."
         )
     return {row["contact_id"] for row in rows}
 

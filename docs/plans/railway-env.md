@@ -125,7 +125,7 @@ sign-in and sending.
 | `STARTER_UPLOAD_ROW_LIMIT` | web | no | defaults to 2500; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
 | `PRO_UPLOAD_ROW_LIMIT` | web | no | defaults to 10000; in force for clients older than 0.3.0, and while UPLOAD_LIMIT_FOLLOWS_QUOTA is off |
 | `UPLOAD_LIMIT_FOLLOWS_QUOTA` | web | no | defaults to false, and no longer needs flipping: the client's version decides (0.3.0+ gets the single ceiling). True is a one-directional override that lifts it for older clients too |
-| `CSV_UPLOAD_ROW_LIMIT` | web, worker | no | defaults to 10000; the single ceiling once a client is new enough, and the bound on the follow-up worker's two large reads |
+| `CSV_UPLOAD_ROW_LIMIT` | web, worker | no | defaults to 10000; the single ceiling on how many rows a CSV upload may carry once a client is new enough. It no longer bounds the follow-up worker's reads — `SUPABASE_MAX_ROWS` does, since 01e18bb |
 | `SUPABASE_MAX_ROWS` | web, worker | no | defaults to 1000 and MUST match Supabase → Settings → API → Max rows. PostgREST serves min(requested, max rows), so every truncation alarm is measured against this number; a stale value here makes those alarms lie, which is how the 2026-08-30 follow-up guards ended up decorative |
 | `AI_GENERATION_MONTHLY_LIMIT` | web | no | defaults to 50 |
 | `PLAN_DROP_NOTICE_DAYS` | web | no | defaults to 14 |

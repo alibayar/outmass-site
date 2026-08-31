@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "يتلقى كل شخص رسالة متابعة بعد $1 يوم من استلامه رسالتك."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "تم حفظ رسالة المتابعة، لكنها تحتاج خطة Pro لتعمل. بعد الترقية يمكنك تشغيلها من تقرير هذه الحملة."
+  },
+  "reportsFollowupSaved": {
+    "message": "توجد رسالة متابعة محفوظة لهذه الحملة لكنها لم تبدأ بعد."
+  },
+  "btnActivateFollowup": {
+    "message": "بدء المتابعة"
+  },
+  "alertFollowupActivated": {
+    "message": "بدأت المتابعة."
+  },
+  "confirmFollowupImmediate": {
+    "message": "أُرسلت هذه الحملة منذ وقت كافٍ بحيث حان موعد المتابعة بالفعل لـ $1 من المستلمين — وسيستلمونها فورًا. هل تريد المتابعة؟"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "رسالة المتابعة هذه تعمل بالفعل."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "تعذّر بدء المتابعة. يرجى المحاولة مرة أخرى."
+  },
   "alertQuotaHorizon": {
     "message": "تُرسل خطتك $1 رسالة شهريًا، لذا سيستغرق إرسال $2 مستلمًا متبقيًا نحو $3 شهرًا إضافيًا. قم بترقية خطتك لإرسالهم في وقت أقرب."
   },

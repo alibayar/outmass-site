@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "每位收件人会在收到您的邮件 $1 天后收到跟进邮件。"
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "您的跟进已保存，但需要 Pro 方案才能运行。升级后即可在此营销活动的报告中启动它。"
+  },
+  "reportsFollowupSaved": {
+    "message": "此营销活动已保存一条跟进，但尚未运行。"
+  },
+  "btnActivateFollowup": {
+    "message": "启动跟进"
+  },
+  "alertFollowupActivated": {
+    "message": "跟进已启动。"
+  },
+  "confirmFollowupImmediate": {
+    "message": "此营销活动发送已久，$1 位收件人的跟进时间已到——他们会立即收到。要继续吗？"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "此跟进已在运行。"
+  },
+  "alertFollowupActivateFailed": {
+    "message": "无法启动跟进，请重试。"
+  },
   "alertQuotaHorizon": {
     "message": "您的套餐每月可发送 $1 封邮件，因此剩余的 $2 位收件人还需要约 $3 个月。如需更早发送，请升级套餐。"
   },

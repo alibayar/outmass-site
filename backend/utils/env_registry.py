@@ -145,7 +145,7 @@ REGISTRY: tuple[Var, ...] = (
     Var("SUPABASE_MAX_ROWS", (WEB, WORKER), False,
         "defaults to 1000 and MUST match Supabase -> Settings -> API -> Max rows; every truncation alarm is measured against it, so a stale value here makes those alarms lie"),
     Var("CSV_UPLOAD_ROW_LIMIT", (WEB, WORKER), False,
-        "defaults to 10000; the single ceiling once a client is new enough, and the bound on the follow-up worker's two large reads"),
+        "defaults to 10000; the single ceiling on how many rows a CSV upload may carry once a client is new enough. It no longer bounds the follow-up worker's reads — SUPABASE_MAX_ROWS does, since 01e18bb"),
     Var("AI_GENERATION_MONTHLY_LIMIT", (WEB,), False, "defaults to 50"),
     Var("PLAN_DROP_NOTICE_DAYS", (WEB,), False, "defaults to 14"),
     Var("AUTH_RESUME_MAX_AGE_DAYS", (WEB, WORKER), False, "defaults to 7"),

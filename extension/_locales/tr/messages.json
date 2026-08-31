@@ -31,6 +31,27 @@
   "reportsFollowupExplain": {
     "message": "Her kişiye, e-postayı almasından $1 gün sonra takip gönderilir."
   },
+  "alertFollowupSavedNeedsPro": {
+    "message": "Hatırlatmanız kaydedildi, ancak çalışması için Pro plan gerekiyor. Yükseltirseniz bu kampanyanın raporundan başlatabilirsiniz."
+  },
+  "reportsFollowupSaved": {
+    "message": "Bu kampanya için kayıtlı bir hatırlatma var, henüz çalışmıyor."
+  },
+  "btnActivateFollowup": {
+    "message": "Hatırlatmayı başlat"
+  },
+  "alertFollowupActivated": {
+    "message": "Hatırlatma başlatıldı."
+  },
+  "confirmFollowupImmediate": {
+    "message": "Bu kampanya yeterince önce gönderildiği için hatırlatmanın zamanı $1 alıcı için çoktan geldi — onlara hemen ulaşacak. Devam edilsin mi?"
+  },
+  "alertFollowupAlreadyRunning": {
+    "message": "Bu hatırlatma zaten çalışıyor."
+  },
+  "alertFollowupActivateFailed": {
+    "message": "Hatırlatma başlatılamadı. Lütfen tekrar deneyin."
+  },
   "alertQuotaHorizon": {
     "message": "Planınız ayda $1 email gönderiyor; kalan $2 alıcı yaklaşık $3 ay daha sürer. Daha erken göndermek için planınızı yükseltin."
   },

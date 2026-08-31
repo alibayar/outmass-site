@@ -3059,6 +3059,22 @@
       },
       function (resp) {
         if (resp && !resp.error) {
+          // 0.3.1+ servers SAVE a follow-up the plan cannot run rather than
+          // discarding it, and say so with locked:true. Falling through to
+          // the line below would report it as created, which is the silent
+          // failure this whole feature replaces.
+          var _fu = (resp.data || resp) || {};
+          if (_fu.locked) {
+            track("feature_locked_followup");
+            // Deliberately NOT unticking the box: the configuration was
+            // kept, and clearing the control would say it was not.
+            showUpgradeModal({
+              message: t("alertFollowupSavedNeedsPro"),
+              minPlan: "pro",
+              context: "wall_followup",
+            });
+            return;
+          }
           log("Follow-up created for campaign:", campaignId);
           return;
         }
@@ -3275,6 +3291,14 @@
             }
           }
           followupEl.textContent = fuText;
+        } else if (stats.locked_followup) {
+          // A follow-up written for this campaign that the plan could not
+          // run. It is stored and inert. Before this existed the wording was
+          // simply thrown away and the campaign could never have one, on any
+          // plan, because Send is the only moment the panel offers to attach
+          // one.
+          followupEl.textContent = "";
+          renderLockedFollowup(followupEl, campaignId, stats.locked_followup);
         } else {
           followupEl.textContent = "";
         }
@@ -3290,6 +3314,96 @@
 
         // Draw bar chart
         drawBarChart(stats.sent_count || 0, stats.open_count || 0, stats.click_count || 0);
+      }
+    );
+  }
+
+  // A saved-but-not-running follow-up, and the button that starts it.
+  //
+  // Activation is always a press. A follow-up written weeks ago and forgotten,
+  // starting by itself because the account changed plan, would be our mistake
+  // sent under the user's name.
+  function renderLockedFollowup(container, campaignId, locked) {
+    container.textContent = "";
+
+    var line = document.createElement("div");
+    line.textContent = t("reportsFollowupSaved");
+    container.appendChild(line);
+
+    var btn = document.createElement("button");
+    btn.className = "btn btn-secondary";
+    btn.style.cssText = "margin-top:8px;";
+    btn.textContent = t("btnActivateFollowup");
+    btn.addEventListener("click", function () {
+      if (btn.disabled) return;
+      btn.disabled = true;
+      activateFollowup(campaignId, locked.id, false, btn);
+    });
+    container.appendChild(btn);
+  }
+
+  function activateFollowup(campaignId, followupId, confirmed, btn) {
+    chrome.runtime.sendMessage(
+      {
+        type: "ACTIVATE_FOLLOWUP",
+        campaignId: campaignId,
+        followupId: followupId,
+        confirmImmediate: confirmed,
+      },
+      function (resp) {
+        if (resp && !resp.error) {
+          alert(t("alertFollowupActivated"));
+          // showCampaignDetail, not a re-render helper of our own: it is the
+          // function that already re-fetches GET_CAMPAIGN_STATS and redraws
+          // #followup-status, so the saved-follow-up block is replaced by the
+          // pending one. The first version of this line called a
+          // loadCampaignStats() that does not exist anywhere in the panel —
+          // a ReferenceError on every single activation, thrown right after
+          // the user had authorised a mass send, leaving them looking at "not
+          // running yet" under an alert saying it had started. The source-regex
+          // suites cannot resolve an identifier, which is how it reached green.
+          showCampaignDetail(campaignId);
+          return;
+        }
+        if (btn) btn.disabled = false;
+
+        // A connectivity failure is not a refusal. Passing null rather than
+        // the button because handleNetworkFailure relabels what it is given
+        // to "Send", which this button is not.
+        if (handleNetworkFailure(resp, null)) return;
+
+        if (resp && resp.status === 402) {
+          showUpgradeModal({
+            // Not alertFollowupProOnly: that string ends "your campaign will
+            // still be sent - the follow-up was not scheduled", which is about
+            // a send happening now. Here the campaign went out days ago and
+            // the follow-up is sitting saved, which is what this string says.
+            message: t("alertFollowupSavedNeedsPro"),
+            minPlan: "pro",
+            context: "wall_followup_activate",
+          });
+          return;
+        }
+
+        var d = (resp && resp.detail) || {};
+        // Follow-ups are due per recipient at their own send time plus the
+        // delay, so on a campaign that finished a while ago every one of
+        // those moments has already passed: activating does not schedule
+        // anything, it sends at once. The number goes in front of the user
+        // before it happens, never after.
+        if (d.error === "would_send_immediately") {
+          if (confirm(t("confirmFollowupImmediate", [String(d.count)]))) {
+            if (btn) btn.disabled = true;
+            activateFollowup(campaignId, followupId, true, btn);
+          }
+          return;
+        }
+        if (d.error === "not_locked") {
+          alert(t("alertFollowupAlreadyRunning"));
+          showCampaignDetail(campaignId);
+          return;
+        }
+        alert(t("alertFollowupActivateFailed"));
       }
     );
   }
