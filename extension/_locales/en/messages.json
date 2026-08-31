@@ -539,8 +539,14 @@
   "upgradeModalFeatures": {
     "message": "Detailed reports + priority support"
   },
+  "upgradeModalProFeatures": {
+    "message": "Follow-ups + A/B testing + AI writer"
+  },
   "upgradeModalBtn": {
     "message": "Upgrade Now — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "Upgrade Now — Pro"
   },
   "upgradeModalLater": {
     "message": "Maybe later"

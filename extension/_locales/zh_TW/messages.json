@@ -539,8 +539,14 @@
   "upgradeModalFeatures": {
     "message": "詳細報表 + 優先支援"
   },
+  "upgradeModalProFeatures": {
+    "message": "自動追蹤 + A/B 測試 + AI 撰寫"
+  },
   "upgradeModalBtn": {
     "message": "立即升級 — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "立即升級 — Pro"
   },
   "upgradeModalLater": {
     "message": "稍後再說"

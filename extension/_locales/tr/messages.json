@@ -571,8 +571,14 @@
   "upgradeModalFeatures": {
     "message": "Detaylı raporlar + öncelikli destek"
   },
+  "upgradeModalProFeatures": {
+    "message": "Otomatik hatırlatma + A/B testi + Yapay Zeka ile yazma"
+  },
   "upgradeModalBtn": {
     "message": "Şimdi Yükselt — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "Şimdi Yükselt — Pro"
   },
   "upgradeModalLater": {
     "message": "Belki sonra"

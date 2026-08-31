@@ -571,8 +571,14 @@
   "upgradeModalFeatures": {
     "message": "Detaillierte Berichte + bevorzugter Support"
   },
+  "upgradeModalProFeatures": {
+    "message": "Nachfass-E-Mails + A/B-Tests + KI-Schreibassistent"
+  },
   "upgradeModalBtn": {
     "message": "Jetzt upgraden — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "Jetzt upgraden — Pro"
   },
   "upgradeModalLater": {
     "message": "Vielleicht später"

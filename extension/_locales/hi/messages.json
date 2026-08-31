@@ -571,8 +571,14 @@
   "upgradeModalFeatures": {
     "message": "विस्तृत रिपोर्ट + प्राथमिकता सहायता"
   },
+  "upgradeModalProFeatures": {
+    "message": "ऑटो फ़ॉलो-अप + A/B टेस्ट + AI से लिखना"
+  },
   "upgradeModalBtn": {
     "message": "अभी अपग्रेड करें — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "अभी अपग्रेड करें — Pro"
   },
   "upgradeModalLater": {
     "message": "शायद बाद में"

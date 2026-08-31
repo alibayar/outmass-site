@@ -2314,7 +2314,22 @@
                 function (abResp) {
                   if (abResp && abResp.error) {
                     if (abResp.status === 402) {
-                      alert(t("alertAbTestProOnly"));
+                      // This branch has fired since 2026-04-16 and was never
+                      // tracked, so "how many people hit the A/B wall" has
+                      // only ever been inferred from a checkbox event.
+                      track("feature_locked_ab");
+                      // Raised after the send, not here. The campaign goes out
+                      // regardless (see the comment below), and its success
+                      // alert() blocks the thread — so a modal opened now
+                      // would sit underneath a native dialog the user has to
+                      // dismiss first. _pendingFeatureWall is flushed at the
+                      // same point the follow-up wall is raised, which has
+                      // always been after that alert.
+                      _pendingFeatureWall = {
+                        message: t("alertAbTestProOnly"),
+                        minPlan: "pro",
+                        context: "wall_ab",
+                      };
                     } else {
                       log("A/B test creation failed:", abResp.error);
                     }
@@ -2365,6 +2380,7 @@
         campaign_id: campaignId,
         scheduled: true,
       });
+      flushPendingFeatureWall();
       maybeCreateFollowup(campaignId);
       _attachments = [];
       renderAttachmentChips();
@@ -2523,6 +2539,7 @@
         log("Campaign sent:", queued, "emails, errors:", sendErrors.length);
 
         // Create follow-up if enabled
+        flushPendingFeatureWall();
         maybeCreateFollowup(campaignId);
 
         // Clear attachments so the next compose starts fresh.
@@ -2676,7 +2693,16 @@
           if (!resp || resp.error) {
             track("ai_email_generate_failed", { error_code: (resp && resp.error) ? String(resp.error).slice(0, 64) : "unknown" });
             if (resp && resp.status === 402) {
-              alert(t("alertAiProOnly"));
+              // No feature_locked_ai event here on purpose: the
+              // ai_email_generate_failed above already fires with
+              // error_code, and every one of the six in the record is
+              // error_code=feature_locked. A second event would double-count
+              // the only refusal signal the product has ever observed.
+              showUpgradeModal({
+                message: t("alertAiProOnly"),
+                minPlan: "pro",
+                context: "wall_ai",
+              });
             } else {
               if (!handleSessionExpired(resp)) {
                 alert(t("alertAiFailed") + (resp ? resp.error : t("popupUnknownError")));
@@ -2995,6 +3021,18 @@
     });
   }
 
+  // A feature wall that could not be shown when it happened, because a
+  // blocking alert() was about to run. Raised by flushPendingFeatureWall()
+  // once the send flow has had its say.
+  var _pendingFeatureWall = null;
+
+  function flushPendingFeatureWall() {
+    if (!_pendingFeatureWall) return;
+    var wall = _pendingFeatureWall;
+    _pendingFeatureWall = null;
+    showUpgradeModal(wall);
+  }
+
   function maybeCreateFollowup(campaignId) {
     if (!followupCheckbox || !followupCheckbox.checked) return;
 
@@ -3035,7 +3073,11 @@
         // The A/B branch above has handled the identical case correctly for
         // months; this is the same shape.
         if (resp && resp.status === 402) {
-          alert(t("alertFollowupProOnly"));
+          showUpgradeModal({
+            message: t("alertFollowupProOnly"),
+            minPlan: "pro",
+            context: "wall_followup",
+          });
           var _fEnable = document.getElementById("followup-enabled");
           if (_fEnable && _fEnable.checked) {
             _fEnable.checked = false;
@@ -3400,6 +3442,16 @@
     var existing = document.getElementById("upgrade-modal");
     if (existing) existing.remove();
 
+    // Two shapes share this dialog. The quota wall says "you have run out";
+    // a FEATURE wall says "this is on a higher plan". They differ in three
+    // ways that all have to move together, so they are derived from one flag:
+    // the quota sentence is false in feature mode, the catalogue must not
+    // offer a plan that fails to unlock the thing, and the fallback button
+    // must buy that plan rather than Starter.
+    var featureMode = !!(opts && opts.minPlan);
+    var offerPlan = (opts && opts.minPlan) || "starter";
+    var modalContext = (opts && opts.context) || "modal";
+
     // Build a quota-specific, localized line from the backend payload.
     // Prefer the backend's localized message; otherwise fall back to a numeric
     // "X / Y" usage line built from the structured emails_sent / limit.
@@ -3433,7 +3485,10 @@
       '<div style="font-size:32px;margin-bottom:12px;">🚀</div>' +
       '<h3 style="margin:0 0 8px;color:#323130;font-size:18px;">' + t("upgradeModalTitle") + '</h3>' +
       quotaLineHtml +
-      '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">' + t("upgradeModalText") + '</p>' +
+      // "You've reached your email limit." Someone who clicked a locked
+      // feature has reached no limit, and saying so in fourteen languages is
+      // simply untrue. The red line above already says what is locked.
+      (featureMode ? "" : '<p style="color:#605e5c;font-size:13px;margin-bottom:16px;">' + t("upgradeModalText") + '</p>') +
       // upgradeModalStandard and upgradeModalPro used to sit here, each
       // spelling out a plan's quota and price — in fourteen message files,
       // beside a plan list the server now renders from Stripe and config.py.
@@ -3441,9 +3496,9 @@
       // seeing both of them disagree. The keys are left in the locale files
       // rather than deleted, per the deprecate-first rule.
       '<ul style="text-align:left;font-size:12px;color:#605e5c;margin:0 0 20px 16px;padding:0;">' +
-        '<li>' + t("upgradeModalFeatures") + '</li>' +
+        '<li>' + t(featureMode ? "upgradeModalProFeatures" : "upgradeModalFeatures") + '</li>' +
       '</ul>' +
-      '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">' + t("upgradeModalBtn") + '</button>' +
+      '<button id="btn-upgrade" style="width:100%;padding:10px;background:#0078d4;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;font-family:inherit;margin-bottom:8px;">' + t(offerPlan === "pro" ? "upgradeModalBtnPro" : "upgradeModalBtn") + '</button>' +
       '<button id="btn-upgrade-cancel" style="width:100%;padding:8px;background:none;border:1px solid #c8c6c4;border-radius:6px;color:#605e5c;font-size:13px;cursor:pointer;font-family:inherit;">' + t("upgradeModalLater") + '</button>';
 
     overlay.appendChild(modal);
@@ -3458,8 +3513,8 @@
       // double-click doing the same thing.
       this.disabled = true;
       this.id = "";
-      track("upgrade_button_clicked", { context: "modal" });
-      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: "starter" }, function (resp) {
+      track("upgrade_button_clicked", { context: modalContext, plan: offerPlan });
+      chrome.runtime.sendMessage({ type: "CREATE_CHECKOUT", plan: offerPlan }, function (resp) {
         if (resp && resp.data && resp.data.checkout_url) {
           window.open(resp.data.checkout_url, "_blank");
         } else {
@@ -3488,9 +3543,9 @@
       // They may have closed it, or opened a newer one, while we waited.
       if (!overlay.isConnected) return;
 
-      var rows = buildPlanRows(plans, "quota_modal", function () {
+      var rows = buildPlanRows(plans, modalContext === "modal" ? "quota_modal" : modalContext, function () {
         overlay.remove();
-      }, data.plan);
+      }, data.plan, opts && opts.minPlan);
       if (!rows.length) return;
 
       var oldBtn = modal.querySelector("#btn-upgrade");
@@ -3675,7 +3730,7 @@
   // `context` rides on the telemetry, so the funnel can tell someone browsing
   // the Account tab from someone who just hit the cap mid-send. Those are
   // very different intents and until now they looked identical.
-  function buildPlanRows(plans, context, afterClick, currentPlan) {
+  function buildPlanRows(plans, context, afterClick, currentPlan, minPlan) {
     var locale = getActiveLocale();
     var rows = [];
 
@@ -3686,8 +3741,16 @@
     var planRank = { free: 0, starter: 1, pro: 2 };
     var currentRank = planRank[currentPlan] !== undefined ? planRank[currentPlan] : -1;
 
+    // minPlan: the lowest plan that actually unlocks what the caller is
+    // selling. Without it this list answers "what can you buy" when the
+    // question was "what unlocks follow-ups" — and a Free user who clicked
+    // the follow-up wall would be shown Starter, pay $9, and still not have
+    // follow-ups. A silent failure is bad; a billed one is worse.
+    var minRank = planRank[minPlan] !== undefined ? planRank[minPlan] : -1;
+
     (plans || []).forEach(function (p) {
       if (planRank[p.key] !== undefined && planRank[p.key] <= currentRank) return;
+      if (planRank[p.key] !== undefined && planRank[p.key] < minRank) return;
       var money, quota;
       try {
         money = new Intl.NumberFormat(locale, {

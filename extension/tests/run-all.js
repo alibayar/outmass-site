@@ -14,6 +14,10 @@
  *                         backend/routers/auth.py to compare both sides)
  *   no-hardcoded-prices — no locale or markup holds a literal price, and the
  *                         Intl path that shows the real one still exists
+ *   feature-wall-offer  — a locked-feature wall must offer a plan that
+ *                         actually unlocks it; selling Starter on a Pro wall
+ *                         would be a BILLED failure, worse than the silent
+ *                         one it replaced
  *   ui-language-header  — the service worker and the panel agree on what
  *                         language this is, and the backend reads the header
  *                         they send (crosses into backend/routers/auth.py)
@@ -40,6 +44,7 @@ const suites = [
   require("./auth-flight-settle.test.js"),
   require("./auth-flow-context.test.js"),
   require("./local-datetime.test.js"),
+  require("./feature-wall-offer.test.js"),
 ];
 
 async function main() {

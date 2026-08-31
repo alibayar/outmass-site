@@ -131,7 +131,12 @@
 
     <!-- AI Writer -->
     <div class="ai-writer-section">
-      <button class="btn btn-ai" id="btn-ai-writer" data-i18n="btnAiWriter">Write with AI</button>
+      <!-- data-i18n moved onto an inner span deliberately: applyI18n() assigns
+           el.textContent, which would delete the PRO tag on every render. The
+           follow-up and A/B controls carry theirs the same way. Fifteen people
+           opened this panel believing the feature was free; six pressed
+           Generate and every one was refused. -->
+      <button class="btn btn-ai" id="btn-ai-writer"><span data-i18n="btnAiWriter">Write with AI</span><span class="pro-tag">PRO</span></button>
     </div>
 
     <!-- Templates -->

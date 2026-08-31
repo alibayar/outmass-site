@@ -571,8 +571,14 @@
   "upgradeModalFeatures": {
     "message": "Подробные отчёты + приоритетная поддержка"
   },
+  "upgradeModalProFeatures": {
+    "message": "Автоматические повторные письма + A/B тесты + написание с ИИ"
+  },
   "upgradeModalBtn": {
     "message": "Перейти сейчас — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "Перейти сейчас — Pro"
   },
   "upgradeModalLater": {
     "message": "Может быть позже"

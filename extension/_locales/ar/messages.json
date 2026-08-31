@@ -571,8 +571,14 @@
   "upgradeModalFeatures": {
     "message": "تقارير مفصّلة + دعم ذو أولوية"
   },
+  "upgradeModalProFeatures": {
+    "message": "متابعة تلقائية + اختبار A/B + الكتابة بالذكاء الاصطناعي"
+  },
   "upgradeModalBtn": {
     "message": "الترقية الآن — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "الترقية الآن — Pro"
   },
   "upgradeModalLater": {
     "message": "ربما لاحقًا"

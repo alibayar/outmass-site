@@ -571,8 +571,14 @@
   "upgradeModalFeatures": {
     "message": "詳細レポート + 優先サポート"
   },
+  "upgradeModalProFeatures": {
+    "message": "自動フォローアップ + A/Bテスト + AI作成"
+  },
   "upgradeModalBtn": {
     "message": "今すぐアップグレード — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "今すぐアップグレード — Pro"
   },
   "upgradeModalLater": {
     "message": "後で"

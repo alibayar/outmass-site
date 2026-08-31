@@ -539,8 +539,14 @@
   "upgradeModalFeatures": {
     "message": "Relatórios detalhados + suporte prioritário"
   },
+  "upgradeModalProFeatures": {
+    "message": "Follow-ups automáticos + testes A/B + escrita com IA"
+  },
   "upgradeModalBtn": {
     "message": "Fazer upgrade agora — Starter"
+  },
+  "upgradeModalBtnPro": {
+    "message": "Fazer upgrade agora — Pro"
   },
   "upgradeModalLater": {
     "message": "Talvez mais tarde"
