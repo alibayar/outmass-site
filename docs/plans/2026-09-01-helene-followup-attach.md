@@ -121,6 +121,67 @@ where campaign_id = '17a969ec-58d2-4c46-beee-825d344f6e05';
 Expect one row: `delay_days 14`, `condition all`, `status scheduled`,
 `scheduled_for` 2026-09-15, subject beginning `Re: `.
 
+
+## Attached — and what will actually arrive
+
+```
+id            4af48e62-6386-41c5-989e-f92220831602
+delay_days    14        condition  all      status  scheduled
+scheduled_for 2026-09-15 07:34:57.745641+00
+subject       Re: Achieve Zero Waste, save costs  | {{firstName}} meets Circular Workplaces
+```
+
+`scheduled_for` is `min(sent_at) + 14 days` to the microsecond — the gate opens
+exactly when the first five recipients become due, not when the row was
+written.
+
+Her original subject carries `{{firstName}}` too, and the worker merges the
+subject as well as the body, so it resolves. Rendered against a contact named
+Sarah, this is the message that goes out:
+
+```
+Re: Achieve Zero Waste, save costs  | Sarah meets Circular Workplaces
+
+<p>Hi Sarah,</p>
+<p>I hope you are well,</p>
+<p>I wanted to follow up on my previous note and add one thing: ...</p>
+<p>The thing is, most teams don't have the skillset or bandwidth ...</p>
+<p>Would be great to have a quick conversation ...</p>
+<p>Have a nice day,</p>
+<p>Helene Carpentier<br>Founder, Circular Workplaces<br>
+   <a href="https://www.circularworkplaces.com">www.circularworkplaces.com</a></p>
+```
+
+Every paragraph separate, the signature on three lines, the link live. That is
+the inline-markup branch from `7dea631` doing its job: before it, that single
+`<a href>` would have delivered the whole message as one block — the exact
+complaint she opened the day with.
+
+## Decision: follow-ups do NOT respect the daily cap (Ali, 2026-09-01)
+
+Raised while checking this row. `daily_send_cap` appears nowhere in
+`followup_worker.py`: the campaign loop takes `pending[:daily_cap]`, the
+follow-up loop sends to everyone whose own delay has elapsed.
+
+The consequence, with her real numbers: the ten people who received the
+original on 09-01 (five at 07:34, five more at 09:40 after the manual resume)
+all become due on 09-15, so **she sends ten follow-ups that day** against a cap
+she set to five. On a longer list the two streams overlap and the mailbox does
+5 originals + 5 follow-ups a day for the length of the overlap.
+
+**Ali's call: leave it.** The cap governs the campaign loop, not the mailbox.
+
+Written down with the number in it because that is the point of recording a
+decision rather than an oversight — if she asks why ten went out on 09-15, the
+answer is "we chose that", not "we didn't know". Revisit if a customer objects,
+or when follow-ups stop being a once-per-campaign event.
+
+Per-recipient timing was the other half of the same question and needed no
+decision: `delay_days` is measured from each contact's own `sent_at`
+(`followup_worker.py:293-296`), so nobody is ever bumped early. Waiting for the
+whole list to finish before starting the clock would give recipient #1 their
+follow-up 33 days after their own email instead of 14.
+
 ## Her three questions, answered honestly
 
 **"Is there a way to amend a campaign directly on the extension?"**
