@@ -28,34 +28,27 @@ it).
 is due 2026-09-15, so there is time, but nothing should be attached to her
 campaign until it is out.
 
-## What to check before attaching
+## Checked: her list is clean
 
-Her list is the one that matters, because "Hi ," is still not good even though
-"Hi None," is gone.
-
-```sql
-select c.id                                   as campaign_id,
-       c.user_id,
-       c.name,
-       c.status,
-       c.daily_send_cap,
-       count(ct.id)                           as contacts,
-       count(*) filter (where ct.first_name is null
-                          or btrim(ct.first_name) = '') as no_first_name,
-       min(ct.sent_at)                        as first_sent,
-       max(ct.sent_at)                        as last_sent
-from campaigns c
-join contacts ct on ct.campaign_id = c.id
-join users u on u.id = c.user_id
-where u.email = 'Helene@circularworkplaces.com'
-group by c.id, c.user_id, c.name, c.status, c.daily_send_cap
-order by first_sent desc;
+```
+campaign_id  17a969ec-58d2-4c46-beee-825d344f6e05
+user_id      18203a91-27a9-45d2-a76a-54aa2b640509
+name         CBRE          status scheduled     daily_send_cap 5
+contacts     66            no_first_name 0
+first_sent   2026-09-01 07:34:57+00
+last_sent    2026-09-01 09:40:22+00
 ```
 
-- `no_first_name = 0` → attach it.
-- `no_first_name > 0` → tell her before it sends. She asked specifically about
-  this, and finding out afterwards is the difference between a fix and an
-  incident.
+**`no_first_name = 0`.** All 66 of her contacts have a first name, so the
+"Hi None," defect would never have reached her — she asked about a bug that
+was real and was not hers. Say that plainly rather than implying she was
+rescued from something.
+
+The two timestamps are the ten that went out today (five at 07:35, five more
+at 09:40 after the manual resume). The other 56 have `sent_at` NULL and are
+still to come at five a day, finishing around 2026-09-12. Every follow-up
+therefore falls between 2026-09-15 and 2026-09-26 — inside her comped Pro,
+which runs to 2026-10-01.
 
 ## The condition — a decision, not a default
 
@@ -63,12 +56,11 @@ She wrote *"add this for the follow up after 14 days"* and did not name a
 condition. Her own text says *"I wanted to follow up on my previous note"*,
 which is a nudge to people who did not respond.
 
-The panel hardcodes `not_opened` ([sidebar.js:3067](../../extension/sidebar.js)),
-and that is the wrong choice here for a reason the panel itself states: its own
-hint text says open tracking is *"distorted by Outlook and Apple Mail blocking
-or pre-loading pixels"*. Conditioning on it would skip people who never saw the
-mail but registered a false open, and bump people who read it and are still
-thinking.
+The panel hardcodes `not_opened` (`extension/sidebar.js:3067`), and that is the
+wrong choice here for a reason the panel itself states: its own hint text says
+open tracking is *"distorted by Outlook and Apple Mail blocking or pre-loading
+pixels"*. Conditioning on it would skip people who never saw the mail but
+registered a false open, and bump people who read it and are still thinking.
 
 **Use `condition = 'all'`.** Anyone who has replied is excluded regardless of
 condition — the worker filters `replied_at is null` before anything else — so
@@ -77,19 +69,21 @@ for.
 
 ## The insert
 
-Fill in the two ids from the query above. `scheduled_for = now() + 14 days`
-matches what the endpoint would compute; from that date the worker starts
-considering the follow-up, and each recipient is bumped 14 days after **their
-own** send, not 14 days after the campaign started.
+Run it only after the backend carrying `7dea631` is deployed: the signature
+link below is safe only from that commit onward.
+
+The subject is read from her own campaign rather than retyped, so it cannot be
+a near-miss. A follow-up is a new message, not a threaded reply — there is no
+`In-Reply-To` — so the `Re:` prefix is what makes it read as a continuation.
 
 ```sql
 insert into follow_ups
   (campaign_id, user_id, delay_days, subject, body, condition, status, scheduled_for)
-values (
-  '<campaign_id>',
-  '<user_id>',
+select
+  c.id,
+  c.user_id,
   14,
-  'Re: <her original subject — copy it exactly>',
+  'Re: ' || c.subject,
   'Hi {{firstName}},
 
 I hope you are well,
@@ -108,26 +102,24 @@ Founder, Circular Workplaces
   'all',
   'scheduled',
   now() + interval '14 days'
-);
+from campaigns c
+where c.id = '17a969ec-58d2-4c46-beee-825d344f6e05';
 ```
 
-Two things about that body:
+The apostrophes in `don''t` and `That''s` are doubled because SQL. Getting that
+wrong fails the statement rather than sending something odd, but check it.
 
-- **The apostrophes are doubled** (`don''t`, `That''s`) because SQL. Get this
-  wrong and the statement fails loudly rather than sending something odd, but
-  check it.
-- **The signature URL is a real link.** That is only safe as of `7dea631`;
-  before it, that one tag would have collapsed the whole message. Verify the
-  deploy first.
-
-Then confirm it landed, rather than assuming:
+Then confirm it landed rather than assuming:
 
 ```sql
-select id, delay_days, condition, status, scheduled_for,
-       left(body, 40) as body_starts
+select id, delay_days, condition, status, scheduled_for, subject,
+       left(body, 30) as body_starts
 from follow_ups
-where campaign_id = '<campaign_id>';
+where campaign_id = '17a969ec-58d2-4c46-beee-825d344f6e05';
 ```
+
+Expect one row: `delay_days 14`, `condition all`, `status scheduled`,
+`scheduled_for` 2026-09-15, subject beginning `Re: `.
 
 ## Her three questions, answered honestly
 
@@ -152,9 +144,10 @@ Subject: **Re: Your follow-up wasn't set up — my fault, and it's fixed**
 
 > Hi Hélène,
 >
-> Thank you — and thank you for asking about the first name, because you were
-> right to. A contact with no first name in the list would have been greeted
-> badly. That is fixed now, and I checked your list before setting anything up.
+> Thank you — and you were right to ask about the first name. I checked your
+> list: all 66 contacts have one, so it will show correctly for every person on
+> it. Your question did find a real problem for lists that have gaps, and that
+> is fixed now too.
 >
 > **Your follow-up is attached.** It goes out 14 days after each person
 > received your original, so it follows the campaign rather than arriving all
@@ -174,6 +167,4 @@ Subject: **Re: Your follow-up wasn't set up — my fault, and it's fixed**
 >
 > Ali
 
-Send notes: BCC `outmassapp@outlook.com`. No call offered — async only. Do not
-send the first paragraph as written unless the `no_first_name` query has
-actually been run.
+Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
