@@ -167,7 +167,7 @@
     "message": "Se enviará automáticamente a la hora indicada."
   },
   "followupLabel": {
-    "message": "Seguimiento automático para quienes no abrieron"
+    "message": "Seguimiento automático"
   },
   "followupDelayLabel": {
     "message": "¿Después de cuántos días?"
@@ -185,7 +185,7 @@
     "message": "Hola {{firstName}},\n\n¿Viste nuestro correo anterior?"
   },
   "followupNote": {
-    "message": "Además del correo principal, se enviará a quienes no lo abrieron."
+    "message": "Además del correo principal, se enviará según el plazo que elijas arriba."
   },
   "quotaDefault": {
     "message": "$1/$2 correos restantes (Plan $3)"
@@ -1069,7 +1069,7 @@
     "message": "Respondieron:"
   },
   "statRepliedHint": {
-    "message": "Detectado mediante análisis diario de la bandeja de entrada. La señal más fuerte de interacción — solo cuenta respuestas reales de tus destinatarios."
+    "message": "Detectado mediante un análisis de la bandeja de entrada cada pocas horas. La señal más fuerte de interacción — solo cuenta respuestas reales de tus destinatarios."
   },
   "resumeHint": {
     "message": "Algunos destinatarios aún no han recibido esta campaña — normalmente por un problema temporal de red, o porque alcanzaste tu límite mensual. Reanudar reintenta solo los destinatarios pendientes. Si fue tu límite mensual, también se enviarán automáticamente después de tu reinicio."
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "Enviar el seguimiento a"
+  },
+  "followupConditionNoReply": {
+    "message": "Quien no haya respondido"
+  },
+  "followupConditionNotOpened": {
+    "message": "Quien no lo haya abierto"
+  },
+  "followupConditionHint": {
+    "message": "Quien responde queda siempre excluido, elijas lo que elijas. Algunos clientes de correo bloquean o precargan el seguimiento de aperturas, así que “no lo ha abierto” es la señal menos fiable."
+  },
+  "settingsSenderLogo": {
+    "message": "Dirección del logo (opcional)"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "Pega la dirección web de tu logo y luego coloca {{senderLogo}} donde lo quieras en tu firma. Nunca copiamos ni almacenamos la imagen en sí."
+  },
+  "alertLogoUrlInvalid": {
+    "message": "La dirección del logo debe empezar por https://"
   }
 }

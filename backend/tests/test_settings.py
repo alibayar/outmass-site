@@ -1,5 +1,7 @@
 """Settings router tests."""
 
+import pytest
+
 from tests.conftest import FakeQueryBuilder
 
 
@@ -159,3 +161,65 @@ def test_settings_survives_announcements_failure(client, auth_bypass, fake_db, m
     # core settings still present
     assert data["plan"] == "free"
     assert data["monthly_limit"] == 250
+
+
+# ── the signature logo address ──
+
+
+def _save(client, value):
+    """PUT /settings and capture what reached the users table."""
+    from unittest.mock import MagicMock, patch
+
+    saved = {}
+    chain = MagicMock()
+    chain.update.side_effect = lambda payload: saved.update(payload) or chain
+    chain.eq.return_value = chain
+    chain.execute.return_value = MagicMock(data=[{}])
+    db = MagicMock()
+    db.table.return_value = chain
+
+    with patch("routers.settings.get_db", return_value=db):
+        resp = client.put("/settings", json={"sender_logo_url": value})
+    return resp, saved
+
+
+def test_an_https_logo_address_is_saved(client, auth_bypass, fake_db):
+    resp, saved = _save(client, "  https://circularworkplaces.com/logo.png  ")
+
+    assert resp.status_code == 200, resp.text
+    assert saved["sender_logo_url"] == "https://circularworkplaces.com/logo.png", (
+        "the address was not trimmed before saving"
+    )
+
+
+@pytest.mark.parametrize("bad", [
+    "javascript:alert(1)",
+    "data:image/png;base64,AAAA",
+    "http://insecure.example.com/logo.png",
+    "yoursite.com/logo.png",
+])
+def test_a_non_https_logo_address_is_refused_with_a_reason(
+    client, auth_bypass, fake_db, bad
+):
+    """The value ends up inside an <img src> in mail the user sends from their
+    own mailbox. javascript: and data: have no business in a src we write, and
+    http: would strip the padlock off every message carrying it.
+
+    Refused with a message the user can act on, not a bare 400."""
+    resp, saved = _save(client, bad)
+
+    assert resp.status_code == 400, f"{bad!r} was accepted"
+    assert "sender_logo_url" not in saved
+    detail = resp.json()["detail"]
+    assert detail["error"] == "logo_url_invalid"
+    assert "https://" in detail["message"], (
+        "the error does not tell the user what a valid address looks like"
+    )
+
+
+def test_clearing_the_logo_address_is_allowed(client, auth_bypass, fake_db):
+    """Empty means 'no logo', which must not trip the https check."""
+    resp, saved = _save(client, "")
+
+    assert resp.status_code == 200, resp.text
+    assert saved["sender_logo_url"] == ""

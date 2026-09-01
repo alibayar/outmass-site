@@ -167,7 +167,7 @@
     "message": "指定した日時に自動的に送信されます。"
   },
   "followupLabel": {
-    "message": "未開封者への自動フォローアップ"
+    "message": "自動フォローアップ"
   },
   "followupDelayLabel": {
     "message": "何日後に送信？"
@@ -185,7 +185,7 @@
     "message": "{{firstName}}様\n\n前回お送りしたメールはご覧いただけましたか？"
   },
   "followupNote": {
-    "message": "メインメールに加え、未開封の受信者に送信されます。"
+    "message": "メインメールに加え、上で指定したタイミングで送信されます。"
   },
   "quotaDefault": {
     "message": "残り $1/$2 通（$3 プラン）"
@@ -1069,7 +1069,7 @@
     "message": "返信:"
   },
   "statRepliedHint": {
-    "message": "毎日の受信トレイスキャンで検出。最も強いエンゲージメント信号 — 受信者からの本物の返信のみをカウントします。"
+    "message": "数時間おきの受信トレイスキャンで検出。最も強いエンゲージメント信号 — 受信者からの本物の返信のみをカウントします。"
   },
   "resumeHint": {
     "message": "一部の受信者がこのキャンペーンをまだ受信していません — 通常は一時的なネットワークの問題か、月間上限に達したことが原因です。再開すると保留中の受信者にのみ再送信します。月間上限が原因の場合は、再開しなくても月次リセット後に自動的に送信されます。"
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "フォローアップの送信先"
+  },
+  "followupConditionNoReply": {
+    "message": "未返信の受信者"
+  },
+  "followupConditionNotOpened": {
+    "message": "未開封の受信者"
+  },
+  "followupConditionHint": {
+    "message": "どちらを選んでも、返信した相手は常に除外されます。一部のメールクライアントは開封トラッキングをブロックしたり事前に読み込んだりするため、「未開封」のほうが信頼性の低い信号です。"
+  },
+  "settingsSenderLogo": {
+    "message": "ロゴのURL（任意）"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "ロゴのURLを貼り付け、メール署名の表示したい位置に {{senderLogo}} を入れてください。画像そのものをコピーしたり保存したりすることはありません。"
+  },
+  "alertLogoUrlInvalid": {
+    "message": "ロゴのURLは https:// で始まる必要があります。"
   }
 }

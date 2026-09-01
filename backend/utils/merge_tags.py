@@ -5,6 +5,10 @@ import re
 # (always available, no CSV column needed).
 SENDER_TAGS = frozenset({
     "senderName", "senderPosition", "senderCompany", "senderPhone",
+    # Expands to a whole <img> tag, not to the address. A user who has to
+    # write <img src="{{senderLogo}}"> themselves is back to needing HTML,
+    # which is the thing the field exists to remove.
+    "senderLogo",
 })
 
 # Tags resolvable from a standard contact row (produced by bulk_insert
@@ -107,6 +111,39 @@ def _text(value) -> str:
     return "" if value is None else str(value)
 
 
+LOGO_MAX_HEIGHT_PX = 56
+
+
+def _logo_tag(url) -> str:
+    """A signature logo as a complete <img>, or nothing at all.
+
+    Empty when unset, so a template carrying {{senderLogo}} degrades to a
+    blank line rather than a broken image icon in somebody's outbound mail.
+
+    https only, checked here as well as at save time: the column predates
+    nothing, but a value written before the validator existed, or by hand,
+    must not become an <img src> we generated. A rejected value renders as
+    nothing, which is the same as unset.
+
+    The quote escaping matters. The URL goes inside a double-quoted attribute,
+    so a value containing `"` could otherwise close it and open another
+    attribute in mail we send under the user's name.
+    """
+    text = _text(url).strip()
+    if not text.lower().startswith("https://"):
+        return ""
+    safe = (
+        text.replace("&", "&amp;")
+            .replace('"', "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
+    )
+    return (
+        f'<img src="{safe}" alt="" '
+        f'style="max-height:{LOGO_MAX_HEIGHT_PX}px;border:0" />'
+    )
+
+
 def build_merge_context(contact: dict, sender_info: dict | None = None) -> dict:
     """The merge values for one recipient, in one place.
 
@@ -127,6 +164,7 @@ def build_merge_context(contact: dict, sender_info: dict | None = None) -> dict:
         ctx["senderPosition"] = _text(sender_info.get("sender_position"))
         ctx["senderCompany"] = _text(sender_info.get("sender_company"))
         ctx["senderPhone"] = _text(sender_info.get("sender_phone"))
+        ctx["senderLogo"] = _logo_tag(sender_info.get("sender_logo_url"))
     # A custom column can be NULL for one row and filled for the next, which
     # is exactly how a spreadsheet arrives.
     for key, value in (contact.get("custom_fields") or {}).items():

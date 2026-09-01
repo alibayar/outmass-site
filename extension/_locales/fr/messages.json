@@ -167,7 +167,7 @@
     "message": "Sera envoyé automatiquement à l'heure indiquée."
   },
   "followupLabel": {
-    "message": "Relance automatique pour les non-ouvreurs"
+    "message": "Relance automatique"
   },
   "followupDelayLabel": {
     "message": "Après combien de jours ?"
@@ -185,7 +185,7 @@
     "message": "Bonjour {{firstName}},\n\nAvez-vous vu notre précédent e-mail ?"
   },
   "followupNote": {
-    "message": "En complément de l'e-mail principal, sera envoyé aux non-ouvreurs."
+    "message": "En complément de l'e-mail principal, sera envoyé selon le délai choisi ci-dessus."
   },
   "quotaDefault": {
     "message": "$1/$2 e-mails restants (Plan $3)"
@@ -1069,7 +1069,7 @@
     "message": "Ont répondu :"
   },
   "statRepliedHint": {
-    "message": "Détecté via une analyse quotidienne de la boîte de réception. Le signal d'engagement le plus fort — ne compte que les véritables réponses de vos destinataires."
+    "message": "Détecté via une analyse de la boîte de réception effectuée toutes les quelques heures. Le signal d'engagement le plus fort — ne compte que les véritables réponses de vos destinataires."
   },
   "resumeHint": {
     "message": "Certains destinataires n'ont pas encore reçu cette campagne — généralement un problème temporaire de réseau, ou vous avez atteint votre limite mensuelle. Reprendre réessaie uniquement les destinataires en attente. S'il s'agissait de votre limite mensuelle, ils seront aussi envoyés automatiquement après votre réinitialisation."
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "Envoyer la relance à"
+  },
+  "followupConditionNoReply": {
+    "message": "Toute personne qui n'a pas répondu"
+  },
+  "followupConditionNotOpened": {
+    "message": "Toute personne qui n'a pas ouvert l'e-mail"
+  },
+  "followupConditionHint": {
+    "message": "Quel que soit votre choix, les personnes qui répondent sont toujours exclues. Certains clients de messagerie bloquent ou pré-chargent le suivi des ouvertures : « non ouvert » est donc le signal le moins fiable des deux."
+  },
+  "settingsSenderLogo": {
+    "message": "Adresse du logo (facultatif)"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "Collez l'adresse web de votre logo, puis placez {{senderLogo}} à l'endroit voulu dans votre signature. Nous ne copions ni ne stockons jamais l'image elle-même."
+  },
+  "alertLogoUrlInvalid": {
+    "message": "L'adresse du logo doit commencer par https://"
   }
 }

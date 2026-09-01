@@ -568,3 +568,120 @@ def test_a_real_shortfall_is_not_called_recovered():
         f"two people did not get in and the report says everything recovered:"
         f"\n{body}"
     )
+
+
+# ── the campaign the report never knew to look for ──
+
+
+class _StrandedCampaigns(FakeQueryBuilder):
+    """campaigns.select(...).eq('status','sent').eq('archived',False)"""
+
+    def __init__(self, rows):
+        super().__init__(rows)
+        self._rows_ = rows
+
+    def select(self, *a, **kw):
+        return self
+
+    def eq(self, field, value):
+        return self
+
+    def execute(self):
+        return MagicMock(data=self._rows_)
+
+
+def _run_stranded(fake_db, campaigns, resumable):
+    from workers import daily_report
+
+    fake_db.set_table("campaigns", _StrandedCampaigns(campaigns))
+    with patch("models.contact.count_resumable_contacts",
+               side_effect=lambda cid: resumable.get(cid, 0)):
+        return daily_report._stranded_campaign_lines(fake_db)
+
+
+def test_a_campaign_that_says_sent_while_holding_people_is_flagged(fake_db):
+    """faisal's exact shape: 1,210 uploaded, 999 delivered, 91 never attempted,
+    status 'sent'. Found on 2026-08-31 by a query run by hand, two months
+    after it happened, three weeks after he stopped opening the product."""
+    lines = _run_stranded(
+        fake_db,
+        [{"id": "c1", "name": "syc2 wave 1", "sent_count": 999,
+          "total_contacts": 1210, "user_id": "u1"}],
+        {"c1": 91},
+    )
+    body = "\n".join(lines)
+
+    assert "⚠️" in body, f"a stranded campaign raised no flag:\n{body}"
+    assert "91" in body, "the number of people still waiting must be named"
+    assert "syc2 wave 1" in body, "the campaign must be identifiable"
+
+
+def test_a_finished_campaign_that_suppressed_some_of_its_list_is_not_flagged(fake_db):
+    """sent_count < total_contacts is normal when recipients were suppressed
+    or unsubscribed. Only 'pending' and 'deferred' mean somebody is waiting,
+    and a check that cries wolf on the ordinary case gets ignored."""
+    lines = _run_stranded(
+        fake_db,
+        [{"id": "c1", "name": "Clean send", "sent_count": 90,
+          "total_contacts": 100, "user_id": "u1"}],
+        {"c1": 0},
+    )
+    assert "✅ none" in "\n".join(lines)
+
+
+def test_a_complete_campaign_is_never_examined(fake_db):
+    """The cheap filter comes first so the exact count runs on candidates
+    only — the check has to stay affordable as campaigns accumulate."""
+    from workers import daily_report
+
+    fake_db.set_table("campaigns", _StrandedCampaigns(
+        [{"id": "c1", "name": "All sent", "sent_count": 100,
+          "total_contacts": 100, "user_id": "u1"}]
+    ))
+    with patch("models.contact.count_resumable_contacts") as counted:
+        lines = daily_report._stranded_campaign_lines(fake_db)
+
+    assert counted.call_count == 0, "the exact count ran on a complete campaign"
+    assert "✅ none" in "\n".join(lines)
+
+
+def test_the_alarm_can_be_silenced_by_archiving(fake_db):
+    """Archiving is the deliberate 'leave this one' switch — it is how
+    faisal's two stop appearing once they are put away. An alarm nobody can
+    silence becomes wallpaper, and then it is not an alarm."""
+    import inspect
+
+    from workers import daily_report
+
+    src = inspect.getsource(daily_report._stranded_campaign_lines)
+    assert '.eq("archived", False)' in src, (
+        "the check no longer skips archived campaigns, so a deliberate "
+        "decision to leave one alone would be re-reported every morning"
+    )
+
+
+def test_the_check_names_its_own_failure(fake_db):
+    """Same rule as the other two checks: a check that cannot run must not
+    look like a check that found nothing."""
+    from workers import daily_report
+
+    broken = MagicMock()
+    broken.table.side_effect = RuntimeError("supabase down")
+    lines = daily_report._stranded_campaign_lines(broken)
+
+    assert "check unavailable" in "\n".join(lines)
+    assert "RuntimeError" in "\n".join(lines)
+
+
+def test_many_stranded_campaigns_do_not_flood_the_report(fake_db):
+    lines = _run_stranded(
+        fake_db,
+        [{"id": f"c{i}", "name": f"Campaign {i}", "sent_count": 1,
+          "total_contacts": 10, "user_id": "u1"} for i in range(9)],
+        {f"c{i}": i + 1 for i in range(9)},
+    )
+    body = "\n".join(lines)
+
+    assert "9 holding" in body, "the total must still be reported"
+    assert "and 4 more" in body, f"the list was not truncated:\n{body}"
+    assert body.count("never sent to") == 5

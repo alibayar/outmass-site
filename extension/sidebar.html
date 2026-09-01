@@ -234,9 +234,17 @@
     <div class="followup-section">
       <label class="followup-toggle">
         <input type="checkbox" id="followup-enabled">
-        <span data-i18n="followupLabel">Auto follow-up for non-openers</span><span class="pro-tag">PRO</span>
+        <span data-i18n="followupLabel">Automatic follow-up</span><span class="pro-tag">PRO</span>
       </label>
       <div class="followup-fields" id="followup-fields">
+        <div class="form-group">
+          <label for="followup-condition" data-i18n="followupConditionLabel">Send the follow-up to</label>
+          <select id="followup-condition">
+            <option value="all" data-i18n="followupConditionNoReply">Anyone who has not replied</option>
+            <option value="not_opened" data-i18n="followupConditionNotOpened">Anyone who has not opened it</option>
+          </select>
+          <p class="hint" data-i18n="followupConditionHint">Someone who replies is always left out, whichever you pick. Open tracking is blocked or pre-loaded by some mail apps, so "not opened" is the less reliable signal.</p>
+        </div>
         <div class="form-group">
           <label for="followup-delay" data-i18n="followupDelayLabel">After how many days?</label>
           <input type="number" id="followup-delay" value="3" min="1" max="30">
@@ -250,7 +258,7 @@
           <label for="followup-body" data-i18n="followupBodyLabel">Follow-up Content</label>
           <textarea id="followup-body" rows="4" data-i18n-placeholder="followupBodyPlaceholder" placeholder="Hello {{firstName}},&#10;&#10;Did you see our previous email?"></textarea>
         </div>
-        <p class="followup-note" data-i18n="followupNote">In addition to the main email, will be sent to non-openers.</p>
+        <p class="followup-note" data-i18n="followupNote">Sent in addition to your main email, on the schedule you choose above.</p>
       </div>
     </div>
 
@@ -339,7 +347,7 @@
       <div class="stat-reply">
         <span data-i18n="statReplied">Replied:</span> <strong id="stat-replied">0</strong>
         <span class="stat-reply-rate"><strong id="stat-reply-rate">0%</strong></span>
-        <p class="stat-reply-hint" data-i18n="statRepliedHint">Detected via daily Inbox scan. The strongest engagement signal — only counts genuine replies from your recipients.</p>
+        <p class="stat-reply-hint" data-i18n="statRepliedHint">Detected by an Inbox scan every few hours. The strongest engagement signal — only counts genuine replies from your recipients.</p>
       </div>
       <canvas id="stats-chart" width="320" height="160"></canvas>
       <div id="followup-status" class="followup-status"></div>
@@ -380,6 +388,12 @@
         <div class="form-group">
           <label for="settings-sender-phone" data-i18n="settingsSenderPhone">Phone (optional)</label>
           <input type="text" id="settings-sender-phone" data-i18n-placeholder="placeholderSenderPhone" placeholder="+1 (555) 000-0000" maxlength="50">
+        </div>
+        <div class="form-group">
+          <label for="settings-sender-logo" data-i18n="settingsSenderLogo">Logo address (optional)</label>
+          <input type="url" id="settings-sender-logo" data-i18n-placeholder="placeholderSenderLogo" placeholder="https://yoursite.com/logo.png" maxlength="500">
+          <p class="hint" data-i18n="settingsSenderLogoHint">Paste the web address of your logo, then put {{senderLogo}} where you want it in your signature. We never copy or store the image itself.</p>
+          <img id="settings-logo-preview" alt="" style="display:none;max-height:56px;margin-top:6px;border:0">
         </div>
       </div>
 

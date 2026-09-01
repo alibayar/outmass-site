@@ -167,7 +167,7 @@
     "message": "Wird automatisch zum angegebenen Zeitpunkt versendet."
   },
   "followupLabel": {
-    "message": "Automatische Nachfass-E-Mail bei Nicht-Öffnern"
+    "message": "Automatische Nachfass-E-Mail"
   },
   "followupDelayLabel": {
     "message": "Nach wie vielen Tagen?"
@@ -185,7 +185,7 @@
     "message": "Hallo {{firstName}},\n\nHaben Sie unsere vorherige E-Mail gesehen?"
   },
   "followupNote": {
-    "message": "Wird zusätzlich zur Haupt-E-Mail an Nicht-Öffner gesendet."
+    "message": "Wird zusätzlich zur Haupt-E-Mail im oben gewählten Abstand gesendet."
   },
   "quotaDefault": {
     "message": "$1/$2 E-Mails verbleibend ($3-Plan)"
@@ -1069,7 +1069,7 @@
     "message": "Geantwortet:"
   },
   "statRepliedHint": {
-    "message": "Über tägliche Posteingangs-Prüfung erkannt. Das stärkste Engagement-Signal — zählt nur echte Antworten Ihrer Empfänger."
+    "message": "Über eine Posteingangs-Prüfung alle paar Stunden erkannt. Das stärkste Engagement-Signal — zählt nur echte Antworten Ihrer Empfänger."
   },
   "resumeHint": {
     "message": "Einige Empfänger haben diese Kampagne noch nicht erhalten — meist ein vorübergehendes Netzwerkproblem, oder Sie haben Ihr monatliches Limit erreicht. Fortsetzen versucht den Versand nur an die ausstehenden Empfänger erneut. War es Ihr monatliches Limit, werden sie nach der Zurücksetzung Ihres Kontingents ebenfalls automatisch gesendet."
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "Nachfass-E-Mail senden an"
+  },
+  "followupConditionNoReply": {
+    "message": "Alle, die nicht geantwortet haben"
+  },
+  "followupConditionNotOpened": {
+    "message": "Alle, die die E-Mail nicht geöffnet haben"
+  },
+  "followupConditionHint": {
+    "message": "Wer antwortet, wird immer ausgenommen, ganz gleich, was Sie wählen. Manche E-Mail-Clients blockieren das Öffnungs-Tracking oder laden die Pixel vorab, daher ist „nicht geöffnet“ das weniger verlässliche Signal."
+  },
+  "settingsSenderLogo": {
+    "message": "Logo-Adresse (optional)"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "Fügen Sie die Webadresse Ihres Logos ein und setzen Sie dann {{senderLogo}} an die gewünschte Stelle in Ihrer Signatur. Das Bild selbst kopieren oder speichern wir nie."
+  },
+  "alertLogoUrlInvalid": {
+    "message": "Die Logo-Adresse muss mit https:// beginnen."
   }
 }

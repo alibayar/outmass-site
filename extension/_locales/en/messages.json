@@ -114,7 +114,7 @@
     "message": "Will be sent automatically at the specified time."
   },
   "followupLabel": {
-    "message": "Auto follow-up for non-openers"
+    "message": "Automatic follow-up"
   },
   "followupDelayLabel": {
     "message": "After how many days?"
@@ -132,7 +132,7 @@
     "message": "Hello {{firstName}},\n\nDid you see our previous email?"
   },
   "followupNote": {
-    "message": "In addition to the main email, will be sent to non-openers."
+    "message": "Sent in addition to your main email, on the schedule you choose above."
   },
   "quotaDefault": {
     "message": "$1/$2 emails remaining ($3 Plan)"
@@ -1080,7 +1080,7 @@
     "message": "Replied:"
   },
   "statRepliedHint": {
-    "message": "Detected via daily Inbox scan. The strongest engagement signal — only counts genuine replies from your recipients."
+    "message": "Detected by an Inbox scan every few hours. The strongest engagement signal — only counts genuine replies from your recipients."
   },
   "resumeHint": {
     "message": "Some recipients haven't received this campaign yet — usually a temporary network issue, or you reached your monthly limit. Resume retries only the pending recipients. If it was your monthly limit, they'll also be sent automatically after your reset."
@@ -1277,5 +1277,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "Send the follow-up to"
+  },
+  "followupConditionNoReply": {
+    "message": "Anyone who has not replied"
+  },
+  "followupConditionNotOpened": {
+    "message": "Anyone who has not opened it"
+  },
+  "followupConditionHint": {
+    "message": "Someone who replies is always left out, whichever you pick. Open tracking is blocked or pre-loaded by some mail apps, so “not opened” is the less reliable signal."
+  },
+  "settingsSenderLogo": {
+    "message": "Logo address (optional)"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "Paste the web address of your logo, then put {{senderLogo}} where you want it in your signature. We never copy or store the image itself."
+  },
+  "alertLogoUrlInvalid": {
+    "message": "The logo address must start with https://"
   }
 }

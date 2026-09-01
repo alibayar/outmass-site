@@ -114,7 +114,7 @@
     "message": "Será enviado automaticamente à hora indicada."
   },
   "followupLabel": {
-    "message": "Follow-up automático para quem não abriu"
+    "message": "Follow-up automático"
   },
   "followupDelayLabel": {
     "message": "Ao fim de quantos dias?"
@@ -132,7 +132,7 @@
     "message": "Olá {{firstName}},\n\nViu o nosso e-mail anterior?"
   },
   "followupNote": {
-    "message": "Além do e-mail principal, será enviado a quem não abriu."
+    "message": "Além do e-mail principal, será enviado no prazo que escolher acima."
   },
   "quotaDefault": {
     "message": "$1/$2 e-mails restantes (Plano $3)"
@@ -1069,7 +1069,7 @@
     "message": "Responderam:"
   },
   "statRepliedHint": {
-    "message": "Detetado através de uma análise diária da Caixa de Entrada. O sinal de interação mais forte — conta apenas respostas genuínas dos seus destinatários."
+    "message": "Detetado através de uma análise da Caixa de Entrada a cada poucas horas. O sinal de interação mais forte — conta apenas respostas genuínas dos seus destinatários."
   },
   "resumeHint": {
     "message": "Alguns destinatários ainda não receberam esta campanha — normalmente um problema temporário de rede, ou atingiu o seu limite mensal. Retomar tenta novamente apenas os destinatários pendentes. Se foi o limite mensal, serão também enviados automaticamente após a reposição mensal da sua quota."
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "Enviar o follow-up para"
+  },
+  "followupConditionNoReply": {
+    "message": "Quem não respondeu"
+  },
+  "followupConditionNotOpened": {
+    "message": "Quem não abriu"
+  },
+  "followupConditionHint": {
+    "message": "Quem responde fica sempre de fora, independentemente do que escolher. Alguns clientes de e-mail bloqueiam ou pré-carregam o rastreio de aberturas, por isso “não abriu” é o sinal menos fiável."
+  },
+  "settingsSenderLogo": {
+    "message": "Endereço do logótipo (opcional)"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "Cole o endereço web do seu logótipo e depois coloque {{senderLogo}} onde o quiser na sua assinatura. Nunca copiamos nem armazenamos a própria imagem."
+  },
+  "alertLogoUrlInvalid": {
+    "message": "O endereço do logótipo tem de começar por https://"
   }
 }

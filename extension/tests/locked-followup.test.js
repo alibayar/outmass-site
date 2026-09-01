@@ -46,7 +46,7 @@ function run() {
   // Anchored on the CREATE_FOLLOWUP message this callback belongs to: there
   // are several `if (resp && !resp.error)` branches in this file, and a
   // looser pattern silently measures the wrong one.
-  const success = /type: "CREATE_FOLLOWUP"[\s\S]{0,1600}?log\("Follow-up created[^\n]*\n/
+  const success = /type: "CREATE_FOLLOWUP"[\s\S]{0,2600}?log\("Follow-up created[^\n]*\n/
     .exec(sidebar);
   check(success !== null, "the follow-up success branch could not be located");
 

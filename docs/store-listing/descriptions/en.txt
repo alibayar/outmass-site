@@ -10,7 +10,7 @@ OutMass — Mass Email for Outlook
 --- SUMMARY / SHORT DESCRIPTION (102/132 characters) ---
 Turn Outlook into a mass email powerhouse. Mail merge, A/B tests, AI writer. 13 languages. From $9/mo.
 
---- DESCRIPTION (2450 characters) ---
+--- DESCRIPTION (2472 characters) ---
 Turn Outlook Web into a professional mass email tool. OutMass brings mail merge, tracking, follow-ups, and AI-powered writing directly inside outlook.office.com and outlook.live.com — with full Microsoft 365 and personal Outlook.com support.
 
 ✨ WHAT YOU CAN DO
@@ -25,7 +25,7 @@ Turn Outlook Web into a professional mass email tool. OutMass brings mail merge,
 🤖 AI Email Writer — drafts your email from a short brief (Pro, 50/month)
 📊 Open & click tracking — pixel tracking, click tracking, unsubscribe links
 📎 OneDrive attachments — share files via OneDrive links instead of bulky attachments. Better deliverability, larger files, recipient analytics.
-💬 Reply detection — daily Inbox scan flags real replies, the strongest engagement signal beyond opens and clicks.
+💬 Reply detection — we check your Inbox every few hours and flag real replies, the strongest engagement signal beyond opens and clicks.
 📈 Campaign reports — open rates, click rates, full CSV export
 🌍 13 UI languages — including Arabic RTL support
 

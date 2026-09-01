@@ -31,6 +31,7 @@ class UpdateSettingsRequest(BaseModel):
     sender_position: str | None = None
     sender_company: str | None = None
     sender_phone: str | None = None
+    sender_logo_url: str | None = None
     # Cross-campaign dedup (Pro only; still stored for Free so plan upgrades keep the choice)
     cross_campaign_dedup_enabled: bool | None = None
     cross_campaign_dedup_days: int | None = None
@@ -86,6 +87,7 @@ async def get_settings(
         "sender_position": user.get("sender_position", ""),
         "sender_company": user.get("sender_company", ""),
         "sender_phone": user.get("sender_phone", ""),
+        "sender_logo_url": user.get("sender_logo_url") or "",
         "cross_campaign_dedup_enabled": user.get("cross_campaign_dedup_enabled", True),
         "cross_campaign_dedup_days": user.get("cross_campaign_dedup_days", 60),
         "requires_reauth": bool(user.get("requires_reauth", False)),
@@ -124,6 +126,22 @@ async def update_settings(
         updates["sender_company"] = body.sender_company.strip()[:100]
     if body.sender_phone is not None:
         updates["sender_phone"] = body.sender_phone.strip()[:50]
+    if body.sender_logo_url is not None:
+        # https only. The value is pasted by the user and then written into an
+        # <img src> in mail they send from their own mailbox, so the blast
+        # radius is their own recipients - but javascript: and data: have no
+        # business in a src we generate, and http: would strip the padlock off
+        # every message that carries it.
+        raw = body.sender_logo_url.strip()[:500]
+        if raw and not raw.lower().startswith("https://"):
+            raise HTTPException(
+                status_code=400,
+                detail={
+                    "error": "logo_url_invalid",
+                    "message": "The logo address must start with https://",
+                },
+            )
+        updates["sender_logo_url"] = raw
     if body.cross_campaign_dedup_enabled is not None:
         updates["cross_campaign_dedup_enabled"] = bool(body.cross_campaign_dedup_enabled)
     if body.cross_campaign_dedup_days is not None:

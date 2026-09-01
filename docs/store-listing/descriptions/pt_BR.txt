@@ -10,7 +10,7 @@ OutMass — E-mail em Massa para Outlook
 --- SUMMARY / SHORT DESCRIPTION (122/132 characters) ---
 Transforme o Outlook em uma central de e-mail em massa. Mail merge, testes A/B, AI Writer. 13 idiomas. A partir de $9/mês.
 
---- DESCRIPTION (2782 characters) ---
+--- DESCRIPTION (2795 characters) ---
 Transforme o Outlook Web em uma ferramenta profissional de e-mail em massa. O OutMass traz mail merge, rastreamento, follow-ups e redação com IA diretamente para dentro do outlook.office.com e do outlook.live.com — com suporte completo a Microsoft 365 e contas pessoais do Outlook.com.
 
 ✨ O QUE VOCÊ PODE FAZER
@@ -25,7 +25,7 @@ Transforme o Outlook Web em uma ferramenta profissional de e-mail em massa. O Ou
 🤖 AI Email Writer — escreve o rascunho do seu e-mail a partir de um briefing curto (Pro, 50/mês)
 📊 Rastreamento de aberturas e cliques — pixel, cliques, link de descadastro
 📎 Anexos do OneDrive — compartilhe arquivos por links do OneDrive em vez de anexos pesados. Melhor entregabilidade, arquivos maiores, análise do destinatário.
-💬 Detecção de respostas — a varredura diária da Caixa de Entrada marca respostas reais, o sinal de engajamento mais forte além de aberturas e cliques.
+💬 Detecção de respostas — a varredura da Caixa de Entrada a cada poucas horas marca respostas reais, o sinal de engajamento mais forte além de aberturas e cliques.
 📈 Relatórios de campanha — taxas de abertura, taxas de clique, exportação completa em CSV
 🌍 13 idiomas de interface — incluindo suporte RTL para árabe
 

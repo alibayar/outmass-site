@@ -10,7 +10,7 @@ OutMass — Outlook用一括メール送信ツール
 --- SUMMARY / SHORT DESCRIPTION (57/132 characters) ---
 Outlook WebでCSV差し込み、開封/クリック追跡、自動フォローアップ、AIライター付きの一括メール送信。
 
---- DESCRIPTION (1425 characters) ---
+--- DESCRIPTION (1428 characters) ---
 Outlook Web をプロ仕様の一括メール送信ツールへ。OutMass はメール差し込み、トラッキング、フォローアップ、AI による文面作成を outlook.office.com と outlook.live.com の中に直接もたらします。Microsoft 365 と個人 Outlook.com アカウントの両方に完全対応。
 
 ✨ できること
@@ -25,7 +25,7 @@ Outlook Web をプロ仕様の一括メール送信ツールへ。OutMass はメ
 🤖 AI メールライター — 短い指示からメール文面を作成(Pro、月 50 回)
 📊 開封・クリック追跡 — ピクセル、クリック、配信停止リンク
 📎 OneDrive 添付 — 重い添付ファイルの代わりに OneDrive リンクで共有。配信性が向上、大容量ファイル可、受信者の閲覧分析も可能。
-💬 返信検出 — 毎日の受信トレイスキャンで本物の返信を検出 — 開封やクリックを超える最強のエンゲージメント指標。
+💬 返信検出 — 数時間ごとの受信トレイスキャンで本物の返信を検出 — 開封やクリックを超える最強のエンゲージメント指標。
 📈 キャンペーンレポート — 開封率・クリック率、完全 CSV エクスポート
 🌍 13 言語の UI — アラビア語 RTL 対応を含む
 

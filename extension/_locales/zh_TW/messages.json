@@ -114,7 +114,7 @@
     "message": "將於指定時間自動傳送。"
   },
   "followupLabel": {
-    "message": "自動追蹤未開啟的收件者"
+    "message": "自動跟進郵件"
   },
   "followupDelayLabel": {
     "message": "幾天後寄出？"
@@ -132,7 +132,7 @@
     "message": "{{firstName}} 您好，\n\n您看過我們上一封郵件了嗎？"
   },
   "followupNote": {
-    "message": "除了主要郵件之外，也會寄給未開啟郵件的收件者。"
+    "message": "除了您的主要郵件之外，也會依照您在上方選擇的時間寄出。"
   },
   "quotaDefault": {
     "message": "剩餘 $1/$2 封郵件（$3 方案）"
@@ -1069,7 +1069,7 @@
     "message": "已回覆："
   },
   "statRepliedHint": {
-    "message": "透過每日收件匣掃描偵測。這是最強的互動訊號——只計算收件者真正的回覆。"
+    "message": "透過每隔幾小時一次的收件匣掃描偵測。這是最強的互動訊號——只計算收件者真正的回覆。"
   },
   "resumeHint": {
     "message": "部分收件者還沒收到這個行銷活動——通常是暫時的網路問題，或您已達每月上限。「繼續傳送」只會重試待寄出的收件者。如果原因是每月上限，這些收件者也會在您的額度重置後自動寄出。"
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "將跟進郵件寄給"
+  },
+  "followupConditionNoReply": {
+    "message": "所有未回覆的收件者"
+  },
+  "followupConditionNotOpened": {
+    "message": "所有未開啟郵件的收件者"
+  },
+  "followupConditionHint": {
+    "message": "無論您選擇哪一項，已回覆的收件者一律不會收到跟進郵件。部分郵件軟體會封鎖或預先載入追蹤像素，因此「未開啟」是可靠性較低的訊號。"
+  },
+  "settingsSenderLogo": {
+    "message": "Logo 網址（選填）"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "貼上您 Logo 的網址，然後在郵件簽名檔中您希望顯示的位置放入 {{senderLogo}}。我們絕不會複製或儲存圖片本身。"
+  },
+  "alertLogoUrlInvalid": {
+    "message": "Logo 網址必須以 https:// 開頭。"
   }
 }

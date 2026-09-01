@@ -171,3 +171,98 @@ def test_the_campaign_read_is_itself_bounded():
     assert camp_queries[0].get("user_id") == "u1", (
         "the campaigns read is not filtered to this user"
     )
+
+
+# ── who gets their inbox read, and how often ──
+
+
+def test_a_user_who_never_sent_anything_is_not_scanned():
+    """Reading the inbox of somebody who has never sent an email, looking for
+    replies to messages that do not exist, is a Graph call for an answer that
+    cannot change. Harmless once a day; multiplied by four on 2026-09-01 when
+    the cadence went up, which is why the narrowing came first."""
+    from unittest.mock import MagicMock, patch
+
+    from workers import reply_detector
+
+    db = MagicMock()
+
+    def table(name):
+        t = MagicMock()
+        t.select.return_value = t
+        t.gt.return_value = t
+        t.eq.return_value = t
+        t.limit.return_value = t
+        if name == "user_tokens":
+            t.execute.return_value = MagicMock(
+                data=[{"user_id": "sender"}, {"user_id": "never-sent"}]
+            )
+        elif name == "campaigns":
+            t.execute.return_value = MagicMock(data=[{"user_id": "sender"}])
+        else:
+            t.execute.return_value = MagicMock(data=[])
+        return t
+
+    db.table.side_effect = table
+    scanned = []
+
+    with patch("database.get_db", return_value=db), \
+         patch("workers.reply_detector.get_fresh_access_token",
+               side_effect=lambda uid: scanned.append(uid) or None):
+        reply_detector.detect_replies()
+
+    assert scanned == ["sender"], (
+        f"scanned {scanned} — a user who has never sent anything had their "
+        f"inbox read"
+    )
+
+
+def test_a_failed_narrowing_scans_everyone_rather_than_nobody():
+    """Reading one inbox too many is waste. Reading one too few is a follow-up
+    chasing somebody who already wrote back."""
+    from unittest.mock import MagicMock, patch
+
+    from workers import reply_detector
+
+    db = MagicMock()
+
+    def table(name):
+        t = MagicMock()
+        t.select.return_value = t
+        t.gt.return_value = t
+        t.eq.return_value = t
+        t.limit.return_value = t
+        if name == "user_tokens":
+            t.execute.return_value = MagicMock(
+                data=[{"user_id": "a"}, {"user_id": "b"}]
+            )
+        elif name == "campaigns":
+            t.execute.side_effect = RuntimeError("postgrest down")
+        else:
+            t.execute.return_value = MagicMock(data=[])
+        return t
+
+    db.table.side_effect = table
+    scanned = []
+
+    with patch("database.get_db", return_value=db), \
+         patch("workers.reply_detector.get_fresh_access_token",
+               side_effect=lambda uid: scanned.append(uid) or None):
+        reply_detector.detect_replies()
+
+    assert scanned == ["a", "b"], (
+        f"narrowing failed and the scan narrowed anyway: {scanned}"
+    )
+
+
+def test_reply_detection_runs_four_times_a_day():
+    """The gap between runs is the window in which a follow-up can reach
+    somebody who already replied. Daily made it 24 hours wide."""
+    from workers.celery_app import celery
+
+    entry = celery.conf.beat_schedule["detect-replies"]
+    hours = entry["schedule"].hour
+    assert len(hours) == 4, (
+        f"reply detection runs {len(hours)} time(s) a day, not four: {hours}"
+    )
+    assert 5 in hours, "05:00 UTC must stay — it follows the send-window close"

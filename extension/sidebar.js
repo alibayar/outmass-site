@@ -1779,9 +1779,22 @@
     // Inline markup only — a link, a bold word. Still an ordinary message, so
     // its line breaks still mean line breaks. Before this, one <a href> in a
     // signature collapsed the whole email back into a single block.
-    if (/<[a-z!/][^>]*>/i.test(tpl)) return autolink(paragraphs(body));
+    // {{senderLogo}} expands to a whole <img>, so a template that looks like
+    // plain text can still be placing one. Mirrors MARKUP_TAGS in
+    // utils/email_body.py.
+    if (/<[a-z!/][^>]*>/i.test(tpl) || tpl.indexOf("{{senderLogo}}") > -1) {
+      return autolink(paragraphs(body));
+    }
     var esc = body.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     return autolink(paragraphs(esc));
+  }
+
+  function showLogoPreview(url) {
+    var img = document.getElementById("settings-logo-preview");
+    if (!img) return;
+    var ok = /^https:\/\//i.test((url || "").trim());
+    img.style.display = ok ? "block" : "none";
+    if (ok) img.src = url.trim();
   }
 
   // Fetch sender profile from backend; cached after first call.
@@ -1795,6 +1808,7 @@
         senderPosition: d.sender_position || "",
         senderCompany: d.sender_company || "",
         senderPhone: d.sender_phone || "",
+        senderLogoUrl: d.sender_logo_url || "",
       };
       cb(_senderCache);
     });
@@ -3105,7 +3119,18 @@
           delay_days: delay,
           subject: fSubject,
           body: fBody,
-          condition: "not_opened",
+          // The user's choice, not a constant. This was hardcoded to
+          // "not_opened" while the worker had always supported the
+          // fall-through that means "sent, not unsubscribed, NOT REPLIED" —
+          // which is the trigger Mailmeteor advertises and the one Helene
+          // asked for on 2026-09-01, and it had to be set by hand in SQL.
+          //
+          // Defaults to "all" (has not replied). Open tracking is blocked or
+          // pre-loaded by Outlook and Apple Mail — the panel's own hint says
+          // so two sections up — so conditioning on it skips people who never
+          // saw the mail and bumps people who read it and are thinking.
+          condition: (document.getElementById("followup-condition") || {}).value
+            || "all",
         },
       },
       function (resp) {
@@ -3902,6 +3927,18 @@
       if (senderPosition) senderPosition.value = data.sender_position || "";
       if (senderCompany) senderCompany.value = data.sender_company || "";
       if (senderPhone) senderPhone.value = data.sender_phone || "";
+      var senderLogo = document.getElementById("settings-sender-logo");
+      if (senderLogo) {
+        senderLogo.value = data.sender_logo_url || "";
+        showLogoPreview(senderLogo.value);
+        // A typo in an image address is invisible until it reaches somebody
+        // else's inbox as a broken icon, under their name. Showing it here
+        // costs nothing and makes a wrong one obvious while it can still be
+        // fixed.
+        senderLogo.addEventListener("input", function () {
+          showLogoPreview(this.value);
+        });
+      }
 
       // Cross-campaign dedup — Pro-only section
       var dedupSection = document.getElementById("settings-dedup-section");
@@ -4253,6 +4290,7 @@
         sender_position: (document.getElementById("settings-sender-position").value || "").trim(),
         sender_company: (document.getElementById("settings-sender-company").value || "").trim(),
         sender_phone: (document.getElementById("settings-sender-phone").value || "").trim(),
+        sender_logo_url: ((document.getElementById("settings-sender-logo") || {}).value || "").trim(),
       };
 
       // Only send dedup fields if the section is visible (Pro users).
@@ -4278,7 +4316,16 @@
             }, 2000);
           } else {
             if (!handleSessionExpired(resp)) {
-              alert(t("settingsSaveFailed") + (resp ? resp.error : t("popupUnknownError")));
+              // The one refusal a user can act on. Everything else here is a
+              // server sentence appended to a generic prefix; a bad logo
+              // address is a thing they typed and can retype, so it gets the
+              // sentence that says what a right one looks like.
+              var why = (resp && resp.error) || "";
+              if (/logo_url_invalid/.test(why) || /must start with https/i.test(why)) {
+                alert(t("alertLogoUrlInvalid"));
+              } else {
+                alert(t("settingsSaveFailed") + (resp ? resp.error : t("popupUnknownError")));
+              }
             }
           }
         }

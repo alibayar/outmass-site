@@ -247,9 +247,18 @@ celery.conf.beat_schedule = {
     },
     "detect-replies": {
         "task": "workers.reply_detector.detect_replies",
-        # Daily at 05:00 UTC — after the morning send-window close
-        # (when most replies for yesterday's batches will have arrived)
-        # but still off-peak for our own infra.
-        "schedule": crontab(hour=5, minute=0),
+        # Every six hours from 05:00 UTC. Was once daily until 2026-09-01.
+        #
+        # The gap is the window in which a follow-up can reach somebody who
+        # has already replied — the one thing users expect follow-ups never to
+        # do, and the reason replied_at is checked before any condition. Daily
+        # made that window up to 24 hours wide; six-hourly caps it at six.
+        #
+        # Affordable because the population was narrowed in the same change:
+        # it now scans users who have actually sent something, not every
+        # token holder. 05:00 stays the first run — after the morning
+        # send-window close, when most replies to yesterday's batches have
+        # arrived.
+        "schedule": crontab(hour="5,11,17,23", minute=0),
     },
 }

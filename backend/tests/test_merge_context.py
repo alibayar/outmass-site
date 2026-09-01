@@ -140,3 +140,110 @@ def test_the_builder_covers_every_documented_contact_tag():
         f"the panel accepts {missing} but no send path supplies them - they "
         f"would arrive in the email as literal {{{{tag}}}} text"
     )
+
+
+# ── the signature logo ──
+
+
+def test_a_logo_url_becomes_a_whole_img_tag():
+    """Not the bare address. A user who has to write <img src="{{senderLogo}}">
+    themselves is back to needing HTML, which is the thing the field exists to
+    remove — Hélène asked for a logo in her signature on 2026-09-01 and the
+    only answer was to hand-write a tag."""
+    ctx = build_merge_context(
+        {"email": "a@example.com"},
+        {"sender_logo_url": "https://circularworkplaces.com/logo.png"},
+    )
+
+    assert ctx["senderLogo"].startswith("<img src=")
+    assert "https://circularworkplaces.com/logo.png" in ctx["senderLogo"]
+    assert "max-height" in ctx["senderLogo"], (
+        "an unbounded logo can arrive the height of the screen"
+    )
+
+
+def test_no_logo_renders_as_nothing():
+    """A template carrying the tag must degrade to a blank line, never to a
+    broken-image icon in somebody's outbound mail."""
+    for value in (None, "", "   "):
+        ctx = build_merge_context({"email": "a@example.com"},
+                                  {"sender_logo_url": value})
+        assert ctx["senderLogo"] == "", repr(value)
+
+
+@pytest.mark.parametrize("bad", [
+    "javascript:alert(1)",
+    "data:image/png;base64,AAAA",
+    "http://insecure.example.com/logo.png",
+    "//protocol-relative.example.com/logo.png",
+    "logo.png",
+])
+def test_only_https_becomes_an_img_src(bad):
+    """Checked here as well as at save time. A value written before the
+    validator existed, or by hand in SQL, must not become a src we generated."""
+    ctx = build_merge_context({"email": "a@example.com"},
+                              {"sender_logo_url": bad})
+    assert ctx["senderLogo"] == "", f"{bad!r} was accepted into an <img src>"
+
+
+def test_a_quote_in_the_url_cannot_open_a_second_attribute():
+    """The URL sits inside a double-quoted attribute in mail sent under the
+    user's own name."""
+    ctx = build_merge_context(
+        {"email": "a@example.com"},
+        {"sender_logo_url": 'https://x.com/a.png" onerror="alert(1)'},
+    )
+    assert 'onerror="' not in ctx["senderLogo"], ctx["senderLogo"]
+    assert "&quot;" in ctx["senderLogo"]
+
+
+def test_a_template_whose_only_markup_is_the_logo_still_gets_paragraphs():
+    """The trap this feature walks into.
+
+    render_body picks its branch from the TEMPLATE. A signature ending in
+    {{senderLogo}} looks like plain text, so the plain branch would escape the
+    <img> the tag expands to and deliver `&lt;img …` as visible characters —
+    breaking the feature at the moment it is used.
+    """
+    import re
+
+    from utils.email_body import render_body
+
+    template = "Bye,\nAli\n{{senderLogo}}"
+    ctx = build_merge_context({"email": "a@example.com"},
+                              {"sender_logo_url": "https://x.com/l.png"})
+    merged = re.sub(r"\{\{(\w+)\}\}",
+                    lambda m: ctx.get(m.group(1), m.group(0)), template)
+    out = render_body(template, merged)
+
+    assert "&lt;img" not in out, f"the logo arrived as literal text: {out!r}"
+    assert '<img src="https://x.com/l.png"' in out
+    assert "Bye,<br>Ali<br>" in out, (
+        f"the paragraphs collapsed around the logo: {out!r}"
+    )
+
+
+def test_the_panel_and_the_server_agree_that_the_logo_tag_is_markup():
+    """Both sides choose the render branch, and disagreeing is the fault this
+    whole area exists to prevent."""
+    import pathlib
+
+    from utils.email_body import MARKUP_TAGS
+
+    assert "{{senderLogo}}" in MARKUP_TAGS
+    sidebar = (
+        pathlib.Path(__file__).parents[2] / "extension" / "sidebar.js"
+    ).read_text(encoding="utf-8")
+    assert 'indexOf("{{senderLogo}}")' in sidebar, (
+        "the panel does not treat {{senderLogo}} as markup, so its preview "
+        "would escape the image the send delivers"
+    )
+
+
+def test_the_tag_is_registered_so_the_composer_does_not_call_it_unknown():
+    from utils.merge_tags import SENDER_TAGS, find_unknown_tags
+
+    assert "senderLogo" in SENDER_TAGS
+    assert find_unknown_tags("Bye {{senderLogo}}", set()) == [], (
+        "the composer would warn the user that their own logo tag is unknown"
+    )

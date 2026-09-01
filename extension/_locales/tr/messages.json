@@ -167,7 +167,7 @@
     "message": "Belirtilen zamanda otomatik olarak gönderilecektir."
   },
   "followupLabel": {
-    "message": "Açmayanlara otomatik hatırlatma"
+    "message": "Otomatik hatırlatma"
   },
   "followupDelayLabel": {
     "message": "Kaç gün sonra?"
@@ -185,7 +185,7 @@
     "message": "Merhaba {{firstName}},\n\nÖnceki e-postamızı gördünüz mü?"
   },
   "followupNote": {
-    "message": "Ana e-postaya ek olarak, açmayanlara gönderilecektir."
+    "message": "Ana e-postaya ek olarak, yukarıda seçilen süreye göre gönderilecektir."
   },
   "quotaDefault": {
     "message": "$1/$2 e-posta kaldı ($3 Planı)"
@@ -1069,7 +1069,7 @@
     "message": "Cevap veren:"
   },
   "statRepliedHint": {
-    "message": "Günlük Inbox taraması ile tespit edilir. En güçlü etkileşim sinyali — yalnızca alıcılarından gelen gerçek cevapları sayar."
+    "message": "Birkaç saatte bir yapılan gelen kutusu taramasıyla tespit edilir. En güçlü etkileşim sinyali — yalnızca alıcılarından gelen gerçek cevapları sayar."
   },
   "resumeHint": {
     "message": "Bazı alıcılara bu kampanya henüz ulaşmadı — genelde geçici bir ağ sorunu olur ya da aylık limitine ulaşmışsındır. Devam et, yalnızca bekleyen alıcılara yeniden gönderir. Sebep aylık limitse, sıfırlanmanın ardından bunlar zaten otomatik olarak da gönderilir."
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "Hatırlatma kimlere gönderilsin?"
+  },
+  "followupConditionNoReply": {
+    "message": "Yanıt vermeyen herkes"
+  },
+  "followupConditionNotOpened": {
+    "message": "E-postayı açmayan herkes"
+  },
+  "followupConditionHint": {
+    "message": "Hangisini seçerseniz seçin, yanıt verenler her zaman dışarıda bırakılır. Bazı mail istemcileri açılma takibini engelliyor veya pikselleri önceden yüklüyor; bu yüzden “açmayanlar” daha az güvenilir bir sinyaldir."
+  },
+  "settingsSenderLogo": {
+    "message": "Logo adresi (isteğe bağlı)"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "Logonuzun web adresini yapıştırın, sonra imzanızda görünmesini istediğiniz yere {{senderLogo}} ekleyin. Görselin kendisini asla kopyalamaz veya saklamayız."
+  },
+  "alertLogoUrlInvalid": {
+    "message": "Logo adresi https:// ile başlamalıdır."
   }
 }

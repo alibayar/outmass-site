@@ -223,7 +223,7 @@ function run() {
   // fixture, which is a better guard than a literal line here — this
   // assertion has already broken once for a change that was correct.
   check(
-    /if \(\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(tpl\)\) return /.test(sidebar),
+    /\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(tpl\)/.test(sidebar),
     "the inline-markup branch is gone, or does not test the template — one " +
       "<a href> in a signature collapses the whole email into a block again, " +
       "which is the bug Helene reported on the morning of 2026-09-01"

@@ -231,6 +231,76 @@ def _count(query):
     return len(result.data or [])
 
 
+def _stranded_campaign_lines(db) -> list[str]:
+    """Campaigns that call themselves finished while still holding people.
+
+    This is the check that was missing on 2026-08-31, when a query run by hand
+    found 110 recipients across two of a paying customer's campaigns who had
+    never been written to at all. Both campaigns reported 'sent'. Nobody
+    noticed for two months, and the customer had stopped opening the product
+    three weeks before we looked.
+
+    The report had no concept of a campaign until tonight. Every one of the
+    three delivery incidents this product has had - faisal's 110 never
+    attempted, miriam's 244 bounces, Tim's collapsed formatting - was found by
+    Ali querying Supabase by hand, which is not a monitor.
+
+    Two filters, cheap first:
+
+      status='sent' and sent_count < total_contacts   - one indexed read
+      count_resumable_contacts(id) > 0                - exact, per candidate
+
+    The second matters because the first alone is noisy: a campaign that
+    suppressed or unsubscribed some of its list finishes below its total quite
+    legitimately. Only 'pending' and 'deferred' mean somebody is still waiting.
+
+    archived campaigns are skipped. Archiving is the deliberate "leave this
+    one" switch, and it is how faisal's two will stop appearing here once they
+    are put away - the alarm has to be silenceable or it becomes wallpaper.
+    """
+    from models import contact as contact_model
+
+    try:
+        rows = (
+            db.table("campaigns")
+            .select("id, name, sent_count, total_contacts, user_id")
+            .eq("status", "sent")
+            .eq("archived", False)
+            .execute()
+        ).data or []
+    except Exception as e:  # noqa: BLE001
+        logger.warning("stranded-campaign check failed: %s", e)
+        return ["", f"📭 Stranded campaigns: check unavailable ({type(e).__name__})"]
+
+    candidates = [
+        r for r in rows
+        if (r.get("sent_count") or 0) < (r.get("total_contacts") or 0)
+    ]
+    stranded = []
+    for r in candidates:
+        try:
+            left = contact_model.count_resumable_contacts(r["id"])
+        except Exception:  # noqa: BLE001
+            logger.warning("stranded check: count failed for %s", r["id"])
+            continue
+        if left > 0:
+            stranded.append((r, left))
+
+    if not stranded:
+        return ["", "📭 Stranded campaigns: ✅ none"]
+
+    stranded.sort(key=lambda x: -x[1])
+    total = sum(n for _, n in stranded)
+    out = ["", f"📭 Stranded campaigns: ⚠️ {len(stranded)} holding {total} recipients"]
+    for i, (r, left) in enumerate(stranded[:5]):
+        branch = "└─" if i == min(len(stranded), 5) - 1 else "├─"
+        name = (r.get("name") or "(unnamed)")[:38]
+        out.append(f"{branch} {name} — {left} never sent to")
+    if len(stranded) > 5:
+        out.append(f"   …and {len(stranded) - 5} more")
+    return out
+
+
 def build_report() -> str:
     """Build the daily report as a Telegram-friendly plain-text message."""
     db = get_db()
@@ -364,6 +434,7 @@ def build_report() -> str:
         f"└─ Clicks: {clicks} ({click_rate}%)",
         "",
     ]
+    lines += _stranded_campaign_lines(db)
     lines += _signin_lines()
     lines += _error_check_lines()
     lines += _health_line()

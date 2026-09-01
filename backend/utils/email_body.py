@@ -58,6 +58,18 @@ def looks_like_html(template: str | None) -> bool:
     return bool(template and HTML_TAG_RE.search(template))
 
 
+# Merge tags whose VALUE is markup. A template can look like plain text and
+# still be placing an image, because the tag is what places it — and on the
+# plain branch everything is escaped, so the <img> would arrive as the literal
+# characters `&lt;img …`. The author typing {{senderLogo}} IS the author
+# placing an image, so the template counts as carrying inline markup.
+MARKUP_TAGS = ("{{senderLogo}}",)
+
+
+def has_markup_tag(template: str | None) -> bool:
+    return bool(template) and any(t in template for t in MARKUP_TAGS)
+
+
 def has_block_markup(template: str | None) -> bool:
     """Did the author lay the document out themselves?
 
@@ -168,8 +180,8 @@ def render_body(template: str | None, merged: str | None) -> str:
         # The author laid the document out; their whitespace is their own
         # business.
         return merged
-    if looks_like_html(template):
-        # Inline markup only — a link, a bold word. Still an ordinary message,
-        # so its line breaks still mean line breaks.
+    if looks_like_html(template) or has_markup_tag(template):
+        # Inline markup only — a link, a bold word, a signature logo. Still an
+        # ordinary message, so its line breaks still mean line breaks.
         return autolink(inline_html_to_html(merged))
     return autolink(plain_to_html(merged))

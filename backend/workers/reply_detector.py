@@ -290,8 +290,25 @@ def _find_replies_for_user(
 
 @celery.task
 def detect_replies():
-    """Beat task — daily. Runs reply detection for every user with a
-    refreshable MS token."""
+    """Beat task. Reply detection for every user who has actually sent
+    something.
+
+    Cadence went from once a day to four times on 2026-09-01, because the gap
+    is the window in which a follow-up can reach somebody who already replied
+    — the one thing users expect follow-ups never to do. Daily meant that
+    window was up to 24 hours; six-hourly makes it at most six.
+
+    Narrowing the population came first, and had to. This scanned every user
+    holding a refreshable token, which meant reading the inbox of somebody who
+    signed up and never sent an email, looking for replies to messages that do
+    not exist. Multiplying that by four would have multiplied the waste, not
+    the value: a Graph read and a token check each time, for an answer that
+    cannot change.
+
+    A user qualifies when they have at least one non-archived campaign that
+    has sent something. No time bound — a follow-up delay can legitimately be
+    a year, and a reply to a campaign from months ago still must stop it.
+    """
     from database import get_db
 
     db = get_db()
@@ -306,6 +323,42 @@ def detect_replies():
         return {"checked": 0, "stamped": 0}
 
     user_ids = [t["user_id"] for t in (tokens.data or []) if t.get("user_id")]
+    if not user_ids:
+        return {"checked": 0, "stamped": 0}
+
+    # Whose mail could contain a reply at all.
+    try:
+        senders = (
+            db.table("campaigns")
+            .select("user_id")
+            .gt("sent_count", 0)
+            .eq("archived", False)
+            .limit(SUPABASE_MAX_ROWS)
+            .execute()
+        ).data or []
+        with_sends = {r["user_id"] for r in senders if r.get("user_id")}
+        # A short read here would silently stop scanning real senders, so say
+        # so and scan everyone rather than quietly narrowing.
+        if len(senders) >= SUPABASE_MAX_ROWS:
+            logger.error(
+                "reply detector: the sender query hit its %s-row ceiling; "
+                "scanning every token holder instead of narrowing",
+                SUPABASE_MAX_ROWS,
+            )
+        else:
+            skipped = len(user_ids) - len([u for u in user_ids if u in with_sends])
+            user_ids = [u for u in user_ids if u in with_sends]
+            if skipped:
+                logger.info(
+                    "reply detector: skipped %s user(s) who have never sent",
+                    skipped,
+                )
+    except Exception as e:  # noqa: BLE001
+        # Never let the narrowing break the scan. Reading one inbox too many
+        # is waste; reading one too few is a follow-up chasing somebody who
+        # already wrote back.
+        logger.warning("reply detector: sender narrowing failed: %s", e)
+
     if not user_ids:
         return {"checked": 0, "stamped": 0}
 

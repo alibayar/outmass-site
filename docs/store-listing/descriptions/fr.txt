@@ -10,7 +10,7 @@ OutMass — E-mailing de Masse pour Outlook
 --- SUMMARY / SHORT DESCRIPTION (101/132 characters) ---
 Transformez Outlook en outil d'emailing de masse. Mail merge, A/B tests, IA. 13 langues. Dès $9/mois.
 
---- DESCRIPTION (2862 characters) ---
+--- DESCRIPTION (2879 characters) ---
 Transformez Outlook Web en outil professionnel d'e-mailing de masse. OutMass apporte le mail merge, le suivi, les relances et la rédaction assistée par IA directement dans outlook.office.com et outlook.live.com — avec une prise en charge complète de Microsoft 365 et des comptes Outlook.com personnels.
 
 ✨ CE QUE VOUS POUVEZ FAIRE
@@ -25,7 +25,7 @@ Transformez Outlook Web en outil professionnel d'e-mailing de masse. OutMass app
 🤖 Rédacteur IA — rédige votre e-mail à partir d'une courte description (Pro, 50/mois)
 📊 Suivi des ouvertures et clics — pixel, clics, lien de désabonnement
 📎 Pièces jointes OneDrive — partagez vos fichiers via un lien OneDrive plutôt qu'une pièce jointe lourde. Meilleure délivrabilité, fichiers plus volumineux, analytics côté destinataire.
-💬 Détection des réponses — un scan quotidien de la boîte de réception identifie les vraies réponses — le signal d'engagement le plus fort au-delà des ouvertures et clics.
+💬 Détection des réponses — un scan de la boîte de réception toutes les quelques heures identifie les vraies réponses — le signal d'engagement le plus fort au-delà des ouvertures et clics.
 📈 Rapports de campagne — taux d'ouverture, taux de clic, export CSV complet
 🌍 13 langues d'interface — avec support RTL pour l'arabe
 

@@ -10,7 +10,7 @@ OutMass — Outlook 大量郵件工具
 --- SUMMARY / SHORT DESCRIPTION (51/132 characters) ---
 在 Outlook Web 中大量寄信：CSV 合併、開啟／點選追蹤、自動追蹤郵件與 AI 撰寫助手。
 
---- DESCRIPTION (1181 characters) ---
+--- DESCRIPTION (1184 characters) ---
 將 Outlook Web 變成專業的大量郵件工具。OutMass 把郵件合併、追蹤、後續追蹤郵件以及 AI 輔助撰寫，直接帶進 outlook.office.com 與 outlook.live.com——完整支援 Microsoft 365 與個人 Outlook.com 帳戶。
 
 ✨ 您可以做什麼
@@ -25,7 +25,7 @@ OutMass — Outlook 大量郵件工具
 🤖 AI 郵件撰寫助手 — 用一段簡短說明就能產生郵件草稿（Pro，每月 50 次）
 📊 開啟與點選追蹤 — 像素追蹤、點選追蹤、取消訂閱連結
 📎 OneDrive 附件 — 用 OneDrive 連結分享檔案，而不是笨重的附件。送達率更好、檔案更大、還能看到收件者的檢視分析。
-💬 回覆偵測 — 每日掃描收件匣以標記真實回覆，這是比開啟與點選更強的互動訊號。
+💬 回覆偵測 — 每隔幾小時掃描收件匣以標記真實回覆，這是比開啟與點選更強的互動訊號。
 📈 行銷活動報表 — 開啟率、點選率、完整 CSV 匯出
 🌍 13 種介面語言 — 包含阿拉伯文 RTL 支援
 

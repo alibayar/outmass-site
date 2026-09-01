@@ -167,7 +167,7 @@
     "message": "将在指定时间自动发送。"
   },
   "followupLabel": {
-    "message": "自动跟进未打开者"
+    "message": "自动跟进"
   },
   "followupDelayLabel": {
     "message": "多少天后？"
@@ -185,7 +185,7 @@
     "message": "您好 {{firstName}}，\n\n您看到我们之前的邮件了吗？"
   },
   "followupNote": {
-    "message": "除主邮件外，还将发送给未打开邮件的收件人。"
+    "message": "除主邮件外，还会按您在上方选择的时间发送。"
   },
   "quotaDefault": {
     "message": "剩余 $1/$2 封邮件（$3 计划）"
@@ -1069,7 +1069,7 @@
     "message": "已回复:"
   },
   "statRepliedHint": {
-    "message": "通过每日收件箱扫描检测。最强的互动信号 — 仅统计来自您的收件人的真实回复。"
+    "message": "通过每隔几小时一次的收件箱扫描检测。最强的互动信号 — 仅统计来自您的收件人的真实回复。"
   },
   "resumeHint": {
     "message": "部分收件人尚未收到此活动 — 通常是临时的网络问题，或者您已达到每月上限。“继续发送”仅会重试待发送的收件人。如果是每月上限所致，这些收件人也会在每月重置后自动发送。"
@@ -1266,5 +1266,29 @@
         "content": "$1"
       }
     }
+  },
+  "followupConditionLabel": {
+    "message": "将跟进邮件发送给"
+  },
+  "followupConditionNoReply": {
+    "message": "所有未回复的收件人"
+  },
+  "followupConditionNotOpened": {
+    "message": "所有未打开邮件的收件人"
+  },
+  "followupConditionHint": {
+    "message": "无论您选择哪一项，已回复的收件人一律不会收到跟进邮件。部分邮件客户端会阻止或预加载追踪像素，因此“未打开”是可靠性较低的信号。"
+  },
+  "settingsSenderLogo": {
+    "message": "Logo 网址（选填）"
+  },
+  "placeholderSenderLogo": {
+    "message": "https://yoursite.com/logo.png"
+  },
+  "settingsSenderLogoHint": {
+    "message": "粘贴您 Logo 的网址，然后在邮件签名中您希望显示的位置放入 {{senderLogo}}。我们绝不复制或存储图片本身。"
+  },
+  "alertLogoUrlInvalid": {
+    "message": "Logo 网址必须以 https:// 开头。"
   }
 }
