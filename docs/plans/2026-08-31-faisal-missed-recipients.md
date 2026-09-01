@@ -76,8 +76,9 @@ Subject: **Two of your campaigns came up short — what happened**
 > from 20 July — a bug on our side meant **110 recipients were never sent
 > to at all.** Twenty on the first, ninety on the second. The campaigns
 > reported themselves as finished, which is why neither you nor we noticed
-> at the time. That was our fault and the underlying cause is being fixed
-> this week.
+> at the time. That was our fault. The cause is fixed and live now — a
+> campaign can no longer report itself finished while it is still holding
+> people it has not written to.
 >
 > Two things you should know about it:
 >
@@ -105,6 +106,17 @@ Subject: **Two of your campaigns came up short — what happened**
 
 Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
 Nothing here offers to resend, and nothing presents the 120 as recoverable.
+
+## Freshness check — 2026-09-01
+
+The draft was written on 08-31 and said the cause was "being fixed this week".
+It shipped that same day (`01e18bb`, live on `api.getoutmass.com`), so the
+sentence was already false by the time anyone read it. Corrected above to the
+present tense.
+
+Worth re-reading before sending anything that has sat for a day: a promise
+about future work reads very differently from a statement that it is done, and
+the difference is the whole reason he might reply.
 
 ## One thing for Ali to weigh
 
