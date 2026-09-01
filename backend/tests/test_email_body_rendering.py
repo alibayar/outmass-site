@@ -204,3 +204,35 @@ def test_the_inline_branch_does_not_escape_but_the_plain_branch_does():
 
     assert "&lt;" in render_body("plain", "a < b")
     assert render_body("has <b>markup</b>", "a <b>b</b>") == "<p>a <b>b</b></p>"
+
+
+# ── the shared fixture: preview and send must agree, character for character ──
+
+
+def test_every_shared_render_case_matches_the_fixture():
+    """tests/fixtures/render_cases.json is rendered by BOTH implementations.
+
+    The panel's textToHtml and this module have now disagreed twice, in
+    opposite directions, and each time a customer found it before we did:
+    Hélène's scheduled campaign arrived as one block on 2026-09-01 while the
+    preview looked right, and for one release afterwards the panel collapsed a
+    preview the server would have sent correctly.
+
+    Prose in a comment did not stop that. One file, read by both suites, does:
+    extension/tests/render-parity.test.js loads exactly this fixture and
+    asserts exactly these strings.
+    """
+    import json
+    import pathlib
+
+    from utils.email_body import render_body
+
+    path = pathlib.Path(__file__).parent / "fixtures" / "render_cases.json"
+    cases = json.loads(path.read_text(encoding="utf-8"))
+    assert cases, "the shared fixture is empty"
+
+    for case in cases:
+        got = render_body(case["template"], case["merged"])
+        assert got == case["expected"], (
+            f"{case['label']}:\n  expected {case['expected']!r}\n  got      {got!r}"
+        )

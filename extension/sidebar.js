@@ -1745,6 +1745,31 @@
     return "<p>" + parts.join("</p><p>") + "</p>";
   }
 
+  // Mirrors utils/email_body.autolink. A typed web address becomes a link,
+  // because that is what every mail client does and because the alternative
+  // was telling someone to write <a href>. Conservative on purpose: a scheme
+  // or a leading www., never a bare "example.com".
+  var URL_RE = /(^|[^\w@/.])((?:https?:\/\/|www\.)[^\s<>"']+)/gi;
+  var URL_TRAIL = ".,;:!?)]}'\"";
+  var SKIP_RE = /(<a\b[^>]*>[\s\S]*?<\/a>|<[^>]+>)/gi;
+
+  function autolink(html) {
+    var parts = html.split(SKIP_RE);
+    for (var i = 0; i < parts.length; i += 2) {
+      parts[i] = parts[i].replace(URL_RE, function (m, before, url) {
+        var trail = "";
+        while (url && URL_TRAIL.indexOf(url.charAt(url.length - 1)) > -1) {
+          trail = url.charAt(url.length - 1) + trail;
+          url = url.slice(0, -1);
+        }
+        if (!url) return m;
+        var href = /^https?:\/\//i.test(url) ? url : "https://" + url;
+        return before + '<a href="' + href + '">' + url + "</a>" + trail;
+      });
+    }
+    return parts.join("");
+  }
+
   function textToHtml(template, merged) {
     var body = merged === undefined ? template : merged;
     if (!body) return "";
@@ -1754,9 +1779,9 @@
     // Inline markup only — a link, a bold word. Still an ordinary message, so
     // its line breaks still mean line breaks. Before this, one <a href> in a
     // signature collapsed the whole email back into a single block.
-    if (/<[a-z!/][^>]*>/i.test(tpl)) return paragraphs(body);
+    if (/<[a-z!/][^>]*>/i.test(tpl)) return autolink(paragraphs(body));
     var esc = body.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    return paragraphs(esc);
+    return autolink(paragraphs(esc));
   }
 
   // Fetch sender profile from backend; cached after first call.

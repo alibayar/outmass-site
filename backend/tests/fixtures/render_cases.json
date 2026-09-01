@@ -1,0 +1,104 @@
+[
+  {
+    "label": "plain paragraphs",
+    "template": "Hi {{firstName}},\n\nBye",
+    "merged": "Hi Ada,\n\nBye",
+    "expected": "<p>Hi Ada,</p><p>Bye</p>"
+  },
+  {
+    "label": "signature line breaks",
+    "template": "Bye,\nHelene\nFounder",
+    "merged": "Bye,\nHelene\nFounder",
+    "expected": "<p>Bye,<br>Helene<br>Founder</p>"
+  },
+  {
+    "label": "bare www becomes a link",
+    "template": "Bye,\nwww.circularworkplaces.com",
+    "merged": "Bye,\nwww.circularworkplaces.com",
+    "expected": "<p>Bye,<br><a href=\"https://www.circularworkplaces.com\">www.circularworkplaces.com</a></p>"
+  },
+  {
+    "label": "bare https with a path",
+    "template": "Read https://example.com/a/b?x=1 today",
+    "merged": "Read https://example.com/a/b?x=1 today",
+    "expected": "<p>Read <a href=\"https://example.com/a/b?x=1\">https://example.com/a/b?x=1</a> today</p>"
+  },
+  {
+    "label": "trailing full stop stays outside",
+    "template": "Visit www.example.com.",
+    "merged": "Visit www.example.com.",
+    "expected": "<p>Visit <a href=\"https://www.example.com\">www.example.com</a>.</p>"
+  },
+  {
+    "label": "closing bracket stays outside",
+    "template": "(see www.example.com)",
+    "merged": "(see www.example.com)",
+    "expected": "<p>(see <a href=\"https://www.example.com\">www.example.com</a>)</p>"
+  },
+  {
+    "label": "an email address is not a link",
+    "template": "Write to helene@circularworkplaces.com anytime",
+    "merged": "Write to helene@circularworkplaces.com anytime",
+    "expected": "<p>Write to helene@circularworkplaces.com anytime</p>"
+  },
+  {
+    "label": "a bare domain is left alone",
+    "template": "The .com boom and example.com itself",
+    "merged": "The .com boom and example.com itself",
+    "expected": "<p>The .com boom and example.com itself</p>"
+  },
+  {
+    "label": "an authored link is not doubled",
+    "template": "See <a href=\"https://www.y.com\">www.y.com</a> please",
+    "merged": "See <a href=\"https://www.y.com\">www.y.com</a> please",
+    "expected": "<p>See <a href=\"https://www.y.com\">www.y.com</a> please</p>"
+  },
+  {
+    "label": "inline markup keeps its paragraphs",
+    "template": "One with <b>bold</b>\nTwo\n\nThree",
+    "merged": "One with <b>bold</b>\nTwo\n\nThree",
+    "expected": "<p>One with <b>bold</b><br>Two</p><p>Three</p>"
+  },
+  {
+    "label": "an image survives",
+    "template": "Bye\n<img src=\"https://x.com/l.png\" alt=\"L\">",
+    "merged": "Bye\n<img src=\"https://x.com/l.png\" alt=\"L\">",
+    "expected": "<p>Bye<br><img src=\"https://x.com/l.png\" alt=\"L\"></p>"
+  },
+  {
+    "label": "block markup is left entirely alone",
+    "template": "<p>One</p>\n<p>Two</p>",
+    "merged": "<p>One</p>\n<p>Two</p>",
+    "expected": "<p>One</p>\n<p>Two</p>"
+  },
+  {
+    "label": "a csv value in angle brackets is escaped",
+    "template": "Hi {{email}}",
+    "merged": "Hi <info@example.com>",
+    "expected": "<p>Hi &lt;info@example.com&gt;</p>"
+  },
+  {
+    "label": "an ampersand in plain text is escaped",
+    "template": "Tom & Jerry",
+    "merged": "Tom & Jerry",
+    "expected": "<p>Tom &amp; Jerry</p>"
+  },
+  {
+    "label": "empty body",
+    "template": "x",
+    "merged": "",
+    "expected": ""
+  },
+  {
+    "label": "inline markup and a bare link together",
+    "template": "Bold <b>here</b>\nwww.circularworkplaces.com",
+    "merged": "Bold <b>here</b>\nwww.circularworkplaces.com",
+    "expected": "<p>Bold <b>here</b><br><a href=\"https://www.circularworkplaces.com\">www.circularworkplaces.com</a></p>"
+  },
+  {
+    "label": "a logo and a bare link in one signature",
+    "template": "Bye\n<img src=\"https://x.com/l.png\" alt=\"L\">\nwww.example.com",
+    "merged": "Bye\n<img src=\"https://x.com/l.png\" alt=\"L\">\nwww.example.com",
+    "expected": "<p>Bye<br><img src=\"https://x.com/l.png\" alt=\"L\"><br><a href=\"https://www.example.com\">www.example.com</a></p>"
+  }
+]

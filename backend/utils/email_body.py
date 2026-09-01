@@ -108,6 +108,53 @@ def inline_html_to_html(text: str) -> str:
     return _paragraphs(text)
 
 
+
+# A bare web address typed into the composer.
+#
+# Hélène Carpentier, 2026-09-01: "Is there also a way to add links into the
+# text? (that was not obvious how to do that)". It was not obvious because the
+# only way was to type HTML. Every mail client she has ever used turns a typed
+# address into a link on its own, so the honest fix is to do that rather than
+# to teach her a tag.
+#
+# Deliberately conservative: an explicit scheme, or a leading `www.`. Bare
+# "example.com" is NOT matched — too many ordinary sentences end in a word that
+# looks like a domain ("...the .com boom", "see figure 2.png"), and a wrong
+# link in someone's outbound mail is worse than a missing one they can add.
+_URL_RE = re.compile(
+    r"(?<![\w@/.])"                 # not mid-word, mid-address or mid-path
+    r"(https?://[^\s<>\"']+|www\.[^\s<>\"']+)",
+    re.IGNORECASE,
+)
+# Trailing punctuation belongs to the sentence, not to the address.
+_URL_TRAIL = ".,;:!?)]}'\""
+
+# Everything already inside a tag, so linkifying can step over it. Splitting on
+# anchors AND on tags means we never rewrite an href, an alt, or the text
+# between <a> and </a>.
+_SKIP_RE = re.compile(r"(<a\b[^>]*>.*?</a>|<[^>]+>)", re.IGNORECASE | re.DOTALL)
+
+
+def autolink(html: str) -> str:
+    """Turn typed web addresses into links, leaving existing markup alone."""
+    def link_one(m):
+        url = m.group(1)
+        trail = ""
+        while url and url[-1] in _URL_TRAIL:
+            trail = url[-1] + trail
+            url = url[:-1]
+        if not url:
+            return m.group(0)
+        href = url if url.lower().startswith(("http://", "https://")) else "https://" + url
+        return f'<a href="{href}">{url}</a>{trail}'
+
+    # Odd indices are the skipped spans; only rewrite the text between them.
+    parts = _SKIP_RE.split(html)
+    for i in range(0, len(parts), 2):
+        parts[i] = _URL_RE.sub(link_one, parts[i])
+    return "".join(parts)
+
+
 def render_body(template: str | None, merged: str | None) -> str:
     """The body to send, given what the author wrote and what merging produced.
 
@@ -124,5 +171,5 @@ def render_body(template: str | None, merged: str | None) -> str:
     if looks_like_html(template):
         # Inline markup only — a link, a bold word. Still an ordinary message,
         # so its line breaks still mean line breaks.
-        return inline_html_to_html(merged)
-    return plain_to_html(merged)
+        return autolink(inline_html_to_html(merged))
+    return autolink(plain_to_html(merged))

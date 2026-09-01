@@ -218,8 +218,12 @@ function run() {
     /if \(BLOCK_TAG_RE\.test\(tpl\)\) return body;/.test(sidebar),
     "the block-markup branch does not test the template"
   );
+  // Intent, not shape: the branch must exist and must test the TEMPLATE.
+  // What it RETURNS is pinned by render-parity.test.js against the shared
+  // fixture, which is a better guard than a literal line here — this
+  // assertion has already broken once for a change that was correct.
   check(
-    /if \(\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(tpl\)\) return paragraphs\(body\);/.test(sidebar),
+    /if \(\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(tpl\)\) return /.test(sidebar),
     "the inline-markup branch is gone, or does not test the template — one " +
       "<a href> in a signature collapses the whole email into a block again, " +
       "which is the bug Helene reported on the morning of 2026-09-01"

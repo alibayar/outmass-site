@@ -14,6 +14,10 @@
  *                         backend/routers/auth.py to compare both sides)
  *   no-hardcoded-prices — no locale or markup holds a literal price, and the
  *                         Intl path that shows the real one still exists
+ *   render-parity       — the preview and the send produce identical HTML,
+ *                         both read from backend/tests/fixtures/render_cases.json.
+ *                         They have disagreed twice, in opposite directions,
+ *                         and a customer found it first both times.
  *   stop-campaign       — a running campaign must be stoppable, and the
  *                         panel and server must agree on when, or the
  *                         button appears and the endpoint refuses
@@ -54,6 +58,7 @@ const suites = [
   require("./feature-wall-offer.test.js"),
   require("./locked-followup.test.js"),
   require("./stop-campaign.test.js"),
+  require("./render-parity.test.js"),
 ];
 
 async function main() {
