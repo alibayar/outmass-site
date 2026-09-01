@@ -354,13 +354,39 @@ Smallest honest version: a link button on the body field that wraps the
 selection in `<a href="…">`. Not a rich-text editor. Half a day plus the
 locale pass (2-3 keys × 14 files).
 
-**Logo in the signature.** Needs the image to already live at a public URL —
-we host nothing, and `<img src="https://…">` in the body already works because
-inline markup now survives. So the immediate answer to her is "send me the
-address of your logo". A real feature means either an upload with hosting
-(nothing in the product does this today) or reusing the OneDrive share-link
-path, which produces links rather than embeddable images. **Do not promise
-this one** until that is decided — the email only offered to add it by hand.
+**Logo in the signature — scoped by Ali, 2026-09-01: a field for the URL, no
+hosting.** Right call; hosting images is a different product.
+
+It fits the sender profile that already exists — `sender_name`,
+`sender_position`, `sender_company`, `sender_phone`, edited in Settings and
+exposed as `{{senderName}}` and friends. Logo is a fifth field.
+
+  1. `users.sender_logo_url`, nullable. One reversible migration.
+  2. A Settings field beside the other four, plus its label and hint
+     (2 keys × 14 locale files).
+  3. `build_merge_context` supplies `senderLogo`. **It must expand to a
+     complete `<img …>` tag, not to the bare URL** — a user who has to write
+     `<img src="{{senderLogo}}">` themselves is back to needing HTML, which is
+     the thing this entry exists to remove. Empty string when unset, so a
+     template carrying the tag degrades to nothing rather than to a broken
+     image.
+  4. Validate on save: https only, and reject anything that is not a URL.
+     The risk is small (their own address, in mail from their own mailbox)
+     but `javascript:` and `data:` have no business in an `img src` we write.
+
+**The one non-obvious part.** Since 2026-09-01 `render_body` picks a branch
+from the TEMPLATE: plain text gets escaped, so an `<img>` arriving from a
+merge value would be delivered as the literal characters `&lt;img …`. A
+template whose only markup is `{{senderLogo}}` therefore looks plain and would
+break exactly the feature being added.
+
+Fix it where the decision is made, not with a special case at the merge site:
+a template containing `{{senderLogo}}` counts as inline markup, because the
+author placing that tag IS the author placing an image. `extension/sidebar.js`
+carries the same three-branch logic and a test compares the two, so both sides
+change together or the suite fails.
+
+Half a day, plus the locale pass and Ali's onay for the migration.
 
 Related, from the same message and NOT promised: **there is no way to edit a
 campaign after it starts.** No PUT, no PATCH, no panel control — verified
