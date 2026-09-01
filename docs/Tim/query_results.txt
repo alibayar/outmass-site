@@ -1,0 +1,14 @@
+| id                                   | status    | scheduled_for          | total_contacts | sent_count | daily_send_cap | archived | updated_at                    |
+| ------------------------------------ | --------- | ---------------------- | -------------- | ---------- | -------------- | -------- | ----------------------------- |
+| c813f366-d407-45c6-95cc-8a2a93016f16 | scheduled | 2026-09-01 08:00:00+00 | 108            | 0          | 15             | false    | 2026-08-31 15:12:13.513196+00 |
+
+| status  | unsubscribed | adet | ilk  | son  |
+| ------- | ------------ | ---- | ---- | ---- |
+| pending | false        | 108  | null | null |
+
+no rows returned
+
+| email                       | plan    | comp_plan | comp_plan_until        | emails_sent_this_month | emails_sent_total | requires_reauth |
+| --------------------------- | ------- | --------- | ---------------------- | ---------------------- | ----------------- | --------------- |
+| TimHaverkamp@improve4all.nl | starter | pro       | 2026-10-01 23:59:59+00 | 0                      | 1                 | false           |
+

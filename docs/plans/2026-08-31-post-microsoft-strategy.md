@@ -5,11 +5,20 @@ Internal. `docs/plans/` is excluded from the public Jekyll site.
 Written the morning after the 0.3.0 store cut, to answer: *what changes when
 Microsoft ships native Mail Merge (Advanced)?*
 
-**Revision 2**, after a four-lens adversarial review (15 challenges survived
-cross-examination, 8 were refuted). The central thesis held. Nine supporting
-claims did not, and the recommendation changed materially. Corrections are marked
-**[R2]** so the first draft's errors stay visible rather than being quietly tidied
-away.
+**Revision 4.** Each round is marked in place — **[R2]**, **[R3]**, **[R4]** —
+so what each draft got wrong stays visible rather than being tidied away. That
+matters here more than usual, because the thing every draft was most confident
+about is the thing the next one overturned:
+
+| | claimed | overturned by |
+|---|---|---|
+| R1 | the differentiator is **unwanted** | a four-lens adversarial review |
+| R2 | it was **never delivered** | the retention query |
+| R3 | **nobody comes back**, and the paid half was never sold | Ali, 2026-09-01 |
+| R4 | it was sold **twice**, and lost both times to defects | — |
+
+R2's own summary line — "the central thesis held" — did not survive R3, and
+R3's did not survive R4. Read §8 first if you only read one section.
 
 ---
 
@@ -20,11 +29,13 @@ away.
    does not touch the paid half.
 2. The paid half has **real demand**: up to 8 of our senders configured a follow-up
    and sent; ≤9 tried A/B; 6 pressed AI Generate.
-3. **Not one of them ever got the feature.** All three sit behind a Pro tier that
-   has never had a subscriber in five months.
+3. **Not one of them ever got the feature.** All three sit behind a Pro tier
+   nobody is on today — though **[R4]** two people did buy it and leave; see
+   item 9.
 4. **[R2] But "nobody was told" is only true of follow-ups.** The A/B and AI walls
    have shown a visible alert since **2026-04-16**, with Pro purchasable since
-   04-17. Four and a half months of visible wall, live checkout, **zero Pro sales**.
+   04-17. Four and a half months of visible wall and live checkout — and
+   **[R4]** two sales in that window, both since gone.
 5. So the thing that is falsified is not "users don't want it" — it is
    **"a bare alert converts."** All three walls state a rule and offer no price, no
    button, no path. Fixing that is item 1 below.
@@ -41,6 +52,12 @@ away.
 8. So the September priority is not the paywall. **It is asking the ~20 dormant
    users why they left** — one afternoon, no code, and the only instrument that
    returns a reason instead of another ratio.
+9. **[R4] And the claim all three drafts rested on is false.** "Zero real Pro
+   subscribers" was wrong: **two people bought Pro.** One asked for a **refund**
+   after a bounce storm and got it; the other was lost to defects in an early
+   version. So the paid half was never unsold — it was **sold twice and held
+   neither time**, and both times the reason was the product failing, not the
+   price, the packaging, or the differentiator. See §2 and §8.
 
 ---
 
@@ -74,8 +91,25 @@ building the part we charge for.
 | starter | — | 4 |
 | pro | — | **2 — the founder's own test accounts** |
 
-**Real Pro subscribers: zero**, in the five months since the gate was written.
-Every argument here rests on this, and it is confirmed.
+**[R4] "Real Pro subscribers: zero, in the five months since the gate was
+written" — this is wrong, and it was the load-bearing claim of both earlier
+drafts.**
+
+Two people have paid for Pro:
+
+- **miriam@osbornecapitalpartners.com**, 24 June. `oauth_completed` carries
+  `plan: pro` at 13:06:13Z, twelve minutes after five upgrade clicks. She sent,
+  240-odd of her messages bounced, she wrote to us three times that afternoon,
+  and **she asked for a refund. We gave it.**
+- One more, in the early versions, lost to defects.
+
+The table above is still accurate about *today*: the two `plan='pro'` rows are
+the founder's test accounts. What was wrong was reading "nobody is on Pro now"
+as "nobody has ever bought it".
+
+Also [R4]: `faisal@samaed.com`'s Starter is a **grant**, made after he hit
+defects — he was among the first payers, but that row is not revenue. The
+paying count is one lower than the plan column suggests.
 
 ### The funnel (PostHog, all time)
 
@@ -365,6 +399,12 @@ September as qualitative. Do not pre-register a threshold that noise will trip.
 
 **[R3] Re-ordered after the retention finding.**
 
+**[R4] Item 1 no longer survives as a gate.** Dormant accounts emit no events —
+that is what dormant means — so "observe them instead" cannot answer why they
+left, and Ali has said he would rather observe. Fine: the email is then optional
+rather than blocking. What replaces it as the September priority is §8's truth
+layer, which is owed on its own evidence and needs nobody's reply to justify.
+
 | # | change | user-visible? |
 |---|---|---|
 | **1** | **"What stopped you?" email to the ~20 dormant accounts.** The only instrument that returns a reason. One day, no code. | **yes — needs approval; BCC outmassapp@** |
@@ -425,6 +465,80 @@ So the honest statement is not the one either earlier draft reached:
 Microsoft's September is a deadline for the *install* reason, and worth the two
 days in §6 items 2–4. But the thing that decides whether OutMass exists in six
 months is item 1, and it costs an afternoon.
+
+---
+
+## 8. [R4] We sold the paid half. Twice. And held neither.
+
+Written 2026-09-01, after Ali corrected the fact all three earlier drafts were
+built on.
+
+Two people paid for Pro. Neither is on it now, and neither left for a reason
+this document had considered:
+
+**miriam@osbornecapitalpartners.com, 24 June.** Uploaded 417 recipients at
+12:27. Clicked upgrade five times between 13:01 and 13:05. Bought Pro at
+13:06:13. Sent at 13:08. By 13:52 she was writing to us:
+
+> "All of the emails I programmed to send came back as delivery failed, saying
+> the email is not valid. The email is valid because I can send it singularly
+> just fine. 244 emails+ came back this way. I paid for Pro, please help me."
+
+She wrote three times that afternoon. **She asked for a refund and we gave it.**
+Forty-six minutes from paying to writing the first complaint.
+
+**One more, in the early versions**, lost to defects.
+
+### What that does to the argument
+
+Every earlier draft asked a version of "why has nobody bought the paid half?"
+That question was malformed. People bought it. It did not survive contact with
+the product.
+
+- R1 said the differentiator was **unwanted**. Wrong.
+- R2 said it was **never delivered**. True of follow-ups, and still true — no
+  real user has ever received one — but it is not why either Pro customer left.
+- R3 said **nobody comes back**. True, and this explains part of why: at least
+  two of the people who did not come back had already paid and been failed.
+- R4: the failures were **defects**. A bounce storm the product neither
+  explained nor helped with; and, in the earlier case, bugs.
+
+So the September question is not pricing, packaging, or positioning. It is
+whether the product works for someone who paid.
+
+### What that means for the next three days
+
+It vindicates the last two days rather than redirecting them. The row-cap
+close-out (`01e18bb`), the reply-detector scoping (`c6a0b3b`), the paywall
+that now offers a path, the follow-up that is no longer discarded — all of
+that is "make the product work", which is now the demonstrated failure mode
+rather than a guess.
+
+It also settles the Delivery Report question this file did not know it was
+about to be asked. miriam's 244 bounces are the loudest complaint in the
+product's history, they cost the only Pro sale we can document, and the panel
+proposed for them addresses exactly that. Split it:
+
+- **The truth layer** — per-campaign delivered / failed / never-attempted from
+  columns the database already has. One day, no Mail.Read, no privacy change.
+  Owed regardless: the product currently misreports delivery in **both**
+  directions. It told faisal "sent" while 110 recipients were never attempted,
+  and told miriam "failed" while her mail was going out.
+- **The bounce layer** — counts, invalid-address extraction, suppression.
+  Needs Mail.Read, NDR parsing, a consent rewrite, and a corpus of real bounced
+  mail across Exchange, consumer Outlook.com and a non-English mailbox. Five to
+  eight days, not three.
+
+Truth layer first. Bounce layer behind a half-day Graph spike on whether the
+failed address can be read without opening a message body.
+
+### One correction this section does not make
+
+It does not rehabilitate the follow-up feature. Fourteen people switched it on,
+at most eight reached the refusal, and **no real user has ever received one**.
+That is still true and still unaddressed by anything above. What changed is
+that it is no longer the best explanation for why paying customers left — it
+was never tested on them, because they were gone first.
 
 ---
 
