@@ -1,11 +1,10 @@
 OutMass adds mail merge (personalised bulk email) to Outlook on the web.
-Mail is sent from the signed-in user's own mailbox via Microsoft Graph.
-Nothing is sent from our servers. No remote code is loaded or executed.
+Mail goes from the user's own mailbox via Microsoft Graph, never from our
+servers. No remote code is loaded.
 
 TEST ACCOUNT
 Username: <FILL IN>
 Password: <FILL IN>
-Everything below runs on the free plan; no payment is needed.
 
 WHERE THE UI APPEARS - please read first
 The content script runs ONLY on outlook.live.com, outlook.office.com,
@@ -15,27 +14,27 @@ toolbar alone.
 
 STEPS
 1. Install, open https://outlook.live.com, sign in with the account above.
-2. Click the OutMass toolbar icon, choose "Sign in with Microsoft", accept
+2. Click the OutMass toolbar icon, "Sign in with Microsoft", and accept
    Microsoft's own consent screen.
-3. Back in the Outlook tab, open the side panel from the toolbar popup or
-   the round "OM" button at the edge of the page.
-4. Upload a CSV: a header of email,firstName and two addresses you control.
+3. In the Outlook tab, open the side panel from the popup or the round
+   "OM" button at the page edge.
+4. Upload a CSV: header email,firstName and two addresses you control.
 5. Write a subject and body, optionally with {{firstName}}. "Send test"
-   mails a preview to yourself.
-6. "Send" runs the campaign; Reports shows what was delivered.
+   previews it to yourself.
+6. "Send" runs it; Reports shows delivery, and a Stop button while a
+   campaign is still going.
 
 PLAN-LOCKED FEATURES - intended, not errors
-Steps 1-6 are all free. Four controls are plan-limited; selecting one opens
-a pricing dialog naming the plans that unlock it. It sends no mail and needs
-no payment to see. They are "Auto follow-up for non-openers", "A/B test" and
-"Write with AI" (labelled PRO), plus scheduled sending (Starter). Switching
-a follow-up on without Pro saves it and says so; the report later offers to
-start it.
+Steps 1-6 are free. Four controls are plan-limited and open a pricing
+dialog instead: "Auto follow-up for non-openers", "A/B test", "Write with
+AI" (PRO) and scheduled sending (Starter). No payment is needed to see it.
 
 PERMISSIONS
 - Mail.Send: sends the campaign from the signed-in mailbox.
-- Mail.Read: requested separately, and only if reply detection is switched
-  on. It reads the sender and date of incoming mail so follow-ups stop
-  chasing people who replied, and never reads message content.
-- storage, alarms, identity; host access to the four domains above and to
-  api.getoutmass.com.
+- Mail.Read: requested separately, only if reply detection is on. Reads
+  the sender and date of incoming mail so follow-ups stop chasing people
+  who replied; never message content.
+- storage, alarms, identity.
+- Hosts: the four Outlook domains above, plus api.getoutmass.com and
+  outmass-production.up.railway.app - one backend, two names; the second
+  is only tried when the first is unreachable (some filters block one).
