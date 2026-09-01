@@ -223,3 +223,64 @@ def test_a_broken_alert_channel_cannot_break_the_sign_in(monkeypatch):
     monkeypatch.setattr(billing, "_telegram_alert", boom)
     auth._alert_if_ours("authorize", _classify(
         "invalid_client", "AADSTS650051: undocumented"), "api.getoutmass.com")
+
+
+# ── the operator alert has to agree with itself ──
+
+
+def _alert_message(meaning, attributed_to, stage="authorize"):
+    """Capture what _alert_if_ours would send to Telegram."""
+    from unittest.mock import patch
+
+    from routers import auth
+
+    sent = []
+    with patch("routers.billing._telegram_alert", side_effect=sent.append):
+        auth._alert_if_ours(
+            stage,
+            {"meaning": meaning, "attributed_to": attributed_to,
+             "aadsts": "AADSTS650051"},
+            host="api.getoutmass.com",
+        )
+    return sent[0] if sent else ""
+
+
+def test_a_microsoft_failure_is_not_headlined_as_ours():
+    """Until 2026-09-01 every one of these opened "Sign-in failed on our side"
+    and then said "blamed: microsoft" two lines down.
+
+    Ali read one at 17:12 and asked what was broken. Nothing was: Microsoft's
+    provisioning race, which the extension had already retried through. An
+    alert that contradicts itself costs a real interruption the first time and
+    gets skimmed past every time after.
+    """
+    msg = _alert_message("tenant_provisioning_race", "microsoft")
+
+    assert "Microsoft side" in msg, msg
+    assert "our side" not in msg, (
+        f"the headline still blames us for Microsoft's failure:\n{msg}"
+    )
+    assert "blamed: microsoft" in msg
+
+
+def test_our_own_failure_still_says_so():
+    """The point is agreement, not softening. An app-side fault is ours."""
+    msg = _alert_message("app_registration_rejected", "app")
+
+    assert "our side" in msg, msg
+    assert "blamed: app" in msg
+
+
+def test_a_self_healing_failure_says_the_client_retries():
+    """The one class the extension retries by itself, 1.5s later. Without this
+    the alert reports a failure and stops, and the reader has no way to know
+    the user was already carried through it."""
+    msg = _alert_message("tenant_provisioning_race", "microsoft")
+    assert "retries automatically once" in msg, msg
+
+
+def test_other_classes_do_not_claim_a_retry_that_will_not_happen():
+    """Consent declines are never retried — reopening the window on somebody
+    who said no is harassment, not recovery."""
+    msg = _alert_message("user_declined_consent", "microsoft")
+    assert "retries automatically" not in msg, msg

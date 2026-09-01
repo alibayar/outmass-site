@@ -475,12 +475,32 @@ def _alert_if_ours(stage: str, fields: dict, host: str = "") -> None:
         #
         # Off the loop when there is one; straight through when there is not,
         # which is how the tests call it.
+        # The headline has to agree with the line beneath it. "failed on our
+        # side" sat directly above "blamed: microsoft" until 2026-09-01, so an
+        # operator reading it at a glance was told two different things — which
+        # is how an alert gets misread once and skimmed past thereafter.
+        who = fields.get("attributed_to")
+        meaning = fields.get("meaning") or fields.get("error") or "unknown"
+        headline = (
+            "🔐 Sign-in failed — our side"
+            if who == "app"
+            else "🔐 Sign-in failed — Microsoft side"
+        )
+        # And say whether the person is already being rescued. The extension
+        # retries this one class once, 1.5s later, and on 2026-09-01 that
+        # carried a new user through without him noticing — while this alert
+        # reported a failure and stopped there.
+        retry = (
+            "\nclient: retries automatically once"
+            if meaning == "tenant_provisioning_race"
+            else ""
+        )
         message = (
-            "🔐 Sign-in failed on our side\n"
+            f"{headline}\n"
             f"stage: {stage}\n"
-            f"reason: {fields.get('meaning') or fields.get('error') or 'unknown'}"
+            f"reason: {meaning}"
             f" ({fields.get('aadsts') or fields.get('error') or '—'})\n"
-            f"blamed: {fields.get('attributed_to')}\n"
+            f"blamed: {who}{retry}\n"
             f"host: {host or 'unknown'}"
         )
         try:

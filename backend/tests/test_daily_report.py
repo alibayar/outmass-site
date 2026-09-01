@@ -451,10 +451,51 @@ def test_error_check_survives_posthog_outage():
     from workers import daily_report
 
     with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
-         patch("workers.daily_report.httpx.post", side_effect=Exception("down")):
+         patch("workers.daily_report.httpx.post",
+               side_effect=RuntimeError("down")):
         lines = daily_report._error_check_lines()
 
-    assert lines == ["🩺 Errors (12h): check unavailable"]
+    assert len(lines) == 1
+    assert lines[0].startswith("🩺 Errors (12h): check unavailable")
+
+
+def test_an_unavailable_check_says_why_in_the_report():
+    """"check unavailable" on its own is the shape of a silent failure.
+
+    The 2026-09-01 report carried it for twelve hours and nobody could say
+    whether the key was wrong, the project id was missing, or PostHog was
+    down — the reason went to a logger.warning in Railway. That is the same
+    shape as the stuck-campaign sweep being dead for 24 days: a check that
+    cannot run looks exactly like a check that found nothing.
+
+    The report is the surface somebody actually reads, so the reason belongs
+    in it.
+    """
+    from workers import daily_report
+
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post",
+               side_effect=RuntimeError("boom")):
+        errors = daily_report._error_check_lines()
+    assert "RuntimeError" in errors[0], (
+        f"the report does not say why the check failed: {errors[0]!r}"
+    )
+
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post",
+               return_value=MagicMock(status_code=403, text="forbidden")):
+        errors = daily_report._error_check_lines()
+    assert "403" in errors[0], (
+        f"an HTTP failure must name its status: {errors[0]!r}"
+    )
+
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post",
+               return_value=MagicMock(status_code=404, text="Project not found")):
+        signin = daily_report._signin_lines()
+    assert "404" in signin[-1], (
+        f"the sign-in check must name its status too: {signin[-1]!r}"
+    )
 
 
 def test_health_line_up_and_down():
@@ -471,3 +512,59 @@ def test_health_line_up_and_down():
 
     # Not configured → omitted entirely
     assert daily_report._health_line() == []
+
+
+def test_the_failure_line_is_not_called_lost():
+    """It counts ms_auth_failed EVENTS, and an event is not a person.
+
+    The extension auto-retries a tenant_provisioning_race once, so one visitor
+    produces one failure AND one login. On 2026-09-01 the report read
+    "5/5 completed (100%)" directly above "lost: 1 microsoft" — and the one
+    was Dhirender, who was signed in and sending within ten minutes.
+
+    green_report.py had already diagnosed this exact arithmetic and fixed it
+    there by counting people; the fix was never carried across.
+    """
+    from workers import daily_report
+
+    rows = [
+        ["oauth_started", "", 5],
+        ["login", "", 5],
+        ["ms_auth_failed", "microsoft", 1],
+    ]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post",
+               return_value=MagicMock(status_code=200,
+                                      json=lambda: {"results": rows})):
+        lines = daily_report._signin_lines()
+
+    body = "\n".join(lines)
+    assert "lost" not in body, (
+        f"the report still calls a recovered failure a loss:\n{body}"
+    )
+    assert "1 microsoft" in body, "the failure class must still be reported"
+    assert "all recovered" in body, (
+        f"everyone who started got in, and the report does not say so:\n{body}"
+    )
+
+
+def test_a_real_shortfall_is_not_called_recovered():
+    """The reassurance must be earned, not printed unconditionally."""
+    from workers import daily_report
+
+    rows = [
+        ["oauth_started", "", 5],
+        ["login", "", 3],
+        ["ms_auth_failed", "microsoft", 2],
+    ]
+    with patch("workers.daily_report.POSTHOG_PERSONAL_API_KEY", "phx"), \
+         patch("workers.daily_report.httpx.post",
+               return_value=MagicMock(status_code=200,
+                                      json=lambda: {"results": rows})):
+        body = "\n".join(daily_report._signin_lines())
+
+    assert "3/5" in body
+    assert "all recovered" not in body, (
+        f"two people did not get in and the report says everything recovered:"
+        f"\n{body}"
+    )

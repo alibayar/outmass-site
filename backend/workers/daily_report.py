@@ -90,11 +90,11 @@ def _signin_lines() -> list[str]:
                 "PostHog sign-in check returned %s: %s",
                 resp.status_code, resp.text[:200],
             )
-            return ["", "🚪 Sign-in (24h): check unavailable"]
+            return ["", f"🚪 Sign-in (24h): check unavailable (HTTP {resp.status_code})"]
         rows = resp.json().get("results") or []
     except Exception as e:  # noqa: BLE001
         logger.warning("PostHog sign-in check failed: %s", e)
-        return ["", "🚪 Sign-in (24h): check unavailable"]
+        return ["", f"🚪 Sign-in (24h): check unavailable ({type(e).__name__})"]
 
     started = sum(n for ev, _who, n in rows if ev == "oauth_started")
     completed = sum(n for ev, _who, n in rows if ev == "login")
@@ -109,12 +109,21 @@ def _signin_lines() -> list[str]:
     pct = round(100 * completed / started) if started else 0
     out = ["", f"🚪 Sign-in (24h): {completed}/{started} completed ({pct}%)"]
     if blame:
-        out.append(
-            "└─ lost: "
-            + ", ".join(
-                f"{n} {who}" for who, n in sorted(blame.items(), key=lambda kv: -kv[1])
-            )
+        # NOT "lost". This counts ms_auth_failed EVENTS, and an event is not a
+        # person: the extension auto-retries a tenant_provisioning_race, so one
+        # visitor produces one failure AND one login and appears in both
+        # numbers. On 2026-09-01 that read "5/5 completed (100%)" above
+        # "lost: 1 microsoft" - the one was Dhirender, signed in and sending
+        # within ten minutes.
+        #
+        # green_report.py diagnosed this exact arithmetic and fixed it there by
+        # counting people. The fix was never carried across - the third time in
+        # one day a correction landed in one place and not its sibling.
+        detail = ", ".join(
+            f"{n} {who}" for who, n in sorted(blame.items(), key=lambda kv: -kv[1])
         )
+        recovered = " (all recovered)" if completed >= started else ""
+        out.append(f"└─ failures: {detail}{recovered}")
     return out
 
 
@@ -154,11 +163,11 @@ def _error_check_lines() -> list[str]:
                 resp.status_code,
                 resp.text[:200],
             )
-            return ["🩺 Errors (12h): check unavailable"]
+            return [f"🩺 Errors (12h): check unavailable (HTTP {resp.status_code})"]
         rows = resp.json().get("results") or []
     except Exception as e:  # noqa: BLE001
         logger.warning("PostHog error-check failed: %s", e)
-        return ["🩺 Errors (12h): check unavailable"]
+        return [f"🩺 Errors (12h): check unavailable ({type(e).__name__})"]
 
     if not rows:
         return ["🩺 Errors (12h): ✅ none"]
