@@ -5,7 +5,7 @@ Internal. `docs/plans/` is excluded from the public Jekyll site.
 Written the morning after the 0.3.0 store cut, to answer: *what changes when
 Microsoft ships native Mail Merge (Advanced)?*
 
-**Revision 4.** Each round is marked in place — **[R2]**, **[R3]**, **[R4]** —
+**Revision 5.** Each round is marked in place — **[R2]** … **[R5]** —
 so what each draft got wrong stays visible rather than being tidied away. That
 matters here more than usual, because the thing every draft was most confident
 about is the thing the next one overturned:
@@ -15,10 +15,11 @@ about is the thing the next one overturned:
 | R1 | the differentiator is **unwanted** | a four-lens adversarial review |
 | R2 | it was **never delivered** | the retention query |
 | R3 | **nobody comes back**, and the paid half was never sold | Ali, 2026-09-01 |
-| R4 | it was sold **twice**, and lost both times to defects | — |
+| R4 | it was sold **twice**, and lost both times to defects | the incident of 2026-09-01 |
+| R5 | that failure mode is **recoverable**, and today it was recovered | — |
 
 R2's own summary line — "the central thesis held" — did not survive R3, and
-R3's did not survive R4. Read §8 first if you only read one section.
+R3's did not survive R4. Read §8 and §9 if you only read two sections.
 
 ---
 
@@ -58,6 +59,12 @@ R3's did not survive R4. Read §8 first if you only read one section.
    version. So the paid half was never unsold — it was **sold twice and held
    neither time**, and both times the reason was the product failing, not the
    price, the packaging, or the differentiator. See §2 and §8.
+10. **[R5] And on 2026-09-01, for the first time, two customers went to the
+   brink over a defect and both stayed** — not for a feature, but because
+   we answered within minutes, admitted the fault, and refunded on request
+   without conditions. The first evidence in this file that the failure
+   mode is recoverable. See §9, including why it should not become the
+   headline.
 
 ---
 
@@ -539,6 +546,69 @@ at most eight reached the refusal, and **no real user has ever received one**.
 That is still true and still unaddressed by anything above. What changed is
 that it is no longer the best explanation for why paying customers left — it
 was never tested on them, because they were gone first.
+
+---
+
+## 9. [R5] The first recovery in the file
+
+Written 2026-09-01, the afternoon of the incident described in
+`2026-09-01-helene-stop-and-formatting.md` and `2026-09-01-tim-layout.md`.
+
+Everything above this section measures loss. Two Pro sales refunded or churned,
+eight months of scheduled campaigns arriving as one block, 110 recipients never
+sent to, 8% monthly retention. Today added the first thing in the other
+direction.
+
+One defect — the workers never converting plain text to HTML — reached two
+paying customers within four hours of each other. Both went to the edge:
+
+- **Helene**, five recipients into a 66-person send, wrote *"I will have to
+  close the account to stop it"*, then asked us to delete her account, stop the
+  campaign, and refund her. We did all three without asking her to justify any
+  of them. Two hours later: *"Thank you for all the explanations and quick
+  support. Really impressed with that!"* — and she asked to resume the campaign
+  and for a month to test the follow-ups.
+- **Tim**, fifteen recipients into a 108-person send, one day after paying,
+  having already been refused a follow-up he had configured. He asked how to
+  stop a campaign. He stayed.
+
+Neither was retained by a feature. Both were retained by the same three things:
+answering within minutes, admitting the fault without anatomy or excuse, and
+refunding on request with no conditions attached.
+
+### What this does and does not license
+
+It licenses one strategic sentence: **the recoverable failure mode is defects,
+and we can recover it.** §8 established that both Pro customers were lost to
+defects rather than to price or packaging. Today is the first evidence that the
+same class of failure does not have to end the same way.
+
+It does not license making support the headline. Three reasons, and Ali raised
+the idea himself so they are worth writing down rather than arguing:
+
+1. **It was needed because we broke it.** Two customers required heroic support
+   because every scheduled campaign had been wrong for months. Marketing the
+   recovery celebrates the wrong half.
+2. **It does not scale.** Twenty-minute responses are possible at sixty users.
+   A promise made now becomes a promise broken at six hundred.
+3. **"Great support" is the most claimed and least believed line in software.**
+   Asserting it costs nothing and is therefore worth nothing.
+
+### What is worth doing, because it is falsifiable
+
+- **Measure first response time.** We have no such data: support arrives at
+  support@ and through the in-app form, and neither is timed. A published
+  median, computed and updated automatically, is a claim a queue-based
+  competitor cannot match and cannot fake. Nothing can be said until it is
+  measured.
+- **Say the person who wrote the code answers.** True, checkable, and one
+  sentence.
+- **Make the changelog visible.** It already names bugs plainly — 0.3.2 says
+  *"Large campaigns no longer stop short and report themselves finished"*.
+  Publishing that costs something, which is exactly why it is credible.
+
+The order matters: instrument, then claim. Reversing it is how the
+claims-follow-product rule gets broken.
 
 ---
 
