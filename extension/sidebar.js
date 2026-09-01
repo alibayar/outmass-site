@@ -1733,14 +1733,30 @@
   // merged with a row containing <info@example.com> would send correctly and
   // preview as one block. That is Helene's sentence backwards, in the release
   // whose whole premise is that preview and send agree.
+  // Three modes, and they must match utils/email_body.render_body exactly.
+  // The preview disagreeing with the send is the bug this whole area exists
+  // to prevent, so any change here is a change there.
+  var BLOCK_TAG_RE =
+    /<\/?(p|div|br|table|tr|td|th|tbody|thead|ul|ol|li|h[1-6]|blockquote|pre|hr|section|article|body|html|head|style)\b/i;
+
+  function paragraphs(text) {
+    var t = text.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
+    var parts = t.split(/\n\n+/).map(function (p) { return p.replace(/\n/g, "<br>"); });
+    return "<p>" + parts.join("</p><p>") + "</p>";
+  }
+
   function textToHtml(template, merged) {
     var body = merged === undefined ? template : merged;
     if (!body) return "";
-    if (/<[a-z!/][^>]*>/i.test(template || "")) return body;
+    var tpl = template || "";
+    // The author laid the document out themselves.
+    if (BLOCK_TAG_RE.test(tpl)) return body;
+    // Inline markup only — a link, a bold word. Still an ordinary message, so
+    // its line breaks still mean line breaks. Before this, one <a href> in a
+    // signature collapsed the whole email back into a single block.
+    if (/<[a-z!/][^>]*>/i.test(tpl)) return paragraphs(body);
     var esc = body.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    esc = esc.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
-    var parts = esc.split(/\n\n+/).map(function (p) { return p.replace(/\n/g, "<br>"); });
-    return "<p>" + parts.join("</p><p>") + "</p>";
+    return paragraphs(esc);
   }
 
   // Fetch sender profile from backend; cached after first call.

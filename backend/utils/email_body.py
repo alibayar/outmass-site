@@ -39,9 +39,47 @@ import re
 HTML_TAG_RE = re.compile(r"<[a-z!/][^>]*>", re.IGNORECASE)
 
 
+# Tags that lay out a document. If the author used any of these they are
+# writing HTML and their whitespace is theirs to arrange.
+#
+# <a>, <b>, <strong>, <em>, <i>, <u>, <span> and <img> are deliberately NOT
+# here. Somebody adding a link to an otherwise plain message has not started
+# writing HTML — they have written a normal email that happens to contain a
+# link, and they still expect their paragraphs to survive.
+BLOCK_TAG_RE = re.compile(
+    r"</?(p|div|br|table|tr|td|th|tbody|thead|ul|ol|li|h[1-6]|blockquote|"
+    r"pre|hr|section|article|body|html|head|style)\b",
+    re.IGNORECASE,
+)
+
+
 def looks_like_html(template: str | None) -> bool:
     """Did the author write HTML? Ask the template, never the merged result."""
     return bool(template and HTML_TAG_RE.search(template))
+
+
+def has_block_markup(template: str | None) -> bool:
+    """Did the author lay the document out themselves?
+
+    This distinction exists because of the question Hélène asked on
+    2026-09-01, hours after we fixed her formatting: "Is there also a way to
+    add links into the text?"
+
+    There was, and taking it would have handed her back the exact bug she had
+    just reported. A single <a href> made looks_like_html true, the whole body
+    was passed through untouched, and every newline in it became whitespace
+    again. The honest answer to "can I add a link" would have been "yes, and
+    your paragraphs will collapse".
+    """
+    return bool(template and BLOCK_TAG_RE.search(template))
+
+
+def _paragraphs(text: str) -> str:
+    """Blank line to new paragraph, single newline to line break."""
+    # Normalise CRLF first so a Windows-authored template behaves the same.
+    text = text.replace("\r\n", "\n").replace("\r", "\n")
+    parts = [p.replace("\n", "<br>") for p in text.split("\n\n")]
+    return "<p>" + "</p><p>".join(parts) + "</p>"
 
 
 def plain_to_html(text: str) -> str:
@@ -53,10 +91,21 @@ def plain_to_html(text: str) -> str:
             .replace("<", "&lt;")
             .replace(">", "&gt;")
     )
-    # Normalise CRLF first so a Windows-authored template behaves the same.
-    escaped = escaped.replace("\r\n", "\n").replace("\r", "\n")
-    paragraphs = [p.replace("\n", "<br>") for p in escaped.split("\n\n")]
-    return "<p>" + "</p><p>".join(paragraphs) + "</p>"
+    return _paragraphs(escaped)
+
+
+def inline_html_to_html(text: str) -> str:
+    """Newlines converted, existing markup left alone.
+
+    The middle case: an ordinary message carrying a link or a bold word.
+    Nothing is escaped, because the author's own <a href> has to survive — and
+    the alternative on this branch is not "escaped", it is "not converted at
+    all", which is what shipped before. So this strictly widens what renders
+    correctly; it does not widen what is trusted.
+    """
+    if not text:
+        return text or ""
+    return _paragraphs(text)
 
 
 def render_body(template: str | None, merged: str | None) -> str:
@@ -68,7 +117,12 @@ def render_body(template: str | None, merged: str | None) -> str:
     """
     if merged is None:
         merged = ""
-    if looks_like_html(template):
-        # The author wrote markup; their line breaks are their own business.
+    if has_block_markup(template):
+        # The author laid the document out; their whitespace is their own
+        # business.
         return merged
+    if looks_like_html(template):
+        # Inline markup only — a link, a bold word. Still an ordinary message,
+        # so its line breaks still mean line breaks.
+        return inline_html_to_html(merged)
     return plain_to_html(merged)

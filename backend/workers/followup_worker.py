@@ -25,6 +25,7 @@ from config import (
 logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
 from utils.email_body import render_body
+from utils.merge_tags import build_merge_context
 from workers.celery_app import celery
 
 
@@ -342,15 +343,7 @@ def _send_followup_email(
     unsubscribe_text: str = "Unsubscribe",
 ):
     """Send a single follow-up email via Graph API."""
-    merge_ctx = {
-        "firstName": contact.get("first_name", ""),
-        "lastName": contact.get("last_name", ""),
-        "email": contact.get("email", ""),
-        "company": contact.get("company", ""),
-        "position": contact.get("position", ""),
-    }
-    custom = contact.get("custom_fields") or {}
-    merge_ctx.update(custom)
+    merge_ctx = build_merge_context(contact)
 
     merged_subject = _merge(followup["subject"], merge_ctx)
     merged_body = _merge(followup["body"], merge_ctx)

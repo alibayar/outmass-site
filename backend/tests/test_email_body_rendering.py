@@ -135,3 +135,72 @@ def test_no_send_path_decides_the_mode_from_merged_text():
             f"the {label} path passes the merged text as the template — user "
             f"data decides the formatting mode again"
         )
+
+
+# ── the middle case: an ordinary email that happens to contain a link ──
+#
+# Hélène asked on 2026-09-01, hours after we fixed her formatting: "Is there
+# also a way to add links into the text?" There was, and taking it would have
+# handed her back the exact bug she had just reported — one <a href> made the
+# whole body count as authored HTML, and every newline in it became whitespace.
+
+
+def test_a_link_does_not_collapse_the_paragraphs_around_it():
+    from utils.email_body import render_body
+
+    template = (
+        "Hi {{firstName}},\n\nHave a nice day,\n\nHelene Carpentier\n"
+        'Founder, Circular Workplaces\n<a href="https://x.com">x.com</a>'
+    )
+    merged = template.replace("{{firstName}}", "Ada")
+    out = render_body(template, merged)
+
+    assert "<p>Hi Ada,</p>" in out, (
+        f"the paragraphs collapsed around the link: {out!r}"
+    )
+    assert '<a href="https://x.com">x.com</a>' in out, "the link was mangled"
+    assert "&lt;a href" not in out, "the author's own link was escaped"
+    assert "Circular Workplaces<br>" in out, "the signature lost its line break"
+
+
+def test_bold_and_italics_behave_the_same_way():
+    from utils.email_body import render_body
+
+    t = "Line one with <b>bold</b>\nLine two"
+    assert render_body(t, t) == "<p>Line one with <b>bold</b><br>Line two</p>"
+
+
+def test_a_real_html_document_is_still_left_alone():
+    """A block tag means the author laid it out; do not second-guess them."""
+    from utils.email_body import render_body
+
+    for t in (
+        "<p>One</p>\n<p>Two</p>",
+        "<div>One</div>\nTwo",
+        "<table><tr><td>x</td></tr></table>",
+        "One<br>Two",
+        "<ul><li>a</li></ul>",
+        "<h1>Title</h1>\nBody",
+    ):
+        assert render_body(t, t) == t, f"{t!r} was rewritten"
+
+
+def test_a_csv_value_in_angle_brackets_is_still_escaped_on_a_plain_template():
+    """The template decides. Data never promotes a message to HTML."""
+    from utils.email_body import render_body
+
+    out = render_body("Hi {{email}}", "Hi <info@example.com>")
+    assert "&lt;info@example.com&gt;" in out
+
+
+def test_the_inline_branch_does_not_escape_but_the_plain_branch_does():
+    """Stated as a property, because the difference is the whole design.
+
+    On the inline branch the alternative was never 'escaped' — it was 'not
+    converted at all'. So this widens what renders correctly, not what is
+    trusted.
+    """
+    from utils.email_body import render_body
+
+    assert "&lt;" in render_body("plain", "a < b")
+    assert render_body("has <b>markup</b>", "a <b>b</b>") == "<p>a <b>b</b></p>"

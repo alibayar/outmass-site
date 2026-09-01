@@ -31,6 +31,7 @@ from config import (
 logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
 from utils.email_body import render_body
+from utils.merge_tags import build_merge_context
 
 from config import CANCEL_CHECK_EVERY
 from utils.send_classify import _classify_failure
@@ -402,15 +403,7 @@ def _send_email(
     that forget to pass it no longer silently ship the Turkish default
     to every recipient.
     """
-    merge_ctx = {
-        "firstName": contact.get("first_name", ""),
-        "lastName": contact.get("last_name", ""),
-        "email": contact.get("email", ""),
-        "company": contact.get("company", ""),
-        "position": contact.get("position", ""),
-    }
-    custom = contact.get("custom_fields") or {}
-    merge_ctx.update(custom)
+    merge_ctx = build_merge_context(contact)
 
     merged_subject = _merge(campaign["subject"], merge_ctx)
     merged_body = _merge(campaign["body"], merge_ctx)

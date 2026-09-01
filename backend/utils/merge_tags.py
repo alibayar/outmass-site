@@ -90,3 +90,45 @@ def find_unknown_tags(template: str, contact_keys: set[str]) -> list[str]:
             seen.add(tag)
             unknowns.append(tag)
     return unknowns
+
+
+def _text(value) -> str:
+    """A merge value as text. NULL becomes empty, never the word "None".
+
+    contact.get("first_name", "") returns the DEFAULT only when the KEY is
+    absent. PostgREST always returns the column, so a NULL first_name comes
+    back as the key present and the value None — the default never fires — and
+    str(None) put the literal word "None" into the greeting of a real email.
+
+    Found 2026-09-01, hours before the product's first ever follow-up was due
+    to go out, because the customer it was for had written: "Please make sure
+    the formatting is right and firstname is showing up correctly."
+    """
+    return "" if value is None else str(value)
+
+
+def build_merge_context(contact: dict, sender_info: dict | None = None) -> dict:
+    """The merge values for one recipient, in one place.
+
+    All three send paths built this dict themselves and all three had the same
+    None bug. Sharing it is the point: this repo has twice shipped a fix into
+    one send path and left it out of the other two (render_body on 2026-09-01,
+    the suppression-skip write before it).
+    """
+    ctx = {
+        "firstName": _text(contact.get("first_name")),
+        "lastName": _text(contact.get("last_name")),
+        "email": _text(contact.get("email")),
+        "company": _text(contact.get("company")),
+        "position": _text(contact.get("position")),
+    }
+    if sender_info:
+        ctx["senderName"] = _text(sender_info.get("sender_name"))
+        ctx["senderPosition"] = _text(sender_info.get("sender_position"))
+        ctx["senderCompany"] = _text(sender_info.get("sender_company"))
+        ctx["senderPhone"] = _text(sender_info.get("sender_phone"))
+    # A custom column can be NULL for one row and filled for the next, which
+    # is exactly how a spreadsheet arrives.
+    for key, value in (contact.get("custom_fields") or {}).items():
+        ctx[key] = _text(value)
+    return ctx

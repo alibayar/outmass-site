@@ -48,7 +48,12 @@ from routers.auth import get_current_user
 from utils import welcome_email
 from utils.client_version import client_at_least
 from utils.email_body import render_body
-from utils.merge_tags import CONTACT_TAGS, find_malformed_tags, find_unknown_tags
+from utils.merge_tags import (
+    CONTACT_TAGS,
+    build_merge_context,
+    find_malformed_tags,
+    find_unknown_tags,
+)
 from utils.send_classify import _classify_failure  # re-exported for the send loop
 
 router = APIRouter(prefix="/campaigns", tags=["campaigns"])
@@ -1869,22 +1874,7 @@ async def _send_single_email(
 ) -> dict:
     """Send a single email via Microsoft Graph API."""
     # Build merge context
-    merge_ctx = {
-        "firstName": contact.get("first_name", ""),
-        "lastName": contact.get("last_name", ""),
-        "email": contact.get("email", ""),
-        "company": contact.get("company", ""),
-        "position": contact.get("position", ""),
-    }
-    # Add sender fields
-    if sender_info:
-        merge_ctx["senderName"] = sender_info.get("sender_name", "")
-        merge_ctx["senderPosition"] = sender_info.get("sender_position", "")
-        merge_ctx["senderCompany"] = sender_info.get("sender_company", "")
-        merge_ctx["senderPhone"] = sender_info.get("sender_phone", "")
-    # Add custom fields
-    custom = contact.get("custom_fields") or {}
-    merge_ctx.update(custom)
+    merge_ctx = build_merge_context(contact, sender_info)
 
     subject_text = subject_override or campaign["subject"]
     merged_subject = _merge_template(subject_text, merge_ctx)

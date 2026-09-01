@@ -207,12 +207,46 @@ function run() {
     "textToHtml no longer takes the template separately — it decides from the " +
       "text it converts, which is what the server stopped doing on 2026-09-01"
   );
+  // Both detections must read `tpl` — the TEMPLATE. Reading the merged text
+  // is the original bug: a CSV value in angle brackets flips the preview and
+  // the send disagrees again, in the other direction.
   check(
-    /if \(\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(template \|\| ""\)\)/.test(sidebar),
-    "textToHtml tests its HTML regex against something other than the " +
-      "template — a CSV value in angle brackets flips the preview and the " +
-      "send disagrees again, in the other direction"
+    /var tpl = template \|\| "";/.test(sidebar),
+    "textToHtml no longer binds the template separately before deciding"
   );
+  check(
+    /if \(BLOCK_TAG_RE\.test\(tpl\)\) return body;/.test(sidebar),
+    "the block-markup branch does not test the template"
+  );
+  check(
+    /if \(\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(tpl\)\) return paragraphs\(body\);/.test(sidebar),
+    "the inline-markup branch is gone, or does not test the template — one " +
+      "<a href> in a signature collapses the whole email into a block again, " +
+      "which is the bug Helene reported on the morning of 2026-09-01"
+  );
+  // The panel's three modes must be the server's three modes.
+  const emailBody = fs.readFileSync(
+    path.join(REPO, "backend", "utils", "email_body.py"), "utf8"
+  );
+  const tagsOf = (src, re) => {
+    const m = re.exec(src);
+    return m ? new Set((m[1].match(/[a-z][a-z0-9]*(?:\[1-6\])?/gi) || [])) : null;
+  };
+  const serverBlock = /BLOCK_TAG_RE = re\.compile\(\s*r"([\s\S]*?)",/.exec(emailBody);
+  const panelBlock = /var BLOCK_TAG_RE =\s*\/([\s\S]*?)\/i;/.exec(sidebar);
+  check(serverBlock !== null, "BLOCK_TAG_RE could not be found in email_body.py");
+  check(panelBlock !== null, "BLOCK_TAG_RE could not be found in sidebar.js");
+  if (serverBlock && panelBlock) {
+    const norm = (s) =>
+      s.replace(/\\b|\\\//g, "").replace(/[()?:^$]/g, "").replace(/<\/?/g, "")
+       .replace(/\s|"|r"/g, "");
+    check(
+      norm(serverBlock[1]) === norm(panelBlock[1]),
+      `the panel and the server disagree about which tags are block-level:\n` +
+        `      server: ${norm(serverBlock[1])}\n      panel:  ${norm(panelBlock[1])}\n` +
+        `      preview and send would format the same email differently`
+    );
+  }
   check(
     /textToHtml\(body, previewBody\)/.test(sidebar),
     "the preview call no longer passes the raw template alongside the merged " +
