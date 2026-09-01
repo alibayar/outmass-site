@@ -329,6 +329,45 @@ her feedback did arrive).
 > policy to apply to mail failing SPF/DKIM, and nothing told us when it
 > happened. DKIM was verified in the same sitting.)*
 
+### ⬜ Composer: links and an image in the signature — PROMISED TO A CUSTOMER 2026-09-01
+
+Hélène Carpentier asked both in the same message as her follow-up text:
+
+> "Is there also a way to add links into the text? (that was not obvious how
+> to do that) and add a logo in signature (as my signature below)."
+
+The reply told her links were "on the list", which is why this entry exists:
+a sentence in a support email is a commitment, and it was not written down
+anywhere until Ali noticed the gap the same afternoon.
+
+**Links.** Possible today only by typing HTML into the composer, which is not
+an answer for someone writing an email. It also only became *safe* on
+2026-09-01 (`7dea631`): before that, one `<a href>` in a body flipped
+`looks_like_html` and the whole message went out as a single block, so the
+feature she asked for would have handed her back the bug she reported that
+morning. `render_body` now separates block markup from inline markup, and
+`_wrap_links` already rewrites `href="..."` for click tracking, so the send
+side is done. What is missing is the panel: no way to mark a word as a link
+without knowing HTML.
+
+Smallest honest version: a link button on the body field that wraps the
+selection in `<a href="…">`. Not a rich-text editor. Half a day plus the
+locale pass (2-3 keys × 14 files).
+
+**Logo in the signature.** Needs the image to already live at a public URL —
+we host nothing, and `<img src="https://…">` in the body already works because
+inline markup now survives. So the immediate answer to her is "send me the
+address of your logo". A real feature means either an upload with hosting
+(nothing in the product does this today) or reusing the OneDrive share-link
+path, which produces links rather than embeddable images. **Do not promise
+this one** until that is decided — the email only offered to add it by hand.
+
+Related, from the same message and NOT promised: **there is no way to edit a
+campaign after it starts.** No PUT, no PATCH, no panel control — verified
+2026-09-01. Stopping one is new in 0.3.2. Worth its own entry when someone
+asks twice; recorded here so the third person's request is not the first time
+we notice.
+
 ### ⬜ Branded support send-as (`support@getoutmass.com`)
 Split out of the entry above on 2026-08-08 because the two are independent and
 bundling them hid that one of them is a one-record DNS fix. Replies still come
