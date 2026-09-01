@@ -420,7 +420,32 @@ self-corrected afterwards — `scheduled_for` moved to 2026-09-02 09:40 and
 **Resume a capped campaign with `scheduled_for = now() + interval '1 day'`**,
 unless today's batch has genuinely not run.
 
-Not reachable without a human: auto-resume and the Resume endpoint both select
-`partial`, and a capped campaign that finishes its batch returns to
-`scheduled`. So this is an operator footgun rather than a live defect — but it
-is one we fired.
+### That last paragraph was wrong, and this is what it said
+
+> Not reachable without a human: auto-resume and the Resume endpoint both
+> select `partial`, and a capped campaign that finishes its batch returns to
+> `scheduled`. So this is an operator footgun rather than a live defect — but
+> it is one we fired.
+
+The first clause is true and the conclusion drawn from it is not. Auto-resume
+does select `partial` — and a capped campaign lands on `partial` routinely:
+whenever the monthly quota truncates its batch, whenever a send errors, and
+(once the sweep was working again) whenever a worker dies mid-loop. From there
+`auto_resume_partial_campaigns` wrote `scheduled_for = now()` for every
+campaign it resumed, with no reference to the daily cap. Same second batch,
+same day, no human involved.
+
+Found on 2026-09-01 while working out the blast radius of reviving the stuck
+campaign sweep — the question "what would this actually send?" is what exposed
+it. Fixed in `9a2a187`: a capped campaign whose newest `contacts.sent_at` is
+today resumes tomorrow instead. Five tests, mutation-checked.
+
+The operator rule still stands for manual UPDATEs, which nothing guards:
+**resume a capped campaign with `scheduled_for = now() + interval '1 day'`**
+unless today's batch has genuinely not run.
+
+Worth keeping as a note about reasoning rather than about pacing. "No code
+path reaches this" was asserted from two facts that were each true, and the
+gap between them — that a capped campaign becomes `partial` all the time —
+was never checked. It took a different question, asked for a different
+reason, to notice.
