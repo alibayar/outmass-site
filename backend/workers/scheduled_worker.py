@@ -30,6 +30,7 @@ from config import (
 
 logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
+from utils.email_body import render_body
 from utils.send_classify import _classify_failure
 from workers.celery_app import celery
 
@@ -345,6 +346,13 @@ def _send_email(
 
     merged_subject = _merge(campaign["subject"], merge_ctx)
     merged_body = _merge(campaign["body"], merge_ctx)
+    # This line did not exist until 2026-09-01, and its absence is why every
+    # SCHEDULED campaign the product ever sent arrived as a single block:
+    # Graph sends contentType HTML, where a newline is whitespace. The
+    # send-now path in routers/campaigns.py converted; this one did not, so
+    # the panel's preview and the delivered mail disagreed for anybody who
+    # scheduled rather than sent immediately.
+    merged_body = render_body(campaign["body"], merged_body)
 
     tracking_pixel = (
         f'<img src="{BACKEND_URL}/t/{contact["id"]}" '

@@ -24,6 +24,7 @@ from config import (
 
 logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
+from utils.email_body import render_body
 from workers.celery_app import celery
 
 
@@ -353,6 +354,9 @@ def _send_followup_email(
 
     merged_subject = _merge(followup["subject"], merge_ctx)
     merged_body = _merge(followup["body"], merge_ctx)
+    # Same omission as the scheduled worker had: a follow-up is always sent by
+    # a worker, so every follow-up would have arrived as one block.
+    merged_body = render_body(followup["body"], merged_body)
 
     # Tracking pixel
     tracking_pixel = (

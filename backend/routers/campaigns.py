@@ -46,6 +46,7 @@ from models import user as user_model
 from routers.auth import get_current_user
 from utils import welcome_email
 from utils.client_version import client_at_least
+from utils.email_body import render_body
 from utils.merge_tags import CONTACT_TAGS, find_malformed_tags, find_unknown_tags
 from utils.send_classify import _classify_failure  # re-exported for the send loop
 
@@ -1701,7 +1702,14 @@ async def _send_single_email(
     merged_subject = _merge_template(subject_text, merge_ctx)
     merged_body = _merge_template(campaign["body"], merge_ctx)
     # Plain-text input needs newline→<br> conversion since Graph sends HTML.
-    merged_body = _text_to_html(merged_body)
+    #
+    # The TEMPLATE decides whether the author wrote markup; the merged text is
+    # what gets converted. Passing only the merged text — which this line did
+    # until 2026-09-01 — lets a single CSV value containing something like
+    # <info@example.com> flip the whole message into "author wrote HTML" and
+    # collapse that one recipient's line breaks, while the preview (first row)
+    # showed the other answer.
+    merged_body = render_body(campaign["body"], merged_body)
 
     # Add tracking pixel (if enabled)
     tracking_pixel = ""
@@ -1840,7 +1848,14 @@ _HTML_TAG_RE = re.compile(r"<[a-z!/][^>]*>", re.IGNORECASE)
 
 
 def _text_to_html(body: str) -> str:
-    """Convert plain-text body to simple HTML when no markup is present.
+    """DEPRECATED — use utils.email_body.render_body.
+
+    Kept only because removing it in the same commit as the incident fix would
+    mix a behaviour change with a cleanup. It decides from the text it is
+    given, which is the bug: by the time the send path had it, the merge had
+    already run and user data could flip the mode.
+
+    Convert plain-text body to simple HTML when no markup is present.
 
     Graph API sends with `contentType: HTML`, so newlines in plain-text
     input disappear unless we convert them. If the user already pasted
