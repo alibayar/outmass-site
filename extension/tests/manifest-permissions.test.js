@@ -153,6 +153,40 @@ function run() {
     }
   }
 
+  // -- and every Microsoft Graph scope, which is NOT in the manifest --
+  //
+  // The check above reads manifest.json. Graph scopes live in
+  // backend/config.py, so a scope can be requested, shown to the user on
+  // Microsoft's consent screen, and never appear in the notes a reviewer
+  // reads. That is exactly what happened: Files.Read.All and Files.ReadWrite
+  // have been requested since the OneDrive feature shipped, the store
+  // description advertises that feature in all 14 languages, and the
+  // certification notes named only Mail.Send and Mail.Read until 2026-09-02.
+  //
+  // Found by a review of an unrelated question. The host-permission version
+  // of this gap was found the same way the day before, which is the argument
+  // for checking it rather than reading it.
+  const cfg = fs.readFileSync(
+    path.join(EXT, "..", "backend", "config.py"), "utf8"
+  );
+  const scopes = new Set(
+    (cfg.match(/https:\/\/graph\.microsoft\.com\/([A-Za-z.]+)/g) || [])
+      .map((m) => m.split("/").pop())
+      .filter((s) => s && s !== "v1.0")
+  );
+  check(scopes.size > 0, "no Graph scopes could be read out of backend/config.py");
+  if (fs.existsSync(notesPath)) {
+    const notes = fs.readFileSync(notesPath, "utf8");
+    for (const scope of scopes) {
+      check(
+        notes.includes(scope),
+        `certification-notes.txt does not mention the Graph scope ${scope}, ` +
+          `which config.py requests - the reviewer meets it on Microsoft's ` +
+          `consent screen with nothing in the notes explaining why`
+      );
+    }
+  }
+
   return { name: "manifest-permissions", failures };
 }
 

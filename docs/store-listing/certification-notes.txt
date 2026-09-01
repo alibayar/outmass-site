@@ -1,6 +1,6 @@
 OutMass adds mail merge (personalised bulk email) to Outlook on the web.
-Mail goes from the user's own mailbox via Microsoft Graph, never from our
-servers. No remote code is loaded.
+Mail goes from the user's own mailbox via Microsoft Graph. No remote code
+is loaded.
 
 TEST ACCOUNT
 Username: <FILL IN>
@@ -8,33 +8,35 @@ Password: <FILL IN>
 
 WHERE THE UI APPEARS - please read first
 The content script runs ONLY on outlook.live.com, outlook.office.com,
-outlook.office365.com and outlook.cloud.microsoft. On any other page the
-extension shows nothing, so it cannot be evaluated from a blank tab or the
-toolbar alone.
+outlook.office365.com and outlook.cloud.microsoft. On any other page it
+shows nothing, so it cannot be evaluated from a blank tab or the toolbar.
 
 STEPS
 1. Install, open https://outlook.live.com, sign in with the account above.
-2. Click the OutMass toolbar icon, "Sign in with Microsoft", and accept
-   Microsoft's own consent screen.
+2. Click the OutMass icon, "Sign in with Microsoft", accept Microsoft's
+   own consent screen.
 3. In the Outlook tab, open the side panel from the popup or the round
    "OM" button at the page edge.
-4. Upload a CSV: header email,firstName and two addresses you control.
+4. Upload a CSV: header email,firstName and two addresses you own.
 5. Write a subject and body, optionally with {{firstName}}. "Send test"
-   previews it to yourself.
-6. "Send" runs it; Reports shows delivery, and a Stop button while a
-   campaign is still going.
+   mails it to you.
+6. "Send" runs it; Reports shows delivery and a Stop button.
 
 PLAN-LOCKED FEATURES - intended, not errors
-Steps 1-6 are free. Four controls are plan-limited and open a pricing
-dialog instead: "Auto follow-up for non-openers", "A/B test", "Write with
-AI" (PRO) and scheduled sending (Starter). No payment is needed to see it.
+Steps 1-6 are free. Four controls open a pricing dialog instead: automatic
+follow-ups, A/B test, Write with AI (PRO), scheduled sending (Starter). No
+payment is needed to see it.
 
 PERMISSIONS
-- Mail.Send: sends the campaign from the signed-in mailbox.
+- User.Read: the signed-in address, shown in the panel.
+- Mail.Send: sends the campaign from that mailbox.
 - Mail.Read: requested separately, only if reply detection is on. Reads
   the sender and date of incoming mail so follow-ups stop chasing people
-  who replied; never message content.
+  who replied. Never message content.
+- Files.Read.All / Files.ReadWrite: requested separately, on first use of
+  the OneDrive attachment feature. Lists the files they pick and creates
+  sharing links; file contents are never read.
 - storage, alarms, identity.
 - Hosts: the four Outlook domains above, plus api.getoutmass.com and
-  outmass-production.up.railway.app - one backend, two names; the second
-  is only tried when the first is unreachable (some filters block one).
+  outmass-production.up.railway.app - one backend under two names, the
+  second tried only if the first is unreachable.
