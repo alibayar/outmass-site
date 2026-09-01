@@ -602,8 +602,9 @@ def evaluate_ab_tests():
             refreshed_user = user_model.get_by_id(user["id"])
             if refreshed_user and refreshed_user.get("requires_reauth"):
                 ab_test_model.update_ab_test(ab_test["id"], {"status": "failed_auth"})
-                campaign_model.update_campaign(
-                    ab_test["campaign_id"], {"status": "failed_auth"}
+                campaign_model.update_if_status(
+                    ab_test["campaign_id"], {"status": "failed_auth"},
+                    expected="ab_testing",
                 )
             continue
 
@@ -615,13 +616,14 @@ def evaluate_ab_tests():
             # would close here as finished. has_resumable_contacts covers both
             # statuses and is what every other close-out in this file now uses.
             ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
-            campaign_model.update_campaign(
+            campaign_model.update_if_status(
                 ab_test["campaign_id"],
                 {
                     "status": "partial"
                     if contact_model.has_resumable_contacts(ab_test["campaign_id"])
                     else "sent"
                 },
+                expected="ab_testing",
             )
             continue
 
@@ -637,8 +639,36 @@ def evaluate_ab_tests():
         sent_count = 0
         quota_charged = 0
         errors = []
+        cancelled_midbatch = False
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
-            for contact in remaining:
+            for _i, contact in enumerate(remaining):
+                # The third send loop, and it needed this as much as the other
+                # two. The guard above runs once, before the loop; the winner
+                # send is the REST of the list at SEND_DELAY_SECONDS apiece,
+                # which for a few hundred recipients is tens of minutes. The
+                # campaign row reads 'ab_testing' throughout, and
+                # STOPPABLE_STATUSES contains 'ab_testing' and
+                # 'sending_winner' — so the panel offers Stop for this exact
+                # window, and without this it did nothing.
+                if _i and _i % CANCEL_CHECK_EVERY == 0:
+                    try:
+                        still_ours = campaign_model.get_status(
+                            ab_test["campaign_id"]
+                        )
+                    except Exception:  # noqa: BLE001
+                        logger.warning(
+                            "ab test %s: cancellation check failed, continuing",
+                            ab_test["id"], exc_info=True,
+                        )
+                        still_ours = "ab_testing"
+                    if still_ours not in ("ab_testing", "sending_winner"):
+                        cancelled_midbatch = True
+                        logger.info(
+                            "ab test %s: campaign %s stopped by its owner "
+                            "mid-batch after %s sent",
+                            ab_test["id"], ab_test["campaign_id"], sent_count,
+                        )
+                        break
                 if contact.get("unsubscribed"):
                     continue
                 if contact.get("email", "").lower() in suppressed_emails:
@@ -748,26 +778,30 @@ def evaluate_ab_tests():
             and not contact_model.has_resumable_contacts(ab_test["campaign_id"])
             else "partial"
         )
-        campaign_model.update_campaign(ab_test["campaign_id"], {"status": final_status})
+        # Conditional for the same reason as the other two send paths: the
+        # campaign is 'ab_testing' for the whole winner send, so that is what
+        # this write must find. If the owner pressed Stop it says 'cancelled',
+        # and writing 'sent' over it would erase the record that they ever
+        # stopped anything.
+        campaign_model.update_if_status(
+            ab_test["campaign_id"], {"status": final_status},
+            expected="ab_testing",
+        )
         total_sent += sent_count
 
     return {"evaluated": len(result.data), "sent": total_sent}
 
 
-# ── Proactive token health check ──
+# NOT a Celery task, and it must never become one: its first argument is a
+# live Supabase client, which no broker can serialise. It is called in-process
+# by the sweep below.
 #
-# Microsoft refresh_tokens typically live 14-90 days depending on tenant
-# policy. If the user doesn't trigger a scheduled send or follow-up in
-# that window, we won't notice the token died until the next send attempt
-# — by which time the user has already missed a send window.
-#
-# This task runs daily, attempts a silent refresh for every user who
-# still has a stored refresh_token and isn't already flagged. If the
-# refresh fails with a permanent error, `get_fresh_access_token` flags
-# the user + fires the reconnect email via `_mark_requires_reauth`.
-
-
-@celery.task
+# This function was inserted here on 2026-08-08 (5e912d8) directly beneath a
+# `@celery.task` line that belonged to reset_stuck_sending_campaigns. The
+# decorator silently transferred to it, the sweep stopped being a registered
+# task, and Celery beat dispatched a name no worker knew — every hour, for 24
+# days, with no effect anyone could see. tests/test_beat_tasks_registered.py
+# now fails CI if any beat entry names an unregistered task.
 def _mark_partial(db, campaign_id) -> bool:
     """Move a stuck campaign to 'partial'. Never to 'scheduled'.
 
@@ -789,6 +823,7 @@ def _mark_partial(db, campaign_id) -> bool:
         return False
 
 
+@celery.task
 def reset_stuck_sending_campaigns():
     """Recover campaigns stuck in 'sending' status.
 
@@ -963,6 +998,19 @@ def anonymize_audit_log_ips():
         import logging
         logging.getLogger(__name__).warning("audit IP anonymization failed: %s", e)
     return {"v4_updated": 0, "v6_updated": 0}
+
+
+# ── Proactive token health check ──
+#
+# Microsoft refresh_tokens typically live 14-90 days depending on tenant
+# policy. If the user doesn't trigger a scheduled send or follow-up in
+# that window, we won't notice the token died until the next send attempt
+# — by which time the user has already missed a send window.
+#
+# This task runs daily, attempts a silent refresh for every user who
+# still has a stored refresh_token and isn't already flagged. If the
+# refresh fails with a permanent error, `get_fresh_access_token` flags
+# the user + fires the reconnect email via `_mark_requires_reauth`.
 
 
 @celery.task
@@ -1468,6 +1516,29 @@ def expire_manual_promos():
 # somebody did.
 
 
+def _sent_today(ts: str) -> bool:
+    """Did this campaign already put mail out today (UTC)?
+
+    Only consulted for daily-capped campaigns, where the answer decides
+    whether a resume starts another batch now or waits for tomorrow.
+
+    An unreadable value returns False — resume now. Absence of evidence that
+    today's batch went out is not evidence that it did, and holding a paced
+    campaign back a whole day on an unparseable string would be the more
+    visible failure of the two.
+    """
+    try:
+        sent = datetime.fromisoformat(str(ts).replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning("auto_resume: unreadable sent_at %r — resuming now", ts)
+        return False
+    if sent.tzinfo is None:
+        sent = sent.replace(tzinfo=timezone.utc)
+    return sent.astimezone(timezone.utc).date() == datetime.now(
+        timezone.utc
+    ).date()
+
+
 def _recently_attempted(campaign: dict) -> bool:
     """Was this campaign tried too recently to try again?
 
@@ -1603,11 +1674,25 @@ def auto_resume_partial_campaigns():
             closed += 1
             continue
 
+        # A daily-capped campaign paces on scheduled_for and nothing else:
+        # the send loop takes pending[:daily_send_cap] on every run, so
+        # resuming "now" hands it another full batch immediately. If today's
+        # batch has already gone out, that is a second one on the same day.
+        #
+        # Not hypothetical, and not subtle to the person on the other end:
+        # on 2026-09-01 a campaign paced at 5/day was restarted by hand with
+        # scheduled_for = now(), and its owner watched 10 go out. She had
+        # written in that morning asking how to slow it down.
+        resume_at = datetime.now(timezone.utc)
+        if campaign.get("daily_send_cap"):
+            last_sent = contact_model.get_last_sent_at(campaign["id"])
+            if last_sent and _sent_today(last_sent):
+                resume_at = resume_at + timedelta(days=1)
         campaign_model.update_campaign(
             campaign["id"],
             {
                 "status": "scheduled",
-                "scheduled_for": datetime.now(timezone.utc).isoformat(),
+                "scheduled_for": resume_at.isoformat(),
             },
         )
         resumed += 1

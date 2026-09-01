@@ -1156,9 +1156,25 @@ async def _run_campaign_send(
             if campaign_model.update_if_status(
                 campaign_id, {"status": "ab_testing"}, expected="sending"
             ):
-                ab_test_model.update_ab_test(
-                    ab_test["id"], {"status": "awaiting_winner"}
-                )
+                try:
+                    ab_test_model.update_ab_test(
+                        ab_test["id"], {"status": "awaiting_winner"}
+                    )
+                except Exception:  # noqa: BLE001
+                    # Put the campaign back before letting this reach the
+                    # handler below. That handler closes out conditionally on
+                    # 'sending', so against a row already moved to
+                    # 'ab_testing' it would silently no-op — leaving the
+                    # campaign 'ab_testing' with its experiment still
+                    # 'testing', a pair evaluate_ab_tests never selects (it
+                    # queries 'awaiting_winner') and no sweep or resume path
+                    # reaches either. Rolling back is what keeps the
+                    # ordering-for-cancellation safe from costing us the
+                    # recovery the old ordering gave for free.
+                    campaign_model.update_if_status(
+                        campaign_id, {"status": "sending"}, expected="ab_testing"
+                    )
+                    raise
         else:
             # A quota-capped batch that itself sends cleanly must still land
             # on 'partial': the recipients skipped for quota stay 'pending',
@@ -1539,8 +1555,17 @@ async def resume_campaign(
         return {"campaign_id": campaign_id, "status": "sent", "queued": 0}
 
     now_iso = datetime.now(timezone.utc).isoformat()
+    # archived=False is not decoration. get_due_scheduled_campaigns began
+    # filtering archived on 2026-09-01 so a stopped campaign could not come
+    # back; an archived campaign resumed from the Archived tab would otherwise
+    # land on 'scheduled' AND archived, which that query skips, auto-resume
+    # skips ('partial' only), the sweep skips ('sending' only) and this
+    # endpoint then 409s on — while the response above cheerfully reports N
+    # recipients queued. Resume is an explicit un-stop, so it clears the stop
+    # switch it is fighting.
     campaign_model.update_campaign(
-        campaign_id, {"status": "scheduled", "scheduled_for": now_iso}
+        campaign_id,
+        {"status": "scheduled", "scheduled_for": now_iso, "archived": False},
     )
 
     return {

@@ -428,3 +428,97 @@ def test_backoff_and_dormancy_are_counted_separately():
 
     assert result["held_backoff"] == 1
     assert result["held_owner_dormant"] == 0
+
+
+# ── pacing: a resumed daily-capped campaign must not get a second batch today ──
+#
+# daily_send_cap is enforced as pending[:cap] on every RUN, not per calendar
+# day, so the pacing lives entirely in scheduled_for. Resuming at now() hands
+# a paced campaign another full batch immediately.
+#
+# On 2026-09-01 a campaign paced at 5/day was restarted by hand with
+# scheduled_for = now() and its owner watched 10 go out — she had written in
+# that morning asking how to slow it down. Auto-resume writes the same value
+# on every pass, so the same mistake was one beat away from happening by
+# itself, to anyone.
+
+
+def _capped(cid="c-paced", cap=5):
+    row = _campaign(cid)
+    row["daily_send_cap"] = cap
+    return row
+
+
+def _run_paced(campaign, last_sent_at):
+    from workers import scheduled_worker
+
+    user = {**FAKE_USER, "emails_sent_this_month": 100}
+    with patch(
+        "models.campaign.get_resumable_partial_campaigns", return_value=[campaign]
+    ), patch(
+        "models.user.get_by_id", return_value=user
+    ), patch(
+        "models.user.check_monthly_reset"
+    ), patch(
+        "models.contact.get_resumable_contacts", return_value=[{"id": "k1"}]
+    ), patch(
+        "models.contact.get_last_sent_at", return_value=last_sent_at
+    ), patch(
+        "models.campaign.update_campaign"
+    ) as update:
+        scheduled_worker.auto_resume_partial_campaigns()
+    return update.call_args.args[1]
+
+
+def test_a_paced_campaign_that_already_sent_today_resumes_tomorrow():
+    written = _run_paced(
+        _capped(), last_sent_at=(datetime.now(timezone.utc) - timedelta(minutes=20)).isoformat()
+    )
+
+    when = datetime.fromisoformat(written["scheduled_for"])
+    assert when.date() > datetime.now(timezone.utc).date(), (
+        f"a 5/day campaign that already sent today was resumed for today "
+        f"({written['scheduled_for']}) — its owner gets 10 in one day"
+    )
+
+
+def test_a_paced_campaign_that_has_not_sent_today_resumes_now():
+    """The guard must not cost a day to a campaign that is genuinely behind."""
+    written = _run_paced(
+        _capped(), last_sent_at=(datetime.now(timezone.utc) - timedelta(days=2)).isoformat()
+    )
+
+    when = datetime.fromisoformat(written["scheduled_for"])
+    assert when.date() == datetime.now(timezone.utc).date(), (
+        f"a paced campaign whose last send was two days ago was held back "
+        f"another day: {written['scheduled_for']}"
+    )
+
+
+def test_a_campaign_with_no_daily_cap_is_unaffected():
+    """Most campaigns have no cap; they must resume immediately as before."""
+    written = _run_paced(
+        _campaign("c-uncapped"),
+        last_sent_at=datetime.now(timezone.utc).isoformat(),
+    )
+
+    when = datetime.fromisoformat(written["scheduled_for"])
+    assert when.date() == datetime.now(timezone.utc).date()
+
+
+def test_a_paced_campaign_that_never_sent_anything_resumes_now():
+    """No sent_at at all means the first batch has not gone out."""
+    written = _run_paced(_capped(), last_sent_at=None)
+
+    when = datetime.fromisoformat(written["scheduled_for"])
+    assert when.date() == datetime.now(timezone.utc).date()
+
+
+def test_an_unreadable_sent_at_resumes_now_rather_than_holding():
+    """Absence of evidence that today's batch went out is not evidence that
+    it did, and holding a paced campaign a whole day is the more visible of
+    the two failures."""
+    written = _run_paced(_capped(), last_sent_at="not a timestamp")
+
+    when = datetime.fromisoformat(written["scheduled_for"])
+    assert when.date() == datetime.now(timezone.utc).date()
