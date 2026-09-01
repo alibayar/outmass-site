@@ -214,7 +214,10 @@ güncellenmemişti.
 
 \### Extension release öncesi ZORUNLU kontroller (her sürümde)
 
-`node extension/tests/run-all.js` — üç suite, hepsi yeşil olmadan zip paketleme:
+`node extension/tests/run-all.js` — **18 suite** (2026-09-01'de sayıldı), hepsi
+yeşil olmadan zip paketleme. Sayı büyüdükçe bu satır eskiyor; script'in kendi
+çıktısı tek doğru kaynak. Aşağıdaki üçü ilk üçü ve niye var olduklarını
+taşıdıkları için burada duruyor:
 
 1. **csv-decode** — gerçek `decodeCsvBuffer` kodunu 10 encoding fikstürüne
    (UTF-8/BOM, GBK, Big5, Shift_JIS, cp1251/1254/1256, garbage) karşı çalıştırır.
