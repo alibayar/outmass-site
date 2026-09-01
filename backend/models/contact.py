@@ -358,21 +358,80 @@ def mark_unsubscribed(contact_id: str):
     ).execute()
 
 
-def get_all_contacts(campaign_id: str) -> list[dict]:
-    """Get all contacts for a campaign (for CSV export).
+# A hard ceiling on the export, far above any real campaign (the largest send
+# in 90 days was 1,876 recipients). It exists so a corrupt campaign_id or a
+# runaway row count cannot pull an unbounded result into memory, not as a
+# product limit.
+EXPORT_MAX_ROWS = 50_000
 
-    Bounded and audible: a silently short export hands the user a file that
-    looks complete and is not.
+
+def get_all_contacts(campaign_id: str) -> list[dict]:
+    """Every contact on a campaign, for CSV export. Paged, not truncated.
+
+    This used to be one bounded read, and the bound was PostgREST's server-side
+    max-rows. The docstring said "a silently short export hands the user a file
+    that looks complete and is not" and then handed them exactly that: the
+    warning went to a server log, and the user got 1,000 rows of a 1,210-row
+    campaign with nothing to indicate the difference. An export is the one
+    place a short answer is indistinguishable from a complete one, because the
+    file has no idea what it is missing.
+
+    Two round trips for a campaign of 1,210 and one for everything smaller.
+    """
+    db = get_db()
+    rows: list[dict] = []
+    start = 0
+    while start < EXPORT_MAX_ROWS:
+        page = (
+            db.table("contacts")
+            .select("*")
+            .eq("campaign_id", campaign_id)
+            .order("id")           # a stable order, or paging can skip or repeat
+            .range(start, start + SUPABASE_MAX_ROWS - 1)
+            .execute()
+        )
+        batch = page.data or []
+        rows.extend(batch)
+        if len(batch) < SUPABASE_MAX_ROWS:
+            return rows
+        start += SUPABASE_MAX_ROWS
+
+    logger.error(
+        "campaign %s export hit the %s-row ceiling; the file is short",
+        campaign_id, EXPORT_MAX_ROWS,
+    )
+    return rows
+
+
+def count_delivered_contacts(campaign_id: str) -> int:
+    """How many distinct recipients actually received this campaign.
+
+    The honest denominator for every engagement rate, and NOT the same number
+    as campaigns.sent_count, for two reasons:
+
+      1. A follow-up bumps sent_count (followup_worker.py, the increment_stat
+         after its loop) but never touches contacts.status — a follow-up goes
+         to someone already marked 'sent'. So a 100-person campaign whose
+         follow-up reached 80 has sent_count 180, and every rate divided by it
+         reads roughly half what it should. Invisible today only because no
+         real user has received a follow-up yet; it appears on the first one.
+      2. It is a COUNT. The stats endpoint used to walk a page of contacts to
+         work out engagement, and that page is capped at SUPABASE_MAX_ROWS, so
+         above a thousand recipients the numerator was short while the
+         denominator was not.
+
+    A COUNT aggregate is computed server-side and is not paged.
     """
     result = (
         get_db()
         .table("contacts")
-        .select("*")
+        .select("id", count="exact")
         .eq("campaign_id", campaign_id)
-        .limit(SUPABASE_MAX_ROWS)
+        .eq("status", "sent")
+        .limit(1)
         .execute()
     )
-    return _warn_if_truncated(result.data or [], "get_all_contacts", campaign_id)
+    return result.count or 0
 
 
 def get_campaign_contacts_count(campaign_id: str) -> int:

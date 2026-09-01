@@ -225,6 +225,33 @@ function run() {
       "anyone uses this, or whether the mid-batch overshoot matters"
   );
 
+  // -- a number the server could not work out must not render as 0 --
+  //
+  // The stats endpoint returns null for engaged/replied when the read failed
+  // or came back truncated. `x || 0` turns that into a confident zero, and for
+  // "Replied" the confident zero says "nobody answered you" - produced by a
+  // read that never happened. miriam is the standing example of what a
+  // confident wrong number costs at the moment of maximum distrust.
+  check(
+    /function num\(v\) \{ return v === null \|\| v === undefined \? "/.test(sidebar),
+    "the null-safe stat renderer is gone from showCampaignDetail"
+  );
+  check(
+    /engagedEl\.textContent = num\(stats\.engaged_count\)/.test(sidebar) &&
+      /repliedEl\.textContent = num\(stats\.replied_count\)/.test(sidebar),
+    "engaged/replied are rendered with `|| 0` again - an unavailable count " +
+      "displays as a definitive zero"
+  );
+  check(
+    /replyRateEl\.textContent = pct\(stats\.reply_rate\)/.test(sidebar),
+    "the reply rate falls back to 0% instead of a dash"
+  );
+  check(
+    /stats\.delivered_count !== undefined/.test(sidebar),
+    "the Sent figure no longer prefers delivered_count - it shows emails " +
+      "sent, which a follow-up inflates, above rates divided by people reached"
+  );
+
   return { name: "stop-campaign", failures };
 }
 

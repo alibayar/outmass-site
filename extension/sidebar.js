@@ -3289,20 +3289,37 @@
         }
 
         var stats = resp.data || resp;
+        // A number the server could not work out comes back as null, and the
+        // dash says so. `x || 0` used to turn it into a confident 0, which for
+        // "Replied" reads as "nobody answered you" - the answer the user is
+        // most afraid of, produced by a read that never happened. A dash needs
+        // no translation.
+        function num(v) { return v === null || v === undefined ? "—" : String(v); }
+        function pct(v) { return v === null || v === undefined ? "—" : v + "%"; }
+
         document.getElementById("detail-name").textContent = stats.name || t("tabCampaign");
-        document.getElementById("stat-sent").textContent = stats.sent_count || 0;
+        // People reached, not emails sent. They are the same number today and
+        // stop being the same the first time a follow-up goes out: a follow-up
+        // adds to sent_count without adding a recipient, so a 100-person
+        // campaign would read "180" while every rate under it is divided by
+        // 100. Showing the denominator the rates actually use keeps the panel
+        // internally consistent.
+        document.getElementById("stat-sent").textContent =
+          stats.delivered_count !== undefined && stats.delivered_count !== null
+            ? stats.delivered_count
+            : (stats.sent_count || 0);
         document.getElementById("stat-opened").textContent = stats.open_count || 0;
         document.getElementById("stat-clicked").textContent = stats.click_count || 0;
         document.getElementById("stat-open-rate").textContent = (stats.open_rate || 0) + "%";
         document.getElementById("stat-click-rate").textContent = (stats.click_rate || 0) + "%";
         var engagedEl = document.getElementById("stat-engaged");
         var engagedRateEl = document.getElementById("stat-engaged-rate");
-        if (engagedEl) engagedEl.textContent = String(stats.engaged_count || 0);
-        if (engagedRateEl) engagedRateEl.textContent = (stats.engaged_rate || 0) + "%";
+        if (engagedEl) engagedEl.textContent = num(stats.engaged_count);
+        if (engagedRateEl) engagedRateEl.textContent = pct(stats.engaged_rate);
         var repliedEl = document.getElementById("stat-replied");
         var replyRateEl = document.getElementById("stat-reply-rate");
-        if (repliedEl) repliedEl.textContent = String(stats.replied_count || 0);
-        if (replyRateEl) replyRateEl.textContent = (stats.reply_rate || 0) + "%";
+        if (repliedEl) repliedEl.textContent = num(stats.replied_count);
+        if (replyRateEl) replyRateEl.textContent = pct(stats.reply_rate);
 
         // Follow-up status
         var followupEl = document.getElementById("followup-status");

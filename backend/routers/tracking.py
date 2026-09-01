@@ -130,12 +130,21 @@ async def track_click(
     contact = contact_model.get_contact(contact_id)
 
     if contact:
+        # mark_clicked runs either way - the timestamp is per contact and
+        # re-stamping it is harmless.
         background_tasks.add_task(contact_model.mark_clicked, contact_id)
-        background_tasks.add_task(
-            campaign_model.increment_stat,
-            contact["campaign_id"],
-            "click_count",
-        )
+        # The COUNTER is guarded, like the open path above. Without this every
+        # click by the same person added one, so click_count counted CLICKS
+        # while its denominator counted PEOPLE, and click_rate could pass
+        # 100% - a number that reads as a broken product to the one user who
+        # notices it. One recipient opening an email twice was enough on a
+        # small list.
+        if not contact.get("clicked_at"):
+            background_tasks.add_task(
+                campaign_model.increment_stat,
+                contact["campaign_id"],
+                "click_count",
+            )
         background_tasks.add_task(
             _record_event,
             contact_id,

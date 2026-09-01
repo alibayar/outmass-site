@@ -282,9 +282,23 @@ async def campaign_stats(
     if not campaign or campaign["user_id"] != user["id"]:
         raise HTTPException(status_code=404, detail="Campaign not found")
 
+    # sent_count is EMAILS SENT. It is not the denominator of an engagement
+    # rate, and using it as one was wrong in two ways at once:
+    #
+    #   - a follow-up adds to sent_count without adding a recipient, so the
+    #     first campaign to actually receive a follow-up would have shown
+    #     "180 sent" for a list of 100 and four rates at roughly half their
+    #     true value;
+    #   - it counts recipients this campaign could not reach, and there is no
+    #     sense in which someone who was never emailed failed to open.
+    #
+    # The denominator is how many people actually received it. Kept separate
+    # from the displayed count on purpose: both numbers are true, they just
+    # answer different questions.
     sent = campaign["sent_count"] or 0
-    open_rate = round((campaign["open_count"] / sent) * 100, 1) if sent > 0 else 0.0
-    click_rate = round((campaign["click_count"] / sent) * 100, 1) if sent > 0 else 0.0
+    delivered = contact_model.count_delivered_contacts(campaign_id)
+    open_rate = round((campaign["open_count"] / delivered) * 100, 1) if delivered > 0 else 0.0
+    click_rate = round((campaign["click_count"] / delivered) * 100, 1) if delivered > 0 else 0.0
 
     # ── Engaged + reply metrics ──
     # open_count and click_count are atomically incremented stat counters
@@ -312,7 +326,14 @@ async def campaign_stats(
             .limit(SUPABASE_MAX_ROWS)
             .execute()
         )
-        for row in engaged_rows.data or []:
+        rows = engaged_rows.data or []
+        if len(rows) >= SUPABASE_MAX_ROWS and delivered > SUPABASE_MAX_ROWS:
+            # The page is at its ceiling and there are more recipients than
+            # it can hold, so any number derived from it is short by an
+            # unknown amount. A number that is quietly too low is worse than
+            # no number: it is read as a result.
+            raise RuntimeError("engagement page truncated")
+        for row in rows:
             opened = bool(row.get("opened_at"))
             clicked = bool(row.get("clicked_at"))
             replied = bool(row.get("replied_at"))
@@ -321,10 +342,26 @@ async def campaign_stats(
             if replied:
                 replied_count += 1
     except Exception:  # noqa: BLE001 — never break stats response on a count failure
-        engaged_count = 0
-        replied_count = 0
-    engaged_rate = round((engaged_count / sent) * 100, 1) if sent > 0 else 0.0
-    reply_rate = round((replied_count / sent) * 100, 1) if sent > 0 else 0.0
+        # None, not 0. Zero is an answer, and it is the answer the user is
+        # most afraid of: "nobody replied". Saying nothing is the honest
+        # outcome of a read that did not happen, and the panel renders it as
+        # a dash, which needs no translation.
+        logging.getLogger(__name__).warning(
+            "engagement stats unavailable for campaign %s", campaign_id,
+            exc_info=True,
+        )
+        engaged_count = None
+        replied_count = None
+    engaged_rate = (
+        round((engaged_count / delivered) * 100, 1)
+        if engaged_count is not None and delivered > 0
+        else None
+    )
+    reply_rate = (
+        round((replied_count / delivered) * 100, 1)
+        if replied_count is not None and delivered > 0
+        else None
+    )
 
     followups = followup_model.get_campaign_followups(campaign_id)
     pending_followups = sum(1 for f in followups if f["status"] == "scheduled")
@@ -335,6 +372,10 @@ async def campaign_stats(
         "status": campaign["status"],
         "total_contacts": campaign["total_contacts"],
         "sent_count": sent,
+        # Recipients who actually received it, which is what every rate above
+        # is divided by. Reported so the panel can show the two numbers apart
+        # instead of implying they are the same one.
+        "delivered_count": delivered,
         "open_count": campaign["open_count"],
         "click_count": campaign["click_count"],
         "engaged_count": engaged_count,
