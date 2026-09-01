@@ -11,6 +11,7 @@ production code path *proved* it — not that somebody remembers it.
 
 | migration | applied | verified |
 |---|---|---|
+| 034_sender_logo_url | 2026-09-01, Ali (in chat) | ⏳ awaiting a named SELECT — see below. Ali reported it ran; nothing has read the column yet, and `.get("sender_logo_url")` would return None whether the column exists or not, so the report alone is not verification. |
 | 033_follow_up_sends | 2026-08-30, Ali (in chat) | ✅ 2026-08-30 — `SELECT count(*) FROM follow_up_sends;` returned 0 in the Supabase editor. A named SELECT on the table itself: if it did not exist the statement would have errored rather than answered. |
 | 032_comp_plan | 2026-08-30, Ali (in chat) | ✅ 2026-08-30 — a named SELECT in the Supabase editor returned `comp_plan` and `comp_plan_until` WITH VALUES for Helene@circularworkplaces.com (`pro`, `2026-09-28`), which proves both columns exist and accept writes. Stronger than information_schema: a `.get()` path could not have produced that row. |
 | 024_mail_read_scope_flag | before 2026-08-28, Ali (date unrecorded) | ✅ 2026-08-28 — information_schema query on `user_tokens.has_mail_read_scope` run by Ali in the Supabase SQL editor: `true` |
@@ -83,3 +84,30 @@ did not run.
 
 Paste the query results (or just "all true / N rows") back into this file's
 table when run.
+
+---
+
+## 034_sender_logo_url — verification (2026-09-01)
+
+A named SELECT, not `information_schema`, and not a `.get()` path: the settings
+endpoint reads this column with `user.get("sender_logo_url")`, which returns
+None for a missing column exactly as it does for an empty one. That path can
+never tell us whether the migration ran.
+
+```sql
+SELECT email, sender_logo_url
+FROM users
+WHERE email = 'alibayar@gmail.com';
+```
+
+Expected: one row, `sender_logo_url` NULL. If the column were missing the
+statement would ERROR rather than answer, which is the whole point of naming it.
+
+Then, once a logo has been saved from Settings at least once, the stronger
+check — that it exists AND accepts writes:
+
+```sql
+SELECT email, sender_logo_url
+FROM users
+WHERE sender_logo_url IS NOT NULL;
+```
