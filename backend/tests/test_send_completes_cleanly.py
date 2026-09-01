@@ -49,6 +49,8 @@ def test_clean_send_lands_on_sent_and_charges_quota_once():
          patch("models.campaign.increment_stat"), \
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
+         patch("models.campaign.update_if_status",
+               side_effect=lambda cid, payload, expected=None: updates.append(payload) or True), \
          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: increments.append(n)), \
          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)), \
@@ -126,6 +128,9 @@ def test_cancelled_mid_send_still_charges_the_recipients_that_went_out():
          patch("models.campaign.increment_stat"), \
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
+         patch("models.campaign.update_if_status",
+               side_effect=lambda cid, payload, expected=None:
+                   updates.append(payload) or True), \
          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: increments.append(n)), \
          patch("routers.campaigns._send_single_email",
@@ -171,7 +176,7 @@ def test_quota_is_charged_in_batches_so_a_kill_cannot_lose_the_lot():
     async def _ok(**kwargs):
         return {"success": True}
 
-    with patch("models.contact.mark_sent"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.user.increment_sent_count",
+    with patch("models.contact.mark_sent"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.campaign.update_if_status", return_value=True),          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: increments.append(n)),          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
         asyncio.run(campaigns_router._run_campaign_send(
             campaign_id="camp-batched",
@@ -227,7 +232,7 @@ def test_a_kill_after_the_first_batch_still_leaves_that_batch_charged():
             suppressed_emails=set(),
         )
 
-    with patch("models.contact.mark_sent"),          patch("models.contact.mark_failed"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.user.increment_sent_count",
+    with patch("models.contact.mark_sent"),          patch("models.contact.mark_failed"),          patch("models.campaign.increment_stat"),          patch("models.campaign.update_campaign"),          patch("models.campaign.update_if_status", return_value=True),          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: increments.append(n)),          patch("routers.campaigns._send_single_email",
                new=AsyncMock(side_effect=_ok_then_die)),          patch("routers.campaigns.QUOTA_CHARGE_BATCH", 10),          patch("routers.campaigns.SEND_DELAY_SECONDS", 0):
         try:
@@ -302,6 +307,9 @@ def test_a_clean_send_that_left_people_behind_does_not_close_sent():
          patch("models.campaign.increment_stat"), \
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
+         patch("models.campaign.update_if_status",
+               side_effect=lambda cid, payload, expected=None:
+                   updates.append(payload) or True), \
          patch("models.user.increment_sent_count"), \
          patch("routers.campaigns._send_single_email", new=AsyncMock(side_effect=_ok)), \
          patch("models.contact.has_resumable_contacts", return_value=True), \

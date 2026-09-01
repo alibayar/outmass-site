@@ -63,7 +63,9 @@ def _run_campaign_loop(fail_at=None):
          patch("models.contact.mark_sent"), \
          patch("models.contact.mark_failed"), \
          patch("models.campaign.increment_stat"), \
+         patch("models.campaign.get_status", return_value="sending"), \
          patch("models.campaign.update_campaign"), \
+         patch("models.campaign.update_if_status", return_value=True), \
          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: charges.append(n)), \
          patch("workers.scheduled_worker._send_email", side_effect=_send), \
@@ -126,6 +128,7 @@ def test_the_followup_loop_charges_as_it_goes(fake_db):
          patch("workers.followup_worker._get_filtered_contacts",
                return_value=_contacts(N)), \
          patch("models.campaign.increment_stat"), \
+         patch("models.campaign.get_status", return_value="sending"), \
          patch("models.followup.update_followup_status"), \
          patch("models.user.increment_sent_count",
                side_effect=lambda uid, n, **kw: charges.append(n)), \
@@ -185,7 +188,9 @@ def test_a_failing_quota_write_does_not_defer_a_delivered_contact(fake_db):
          patch("models.contact.mark_failed",
                side_effect=lambda cid, status="failed": deferred.append((cid, status))), \
          patch("models.campaign.increment_stat"), \
+         patch("models.campaign.get_status", return_value="sending"), \
          patch("models.campaign.update_campaign"), \
+         patch("models.campaign.update_if_status", return_value=True), \
          patch("models.user.increment_sent_count", side_effect=_explode), \
          patch("workers.scheduled_worker._send_email",
                return_value={"success": True}), \

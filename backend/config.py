@@ -437,6 +437,19 @@ def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
 # safer for both throttling and deliverability.
 SEND_DELAY_SECONDS = 2
 
+# How often a running send asks whether it is still wanted.
+#
+# Both send paths mark their campaign 'sending' and then loop. Before
+# 2026-09-01 neither ever re-read the row, so a Stop pressed mid-batch did
+# nothing at all: the rest of the list went out and the close-out wrote a
+# final status over the cancellation. The conditional close-out is what makes
+# a stop stick; this check is what makes it prompt.
+#
+# The loop already waits SEND_DELAY_SECONDS between recipients, so one narrow
+# select every ten of them costs nothing, and it bounds the overshoot after
+# Stop to that many emails rather than the whole remaining list.
+CANCEL_CHECK_EVERY = 10
+
 # How many recipients may go out before the monthly quota is charged for them.
 #
 # It used to be the whole batch, charged once after the loop finished — and

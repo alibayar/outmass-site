@@ -85,7 +85,15 @@ def create_campaign(
 
 
 def get_due_scheduled_campaigns() -> list[dict]:
-    """Get campaigns that are scheduled and due for sending."""
+    """Get campaigns that are scheduled and due for sending.
+
+    `archived` is a filter here for the same reason it is one in
+    get_resumable_partial_campaigns: it is the user's stop switch. Without it,
+    a campaign someone stopped mid-batch comes back the moment anything writes
+    'scheduled' over the cancellation — which the daily-cap branch does on
+    every paced run — and it comes back invisibly, because archived rows are
+    not in the default Reports view.
+    """
     from datetime import datetime, timezone
 
     now = datetime.now(timezone.utc).isoformat()
@@ -94,10 +102,52 @@ def get_due_scheduled_campaigns() -> list[dict]:
         .table("campaigns")
         .select("*")
         .eq("status", "scheduled")
+        .eq("archived", False)
         .lte("scheduled_for", now)
         .execute()
     )
     return result.data
+
+
+def get_status(campaign_id: str) -> str | None:
+    """The campaign's status, one column, for use inside a send loop.
+
+    Cheap on purpose: a send paces at SEND_DELAY_SECONDS per recipient, so
+    asking every few contacts costs far less than the wait between them.
+    """
+    result = (
+        get_db()
+        .table("campaigns")
+        .select("status")
+        .eq("id", campaign_id)
+        .limit(1)
+        .execute()
+    )
+    rows = result.data or []
+    return rows[0]["status"] if rows else None
+
+
+def update_if_status(campaign_id: str, payload: dict, expected: str) -> bool:
+    """Write `payload` only while the campaign is still in `expected`.
+
+    Every send loop marks its campaign 'sending' before it starts, so
+    `expected='sending'` means "nobody has changed this underneath me". If
+    somebody pressed Stop, the row now says 'cancelled', the update matches
+    nothing, and the cancellation survives — instead of being overwritten by a
+    loop that finished afterwards and had no idea.
+
+    Returns whether it applied, so a caller can tell a normal close-out from
+    one that was overtaken.
+    """
+    result = (
+        get_db()
+        .table("campaigns")
+        .update(payload)
+        .eq("id", campaign_id)
+        .eq("status", expected)
+        .execute()
+    )
+    return bool(result.data)
 
 
 def get_campaign(campaign_id: str) -> dict | None:

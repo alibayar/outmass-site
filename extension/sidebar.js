@@ -1551,7 +1551,7 @@
         var mergeCtx = Object.assign({}, sender, firstRow);
         var previewSubject = mergePlaceholders(subject, mergeCtx);
         var previewBody = mergePlaceholders(body, mergeCtx);
-        showPreviewModal(previewSubject, textToHtml(previewBody));
+        showPreviewModal(previewSubject, textToHtml(body, previewBody));
         log("Preview shown for first row");
       });
     }
@@ -1724,9 +1724,19 @@
 
   // Mirror of backend _text_to_html — pass-through if HTML, else escape
   // special chars + paragraphs on blank lines + <br> on single newlines.
-  function textToHtml(body) {
+  // Mirrors utils/email_body.render_body on the server: the TEMPLATE decides
+  // whether the author wrote markup, the MERGED text is what gets converted.
+  //
+  // Until 2026-09-01 both sides inspected the merged text, and both were wrong
+  // in the same direction, so they agreed. The server moved; this did not, and
+  // for one pass they disagreed in the OTHER direction — a plain-text template
+  // merged with a row containing <info@example.com> would send correctly and
+  // preview as one block. That is Helene's sentence backwards, in the release
+  // whose whole premise is that preview and send agree.
+  function textToHtml(template, merged) {
+    var body = merged === undefined ? template : merged;
     if (!body) return "";
-    if (/<[a-z!/][^>]*>/i.test(body)) return body;
+    if (/<[a-z!/][^>]*>/i.test(template || "")) return body;
     var esc = body.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
     esc = esc.replace(/\r\n/g, "\n").replace(/\r/g, "\n");
     var parts = esc.split(/\n\n+/).map(function (p) { return p.replace(/\n/g, "<br>"); });
@@ -3254,8 +3264,27 @@
     chrome.runtime.sendMessage(
       { type: "GET_CAMPAIGN_STATS", campaignId: campaignId },
       function (resp) {
+        // The user opened another campaign, or came back, while this was in
+        // flight. Rendering now would put one campaign's numbers under
+        // another's name.
+        if (currentDetailCampaignId !== campaignId) return;
+
         if (!resp || resp.error) {
           document.getElementById("detail-name").textContent = t("reportsError");
+          // Disarm Stop. _stopCampaignId and _stopSentCount are only ever
+          // assigned in the success branch below, so without this they still
+          // hold the PREVIOUS campaign — and the button is still on screen
+          // from that render. Pressing it would stop a campaign the user is
+          // not looking at, and stopping is one-way: unarchive only flips the
+          // flag, and Resume refuses anything that is not 'partial'.
+          //
+          // Not hypothetical. A stats load failing on an expired session is
+          // exactly what Helene hit this morning, seconds before she went
+          // looking for a way to stop something.
+          var _stopSec = document.getElementById("stop-section");
+          if (_stopSec) _stopSec.style.display = "none";
+          _stopCampaignId = null;
+          _stopSentCount = 0;
           return;
         }
 
@@ -3456,6 +3485,12 @@
 
           if (resp && !resp.error) {
             var d = (resp.data || resp) || {};
+            // The only signal that will say whether anyone uses this, and
+            // whether the mid-batch overshoot matters in practice.
+            track("campaign_stopped", {
+              already_sent: d.already_sent,
+              not_contacted: d.not_contacted,
+            });
             alert(t("alertCampaignStopped", [
               String(d.already_sent != null ? d.already_sent : _stopSentCount),
               String(d.not_contacted != null ? d.not_contacted : 0),

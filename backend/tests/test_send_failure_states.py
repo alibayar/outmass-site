@@ -70,7 +70,7 @@ def _run_scheduled_with_send_result(fake_db, send_result):
     ), patch(
         "models.user.get_by_id", return_value=dict(FAKE_USER)
     ), patch(
-        "models.campaign.update_campaign"
+        "models.campaign.update_if_status"
     ), patch(
         "models.campaign.increment_stat"
     ), patch(
@@ -154,8 +154,8 @@ def _run_scheduled_multi(fake_db, contacts, send_results):
     ), patch(
         "models.user.get_by_id", return_value=dict(FAKE_USER)
     ), patch(
-        "models.campaign.update_campaign",
-        side_effect=lambda cid, payload: update_calls.append((cid, payload)),
+        "models.campaign.update_if_status",
+        side_effect=lambda cid, payload, expected=None: update_calls.append((cid, payload)) or True,
     ), patch(
         "models.campaign.increment_stat"
     ), patch(

@@ -10,6 +10,10 @@ All notable user-facing changes to the OutMass Chrome Extension.
   tells you how many people have already received it **before** you confirm,
   because that is the one part nobody can take back.
 
+  If a send is actually in progress at that moment, it finishes the few it
+  already has in hand — at most ten — and then stops. So the number you are
+  shown can end up slightly lower than the number who received it.
+
 - **Scheduled campaigns keep your line breaks.** A campaign you scheduled was
   sent without the conversion that turns your paragraphs into email
   formatting, so it arrived as a single block even though the preview looked

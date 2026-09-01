@@ -152,7 +152,7 @@ def test_capped_clean_send_lands_on_partial_status(client, fake_db):
              patch("routers.campaigns._send_single_email",
                    new=AsyncMock(return_value={"success": True})), \
              patch("routers.campaigns.welcome_email.send_quota_capped_email"), \
-             patch("models.campaign.update_campaign") as update:
+             patch("models.campaign.update_if_status") as update:
             resp = client.post("/campaigns/cq6/send",
                                headers={"Authorization": "Bearer t"})
     finally:
@@ -173,7 +173,7 @@ def test_uncapped_clean_send_still_lands_on_sent(client, fake_db, auth_bypass):
     with patch("models.ms_token.get_fresh_access_token", return_value="tok"), \
          patch("routers.campaigns._send_single_email",
                new=AsyncMock(return_value={"success": True})), \
-         patch("models.campaign.update_campaign") as update:
+         patch("models.campaign.update_if_status") as update:
         resp = client.post("/campaigns/cq7/send",
                            headers={"Authorization": "Bearer t"})
 
@@ -198,6 +198,7 @@ def test_clean_send_charges_quota_exactly_once(client, fake_db, auth_bypass):
          patch("routers.campaigns._send_single_email",
                new=AsyncMock(return_value={"success": True})), \
          patch("models.campaign.update_campaign"), \
+         patch("models.campaign.update_if_status", return_value=True), \
          patch("models.user.increment_sent_count") as inc:
         resp = client.post("/campaigns/cq8/send",
                            headers={"Authorization": "Bearer t"})

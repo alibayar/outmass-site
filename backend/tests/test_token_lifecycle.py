@@ -53,12 +53,14 @@ def test_scheduled_campaign_marked_failed_auth_on_permanent_token_failure(fake_d
     ), patch(
         "models.user.get_by_id", return_value=flagged_user
     ), patch(
-        "models.campaign.update_campaign"
+        "models.campaign.update_if_status", return_value=True
     ) as mock_update:
         result = scheduled_worker.process_scheduled_campaigns()
 
     assert result["processed"] == 1
-    # Must mark the campaign failed_auth, not silently skip it
+    # Must mark the campaign failed_auth, not silently skip it. The write is
+    # conditional on the campaign still being 'scheduled' (2026-09-01) so that
+    # a Stop landing in the same beat is not overwritten.
     update_statuses = [
         call.kwargs.get("updates") or (call.args[1] if len(call.args) > 1 else {})
         for call in mock_update.call_args_list

@@ -31,6 +31,8 @@ from config import (
 logger = logging.getLogger(__name__)
 from models.ms_token import get_fresh_access_token
 from utils.email_body import render_body
+
+from config import CANCEL_CHECK_EVERY
 from utils.send_classify import _classify_failure
 from workers.celery_app import celery
 
@@ -93,15 +95,22 @@ def process_scheduled_campaigns():
             # instead of the scheduled campaign silently looping forever.
             refreshed_user = user_model.get_by_id(user["id"])
             if refreshed_user and refreshed_user.get("requires_reauth"):
-                campaign_model.update_campaign(
-                    campaign["id"], {"status": "failed_auth"}
+                # Conditional on the status this beat picked it up in. The
+                # due query filters archived, so a stopped campaign is
+                # normally never here at all — this closes the sliver where
+                # the Stop lands between that query and this write.
+                campaign_model.update_if_status(
+                    campaign["id"], {"status": "failed_auth"},
+                    expected="scheduled",
                 )
             # Transient failures keep the campaign scheduled for retry.
             continue
 
         pending = contact_model.get_resumable_contacts(campaign["id"])
         if not pending:
-            campaign_model.update_campaign(campaign["id"], {"status": "sent"})
+            campaign_model.update_if_status(
+                campaign["id"], {"status": "sent"}, expected="scheduled"
+            )
             continue
 
         # Daily cap (multi-day spread): today's batch is at most
@@ -130,12 +139,32 @@ def process_scheduled_campaigns():
         )
         suppressed_emails = {r["email"].lower() for r in suppressed_result.data}
 
-        # Mark as sending
-        campaign_model.update_campaign(campaign["id"], {"status": "sending"})
+        # Mark as sending — and treat it as the gate, not a note.
+        #
+        # This is the last moment before the loop starts, and the row is still
+        # 'scheduled' until now. If the owner pressed Stop after the due query
+        # returned, an unconditional write here puts the campaign straight
+        # back into a running send, and the in-loop check would not notice for
+        # another CANCEL_CHECK_EVERY recipients. Claiming the campaign
+        # conditionally means a stop that lands in that window costs nothing
+        # at all.
+        if not campaign_model.update_if_status(
+            campaign["id"], {"status": "sending"}, expected="scheduled"
+        ):
+            logger.info(
+                "campaign %s was no longer 'scheduled' when the beat reached "
+                "it; skipping", campaign["id"],
+            )
+            continue
 
         sent_count = 0
         quota_charged = 0
         errors = []
+        # Set when the owner stops the campaign while this batch is running.
+        # Nothing else notices: no loop in this file re-read the campaign row
+        # before 2026-09-01, so a Stop pressed mid-batch was silently ignored
+        # and then overwritten by the close-out below.
+        cancelled_midbatch = False
         # See the 401/403 branch below. Tracked separately from `errors`
         # because a stop leaves that list EMPTY, and the final status is
         # computed from it — without this flag an auth stop would close the
@@ -145,7 +174,34 @@ def process_scheduled_campaigns():
         abort_error = ""
 
         with httpx.Client(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
-            for contact in pending:
+            for _i, contact in enumerate(pending):
+                # Ask whether we are still wanted. One narrow select every
+                # CANCEL_CHECK_EVERY recipients, against a loop that already
+                # waits SEND_DELAY_SECONDS between each of them — so the cost
+                # is nothing and the worst-case overshoot after Stop is that
+                # many emails rather than the whole remaining batch.
+                if _i and _i % CANCEL_CHECK_EVERY == 0:
+                    # A read that fails must NOT halt the send. The durable
+                    # protection is the conditional close-out below, which
+                    # cannot write over a cancellation whatever happens here;
+                    # this check only shortens the overshoot. Stopping every
+                    # send on one flaky select would trade a small overshoot
+                    # for a large outage.
+                    try:
+                        still_ours = campaign_model.get_status(campaign["id"])
+                    except Exception:  # noqa: BLE001
+                        logger.warning(
+                            "campaign %s: cancellation check failed, continuing",
+                            campaign["id"], exc_info=True,
+                        )
+                        still_ours = "sending"
+                    if still_ours != "sending":
+                        cancelled_midbatch = True
+                        logger.info(
+                            "campaign %s stopped by its owner mid-batch after "
+                            "%s sent", campaign["id"], sent_count,
+                        )
+                        break
                 if contact.get("unsubscribed"):
                     # The unsubscribed flag already excludes them everywhere.
                     continue
@@ -286,13 +342,19 @@ def process_scheduled_campaigns():
             # A count rather than a whole page: this only ever asked a
             # yes/no question, and the page it used to pull could be 1,000
             # rows wide.
-            if contact_model.has_resumable_contacts(campaign["id"]):
+            if not cancelled_midbatch and contact_model.has_resumable_contacts(
+                campaign["id"]
+            ):
                 next_run = (
                     datetime.now(timezone.utc) + timedelta(days=1)
                 ).isoformat()
-                campaign_model.update_campaign(
+                # Conditional: this is the write that used to put a stopped
+                # campaign back into 'scheduled' every single day, while
+                # archived=true kept it out of the owner's Reports view.
+                campaign_model.update_if_status(
                     campaign["id"],
                     {"status": "scheduled", "scheduled_for": next_run},
+                    expected="sending",
                 )
                 total_sent += sent_count
                 continue
@@ -314,7 +376,13 @@ def process_scheduled_campaigns():
             campaign["id"], sent_count, len(errors), quota_capped,
             auth_stopped, abort_status, abort_error, final_status,
         )
-        campaign_model.update_campaign(campaign["id"], {"status": final_status})
+        # Conditional for the same reason. A loop that finishes after the
+        # owner pressed Stop must not write 'sent' or 'partial' over their
+        # cancellation — that is how a stop became permanent-looking and then
+        # quietly wasn't.
+        campaign_model.update_if_status(
+            campaign["id"], {"status": final_status}, expected="sending"
+        )
         total_sent += sent_count
 
     return {"processed": len(due), "sent": total_sent}
@@ -509,6 +577,18 @@ def evaluate_ab_tests():
 
         campaign = campaign_model.get_campaign(ab_test["campaign_id"])
         if not campaign:
+            ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
+            continue
+
+        # /stop writes to the campaign row; ab_tests has no archived column of
+        # its own. Without this the winner goes out hours after the owner
+        # stopped the campaign — the same missing guard followup_worker has
+        # had since 2026-08-28.
+        if campaign.get("archived") or campaign.get("status") == "cancelled":
+            logger.info(
+                "ab test %s: campaign %s was stopped — not sending the winner",
+                ab_test["id"], ab_test["campaign_id"],
+            )
             ab_test_model.update_ab_test(ab_test["id"], {"status": "evaluated"})
             continue
 

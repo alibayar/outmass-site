@@ -62,8 +62,13 @@ def _run_scheduled(still_resumable, cap=None, send_ok=True):
          patch("models.contact.mark_sent"), \
          patch("models.contact.mark_failed"), \
          patch("models.campaign.increment_stat"), \
+         patch("models.campaign.get_status", return_value="sending"), \
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
+         patch("models.campaign.update_if_status",
+               side_effect=lambda cid, payload, expected=None: updates.append(payload) or True), \
+         patch("models.campaign.update_if_status",
+               side_effect=lambda cid, payload, expected=None: updates.append(payload) or True), \
          patch("models.user.increment_sent_count"), \
          patch("workers.scheduled_worker._send_email", return_value=result), \
          patch("workers.scheduled_worker.time.sleep"):
@@ -168,6 +173,7 @@ def _run_ab(db, pending, still_resumable):
          patch("models.contact.mark_sent"), \
          patch("models.contact.mark_failed"), \
          patch("models.campaign.increment_stat"), \
+         patch("models.campaign.get_status", return_value="sending"), \
          patch("models.campaign.update_campaign",
                side_effect=lambda cid, payload: updates.append(payload)), \
          patch("models.user.increment_sent_count"), \

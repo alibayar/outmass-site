@@ -23,6 +23,7 @@ from pydantic import BaseModel, Field
 
 from config import (
     BACKEND_URL,
+    CANCEL_CHECK_EVERY,
     FREE_PLAN_MONTHLY_LIMIT,
     STARTER_PLAN_MONTHLY_LIMIT,
     PRO_PLAN_MONTHLY_LIMIT,
@@ -945,9 +946,40 @@ async def _run_campaign_send(
     # Every path that charges must move this with it, or a recovery handler
     # bills the same recipients twice.
     quota_charged = 0
+    # Set when the owner stops the campaign while this loop is running. Every
+    # close-out below is conditional anyway, but the A/B branch also writes to
+    # a second table, and that write has no status to be conditional on.
+    cancelled_midbatch = False
     try:
         async with httpx.AsyncClient(timeout=OUTBOUND_HTTP_TIMEOUT) as client:
             for idx, contact in enumerate(send_list):
+                # Ask whether we are still wanted. The scheduled path does the
+                # same thing at the same interval; this one was the gap that
+                # made the Stop button's own message untrue — "$1 reached, $2
+                # will not be contacted" while the loop kept going through all
+                # $2 of them.
+                if idx and idx % CANCEL_CHECK_EVERY == 0:
+                    # A read that fails must not halt the send. The durable
+                    # protection is the conditional close-out below, which
+                    # cannot write over a cancellation whatever happens here;
+                    # this only shortens the overshoot. Trading a bounded
+                    # overshoot for an outage on one flaky select is the worse
+                    # bargain.
+                    try:
+                        still_ours = campaign_model.get_status(campaign_id)
+                    except Exception:  # noqa: BLE001
+                        logging.getLogger(__name__).warning(
+                            "campaign %s: cancellation check failed, continuing",
+                            campaign_id, exc_info=True,
+                        )
+                        still_ours = "sending"
+                    if still_ours != "sending":
+                        cancelled_midbatch = True
+                        logging.getLogger(__name__).info(
+                            "campaign %s stopped by its owner mid-batch after "
+                            "%s sent", campaign_id, sent_count,
+                        )
+                        break
                 if contact.get("unsubscribed"):
                     # Already excluded from every resumable set by the
                     # unsubscribed flag itself — nothing to record.
@@ -1111,10 +1143,22 @@ async def _run_campaign_send(
         )
 
         if auth_stopped_midbatch:
-            campaign_model.update_campaign(campaign_id, {"status": "partial"})
-        elif ab_test and ab_remaining:
-            ab_test_model.update_ab_test(ab_test["id"], {"status": "awaiting_winner"})
-            campaign_model.update_campaign(campaign_id, {"status": "ab_testing"})
+            # Conditional like the rest: a mailbox Microsoft refused is still
+            # not a reason to overwrite a cancellation the owner asked for.
+            campaign_model.update_if_status(
+                campaign_id, {"status": "partial"}, expected="sending"
+            )
+        elif ab_test and ab_remaining and not cancelled_midbatch:
+            # Order matters. The campaign row is the one with a status to
+            # guard, so move it first and only arm the A/B test if it applied
+            # — otherwise a stopped campaign leaves an experiment waiting for
+            # a winner that will never be sent.
+            if campaign_model.update_if_status(
+                campaign_id, {"status": "ab_testing"}, expected="sending"
+            ):
+                ab_test_model.update_ab_test(
+                    ab_test["id"], {"status": "awaiting_winner"}
+                )
         else:
             # A quota-capped batch that itself sends cleanly must still land
             # on 'partial': the recipients skipped for quota stay 'pending',
@@ -1133,7 +1177,10 @@ async def _run_campaign_send(
             #
             # The count is not paged, and it runs only when the answer would
             # otherwise be 'sent'.
-            campaign_model.update_campaign(
+            # Conditional on the campaign still being 'sending': if the
+            # owner pressed Stop while this loop ran, the row says
+            # 'cancelled' and this write must not undo that.
+            campaign_model.update_if_status(
                 campaign_id,
                 {
                     "status": "sent"
@@ -1142,6 +1189,7 @@ async def _run_campaign_send(
                     and not contact_model.has_resumable_contacts(campaign_id)
                     else "partial"
                 },
+                expected="sending",
             )
     except asyncio.CancelledError:
         # NOT covered by `except Exception`. CancelledError has derived from
@@ -1171,7 +1219,13 @@ async def _run_campaign_send(
         except Exception:  # noqa: BLE001
             pass
         try:
-            campaign_model.update_campaign(campaign_id, {"status": "partial"})
+            # Conditional: if the owner pressed Stop and a deploy then killed
+            # the task, the row already says 'cancelled' and parking it on
+            # 'partial' would offer them a Resume button for a campaign they
+            # ended.
+            campaign_model.update_if_status(
+                campaign_id, {"status": "partial"}, expected="sending"
+            )
         except Exception:  # noqa: BLE001
             pass
         logging.getLogger(__name__).warning(
@@ -1200,7 +1254,11 @@ async def _run_campaign_send(
             # ('partial' only) and to the stuck sweep ('sending' only): its
             # recipients were unreachable by every path. 'partial' is the one
             # status the recovery machinery actually looks at.
-            campaign_model.update_campaign(campaign_id, {"status": "partial"})
+            # Conditional for the same reason as every other close-out here:
+            # a campaign whose owner stopped it has nothing to recover.
+            campaign_model.update_if_status(
+                campaign_id, {"status": "partial"}, expected="sending"
+            )
         except Exception:  # noqa: BLE001
             pass
 

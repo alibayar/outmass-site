@@ -171,6 +171,60 @@ function run() {
     "alertCampaignStopped lost one of its counts"
   );
 
+  // ── Stop must be disarmed when the view it belongs to fails to load ──
+  //
+  // _stopCampaignId and _stopSentCount are assigned only in the success
+  // branch. A failed stats load used to return early leaving the PREVIOUS
+  // campaign's button on screen and armed against the previous campaign — and
+  // stopping is one-way. A stats load failing on an expired session is what
+  // Helene hit seconds before she went looking for a way to stop something.
+  const detail = /function showCampaignDetail\([\s\S]{0,1200}?resp\.error\) \{[\s\S]{0,2000}?return;\s*\}/
+    .exec(sidebar);
+  check(detail !== null, "showCampaignDetail's error branch could not be located");
+  if (detail) {
+    check(
+      /_stopCampaignId = null/.test(detail[0]),
+      "the failed-stats branch no longer clears _stopCampaignId — Stop stays " +
+        "armed against whichever campaign was rendered last"
+    );
+    check(
+      /stop-section[\s\S]{0,120}display = "none"/.test(detail[0]),
+      "the failed-stats branch no longer hides the Stop button, so it stays " +
+        "on screen over an error message"
+    );
+  }
+  check(
+    /if \(currentDetailCampaignId !== campaignId\) return;/.test(sidebar),
+    "showCampaignDetail no longer drops a stats reply for a campaign the user " +
+      "has navigated away from — one campaign's numbers can render under " +
+      "another's name"
+  );
+
+  // ── the preview must decide from the TEMPLATE, like the server ──
+
+  check(
+    /function textToHtml\(template, merged\)/.test(sidebar),
+    "textToHtml no longer takes the template separately — it decides from the " +
+      "text it converts, which is what the server stopped doing on 2026-09-01"
+  );
+  check(
+    /if \(\/<\[a-z!\/\]\[\^>\]\*>\/i\.test\(template \|\| ""\)\)/.test(sidebar),
+    "textToHtml tests its HTML regex against something other than the " +
+      "template — a CSV value in angle brackets flips the preview and the " +
+      "send disagrees again, in the other direction"
+  );
+  check(
+    /textToHtml\(body, previewBody\)/.test(sidebar),
+    "the preview call no longer passes the raw template alongside the merged " +
+      "text"
+  );
+
+  check(
+    /track\("campaign_stopped"/.test(sidebar),
+    "stopping records no event — the only signal that would say whether " +
+      "anyone uses this, or whether the mid-batch overshoot matters"
+  );
+
   return { name: "stop-campaign", failures };
 }
 

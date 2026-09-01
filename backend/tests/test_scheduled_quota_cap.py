@@ -55,7 +55,10 @@ def _run(pending_count, already_sent, cap=None, resumable_after=None,
          patch("models.contact.has_resumable_contacts", return_value=still_resumable), \
          patch("models.contact.mark_sent", side_effect=lambda cid: sent_ids.append(cid)), \
          patch("models.campaign.increment_stat"), \
+         patch("models.campaign.get_status", return_value="sending"), \
          patch("models.campaign.update_campaign", side_effect=lambda cid, p: updates.append(p)), \
+         patch("models.campaign.update_if_status",
+               side_effect=lambda cid, p, expected=None: updates.append(p) or True), \
          patch("models.user.increment_sent_count"), \
          patch("workers.scheduled_worker._send_email", return_value={"success": True}), \
          patch("workers.scheduled_worker.time.sleep"):
