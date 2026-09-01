@@ -62,3 +62,71 @@ cd backend && python scripts/ask.py "SELECT timestamp, distinct_id, properties.c
 
 Server-side `emails_sent` is the truth; the client's `send_completed` only
 means the request was accepted. Tim's should appear shortly after 08:00 UTC.
+
+---
+
+## What actually happened, and his reply (2026-09-01 11:26)
+
+The first window ran correctly as a *send*: exactly 15 at 08:05:27 UTC, the cap
+held, and the campaign went back to scheduled. The close-out change from
+`01e18bb` did what it was supposed to.
+
+The formatting did not. Tim wrote:
+
+> "I sent the first 15 emails this morning via OutMass, but the layout came out
+> completely wrong. The layout was correct in the first two test emails. How is
+> this possible? I'd like to prevent the rest of the emails from being sent
+> because the layout is incorrect. How do I stop a campaign?"
+
+His two test sends were correct and his scheduled send was not, which is the
+diagnosis stated back to us by a customer who could not have known it: test
+sends go through `routers/campaigns.py`, which converted plain text to HTML;
+scheduled sends go through `scheduled_worker.py`, which did not. Second
+independent confirmation on the same morning, after Helene's.
+
+Timing, which decides what to tell him: his 15 went out **08:05:27 UTC**, and
+`0252d0b` deployed after that. Backend is on `0280451` now, verified. So his
+remaining 93 go out tomorrow at 08:00 UTC with the formatting correct, and
+stopping is not something he needs — though it is his call, not ours.
+
+## Reply
+
+Kept short on purpose: the customer does not need the mechanism, only what
+happened, whether it is fixed, and what happens next.
+
+Subject: **Layout problem — found and fixed this morning**
+
+> Hi Tim,
+>
+> Thanks for flagging it, and sorry. This was a bug on our side: campaigns
+> sent on a schedule lost their line breaks, while test emails kept them —
+> which is why your two tests looked right. We found it this morning and it
+> is fixed.
+>
+> The 15 that went out earlier had the wrong layout and I cannot undo those.
+> **The remaining 93 go out tomorrow morning as planned, and will look
+> correct.** So there is no need to stop the campaign — though if you would
+> rather stop it anyway, just say so and I will do it within minutes.
+>
+> On how to stop one: you could not, and you are the second person to ask
+> today. There is now a Stop button on the campaign report, coming with the
+> next update.
+>
+> If you would like the 15 addresses so you can follow up with them yourself,
+> just ask.
+>
+> Your follow-up from yesterday is still waiting on your wording whenever you
+> want it — no rush.
+>
+> Ali
+
+Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
+No compensation offered: he already has a month of Pro, and stacking another
+gesture on top reads as buying him off rather than fixing it.
+
+## The one claim in this that must stay true
+
+"The remaining 93 will be formatted correctly." Verify after 08:00 UTC tomorrow
+by looking at what a recipient actually received — not at `emails_sent`, which
+only counts. If it is wrong again the fix did not reach the worker, and that
+needs re-opening before the third batch.

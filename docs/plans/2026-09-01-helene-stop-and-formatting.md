@@ -179,3 +179,92 @@ Subject: **What happened to your formatting — found and fixed**
 
 Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
 Nothing here promises the Stop button by a date.
+
+---
+
+## Escalation, 11:25 — and the fourth fault
+
+Her second email crossed with Ali's first, so she wrote it without knowing the
+campaign had been stopped at ~08:10 or that the cause was found.
+
+> "There is a problem with the campaign the formatting has not sent correctly,
+> and I am not finding anywhere to stop the campaign nor modify it. I need it
+> to stop sending. I tried to delete my account but it is also not working
+> despite cancelling the subscription.
+>
+> Please could you delete my account, stop the campaign and issue a refund for
+> this?"
+
+**Fault 4: account deletion refuses the very users who did what it asks.**
+
+`routers/account.py:107`:
+
+```python
+plan = user.get("plan", "free")
+has_subscription = bool(user.get("stripe_subscription_id"))
+if plan != "free" and has_subscription:
+    raise HTTPException(409, {"error": "active_subscription", ...})
+```
+
+Stripe cancellation normally means *cancel at period end*, so the subscription
+stays active and no webhook flips `plan` to free. She cancelled, and the guard
+still sees `plan='starter'` with a subscription id and refuses — while its own
+message tells her to cancel her subscription first. She had.
+
+The guard's intent is right (do not leave a charge running after the account
+is gone). Its test is wrong: it should ask whether the subscription is set to
+cancel, not whether the plan is currently paid. → backlog, and it is now the
+second guard this week that was correct in intent and unreachable in practice.
+
+## Recommendation on the refund
+
+**Do not ask whether she still wants it. Refund and say so.**
+
+She asked, she had a broken product, she chased us twice, and she marked the
+second one high importance. Answering a refund request with "but we fixed it"
+makes a customer argue for her own money, and the fix being real does not
+change that.
+
+The one question genuinely worth asking is the account deletion, because it is
+irreversible and because her own sentence suggests she wanted it as a way to
+stop the campaign — which is already stopped. That is a check before an
+irreversible act, not retention friction.
+
+## Reply — send instead of the "cause found" draft above
+
+Kept short deliberately. She does not need the mechanism, and after a refund
+request a long technical explanation reads as justification.
+
+Subject: **Stopped, refunded — and one question**
+
+> Hi Hélène,
+>
+> Our emails crossed, so here is where things stand.
+>
+> **The campaign is stopped.** I stopped it around 09:10 this morning, before
+> your second message. It had reached 5 of the 66; the other 61 have not been
+> contacted and will not be.
+>
+> **The refund is done** — no conditions, nothing for you to do.
+>
+> The formatting was a bug on our side, in campaigns sent on a schedule. We
+> found it this morning and it is fixed. Nothing you did caused it. You were
+> also right that there was nowhere to stop a campaign — there wasn't one, and
+> there is now.
+>
+> **One thing before I delete the account: do you still want it deleted?** It
+> cannot be undone, and you tried it right after saying you needed the sending
+> to stop — so if deleting was the way to stop it, that is already handled.
+> Tell me either way and I will act today.
+>
+> The delete button refusing you was also our fault, not yours: it blocks
+> deletion while a subscription is still counted as active, and a cancellation
+> stays active until the end of the billing period. I can delete the account
+> manually regardless.
+>
+> Sorry for this morning.
+>
+> Ali
+
+Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
+No retention pitch, no discount, nothing asked in return for the refund.
