@@ -171,7 +171,18 @@ if (fs.existsSync(descDir)) {
 // removed from every other file by the 07-15 audit. It looked exactly like a
 // paste source, in the directory whose whole purpose is paste sources, and
 // pasting it would have reintroduced the lot. Nothing loose belongs here.
-const loose = fs.readdirSync(__dirname).filter((f) => f.endsWith(".txt"));
+//
+// One exception, and only one. certification-notes.txt is not a listing
+// description: it is the "Notes for certification" field of the submission
+// form, it is never translated, it carries test-account placeholders, and it
+// has no field in listings.json to be the source of truth for. What it DOES
+// have to match is the manifest — every host permission and every API
+// permission it names. That is checked by
+// extension/tests/manifest-permissions.test.js, not here.
+const ALLOWED_LOOSE = new Set(["certification-notes.txt"]);
+const loose = fs
+  .readdirSync(__dirname)
+  .filter((f) => f.endsWith(".txt") && !ALLOWED_LOOSE.has(f));
 for (const f of loose) {
   err(
     "store-listing",

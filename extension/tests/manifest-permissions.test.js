@@ -122,6 +122,37 @@ function run() {
       `confirm each is load-bearing, then add it to EXPECTED here`
   );
 
+  // -- and the certification notes must disclose every one of them --
+  //
+  // docs/store-listing/certification-notes.txt is what a store reviewer reads
+  // to decide whether the permissions we ask for are justified. On 2026-09-01
+  // it named five of the six host permissions: the railway fallback host was
+  // missing, and an undisclosed host permission is exactly what a reviewer
+  // flags. It was caught by reading the file, which is not a method.
+  //
+  // Checked here rather than in check-limits.js because the source of truth
+  // is the manifest, not listings.json.
+  const notesPath = path.join(
+    EXT, "..", "docs", "store-listing", "certification-notes.txt"
+  );
+  if (fs.existsSync(notesPath)) {
+    const notes = fs.readFileSync(notesPath, "utf8");
+    for (const p of hosts) {
+      const host = bareHost(p);
+      check(
+        notes.includes(host),
+        `certification-notes.txt does not mention ${host}, which the manifest ` +
+          `asks for - a reviewer sees a permission the notes never explain`
+      );
+    }
+    for (const p of manifest.permissions || []) {
+      check(
+        notes.includes(p),
+        `certification-notes.txt does not mention the "${p}" permission`
+      );
+    }
+  }
+
   return { name: "manifest-permissions", failures };
 }
 

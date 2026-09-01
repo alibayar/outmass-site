@@ -10,7 +10,7 @@ OutMass — Massen-E-Mails für Outlook
 --- SUMMARY / SHORT DESCRIPTION (101/132 characters) ---
 Outlook wird zur Massen-Mail-Zentrale. Mail Merge, A/B-Tests, KI-Writer. In 13 Sprachen. Ab $9/Monat.
 
---- DESCRIPTION (2551 characters) ---
+--- DESCRIPTION (2814 characters) ---
 Machen Sie Outlook Web zum professionellen Massen-E-Mail-Tool. OutMass bringt Mail Merge, Tracking, Follow-ups und KI-gestütztes Schreiben direkt in outlook.office.com und outlook.live.com — mit voller Unterstützung für Microsoft 365 und persönliche Outlook.com-Konten.
 
 ✨ WAS SIE DAMIT MACHEN KÖNNEN
@@ -20,7 +20,7 @@ Machen Sie Outlook Web zum professionellen Massen-E-Mail-Tool. OutMass bringt Ma
 ⏰ Geplanter Versand (Starter+) — jetzt schreiben, zum optimalen Zeitpunkt zustellen
 🚦 Tägliches Sendelimit — begrenzen Sie, wie viele E-Mails pro Tag versendet werden, um Ihre Absender-Reputation zu schützen
 ♻️ Automatische Fortsetzung — Monatskontingent mitten in der Kampagne erreicht? Der Rest wird nach Ihrem Reset automatisch gesendet
-🔁 Automatische Follow-ups (Pro) — Empfänger erneut ansprechen, die nicht geöffnet haben, und automatisch stoppen, sobald jemand antwortet
+🔁 Automatische Follow-ups (Pro) — Empfänger erneut ansprechen, die nicht geöffnet haben, und alle überspringen, die bereits geantwortet haben
 📚 Vorlagen-Bibliothek (Starter+) — speichern und wiederverwenden, was funktioniert
 🤖 KI-E-Mail-Writer — entwirft Ihre E-Mail aus einem kurzen Briefing (Pro, 50/Monat)
 📊 Öffnungs- und Klick-Tracking — Pixel, Klicks, Abmelde-Link
@@ -42,9 +42,9 @@ Machen Sie Outlook Web zum professionellen Massen-E-Mail-Tool. OutMass bringt Ma
 • Starter — $9/Monat, 2.500 E-Mails/Monat + geplanter Versand + Vorlagen + CSV-Export
 • Pro — $19/Monat, 10.000 E-Mails/Monat + KI-Writer + A/B-Tests + automatische Follow-ups
 
-🔒 IHRE DATEN BLEIBEN IHRE DATEN
+🔒 IHR KONTO, IHR VERSAND
 
-OutMass sendet über Ihre eigene Microsoft Graph API per OAuth 2.0. Wir speichern den Inhalt Ihrer E-Mails nie auf unseren Servern. Ihr Outlook-Konto, Ihre Daten, Ihre Zustellbarkeit.
+OutMass sendet über Ihr eigenes Microsoft-Konto per OAuth 2.0 und die offizielle Graph API — keine Versandserver von Drittanbietern, keine geteilten IP-Pools, sodass Empfänger eine ganz normale E-Mail von Ihnen sehen. Ihre Kampagne wird auf unseren Servern gespeichert, denn geplanter Versand, Follow-ups und Kampagnen-Berichte funktionieren sonst nicht. Die Antwort-Erkennung speichert nur, dass eine Antwort eingegangen ist, niemals deren Inhalt.
 
 🛡️ 30 TAGE GELD-ZURÜCK-GARANTIE
 

@@ -10,7 +10,7 @@ OutMass — E-mail em Massa para Outlook
 --- SUMMARY / SHORT DESCRIPTION (122/132 characters) ---
 Transforme o Outlook em uma central de e-mail em massa. Mail merge, testes A/B, AI Writer. 13 idiomas. A partir de $9/mês.
 
---- DESCRIPTION (2533 characters) ---
+--- DESCRIPTION (2782 characters) ---
 Transforme o Outlook Web em uma ferramenta profissional de e-mail em massa. O OutMass traz mail merge, rastreamento, follow-ups e redação com IA diretamente para dentro do outlook.office.com e do outlook.live.com — com suporte completo a Microsoft 365 e contas pessoais do Outlook.com.
 
 ✨ O QUE VOCÊ PODE FAZER
@@ -20,7 +20,7 @@ Transforme o Outlook Web em uma ferramenta profissional de e-mail em massa. O Ou
 ⏰ Envio agendado (Starter+) — escreva agora, entregue na hora certa
 🚦 Limite diário de envio — defina quantos e-mails saem por dia para proteger sua reputação de remetente
 ♻️ Retomada automática — atingiu a cota mensal no meio da campanha? O restante é enviado automaticamente após a renovação da sua cota
-🔁 Follow-ups automáticos (Pro) — reengaje quem não abriu e pare automaticamente assim que alguém responder
+🔁 Follow-ups automáticos (Pro) — reengaje quem não abriu e pule quem já respondeu
 📚 Biblioteca de modelos (Starter+) — salve e reutilize seus e-mails de melhor desempenho
 🤖 AI Email Writer — escreve o rascunho do seu e-mail a partir de um briefing curto (Pro, 50/mês)
 📊 Rastreamento de aberturas e cliques — pixel, cliques, link de descadastro
@@ -42,9 +42,9 @@ Transforme o Outlook Web em uma ferramenta profissional de e-mail em massa. O Ou
 • Starter — $9/mês, 2.500 e-mails/mês + envio agendado + modelos + exportação CSV
 • Pro — $19/mês, 10.000 e-mails/mês + AI Writer + testes A/B + follow-ups automáticos
 
-🔒 SEUS DADOS CONTINUAM SENDO SEUS
+🔒 SUA CONTA, SEU ENVIO
 
-O OutMass envia pela sua própria Microsoft Graph API usando OAuth 2.0. Nunca armazenamos o conteúdo dos seus e-mails em nossos servidores. Sua conta do Outlook, seus dados, sua entregabilidade.
+O OutMass envia pela sua própria conta da Microsoft usando OAuth 2.0 e a API oficial do Graph — sem servidores de envio de terceiros e sem pools de IP compartilhados, então seus destinatários veem um e-mail normal enviado por você. Sua campanha fica armazenada em nossos servidores, porque o envio agendado, os follow-ups e os relatórios de campanha não teriam como funcionar de outro modo. A detecção de respostas registra apenas que uma resposta chegou, nunca o conteúdo dela.
 
 🛡️ GARANTIA DE REEMBOLSO DE 30 DIAS
 

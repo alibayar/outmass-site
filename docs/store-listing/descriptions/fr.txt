@@ -10,7 +10,7 @@ OutMass — E-mailing de Masse pour Outlook
 --- SUMMARY / SHORT DESCRIPTION (101/132 characters) ---
 Transformez Outlook en outil d'emailing de masse. Mail merge, A/B tests, IA. 13 langues. Dès $9/mois.
 
---- DESCRIPTION (2621 characters) ---
+--- DESCRIPTION (2862 characters) ---
 Transformez Outlook Web en outil professionnel d'e-mailing de masse. OutMass apporte le mail merge, le suivi, les relances et la rédaction assistée par IA directement dans outlook.office.com et outlook.live.com — avec une prise en charge complète de Microsoft 365 et des comptes Outlook.com personnels.
 
 ✨ CE QUE VOUS POUVEZ FAIRE
@@ -20,7 +20,7 @@ Transformez Outlook Web en outil professionnel d'e-mailing de masse. OutMass app
 ⏰ Envoi programmé (Starter+) — rédigez maintenant, envoyez au moment idéal
 🚦 Limite d'envoi quotidienne — plafonnez le nombre d'e-mails envoyés par jour pour protéger votre réputation d'expéditeur
 ♻️ Reprise automatique — quota mensuel atteint en pleine campagne ? Le reste part automatiquement après la réinitialisation
-🔁 Relances automatiques (Pro) — recontactez ceux qui n'ont pas ouvert, et les relances s'arrêtent automatiquement dès qu'une personne répond
+🔁 Relances automatiques (Pro) — recontactez ceux qui n'ont pas ouvert, et les personnes ayant déjà répondu sont exclues
 📚 Bibliothèque de modèles (Starter+) — sauvegardez et réutilisez vos meilleurs e-mails
 🤖 Rédacteur IA — rédige votre e-mail à partir d'une courte description (Pro, 50/mois)
 📊 Suivi des ouvertures et clics — pixel, clics, lien de désabonnement
@@ -42,9 +42,9 @@ Transformez Outlook Web en outil professionnel d'e-mailing de masse. OutMass app
 • Starter — $9/mois, 2 500 e-mails/mois + envoi programmé + modèles + export CSV
 • Pro — $19/mois, 10 000 e-mails/mois + Rédacteur IA + A/B tests + relances automatiques
 
-🔒 VOS DONNÉES VOUS APPARTIENNENT
+🔒 VOTRE COMPTE, VOS ENVOIS
 
-OutMass envoie via votre propre API Microsoft Graph en OAuth 2.0. Nous ne stockons jamais le contenu de vos e-mails sur nos serveurs. Votre compte Outlook, vos données, votre délivrabilité.
+OutMass envoie depuis votre propre compte Microsoft, en OAuth 2.0 et via l'API Graph officielle — aucun serveur d'envoi tiers, aucun pool d'IP partagé, et vos destinataires reçoivent un e-mail normal de votre part. Votre campagne est stockée sur nos serveurs, car l'envoi programmé, les relances et les rapports de campagne ne peuvent pas fonctionner autrement. La détection des réponses enregistre uniquement qu'une réponse est arrivée, jamais son contenu.
 
 🛡️ GARANTIE SATISFAIT OU REMBOURSÉ 30 JOURS
 

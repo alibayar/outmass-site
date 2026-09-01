@@ -10,7 +10,7 @@ OutMass — Email Masivo para Outlook
 --- SUMMARY / SHORT DESCRIPTION (121/132 characters) ---
 Envía campañas de email masivo desde Outlook Web con mail merge CSV, seguimientos automáticos y seguimiento de aperturas.
 
---- DESCRIPTION (2540 characters) ---
+--- DESCRIPTION (2780 characters) ---
 Convierte Outlook Web en una herramienta profesional de email masivo. OutMass lleva mail merge, seguimiento, recordatorios automáticos y redacción con IA directamente a outlook.office.com y outlook.live.com — con soporte completo para Microsoft 365 y Outlook.com personal.
 
 ✨ QUÉ PUEDES HACER
@@ -20,7 +20,7 @@ Convierte Outlook Web en una herramienta profesional de email masivo. OutMass ll
 ⏰ Envío programado (Starter+) — escribe ahora, entrega en el momento ideal
 🚦 Límite de envío diario — limita cuántos emails salen cada día para proteger tu reputación como remitente
 ♻️ Reanudación automática — ¿Alcanzaste tu cuota mensual a mitad de campaña? El resto se envía automáticamente tras el reinicio de tu cuota
-🔁 Seguimientos automáticos (Pro) — vuelve a contactar a quienes no abrieron, y se detienen automáticamente en cuanto alguien responde
+🔁 Seguimientos automáticos (Pro) — vuelve a contactar a quienes no abrieron, y omite a quienes ya han respondido
 📚 Biblioteca de plantillas (Starter+) — guarda y reutiliza tus mejores correos
 🤖 AI Email Writer — redacta tu correo a partir de una breve descripción (Pro, 50/mes)
 📊 Seguimiento de aperturas y clics — píxel, clics, enlace de baja
@@ -42,9 +42,9 @@ Convierte Outlook Web en una herramienta profesional de email masivo. OutMass ll
 • Starter — $9/mes, 2.500 emails/mes + envío programado + plantillas + exportación CSV
 • Pro — $19/mes, 10.000 emails/mes + AI Writer + A/B testing + seguimientos automáticos
 
-🔒 TUS DATOS SIGUEN SIENDO TUYOS
+🔒 TU CUENTA, TUS ENVÍOS
 
-OutMass envía a través de tu propia Microsoft Graph API con OAuth 2.0. Nunca almacenamos el contenido de tus correos en nuestros servidores. Tu cuenta de Outlook, tus datos, tu entregabilidad.
+OutMass envía a través de tu propia cuenta de Microsoft con OAuth 2.0 y la API oficial de Graph — sin servidores de envío de terceros ni grupos de IP compartidos, así que tus destinatarios ven un correo normal enviado por ti. Tu campaña se guarda en nuestros servidores, porque el envío programado, los seguimientos y los informes de campaña no pueden funcionar de otro modo. La detección de respuestas solo registra que llegó una respuesta, nunca su contenido.
 
 🛡️ GARANTÍA DE DEVOLUCIÓN DE 30 DÍAS
 

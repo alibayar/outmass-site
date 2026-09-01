@@ -10,7 +10,7 @@ OutMass — Outlook için Toplu E-posta
 --- SUMMARY / SHORT DESCRIPTION (99/132 characters) ---
 Outlook'u toplu e-posta gücüne dönüştürün. Mail merge, A/B testi, AI yazar. 13 dilde. Aylık $9'dan.
 
---- DESCRIPTION (2314 characters) ---
+--- DESCRIPTION (2527 characters) ---
 Outlook Web'i profesyonel bir toplu e-posta aracına dönüştürün. OutMass; mail merge, takip, otomatik hatırlatma ve yapay zekâ destekli yazımı doğrudan outlook.office.com ve outlook.live.com içine getirir — Microsoft 365 ve kişisel Outlook.com hesaplarıyla tam uyumlu.
 
 ✨ NELER YAPABİLİRSİNİZ
@@ -20,7 +20,7 @@ Outlook Web'i profesyonel bir toplu e-posta aracına dönüştürün. OutMass; m
 ⏰ Zamanlanmış gönderim (Starter+) — şimdi yazın, ideal saatte gönderilsin
 🚦 Günlük gönderim limiti — gönderen itibarınızı korumak için günde kaç e-posta gideceğini sınırlayın
 ♻️ Otomatik devam — kampanya ortasında aylık kotanız doldu mu? Kalanlar kotanız yenilendikten sonra otomatik gönderilir
-🔁 Otomatik takip e-postaları (Pro) — açmayanlara yeniden ulaşın, biri yanıt verdiği anda otomatik durur
+🔁 Otomatik takip e-postaları (Pro) — açmayanlara yeniden ulaşın, yanıt verenler atlanır
 📚 Şablon kütüphanesi (Starter+) — en iyi e-postalarınızı kaydedip tekrar kullanın
 🤖 AI E-posta Yazarı — kısa bir özetten e-posta taslağı oluşturur (Pro, ayda 50)
 📊 Açılma ve tıklama takibi — pixel, tıklama, abonelikten çıkma bağlantısı
@@ -42,9 +42,9 @@ Outlook Web'i profesyonel bir toplu e-posta aracına dönüştürün. OutMass; m
 • Starter — aylık $9, ayda 2.500 e-posta + zamanlanmış gönderim + şablonlar + CSV dışa aktarım
 • Pro — aylık $19, ayda 10.000 e-posta + AI Yazar + A/B testi + otomatik takip e-postaları
 
-🔒 VERİLERİNİZ SİZDE KALIR
+🔒 SİZİN HESABINIZ, SİZİN GÖNDERİMİNİZ
 
-OutMass gönderimleri sizin kendi Microsoft Graph API'nizden OAuth 2.0 ile yapar. E-postalarınızın içeriği sunucularımızda tutulmaz. Outlook hesabınız, sizin verileriniz, sizin deliverability'niz.
+OutMass gönderimleri sizin kendi Microsoft hesabınızdan, OAuth 2.0 ve resmi Graph API ile yapar — üçüncü taraf gönderim sunucusu yok, ortak IP havuzu yok; alıcılar sizden gelen normal bir e-posta görür. Kampanyanız sunucularımızda saklanır, çünkü zamanlanmış gönderim, takip e-postaları ve kampanya raporları başka türlü çalışamaz. Yanıt tespiti yalnızca bir yanıtın geldiğini kaydeder, içeriğini asla kaydetmez.
 
 🛡️ 30 GÜN PARA İADE GARANTİSİ
 

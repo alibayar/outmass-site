@@ -10,7 +10,7 @@ OutMass — Outlook 群发邮件工具
 --- SUMMARY / SHORT DESCRIPTION (50/132 characters) ---
 在 Outlook Web 中群发邮件:CSV 合并、打开/点击跟踪、自动跟进邮件以及 AI 写手。
 
---- DESCRIPTION (1048 characters) ---
+--- DESCRIPTION (1120 characters) ---
 将 Outlook Web 打造成专业的群发邮件工具。OutMass 把邮件合并、追踪、自动跟进以及 AI 驱动的文案撰写直接带入 outlook.office.com 与 outlook.live.com——全面支持 Microsoft 365 和个人 Outlook.com 帐户。
 
 ✨ 你可以做什么
@@ -20,7 +20,7 @@ OutMass — Outlook 群发邮件工具
 ⏰ 定时发送(Starter+) — 现在撰写,在最佳时间送达
 🚦 每日发送上限 — 限制每天发送的邮件数量,保护发件人信誉
 ♻️ 自动续发 — 活动进行中用完当月配额?重置后剩余邮件自动发出
-🔁 自动跟进(Pro) — 重新触达未打开的收件人,一旦对方回复即自动停止
+🔁 自动跟进(Pro) — 重新触达未打开的收件人,并跳过已经回复的人
 📚 模板库(Starter+) — 保存并复用效果最好的邮件
 🤖 AI 邮件写手 — 根据简短说明生成邮件草稿(Pro,每月 50 次)
 📊 打开和点击追踪 — 像素追踪、点击追踪、退订链接
@@ -42,9 +42,9 @@ OutMass — Outlook 群发邮件工具
 • Starter — $9/月,每月 2,500 封邮件 + 定时发送 + 模板 + CSV 导出
 • Pro — $19/月,每月 10,000 封邮件 + AI 写手 + A/B 测试 + 自动跟进
 
-🔒 您的数据依然属于您
+🔒 您的帐户,您的发送
 
-OutMass 通过您自己的 Microsoft Graph API 和 OAuth 2.0 发送邮件。我们的服务器从不存储邮件内容。您的 Outlook 帐户,您的数据,您的送达率。
+OutMass 通过您自己的 Microsoft 帐户,使用 OAuth 2.0 和官方 Graph API 发送邮件——没有第三方发送服务器,也没有共享 IP 池,收件人看到的就是一封来自您本人的普通邮件。您的邮件活动会存储在我们的服务器上,因为定时发送、自动跟进和活动报告都离不开它。回复检测只记录收到了回复,绝不记录回复内容。
 
 🛡️ 30 天退款保证
 
