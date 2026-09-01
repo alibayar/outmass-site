@@ -268,3 +268,159 @@ Subject: **Stopped, refunded — and one question**
 
 Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
 No retention pitch, no discount, nothing asked in return for the refund.
+
+---
+
+## She came back (11:40) — and set a condition
+
+> "Thank you for all the explanations and quick support. Really impressed with
+> that!
+>
+> So I am happy to resume the campaign as it was set up (5 emails sent a day)
+> providing it will send in the correct formating (make sure this will be sent
+> correctly please). I will personally contact the 5 persons that were
+> contacted today.
+>
+> Could you please give a free month of the starter subscription & pro, so I
+> can still use the scheduling and test the follow up? I will sign up at end of
+> month if everything works fine."
+
+From "delete my account and refund me" to "let's resume", in two hours. Her
+condition is explicit and it is the one thing we have not actually checked.
+
+## Do these in order. Do not skip the first.
+
+### 1. Verify the fix on a real scheduled send — BEFORE resuming hers
+
+The formatting fix has unit tests and no real send behind it. She asked us to
+make sure, and today has already produced two confident-but-wrong claims. The
+scheduled beat runs **every 5 minutes** (`celery_app.py:159`), so this costs
+about ten minutes:
+
+- In OutMass, make a campaign to two addresses you control.
+- Body with real structure: two or three paragraphs separated by blank lines,
+  and at least one single line break inside a paragraph.
+- **Schedule it** a couple of minutes out — do not press Send now. Send-now
+  always worked; the worker is the path that broke.
+- Wait for it to arrive and look at it.
+
+Paragraphs and line breaks intact → the fix is real and her campaign can
+resume. Still one block → the fix did not reach the worker, and nothing gets
+resumed until it does.
+
+### 2. Grant the month
+
+```sql
+UPDATE users
+SET comp_plan       = 'pro',
+    comp_plan_until = '2026-10-01 23:59:59+00'
+WHERE lower(email) = 'helene@circularworkplaces.com';
+
+SELECT email, plan, comp_plan, comp_plan_until
+FROM users WHERE lower(email) = 'helene@circularworkplaces.com';
+```
+
+One grant covers both things she asked for. `effective_plan()` returns
+`comp_plan` over `plan`, the scheduled-sending gate refuses only `free`
+(`campaigns.py:191`), and follow-ups require `pro` (`:1412`) — so Pro gives
+her the scheduling *and* the follow-ups. There is no need to touch `plan`,
+which belongs to Stripe.
+
+### 3. Resume the campaign — only after step 1 passes
+
+```sql
+UPDATE campaigns
+SET status = 'scheduled', archived = false, scheduled_for = now()
+WHERE id = '17a969ec-58d2-4c46-beee-825d344f6e05';
+
+SELECT status, archived, scheduled_for, daily_send_cap, sent_count, total_contacts
+FROM campaigns WHERE id = '17a969ec-58d2-4c46-beee-825d344f6e05';
+```
+
+Expect `daily_send_cap = 5` — she said five a day and exactly five went out.
+If it reads anything else, stop and tell her, because she named that number.
+
+The beat then picks it up within five minutes and sends the first five of the
+remaining 61. Roughly 13 more days at that rate.
+
+### 4. One thing to be honest about in the reply
+
+She wants to **test the follow-up**. Her campaign has no follow-up attached —
+`follow_ups` returned no rows for it — and the panel can only attach one at the
+moment Send is pressed. So Pro alone will not let her add one to the resumed
+campaign. She can use it on her *next* campaign, or send us the wording and we
+attach it from our side. Say so rather than let her look for a control that is
+not there; that is what started this morning.
+
+## Reply
+
+Subject: **Resuming — and the month is on us**
+
+> Hi Hélène,
+>
+> Glad that helped, and thank you for coming back rather than walking.
+>
+> **The free month is set up.** Scheduling and follow-ups are both open to you
+> until 1 October, no card, nothing to cancel — it simply expires. If it works
+> the way you want by then, you can sign up; if it doesn't, nothing happens.
+>
+> **Before restarting your campaign I scheduled one of my own and checked what
+> actually arrived** — paragraphs, line breaks and signature all intact. Your
+> campaign is running again at 5 a day, picking up from the 61 who have not
+> been contacted. Thank you for handling the 5 from this morning yourself —
+> that is generous.
+>
+> One thing I would rather tell you now than have you hunt for: a follow-up can
+> currently only be attached at the moment a campaign is sent, so I cannot add
+> one to the campaign that is already running. You can set one up on your next
+> campaign, or send me the wording and the number of days and I will attach it
+> to this one from our side.
+>
+> Ali
+
+Send notes: BCC `outmassapp@outlook.com`. No call offered — async only.
+The third paragraph must be edited to say what was actually observed in step 1.
+Do not send it as written if the check was not run.
+
+
+---
+
+## Step 1 result: verified, 2026-09-01 09:35 UTC
+
+Not assumed. A two-recipient campaign was **scheduled** (not sent now) at
+09:31:14 — `send_completed` carried `scheduled: true` — and the server sent it
+at **09:35:17**, four minutes later, which is the beat cycle. So it went
+through `scheduled_worker`, the path that was broken.
+
+What arrived: paragraph gap present, three consecutive lines on three lines,
+signature on three lines, and `<info@example.com>` from the CSV rendered as
+literal text.
+
+The last one matters most: that recipient's row is the one carrying angle
+brackets, so it also proves the merge-before-detect bug is closed. The harder
+of the two test rows is the one that passed.
+
+**Steps 2 and 3 are cleared to run.**
+
+---
+
+## Trap: manually resuming a capped campaign sends an extra batch the same day
+
+Setting `scheduled_for = now()` on a campaign with a `daily_send_cap` that has
+already run today gives it a **second** batch. The cap is applied per run —
+`pending = pending[:daily_cap]` (`scheduled_worker.py:110`) — with no reference
+to how many went out earlier in the day. Normally that is invisible, because a
+capped run reschedules itself for +1 day.
+
+It happened here: her campaign had sent 5 at 07:35, the manual resume ran again
+at ~09:40, and 10 went out on a day she had specifically asked for 5. It
+self-corrected afterwards — `scheduled_for` moved to 2026-09-02 09:40 and
+`sent_count` settled at 10.
+
+**Resume a capped campaign with `scheduled_for = now() + interval '1 day'`**,
+unless today's batch has genuinely not run.
+
+Not reachable without a human: auto-resume and the Resume endpoint both select
+`partial`, and a capped campaign that finishes its batch returns to
+`scheduled`. So this is an operator footgun rather than a live defect — but it
+is one we fired.
