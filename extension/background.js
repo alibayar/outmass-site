@@ -1342,6 +1342,14 @@ chrome.runtime.onMessage.addListener(function (message, sender, sendResponse) {
       });
       return true;
 
+    case "STOP_CAMPAIGN":
+      backendFetch("/campaigns/" + message.campaignId + "/stop", {
+        method: "POST",
+      }).then(function (result) {
+        sendResponse(result);
+      });
+      return true;
+
     case "CREATE_FOLLOWUP":
       backendFetch("/campaigns/" + message.campaignId + "/followups", {
         method: "POST",

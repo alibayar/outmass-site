@@ -344,6 +344,10 @@
       <canvas id="stats-chart" width="320" height="160"></canvas>
       <div id="followup-status" class="followup-status"></div>
       <!-- Resume — only visible for campaigns in `partial` status -->
+      <div id="stop-section" class="resume-section" style="display:none;">
+        <p class="resume-hint" data-i18n="stopHint">This campaign is still going. Stopping it means nobody else receives it — the people already reached cannot be un-sent.</p>
+        <button class="btn btn-secondary" id="btn-stop-campaign" data-i18n="btnStopCampaign">Stop campaign</button>
+      </div>
       <div id="resume-section" class="resume-section" style="display:none;">
         <p class="resume-hint" data-i18n="resumeHint">Some recipients didn't receive this campaign — usually a temporary network or rate-limit issue. Resume to retry only the pending recipients.</p>
         <button class="btn btn-primary" id="btn-resume-campaign" data-i18n="btnResumeCampaign">Resume sending</button>

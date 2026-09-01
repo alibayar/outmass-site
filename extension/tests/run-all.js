@@ -14,6 +14,9 @@
  *                         backend/routers/auth.py to compare both sides)
  *   no-hardcoded-prices — no locale or markup holds a literal price, and the
  *                         Intl path that shows the real one still exists
+ *   stop-campaign       — a running campaign must be stoppable, and the
+ *                         panel and server must agree on when, or the
+ *                         button appears and the endpoint refuses
  *   locked-followup     — a follow-up saved because the plan cannot run
  *                         it must never be reported as scheduled, and
  *                         activating one that would send AT ONCE must
@@ -50,6 +53,7 @@ const suites = [
   require("./local-datetime.test.js"),
   require("./feature-wall-offer.test.js"),
   require("./locked-followup.test.js"),
+  require("./stop-campaign.test.js"),
 ];
 
 async function main() {

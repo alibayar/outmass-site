@@ -1077,6 +1077,24 @@
   "btnResumeCampaign": {
     "message": "Retomar envio"
   },
+  "stopHint": {
+    "message": "Esta campanha ainda está em andamento. Pará-la significa que mais ninguém a receberá — quem já recebeu não pode ser desfeito."
+  },
+  "btnStopCampaign": {
+    "message": "Parar campanha"
+  },
+  "confirmStopCampaign": {
+    "message": "$1 pessoas já receberam esta campanha e isso não pode ser desfeito. Parar agora para que mais ninguém receba?"
+  },
+  "alertCampaignStopped": {
+    "message": "Campanha parada. $1 pessoas foram alcançadas; $2 não serão contatadas."
+  },
+  "alertCampaignNotStoppable": {
+    "message": "Esta campanha já terminou, então não há nada para parar."
+  },
+  "alertCampaignStopFailed": {
+    "message": "Não foi possível parar a campanha. Tente novamente e escreva para support@getoutmass.com se continuar falhando."
+  },
   "resumeQueued": {
     "message": "$N$ destinatário(s) na fila para reenvio.",
     "placeholders": {

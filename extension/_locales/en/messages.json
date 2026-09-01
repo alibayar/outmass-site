@@ -1088,6 +1088,24 @@
   "btnResumeCampaign": {
     "message": "Resume sending"
   },
+  "stopHint": {
+    "message": "This campaign is still going. Stopping it means nobody else receives it — the people already reached cannot be un-sent."
+  },
+  "btnStopCampaign": {
+    "message": "Stop campaign"
+  },
+  "confirmStopCampaign": {
+    "message": "$1 people have already received this campaign and cannot be un-sent. Stop now so nobody else does?"
+  },
+  "alertCampaignStopped": {
+    "message": "Campaign stopped. $1 people were reached; $2 will not be contacted."
+  },
+  "alertCampaignNotStoppable": {
+    "message": "This campaign has already finished, so there is nothing left to stop."
+  },
+  "alertCampaignStopFailed": {
+    "message": "The campaign could not be stopped. Please try again, and write to support@getoutmass.com if it keeps failing."
+  },
   "resumeQueued": {
     "message": "$N$ recipient(s) queued for resend.",
     "placeholders": {

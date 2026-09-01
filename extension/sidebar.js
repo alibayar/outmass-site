@@ -3312,6 +3312,26 @@
             stats.status === "partial" ? "block" : "none";
         }
 
+        // Stop. Until 2026-09-01 there was no way to halt a campaign at all,
+        // and a customer five recipients into a 66-person send told us her
+        // only remaining option was to close her account. She was right.
+        //
+        // The list mirrors STOPPABLE_STATUSES on the server: offering the
+        // button for a status the endpoint refuses would be a second dead end
+        // on top of the first.
+        var stopSection = document.getElementById("stop-section");
+        if (stopSection) {
+          var stoppable = [
+            "scheduled", "sending", "partial", "pending",
+            "ab_testing", "awaiting_winner", "sending_winner",
+            "testing", "active", "failed_auth",
+          ];
+          stopSection.style.display =
+            stoppable.indexOf(stats.status) !== -1 ? "block" : "none";
+          _stopCampaignId = campaignId;
+          _stopSentCount = stats.sent_count || 0;
+        }
+
         // Draw bar chart
         drawBarChart(stats.sent_count || 0, stats.open_count || 0, stats.click_count || 0);
       }
@@ -3412,6 +3432,54 @@
   var currentDetailCampaignId = null;
 
   // Resume button (Reports detail → partial campaign).
+  // Which campaign the Stop button would stop, and how many it has already
+  // reached — both read from the stats the detail view just rendered.
+  var _stopCampaignId = null;
+  var _stopSentCount = 0;
+
+  var btnStopCampaign = document.getElementById("btn-stop-campaign");
+  if (btnStopCampaign) {
+    btnStopCampaign.addEventListener("click", function () {
+      if (!_stopCampaignId || btnStopCampaign.disabled) return;
+
+      // The count goes in the question, not just the answer. Stopping is not
+      // undoing, and the people already reached are the one part of this the
+      // user cannot take back.
+      if (!confirm(t("confirmStopCampaign", [String(_stopSentCount)]))) return;
+
+      btnStopCampaign.disabled = true;
+      var cid = _stopCampaignId;
+      chrome.runtime.sendMessage(
+        { type: "STOP_CAMPAIGN", campaignId: cid },
+        function (resp) {
+          btnStopCampaign.disabled = false;
+
+          if (resp && !resp.error) {
+            var d = (resp.data || resp) || {};
+            alert(t("alertCampaignStopped", [
+              String(d.already_sent != null ? d.already_sent : _stopSentCount),
+              String(d.not_contacted != null ? d.not_contacted : 0),
+            ]));
+            showCampaignDetail(cid);
+            return;
+          }
+
+          if (handleNetworkFailure(resp, null)) return;
+          if (handleSessionExpired(resp)) return;
+
+          var det = (resp && resp.detail) || {};
+          if (det.error === "not_stoppable") {
+            // It finished between the panel rendering and the click.
+            alert(t("alertCampaignNotStoppable"));
+            showCampaignDetail(cid);
+            return;
+          }
+          alert(t("alertCampaignStopFailed"));
+        }
+      );
+    });
+  }
+
   var btnResumeCampaign = document.getElementById("btn-resume-campaign");
   if (btnResumeCampaign) {
     btnResumeCampaign.addEventListener("click", function () {

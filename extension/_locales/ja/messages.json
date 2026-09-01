@@ -1077,6 +1077,24 @@
   "btnResumeCampaign": {
     "message": "送信を再開"
   },
+  "stopHint": {
+    "message": "このキャンペーンはまだ進行中です。停止するとこれ以上は誰にも届きませんが、すでに届いた分は取り消せません。"
+  },
+  "btnStopCampaign": {
+    "message": "キャンペーンを停止"
+  },
+  "confirmStopCampaign": {
+    "message": "すでに $1 名がこのキャンペーンを受信しており、取り消すことはできません。これ以上届かないよう、今すぐ停止しますか？"
+  },
+  "alertCampaignStopped": {
+    "message": "キャンペーンを停止しました。$1 名に届き、$2 名には送信されません。"
+  },
+  "alertCampaignNotStoppable": {
+    "message": "このキャンペーンはすでに終了しているため、停止するものはありません。"
+  },
+  "alertCampaignStopFailed": {
+    "message": "キャンペーンを停止できませんでした。もう一度お試しのうえ、続く場合は support@getoutmass.com までご連絡ください。"
+  },
   "resumeQueued": {
     "message": "$N$ 件の受信者を再送キューに追加しました。",
     "placeholders": {

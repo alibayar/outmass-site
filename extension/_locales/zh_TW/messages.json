@@ -1077,6 +1077,24 @@
   "btnResumeCampaign": {
     "message": "繼續傳送"
   },
+  "stopHint": {
+    "message": "此行銷活動仍在進行中。停止後其他人將不會收到，但已送達的郵件無法收回。"
+  },
+  "btnStopCampaign": {
+    "message": "停止行銷活動"
+  },
+  "confirmStopCampaign": {
+    "message": "已有 $1 人收到此行銷活動，且無法收回。是否立即停止，以免其他人再收到？"
+  },
+  "alertCampaignStopped": {
+    "message": "行銷活動已停止。已送達 $1 人；$2 人將不會收到。"
+  },
+  "alertCampaignNotStoppable": {
+    "message": "此行銷活動已經結束，沒有可停止的項目。"
+  },
+  "alertCampaignStopFailed": {
+    "message": "無法停止此行銷活動。請再試一次；若持續失敗，請聯絡 support@getoutmass.com。"
+  },
   "resumeQueued": {
     "message": "已將 $N$ 位收件者排入重新傳送佇列。",
     "placeholders": {

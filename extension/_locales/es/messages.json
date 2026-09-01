@@ -1077,6 +1077,24 @@
   "btnResumeCampaign": {
     "message": "Reanudar envío"
   },
+  "stopHint": {
+    "message": "Esta campaña sigue en curso. Detenerla significa que nadie más la recibirá; a quienes ya llegó no se les puede retirar."
+  },
+  "btnStopCampaign": {
+    "message": "Detener campaña"
+  },
+  "confirmStopCampaign": {
+    "message": "$1 personas ya han recibido esta campaña y eso no se puede deshacer. ¿Detenerla ahora para que nadie más la reciba?"
+  },
+  "alertCampaignStopped": {
+    "message": "Campaña detenida. Se alcanzó a $1 personas; $2 no serán contactadas."
+  },
+  "alertCampaignNotStoppable": {
+    "message": "Esta campaña ya ha terminado, así que no queda nada que detener."
+  },
+  "alertCampaignStopFailed": {
+    "message": "No se pudo detener la campaña. Inténtalo de nuevo y escribe a support@getoutmass.com si sigue fallando."
+  },
   "resumeQueued": {
     "message": "$N$ destinatario(s) en cola para reenvío.",
     "placeholders": {

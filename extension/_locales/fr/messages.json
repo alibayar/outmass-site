@@ -1077,6 +1077,24 @@
   "btnResumeCampaign": {
     "message": "Reprendre l'envoi"
   },
+  "stopHint": {
+    "message": "Cette campagne est encore en cours. L'arrêter signifie que personne d'autre ne la recevra — les destinataires déjà atteints ne peuvent pas être annulés."
+  },
+  "btnStopCampaign": {
+    "message": "Arrêter la campagne"
+  },
+  "confirmStopCampaign": {
+    "message": "$1 personnes ont déjà reçu cette campagne et cela ne peut pas être annulé. L'arrêter maintenant pour que personne d'autre ne la reçoive ?"
+  },
+  "alertCampaignStopped": {
+    "message": "Campagne arrêtée. $1 personnes ont été atteintes ; $2 ne seront pas contactées."
+  },
+  "alertCampaignNotStoppable": {
+    "message": "Cette campagne est déjà terminée, il n'y a plus rien à arrêter."
+  },
+  "alertCampaignStopFailed": {
+    "message": "Impossible d'arrêter la campagne. Réessayez, et écrivez à support@getoutmass.com si cela persiste."
+  },
   "resumeQueued": {
     "message": "$N$ destinataire(s) en file d'attente pour renvoi.",
     "placeholders": {

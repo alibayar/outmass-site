@@ -2,6 +2,20 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.3.2 — 2026-09-01
+
+- **You can stop a campaign.** Until today you could not — not from the panel,
+  not from anywhere. A campaign that was scheduled or part-way through simply
+  ran to the end. There is now a Stop button on the campaign's report, and it
+  tells you how many people have already received it **before** you confirm,
+  because that is the one part nobody can take back.
+
+- **Scheduled campaigns keep your line breaks.** A campaign you scheduled was
+  sent without the conversion that turns your paragraphs into email
+  formatting, so it arrived as a single block even though the preview looked
+  right. Sending immediately was never affected. This is fixed for scheduled
+  campaigns and for follow-ups.
+
 ## v0.3.1 — 2026-09-01
 
 - **A locked feature now tells you what it costs and how to get it.** Turning

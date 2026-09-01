@@ -1077,6 +1077,24 @@
   "btnResumeCampaign": {
     "message": "Göndermeye devam et"
   },
+  "stopHint": {
+    "message": "Bu kampanya hâlâ sürüyor. Durdurmak, başka kimsenin almayacağı anlamına gelir — ulaşılmış kişiler geri alınamaz."
+  },
+  "btnStopCampaign": {
+    "message": "Kampanyayı durdur"
+  },
+  "confirmStopCampaign": {
+    "message": "$1 kişi bu kampanyayı çoktan aldı ve geri alınamaz. Başka kimse almasın diye şimdi durdurulsun mu?"
+  },
+  "alertCampaignStopped": {
+    "message": "Kampanya durduruldu. $1 kişiye ulaşıldı; $2 kişiye gönderilmeyecek."
+  },
+  "alertCampaignNotStoppable": {
+    "message": "Bu kampanya zaten tamamlanmış, durdurulacak bir şey kalmamış."
+  },
+  "alertCampaignStopFailed": {
+    "message": "Kampanya durdurulamadı. Lütfen tekrar deneyin; sürerse support@getoutmass.com adresine yazın."
+  },
   "resumeQueued": {
     "message": "$N$ alıcı yeniden gönderim için sıraya alındı.",
     "placeholders": {

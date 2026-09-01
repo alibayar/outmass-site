@@ -1369,6 +1369,70 @@ async def unarchive_campaign(
     return {"campaign_id": campaign_id, "archived": False}
 
 
+# Statuses a campaign can still be stopped FROM. Everything else has already
+# finished or already been stopped, and offering to stop it would promise
+# something that does not happen.
+STOPPABLE_STATUSES = {
+    "scheduled", "sending", "partial", "pending",
+    "ab_testing", "awaiting_winner", "sending_winner",
+    "testing", "active", "failed_auth",
+}
+
+
+@router.post("/{campaign_id}/stop")
+async def stop_campaign(
+    campaign_id: str,
+    user: dict = Depends(get_current_user),
+):
+    """Stop a campaign that is running, scheduled, or part-way through.
+
+    There was no way to do this until 2026-09-01. A customer discovered that
+    five recipients into a 66-person send and told us her only remaining
+    option was to close her account — which was accurate.
+
+    Two writes, and both are needed. `status='cancelled'` takes it out of
+    `get_due_scheduled_campaigns`, which selects `status='scheduled'`.
+    `archived=true` takes it out of `get_resumable_partial_campaigns`, so the
+    auto-resume beat cannot pick it back up — and it is also what makes the
+    follow-up worker cancel any pending follow-up for this campaign
+    (`followup_worker.py:85`), because a bump for a campaign someone has
+    stopped is the same mistake in slow motion.
+
+    What this cannot do is un-send. The response says how many were already
+    reached so the panel can say it plainly rather than implying a clean undo.
+    """
+    campaign = campaign_model.get_campaign(campaign_id)
+    if not campaign or campaign["user_id"] != user["id"]:
+        raise HTTPException(status_code=404, detail="Campaign not found")
+
+    status = campaign.get("status")
+    if status not in STOPPABLE_STATUSES:
+        # 409 rather than a quiet 200: the caller believes something is
+        # running, and it is not. Saying "stopped" would be a lie about a
+        # thing they care about.
+        raise HTTPException(
+            status_code=409,
+            detail={"error": "not_stoppable", "status": status},
+        )
+
+    already_sent = campaign.get("sent_count") or 0
+    remaining = contact_model.count_resumable_contacts(campaign_id)
+
+    campaign_model.update_campaign(
+        campaign_id, {"status": "cancelled", "archived": True}
+    )
+    logging.getLogger(__name__).warning(
+        "campaign %s stopped by its owner: %s already sent, %s not contacted",
+        campaign_id, already_sent, remaining,
+    )
+    return {
+        "campaign_id": campaign_id,
+        "stopped": True,
+        "already_sent": already_sent,
+        "not_contacted": remaining,
+    }
+
+
 @router.post("/{campaign_id}/resume")
 async def resume_campaign(
     campaign_id: str,
