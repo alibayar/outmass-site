@@ -11,7 +11,7 @@ production code path *proved* it — not that somebody remembers it.
 
 | migration | applied | verified |
 |---|---|---|
-| 034_sender_logo_url | 2026-09-01, Ali (in chat) | ⏳ awaiting a named SELECT — see below. Ali reported it ran; nothing has read the column yet, and `.get("sender_logo_url")` would return None whether the column exists or not, so the report alone is not verification. |
+| 034_sender_logo_url | 2026-09-01, Ali (in chat) | ✅ 2026-09-02 — `SELECT email, sender_logo_url FROM users WHERE email = 'bayar_ali@hotmail.com';` answered in the Supabase editor with one row, `sender_logo_url` NULL. A named SELECT: a missing column errors rather than returning NULL, so the answer itself is the proof. Not yet proven to accept WRITES — the second query below covers that once a logo has been saved from Settings. |
 | 033_follow_up_sends | 2026-08-30, Ali (in chat) | ✅ 2026-08-30 — `SELECT count(*) FROM follow_up_sends;` returned 0 in the Supabase editor. A named SELECT on the table itself: if it did not exist the statement would have errored rather than answered. |
 | 032_comp_plan | 2026-08-30, Ali (in chat) | ✅ 2026-08-30 — a named SELECT in the Supabase editor returned `comp_plan` and `comp_plan_until` WITH VALUES for Helene@circularworkplaces.com (`pro`, `2026-09-28`), which proves both columns exist and accept writes. Stronger than information_schema: a `.get()` path could not have produced that row. |
 | 024_mail_read_scope_flag | before 2026-08-28, Ali (date unrecorded) | ✅ 2026-08-28 — information_schema query on `user_tokens.has_mail_read_scope` run by Ali in the Supabase SQL editor: `true` |
