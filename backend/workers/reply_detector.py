@@ -64,7 +64,12 @@ from datetime import datetime, timedelta, timezone
 
 import httpx
 
-from config import GRAPH_API_BASE, OUTBOUND_HTTP_TIMEOUT
+from config import GRAPH_API_BASE, OUTBOUND_HTTP_TIMEOUT, SUPABASE_MAX_ROWS
+
+# How many campaign ids go into one `in_` filter. PostgREST puts the whole
+# list in the query string, and a user with hundreds of campaigns would
+# otherwise build a URL long enough to be refused by something in the middle.
+CAMPAIGN_ID_CHUNK = 100
 from models import audit
 from models.ms_token import get_fresh_access_token
 from workers.celery_app import celery
@@ -156,24 +161,68 @@ def _find_replies_for_user(
     since_dt = datetime.now(timezone.utc) - timedelta(days=REPLY_LOOKBACK_DAYS)
     since_iso = since_dt.strftime("%Y-%m-%dT%H:%M:%SZ")
 
-    # Pull contacts with sent_at >= cutoff and replied_at IS NULL.
-    # We need their email + earliest sent_at to match against incoming
-    # messages. Limited to recent campaigns — older ones don't get
-    # back-filled (acceptable for reply detection; replies arrive
-    # within days for most use cases).
+    # The user's own campaigns FIRST, then the contacts inside them.
+    #
+    # This used to run the other way round: contacts were pulled with no user
+    # filter and no limit, so PostgREST returned the first SUPABASE_MAX_ROWS
+    # rows of the entire table and the loop below filtered them down to this
+    # user afterwards. Every user therefore scanned the same global page, and
+    # anyone whose contacts fell outside it was invisible to reply detection —
+    # which, across 2,795 recipients emailed in a recent 30-day window, was
+    # most of them.
+    #
+    # It is not only a wrong number in Reports. followup_worker excludes
+    # contacts by replied_at, so a missed reply means we chase somebody who
+    # already answered, from their correspondent's own mailbox.
     try:
-        contacts_resp = (
-            db.table("contacts")
-            .select("id, email, sent_at, campaign_id")
-            .gte("sent_at", since_iso)
-            .is_("replied_at", "null")
+        camps_resp = (
+            db.table("campaigns")
+            .select("id")
+            .eq("user_id", user_id)
+            .limit(SUPABASE_MAX_ROWS)
             .execute()
         )
+    except Exception as e:  # noqa: BLE001
+        logger.warning("reply detector: campaigns query failed for %s: %s", user_id, e)
+        return 0
+
+    user_camp_ids = [c["id"] for c in camps_resp.data or []]
+    if not user_camp_ids:
+        return 0
+    if len(user_camp_ids) >= SUPABASE_MAX_ROWS:
+        logger.error(
+            "reply detector: user %s has at least %s campaigns — the campaign "
+            "read is at the server ceiling and the scan below will miss the "
+            "rest", user_id, SUPABASE_MAX_ROWS,
+        )
+
+    # Chunked so a user with many campaigns cannot overflow the request URL.
+    contacts: list[dict] = []
+    try:
+        for i in range(0, len(user_camp_ids), CAMPAIGN_ID_CHUNK):
+            chunk = user_camp_ids[i:i + CAMPAIGN_ID_CHUNK]
+            resp = (
+                db.table("contacts")
+                .select("id, email, sent_at, campaign_id")
+                .in_("campaign_id", chunk)
+                .gte("sent_at", since_iso)
+                .is_("replied_at", "null")
+                .limit(SUPABASE_MAX_ROWS)
+                .execute()
+            )
+            rows = resp.data or []
+            if len(rows) >= SUPABASE_MAX_ROWS:
+                logger.error(
+                    "reply detector: contact read for user %s came back at the "
+                    "%s-row ceiling and is probably truncated — some replies "
+                    "will be missed this run",
+                    user_id, SUPABASE_MAX_ROWS,
+                )
+            contacts.extend(rows)
     except Exception as e:  # noqa: BLE001
         logger.warning("reply detector: contact query failed for %s: %s", user_id, e)
         return 0
 
-    contacts = contacts_resp.data or []
     if not contacts:
         return 0
 
@@ -181,42 +230,19 @@ def _find_replies_for_user(
     # ordered earliest-first. A user campaigning the same recipient
     # twice (different campaigns) gets BOTH stamped if the reply
     # arrives after both sent_at's.
+    #
+    # No user filter here any more: the query above is already scoped to this
+    # user's campaigns, which is what makes it fit in a page at all.
     by_email: dict[str, list[dict]] = {}
     for c in contacts:
         email = (c.get("email") or "").lower().strip()
         if not email or not c.get("sent_at"):
             continue
-        # Filter contacts that belong to THIS user — query above doesn't
-        # join on user_id (would require a campaigns.user_id pre-fetch).
-        # We rely on contacts.campaign_id being present + we'll cross-
-        # check via the user's own campaign list separately. The simpler
-        # alternative is a 2-step query; below we just do that.
         by_email.setdefault(email, []).append({
             "id": c["id"],
             "sent_at": c["sent_at"],
             "campaign_id": c["campaign_id"],
         })
-
-    if not by_email:
-        return 0
-
-    # 2-step user filter: get the user's own campaign IDs, then drop
-    # any contact whose campaign isn't ours.
-    try:
-        camps_resp = (
-            db.table("campaigns")
-            .select("id")
-            .eq("user_id", user_id)
-            .execute()
-        )
-    except Exception as e:  # noqa: BLE001
-        logger.warning("reply detector: campaigns query failed for %s: %s", user_id, e)
-        return 0
-    user_camp_ids = {c["id"] for c in camps_resp.data or []}
-    for email in list(by_email.keys()):
-        by_email[email] = [c for c in by_email[email] if c["campaign_id"] in user_camp_ids]
-        if not by_email[email]:
-            del by_email[email]
 
     if not by_email:
         return 0
