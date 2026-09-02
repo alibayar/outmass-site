@@ -156,3 +156,28 @@ trickle them.
 If pricing or features change, update **all entries** in `listings.json`, run
 the limits check, and re-paste the affected localized listings in BOTH
 dashboards. Store copy only claims what is LIVE (claims-follow-product rule).
+
+## Two audience lines rescued from `softonic-en.txt`
+
+That file was deleted on 2026-09-03: an unvalidated second paste source that
+nothing regenerated, so it had drifted into carrying two claims we had already
+corrected here. `check-limits.js` had started failing on its existence alone.
+
+Four of its lines were not in `listings.json`. Two were the stale claims. The
+other two are original copy that was never folded in, and they are kept here
+rather than lost with the file:
+
+> • Organisations emailing their own list — schools to parents, suppliers to
+>   customers, associations to members
+> • PR and agency teams reaching journalists or clients from their existing
+>   mailbox
+
+The first is the interesting one. Every audience bullet we ship describes cold
+outreach — founders, SDRs, agencies running client campaigns. This one
+describes the opposite case: a list that already expects to hear from you.
+Schools, suppliers and associations have the sending problem without the
+deliverability anxiety, and nothing in the current listing speaks to them.
+
+Not adopted, because a BUILT FOR bullet is a claim about who we are for and
+that is a positioning decision, not a copy edit. Worth a look next time the
+listing is opened.
