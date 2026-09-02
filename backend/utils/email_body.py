@@ -33,6 +33,7 @@ uploaded. This module is the one place that decision is made, so the three
 send paths cannot drift apart again.
 """
 import re
+from html import unescape as _html_unescape
 
 # `<` followed by a letter, `!` or `/` — enough to recognise authored markup
 # without catching "a < b" or "<3".
@@ -152,6 +153,28 @@ _URL_TRAIL = ".,;:!?)]}'\""
 # anchors AND on tags means we never rewrite an href, an alt, or the text
 # between <a> and </a>.
 _SKIP_RE = re.compile(r"(<a\b[^>]*>.*?</a>|<[^>]+>)", re.IGNORECASE | re.DOTALL)
+
+
+_ENTITY_RE = re.compile(r"&(#\d{1,7}|#[xX][0-9a-fA-F]{1,6}|[A-Za-z][A-Za-z0-9]{1,31});")
+
+
+def unescape_href(url: str) -> str:
+    """Decode the HTML entities in an href, and nothing else.
+
+    An href lives in HTML, so `?a=1&b=2` is written `?a=1&amp;b=2` and has to
+    be decoded before the address is percent-encoded for the click redirect —
+    otherwise the reader lands on a parameter named `amp;b`.
+
+    `html.unescape` is the wrong tool for that. It also decodes 106 legacy
+    entities that need no semicolon, so `?a=1&region=eu` becomes `?a=1®ion=eu`
+    and `&notify=`, `&section=`, `&copy=` go the same way. That would have
+    replaced one broken-link bug with a narrower one — hand-typed HTML instead
+    of typed plain text.
+
+    Requiring the semicolon is the whole difference: `&amp;` decodes, a query
+    parameter that merely begins with letters does not.
+    """
+    return _ENTITY_RE.sub(lambda m: _html_unescape(m.group(0)), url or "")
 
 
 def autolink(html: str) -> str:

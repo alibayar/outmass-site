@@ -1358,6 +1358,13 @@
 
   function findEmailColumn(headers, dataLines) {
     var i;
+    // A column actually called "email" wins over any alias, wherever it sits.
+    // Otherwise "First Name,Personal Email,Email,Company" resolves to the
+    // private addresses rather than the work ones — a wrong send, and mail
+    // cannot be recalled.
+    for (i = 0; i < headers.length; i++) {
+      if (normaliseHeader(headers[i]) === "email") return i;
+    }
     for (i = 0; i < headers.length; i++) {
       if (EMAIL_HEADER_NAMES.indexOf(normaliseHeader(headers[i])) > -1) return i;
     }

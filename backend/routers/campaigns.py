@@ -10,10 +10,6 @@ POST /campaigns/{id}/send         → start sending
 import asyncio
 import base64
 import csv
-# Imported as a name, not as `html`: _wrap_links's own parameter is called
-# `html`, so the module would be shadowed inside the one function that
-# needs it — an AttributeError on every tracked click.
-from html import unescape as html_unescape
 import io
 import logging
 import re
@@ -51,7 +47,7 @@ from models import user as user_model
 from routers.auth import get_current_user
 from utils import csv_headers, welcome_email
 from utils.client_version import client_at_least
-from utils.email_body import render_body
+from utils.email_body import render_body, unescape_href
 from utils.merge_tags import (
     CONTACT_TAGS,
     build_merge_context,
@@ -2122,7 +2118,7 @@ def _wrap_links(html: str, contact_id: str) -> str:
         # link is written "?a=1&amp;b=2". Encoding that as-is sends the
         # click to a parameter literally named "amp;b". Plain-text bodies
         # reach this too since autolink started escaping ampersands.
-        encoded = urllib.parse.quote(html_unescape(original_url), safe="")
+        encoded = urllib.parse.quote(unescape_href(original_url), safe="")
         tracked = f"{BACKEND_URL}/c/{contact_id}?url={encoded}"
         return f'href="{tracked}"'
 

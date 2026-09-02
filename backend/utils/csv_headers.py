@@ -64,6 +64,18 @@ def find_email_column(headers, sample_rows) -> int:
     """
     headers = list(headers or [])
 
+    # A column actually called "email" wins over any alias, wherever it sits.
+    # Without this the name pass returned the first alias it met, so a sheet
+    # headed "First Name,Personal Email,Email,Company" mailed the private
+    # addresses instead of the work ones — silently, with a 200, on a file
+    # every panel accepts today. "Name,Mail,Email" was worse: a postal "Mail"
+    # column made every row invalid and produced a campaign with no
+    # recipients. Aliases exist to widen what we accept, never to outrank the
+    # column the user named plainly.
+    for i, header in enumerate(headers):
+        if normalise_header(header) == "email":
+            return i
+
     for i, header in enumerate(headers):
         if normalise_header(header) in EMAIL_HEADER_NAMES:
             return i

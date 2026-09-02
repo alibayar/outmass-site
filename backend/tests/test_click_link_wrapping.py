@@ -89,3 +89,30 @@ def test_a_percent_sign_in_the_url_is_not_double_decoded(name, wrap):
     encoded = "https://example.com/Q3%20report.pdf"
     dest = _destination(wrap(f'<a href="{encoded}">x</a>', "c1"))
     assert dest == encoded, f"{name}: {dest}"
+
+
+# ── the entity decoder, which is where the first fix went wrong ──
+
+
+@pytest.mark.parametrize("name,wrap", _wrappers(), ids=lambda v: v if isinstance(v, str) else "")
+@pytest.mark.parametrize("param", ["region", "notify", "section", "copy", "notes",
+                                   "register", "times", "sum", "part", "not"])
+def test_a_parameter_that_starts_like_an_entity_is_left_alone(name, wrap, param):
+    """The first version of this fix used html.unescape, which decodes 106
+    legacy entities WITHOUT a trailing semicolon. So `?a=1&region=eu` became
+    `?a=1(r)ion=eu` — the ampersand bug fixed in one direction and reopened in
+    another, this time for anyone who pastes HTML with a raw `&`.
+
+    Requiring the semicolon is the whole difference.
+    """
+    url = f"https://acme.com/x?a=1&{param}=eu"
+    dest = _destination(wrap(f'<a href="{url}">x</a>', "c1"))
+    assert dest == url, f"{name}: {param} was eaten -> {dest}"
+
+
+@pytest.mark.parametrize("name,wrap", _wrappers(), ids=lambda v: v if isinstance(v, str) else "")
+def test_real_entities_are_still_decoded(name, wrap):
+    """The reason the decoder exists at all."""
+    dest = _destination(
+        wrap('<a href="https://acme.com/x?a=1&amp;b=2&#38;c=3">x</a>', "c1"))
+    assert dest == "https://acme.com/x?a=1&b=2&c=3", f"{name}: {dest}"

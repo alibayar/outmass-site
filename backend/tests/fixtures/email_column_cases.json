@@ -59,6 +59,13 @@
     { "header": " kontakt ,Name", "rows": ["a@b.com,Ada", "c@d.com,Bo", "e@f.com,Cy"], "expect": 0,
       "why": "padded AND unlisted, so only the content pass can answer. The server keys rows by the header AS WRITTEN, so sampling by the trimmed name reads back nothing and this is the only case that catches it" },
     { "header": "First Name,Last Name,Email Address,Company", "rows": ["Ada,X,a@b.com,Acme", "Bo,Y,c@d.com,Beta", "Cy,Z,e@f.com,Gamma"], "expect": 2,
-      "why": "the exact shape of the file in the 0.3.3 review: accepted by the panel, 400'd by the server" }
+      "why": "the exact shape of the file in the 0.3.3 review: accepted by the panel, 400'd by the server" },
+
+    { "header": "First Name,Personal Email,Email,Company", "rows": ["Ada,ada.private@gmail.com,ada@acme.com,Acme"], "expect": 2,
+      "why": "a plainly-named 'email' column outranks any alias, wherever it sits. First-match sent this campaign to the private addresses — a wrong send, and mail cannot be recalled" },
+    { "header": "Contact Email,Email,Name", "rows": ["reception@acme.com,ada@acme.com,Ada"], "expect": 1,
+      "why": "same rule when the alias is first: the person, not reception" },
+    { "header": "Name,Mail,Email", "rows": ["Ada,Yes,a@b.com", "Bo,No,c@d.com", "Cy,Yes,e@f.com"], "expect": 2,
+      "why": "'Mail' as a postal or yes/no column. First-match picked it, every row came out invalid, and the user got a campaign with no recipients from a file that worked the day before" }
   ]
 }
