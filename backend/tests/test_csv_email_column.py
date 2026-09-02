@@ -100,12 +100,19 @@ def _csv_text(header, *rows):
     return NL.join((header,) + rows) + NL
 
 
-def _upload(client, fake_db, csv_string, cid="cE1"):
+# The panel that ships this detection. An older one keeps the parsing it was
+# written against — see CSV_COLUMN_DETECT_MIN_CLIENT in config.py.
+NEW_PANEL = "0.3.3"
+OLD_PANEL = "0.3.2"
+
+
+def _upload(client, fake_db, csv_string, cid="cE1", version=NEW_PANEL):
     fake_db.set_table("campaigns", FakeQueryBuilder(data=[_campaign(cid)]))
+    headers = {"X-Extension-Version": version} if version else {}
     with patch("routers.campaigns.contact_model.bulk_insert",
                return_value=INSERTED) as bi:
         resp = client.post(f"/campaigns/{cid}/contacts",
-                           json={"csv_string": csv_string})
+                           json={"csv_string": csv_string}, headers=headers)
     return resp, bi
 
 
@@ -187,3 +194,84 @@ def test_the_resolved_column_is_stored_under_the_key_everything_reads(
     # The other columns must survive as merge tags exactly as before.
     assert rows[0]["First Name"] == "Ada"
     assert rows[0]["Company"] == "Acme"
+
+
+# ── the version gate: an installed panel keeps the parsing it was built on ──
+
+
+def test_an_old_panel_is_parsed_exactly_as_before(client, fake_db, auth_bypass):
+    """0.3.2 refuses a file without a literal "email" header on its own side,
+    so it never sends one the old server would have rejected. The new passes
+    could therefore only ever CHANGE which column an already-working file
+    resolves to — all risk, no benefit — until the panel that needs them is
+    actually published."""
+    resp, _ = _upload(client, fake_db, ATS_FILE, version=OLD_PANEL)
+    assert resp.status_code == 400, (
+        "an 0.3.2 panel got the new detection. That panel cannot send this "
+        "file anyway, and the change only alters files it CAN send."
+    )
+
+
+@pytest.mark.parametrize("version", [OLD_PANEL, "0.3.1", "0.2.9", "0.1.0"])
+def test_every_shipped_panel_below_the_gate_keeps_its_behaviour(
+    client, fake_db, auth_bypass, version
+):
+    resp, _ = _upload(client, fake_db, ATS_FILE, version=version)
+    assert resp.status_code == 400, f"{version} was given the new detection"
+
+
+@pytest.mark.parametrize("version", [None, "", "banana", "0.3", "not.a.version"])
+def test_an_unknown_client_is_treated_as_old(client, fake_db, auth_bypass, version):
+    """Absent, empty or unparseable is a client we cannot vouch for. There is
+    no version of this argument where guessing "probably new" is the safe
+    half — the wrong guess mails the wrong column."""
+    resp, _ = _upload(client, fake_db, ATS_FILE, version=version)
+    assert resp.status_code == 400, f"{version!r} was treated as new"
+
+
+@pytest.mark.parametrize("version", ["0.3.3", "0.3.3.1", "0.3.4", "0.4.0", "1.0.0"])
+def test_the_gate_opens_from_its_client_on(client, fake_db, auth_bypass, version):
+    resp, _ = _upload(client, fake_db, ATS_FILE, version=version)
+    assert resp.status_code == 200, f"{version} did not get the new detection"
+
+
+def test_the_gate_matches_the_version_being_shipped():
+    """The gate is worthless if it names a version that is not the one going
+    to the stores — it would either open for nobody or open a release early."""
+    import json as _json
+    import pathlib as _pathlib
+
+    from config import CSV_COLUMN_DETECT_MIN_CLIENT
+
+    manifest = _json.loads(
+        (_pathlib.Path(__file__).parents[2] / "extension" / "manifest.json")
+        .read_text(encoding="utf-8")
+    )
+    shipping = tuple(int(p) for p in manifest["version"].split("."))
+    assert tuple(CSV_COLUMN_DETECT_MIN_CLIENT) <= shipping, (
+        f"the gate opens at {CSV_COLUMN_DETECT_MIN_CLIENT} but the extension "
+        f"is {manifest['version']} — the panel ships a detector the server "
+        f"will not honour, which is the exact split this gate exists to end"
+    )
+
+
+def test_an_old_panel_still_uploads_the_files_it_always_could(
+    client, fake_db, auth_bypass
+):
+    """The gate must not break the path 66 users are on right now."""
+    resp, bi = _upload(client, fake_db, _csv_text(
+        "email,First Name,Company", "ada@acme.com,Ada,Acme"), version=OLD_PANEL)
+    assert resp.status_code == 200, resp.text
+    rows = bi.call_args.args[1]
+    assert rows[0]["email"] == "ada@acme.com"
+    assert rows[0]["First Name"] == "Ada"
+
+
+def test_the_old_path_keeps_its_case_insensitive_match(client, fake_db, auth_bypass):
+    """"Email" and "EMAIL" worked before and must keep working — the gate is
+    a freeze of the old behaviour, not a stricter version of it."""
+    for header in ("Email", "EMAIL", "eMaIl"):
+        resp, bi = _upload(client, fake_db, _csv_text(
+            f"{header},Name", "ada@acme.com,Ada"), version=OLD_PANEL)
+        assert resp.status_code == 200, f"{header}: {resp.text}"
+        assert bi.call_args.args[1][0]["email"] == "ada@acme.com", header

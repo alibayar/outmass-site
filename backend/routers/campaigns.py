@@ -34,6 +34,7 @@ from config import (
     SEND_DELAY_SECONDS,
     SUPABASE_MAX_ROWS,
     FOLLOWUP_LOCKED_MIN_CLIENT,
+    CSV_COLUMN_DETECT_MIN_CLIENT,
     upload_limit_for_plan,
     MAX_CSV_SIZE_BYTES,
 )
@@ -662,41 +663,75 @@ async def upload_contacts(
         # headers, so storage must agree with them (0.1.26 review finding).
         raw_fieldnames = list(reader.fieldnames or [])
         fieldnames = [(h or "").strip() for h in raw_fieldnames]
-        # A.2: Mandatory address column. Found by name OR by contents — the
-        # panel has done this since 2026-09-02 and a server that still
-        # demanded the literal word "email" turned the accepted file into a
-        # 400 AFTER the campaign row existed, in English, in every locale.
-        #
-        # Sampled by the RAW header: DictReader keys rows by the header as
-        # written, so " email" would read back as nothing if we looked it up
-        # by its trimmed name — and a padded header is exactly the case the
-        # trimming above exists for.
         rows = list(reader)
-        sample = [
-            [row.get(name) for name in raw_fieldnames]
-            for row in rows[:csv_headers.SAMPLE_ROWS]
-        ]
-        email_idx = csv_headers.find_email_column(fieldnames, sample)
-        if email_idx < 0:
-            raise HTTPException(
-                status_code=400,
-                detail="Column 'email' is required in the CSV header",
-            )
-        email_field = fieldnames[email_idx]
-        for row in rows:
-            normalized: dict = {}
-            for k, v in row.items():
-                key = (k or "").strip()
-                if not key:
-                    continue
-                # The resolved column becomes "email" whatever it was called,
-                # so every downstream reader — merge tags, dedupe, the
-                # suppression check — keeps the one key it has always used.
-                if key == email_field:
-                    normalized["email"] = v
-                else:
-                    normalized[key] = v
-            contacts.append(normalized)
+
+        # A.2: Mandatory address column.
+        #
+        # Which panel is asking decides how it is found. From
+        # CSV_COLUMN_DETECT_MIN_CLIENT on, by header name OR by what the
+        # column contains — that panel accepts "Email Address", "Eposta" and
+        # "邮箱" at the file picker, and a server still demanding the literal
+        # word "email" would turn an accepted file into a 400 AFTER the
+        # campaign row existed, in English, in every locale.
+        #
+        # Older panels get exactly the parsing they were written against.
+        # They enforce a literal "email" header themselves, so the new passes
+        # could only ever change which column an already-working file resolves
+        # to — never rescue one. That is all risk and no benefit for them.
+        if client_at_least(x_extension_version, CSV_COLUMN_DETECT_MIN_CLIENT):
+            # Sampled by the RAW header: DictReader keys rows by the header as
+            # written, so " email" would read back as nothing if we looked it
+            # up by its trimmed name — and a padded header is exactly the case
+            # the trimming above exists for.
+            sample = [
+                [row.get(name) for name in raw_fieldnames]
+                for row in rows[:csv_headers.SAMPLE_ROWS]
+            ]
+            email_idx = csv_headers.find_email_column(fieldnames, sample)
+            if email_idx < 0:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Column 'email' is required in the CSV header",
+                )
+            email_field = fieldnames[email_idx]
+            for row in rows:
+                normalized: dict = {}
+                for k, v in row.items():
+                    key = (k or "").strip()
+                    if not key:
+                        continue
+                    # The resolved column becomes "email" whatever it was
+                    # called, so every downstream reader — merge tags, dedupe,
+                    # the suppression check — keeps the one key it has always
+                    # used.
+                    if key == email_field:
+                        normalized["email"] = v
+                    else:
+                        normalized[key] = v
+                contacts.append(normalized)
+        else:
+            # Byte-for-byte the parsing that shipped before 2026-09-02. Not
+            # "the same idea" — the same code, so there is no divergence left
+            # to reason about for a panel already installed on someone's
+            # machine. It even keeps the last-wins behaviour when a file
+            # carries both "Email" and "email".
+            lowered = [h.lower() for h in fieldnames]
+            if "email" not in lowered:
+                raise HTTPException(
+                    status_code=400,
+                    detail="Column 'email' is required in the CSV header",
+                )
+            for row in rows:
+                normalized: dict = {}
+                for k, v in row.items():
+                    key = (k or "").strip()
+                    if not key:
+                        continue
+                    if key.lower() == "email":
+                        normalized["email"] = v
+                    else:
+                        normalized[key] = v
+                contacts.append(normalized)
 
     elif body.contacts:
         contacts = body.contacts

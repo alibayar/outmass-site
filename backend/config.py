@@ -395,6 +395,24 @@ FIRST_SIGNIN_MIN_CLIENT = (0, 3, 0)
 # getting the 402 and its alert.
 FOLLOWUP_LOCKED_MIN_CLIENT = (0, 3, 1)
 
+# From this client on, the address column is found by header name OR by what
+# the column contains. Below it, a header spelled exactly "email" is required,
+# which is what every panel up to 0.3.2 enforces on its own side before
+# uploading anything.
+#
+# The gate is here because the change has no upside for an older panel and a
+# real downside. 0.3.2 refuses a file without a literal "email" header at the
+# file picker, so it never sends one the old server would reject — the alias
+# and content passes would only ever CHANGE which column an already-working
+# file resolves to. A file headed "First Name,Personal Email,Email,Company"
+# would have gone to the private addresses instead of the work ones, silently,
+# with a 200 the panel has no way to question. Mail cannot be recalled.
+#
+# So an old panel keeps the parsing it was written against, exactly, and the
+# new parsing arrives with the panel that needs it. Absent or unparseable
+# reads as old, which is the safe half here as everywhere.
+CSV_COLUMN_DETECT_MIN_CLIENT = (0, 3, 3)
+
 
 def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
     """Per-upload CSV row limit for a plan name.
