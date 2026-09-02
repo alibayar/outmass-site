@@ -153,7 +153,41 @@ in the window. It is an old session finally reporting, not a visitor that day.
 
 The lesson repeats: the count was two, the reading was one.
 
-### 🔴 Store listing claims a privacy guarantee the code does not keep
+### 🔴 Store listing claims a privacy guarantee the code does not keep — FIXED IN THE REPO, STILL LIVE IN THE STORE
+
+**Text fixed 2026-09-01 (`3401ee8`) in all twelve locales. Never pasted into
+either store.** Read off the live Chrome listing on 2026-09-03:
+
+> 🔒 VERİLERİNİZ SİZDE KALIR
+> OutMass gönderimleri sizin kendi Microsoft Graph API'nizden OAuth 2.0 ile
+> yapar. **E-postalarınızın içeriği sunucularımızda tutulmaz.**
+
+`create_campaign` writes `subject` and `body` to the `campaigns` table. The
+sentence is still the opposite of what happens, still in twelve languages, and
+still the strongest kind of claim to get wrong. `listings.json` and
+`descriptions/*.txt` both carry the correct replacement and are in sync — the
+only missing step is a human pasting them into Chrome Web Store and Edge
+Partner Center.
+
+> Marked ✅ on 2026-09-03 after I scanned `listings.json`, found no match, and
+> reported it closed. Ali corrected me: *"dosyada güncel olabilir ama ben
+> mağazada güncellemedim."* Reopened.
+>
+> **The repo is not the world.** A claims item is closed when the CLAIM is
+> gone from where people read it, not when the file that generates it is
+> fixed. For store copy the only proof is the live listing — fetch it. That
+> was the second version of the same mistake in one night: first I trusted a
+> backlog marker over the file, then I trusted the file over the store.
+
+**Two more lines on the same paste** (all three ship together, one visit per
+store per language):
+- Reply detection: the store says `günlük Inbox taraması` / "daily Inbox
+  scan"; it has run every six hours since `41e2e44` and the file already says
+  `birkaç saatte bir`.
+- Follow-ups: the store says the old `biri yanıt verdiği anda otomatik durur`.
+  The file says `yanıt verenler atlanır`, and **0.3.3 went live on Chrome on
+  2026-09-03**, so the audience wording needs the 0.3.3 rewrite before this
+  paste — see the follow-up-claim item.
 
 Full checklist, including everything else the Softonic submission turned up:
 `2026-08-25-claims-and-listing-fixes.md`.

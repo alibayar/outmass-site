@@ -10,7 +10,7 @@ OutMass — Outlook 群发邮件工具
 --- SUMMARY / SHORT DESCRIPTION (50/132 characters) ---
 在 Outlook Web 中群发邮件:CSV 合并、打开/点击跟踪、自动跟进邮件以及 AI 写手。
 
---- DESCRIPTION (1123 characters) ---
+--- DESCRIPTION (1139 characters) ---
 将 Outlook Web 打造成专业的群发邮件工具。OutMass 把邮件合并、追踪、自动跟进以及 AI 驱动的文案撰写直接带入 outlook.office.com 与 outlook.live.com——全面支持 Microsoft 365 和个人 Outlook.com 帐户。
 
 ✨ 你可以做什么
@@ -20,7 +20,7 @@ OutMass — Outlook 群发邮件工具
 ⏰ 定时发送(Starter+) — 现在撰写,在最佳时间送达
 🚦 每日发送上限 — 限制每天发送的邮件数量,保护发件人信誉
 ♻️ 自动续发 — 活动进行中用完当月配额?重置后剩余邮件自动发出
-🔁 自动跟进(Pro) — 重新触达未打开的收件人,并跳过已经回复的人
+🔁 自动跟进(Pro) — 默认重新触达未回复的收件人,也可只针对从未打开的人,并始终跳过已经回复的人
 📚 模板库(Starter+) — 保存并复用效果最好的邮件
 🤖 AI 邮件写手 — 根据简短说明生成邮件草稿(Pro,每月 50 次)
 📊 打开和点击追踪 — 像素追踪、点击追踪、退订链接

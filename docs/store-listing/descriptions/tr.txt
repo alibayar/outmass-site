@@ -10,7 +10,7 @@ OutMass — Outlook için Toplu E-posta
 --- SUMMARY / SHORT DESCRIPTION (99/132 characters) ---
 Outlook'u toplu e-posta gücüne dönüştürün. Mail merge, A/B testi, AI yazar. 13 dilde. Aylık $9'dan.
 
---- DESCRIPTION (2546 characters) ---
+--- DESCRIPTION (2595 characters) ---
 Outlook Web'i profesyonel bir toplu e-posta aracına dönüştürün. OutMass; mail merge, takip, otomatik hatırlatma ve yapay zekâ destekli yazımı doğrudan outlook.office.com ve outlook.live.com içine getirir — Microsoft 365 ve kişisel Outlook.com hesaplarıyla tam uyumlu.
 
 ✨ NELER YAPABİLİRSİNİZ
@@ -20,7 +20,7 @@ Outlook Web'i profesyonel bir toplu e-posta aracına dönüştürün. OutMass; m
 ⏰ Zamanlanmış gönderim (Starter+) — şimdi yazın, ideal saatte gönderilsin
 🚦 Günlük gönderim limiti — gönderen itibarınızı korumak için günde kaç e-posta gideceğini sınırlayın
 ♻️ Otomatik devam — kampanya ortasında aylık kotanız doldu mu? Kalanlar kotanız yenilendikten sonra otomatik gönderilir
-🔁 Otomatik takip e-postaları (Pro) — açmayanlara yeniden ulaşın, yanıt verenler atlanır
+🔁 Otomatik takip e-postaları (Pro) — yanıt vermeyenlere veya yalnızca hiç açmayanlara yeniden ulaşın; yanıt verenler her durumda atlanır
 📚 Şablon kütüphanesi (Starter+) — en iyi e-postalarınızı kaydedip tekrar kullanın
 🤖 AI E-posta Yazarı — kısa bir özetten e-posta taslağı oluşturur (Pro, ayda 50)
 📊 Açılma ve tıklama takibi — pixel, tıklama, abonelikten çıkma bağlantısı

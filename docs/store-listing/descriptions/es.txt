@@ -10,7 +10,7 @@ OutMass — Email Masivo para Outlook
 --- SUMMARY / SHORT DESCRIPTION (121/132 characters) ---
 Envía campañas de email masivo desde Outlook Web con mail merge CSV, seguimientos automáticos y seguimiento de aperturas.
 
---- DESCRIPTION (2790 characters) ---
+--- DESCRIPTION (2820 characters) ---
 Convierte Outlook Web en una herramienta profesional de email masivo. OutMass lleva mail merge, seguimiento, recordatorios automáticos y redacción con IA directamente a outlook.office.com y outlook.live.com — con soporte completo para Microsoft 365 y Outlook.com personal.
 
 ✨ QUÉ PUEDES HACER
@@ -20,7 +20,7 @@ Convierte Outlook Web en una herramienta profesional de email masivo. OutMass ll
 ⏰ Envío programado (Starter+) — escribe ahora, entrega en el momento ideal
 🚦 Límite de envío diario — limita cuántos emails salen cada día para proteger tu reputación como remitente
 ♻️ Reanudación automática — ¿Alcanzaste tu cuota mensual a mitad de campaña? El resto se envía automáticamente tras el reinicio de tu cuota
-🔁 Seguimientos automáticos (Pro) — vuelve a contactar a quienes no abrieron, y omite a quienes ya han respondido
+🔁 Seguimientos automáticos (Pro) — vuelve a contactar a quienes no han respondido, o solo a quienes nunca abrieron. Se omite a quien responde.
 📚 Biblioteca de plantillas (Starter+) — guarda y reutiliza tus mejores correos
 🤖 AI Email Writer — redacta tu correo a partir de una breve descripción (Pro, 50/mes)
 📊 Seguimiento de aperturas y clics — píxel, clics, enlace de baja
