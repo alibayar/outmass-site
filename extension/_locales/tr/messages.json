@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "Logo adresi https:// ile başlamalıdır."
+  },
+  "detailShowMessage": {
+    "message": "Gönderilen e-postayı göster"
+  },
+  "detailSubjectLabel": {
+    "message": "Konu"
+  },
+  "detailBodyLabel": {
+    "message": "İçerik"
+  },
+  "detailMessageHint": {
+    "message": "Bu, metnin sizin yazdığınız hâli. Birleştirme etiketleri, her e-posta gönderilirken o alıcıya göre doldurulur."
+  },
+  "sendDaysLabel": {
+    "message": "Gönderim yapılabilecek günler"
+  },
+  "sendDaysHint": {
+    "message": "Her gün gönderim yapılması için hepsini işaretli bırakın. Cumartesi ve Pazar günlerinin işaretini kaldırmak, günlere yayılan bir kampanyayı iş günleriyle sınırlar."
   }
 }

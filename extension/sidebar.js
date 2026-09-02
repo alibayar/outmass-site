@@ -1797,6 +1797,51 @@
     if (ok) img.src = url.trim();
   }
 
+  // ── which days a campaign may send on ──
+  //
+  // ISO weekdays, 1 = Monday .. 7 = Sunday, matching campaigns.send_days and
+  // Python's isoweekday(). The labels come from Intl in the panel's own
+  // language rather than from fourteen locale files.
+  function renderSendDays() {
+    var host = document.getElementById("send-days");
+    if (!host || host.childElementCount) return;
+    var locale = (typeof getActiveLocale === "function" && getActiveLocale()) || "en";
+    var fmt;
+    try {
+      fmt = new Intl.DateTimeFormat(locale, { weekday: "short" });
+    } catch (e) {
+      fmt = null;
+    }
+    // 2026-09-07 is a Monday, so +i walks Monday..Sunday in ISO order.
+    for (var i = 0; i < 7; i++) {
+      var iso = i + 1;
+      var d = new Date(Date.UTC(2026, 8, 7 + i));
+      var label = fmt ? fmt.format(d) : ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"][i];
+      var wrap = document.createElement("label");
+      wrap.className = "send-day";
+      var box = document.createElement("input");
+      box.type = "checkbox";
+      box.checked = true;
+      box.value = String(iso);
+      wrap.appendChild(box);
+      wrap.appendChild(document.createTextNode(" " + label));
+      host.appendChild(wrap);
+    }
+  }
+
+  function readSendDays() {
+    var host = document.getElementById("send-days");
+    if (!host) return null;
+    var out = [];
+    var boxes = host.querySelectorAll("input[type=checkbox]");
+    for (var i = 0; i < boxes.length; i++) {
+      if (boxes[i].checked) out.push(parseInt(boxes[i].value, 10));
+    }
+    // Every box unticked means "never", which nobody wants and the server
+    // refuses. Treat it as no restriction rather than blocking the send.
+    return out.length ? out : null;
+  }
+
   // Fetch sender profile from backend; cached after first call.
   var _senderCache = null;
   function getSenderDefaults(cb) {
@@ -2219,6 +2264,13 @@
     }
     if (dailyCap > 0 && scheduledFor) {
       createPayload.daily_send_cap = dailyCap;
+      // Only sent when the user has actually narrowed it. All seven ticked
+      // means the same as no restriction, and omitting it keeps the payload
+      // identical to what older backends already accept.
+      var chosenDays = readSendDays();
+      if (chosenDays && chosenDays.length && chosenDays.length < 7) {
+        createPayload.send_days = chosenDays;
+      }
     }
     if (_attachments && _attachments.length) {
       // Each attachment is {name, url} — backend caps the list at 10
@@ -3364,6 +3416,20 @@
         function pct(v) { return v === null || v === undefined ? "—" : v + "%"; }
 
         document.getElementById("detail-name").textContent = stats.name || t("tabCampaign");
+        // The message itself, read-only. textContent, never innerHTML: this is
+        // the user's own text but it arrives from the network, and a campaign
+        // body legitimately contains angle brackets and quotes.
+        var dSubj = document.getElementById("detail-subject");
+        var dBody = document.getElementById("detail-body");
+        var dWrap = document.getElementById("detail-message");
+        if (dSubj) dSubj.textContent = stats.subject || "";
+        if (dBody) dBody.textContent = stats.body || "";
+        // Older backends do not send these; hide the section rather than
+        // offering an empty box.
+        if (dWrap) {
+          dWrap.style.display = (stats.subject || stats.body) ? "block" : "none";
+          dWrap.open = false;
+        }
         // People reached, not emails sent. They are the same number today and
         // stop being the same the first time a follow-up goes out: a follow-up
         // adds to sent_count without adding a recipient, so a 100-person
@@ -5032,6 +5098,7 @@
     loadQuota();
     updateSendButton();
     loadTemplates();
+    renderSendDays();
     // showOnboardingIfFirstRun is NOT called here any more - it needs a
     // session, and at init on a fresh install there is none. pollReauthState
     // runs it once the settings poll confirms one.

@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "O endereço do logo precisa começar com https://"
+  },
+  "detailShowMessage": {
+    "message": "Ver o e-mail enviado"
+  },
+  "detailSubjectLabel": {
+    "message": "Assunto"
+  },
+  "detailBodyLabel": {
+    "message": "Mensagem"
+  },
+  "detailMessageHint": {
+    "message": "Este é o texto como você escreveu. As merge tags são preenchidas para cada destinatário quando cada e-mail sai."
+  },
+  "sendDaysLabel": {
+    "message": "Dias em que pode enviar"
+  },
+  "sendDaysHint": {
+    "message": "Deixe todos marcados para enviar todos os dias. Se você desmarcar sábado e domingo, uma campanha distribuída por vários dias fica apenas nos dias úteis."
   }
 }

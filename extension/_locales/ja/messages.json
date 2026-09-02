@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "ロゴのURLは https:// で始まる必要があります。"
+  },
+  "detailShowMessage": {
+    "message": "送信したメールを表示"
+  },
+  "detailSubjectLabel": {
+    "message": "件名"
+  },
+  "detailBodyLabel": {
+    "message": "本文"
+  },
+  "detailMessageHint": {
+    "message": "これは作成したときの本文そのままです。差し込みタグは、各メールが送信されるときに受信者ごとに置き換わります。"
+  },
+  "sendDaysLabel": {
+    "message": "送信する曜日"
+  },
+  "sendDaysHint": {
+    "message": "すべてチェックしたままにすると毎日送信します。土曜と日曜のチェックを外すと、数日に分けて送るキャンペーンを平日だけに絞れます。"
   }
 }

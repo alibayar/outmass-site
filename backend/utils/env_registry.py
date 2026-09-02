@@ -149,6 +149,8 @@ REGISTRY: tuple[Var, ...] = (
     Var("AI_GENERATION_MONTHLY_LIMIT", (WEB,), False, "defaults to 50"),
     Var("PLAN_DROP_NOTICE_DAYS", (WEB,), False, "defaults to 14"),
     Var("AUTH_RESUME_MAX_AGE_DAYS", (WEB, WORKER), False, "defaults to 7"),
+    Var("AUTOMATED_OPEN_WINDOW_SECONDS", (WEB,), False,
+        "defaults to 30; a pixel fetched sooner than this after that recipient's own send, by something that does not name itself as a mail client, is counted as a security scanner rather than as an open. Measured on Helene's CBRE campaign, 2026-09-02: 93 open events for 15 people, the first fourteen between 9 and 16 seconds"),
     Var("AUTO_RESUME_DORMANT_DAYS", (WORKER,), False, "defaults to 30; owner must have been seen this recently for auto-resume to continue"),
     Var("AUTO_RESUME_BACKOFF_HOURS", (WORKER,), False, "defaults to 6; minimum gap between attempts on the same partial campaign"),
     Var("INACTIVITY_NUDGE_ENABLED", (WORKER,), False,

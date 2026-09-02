@@ -437,6 +437,34 @@ def upload_limit_for_plan(plan: str, client_version: str | None = None) -> int:
 # safer for both throttling and deliverability.
 SEND_DELAY_SECONDS = 2
 
+# How soon after delivery a pixel fetch is treated as machinery rather than a
+# person opening the email.
+#
+# Measured, not guessed. Hélène Carpentier's CBRE campaign on 2026-09-01/02
+# produced 93 open events for 15 recipients — six each. The first fourteen
+# arrived 9 to 16 seconds after their own send, one address five separate
+# times (9s, 26s, 36s, 81s, 113s), every one of them from a generic desktop
+# Chrome user-agent. The only fetches identifying a mail client
+# ("ms-office") arrived at 65, 163, 166 and 202 seconds, from two people.
+#
+# She wrote: "I do not believe the 100% open rate is correct, as I have
+# received so many out of office." She was right, and the evidence for it had
+# been recorded since the feature shipped without anyone looking.
+#
+# 30s is deliberately conservative: it catches the scanner cluster with room
+# to spare and leaves the earliest real client fetch (65s) untouched. A real
+# open cannot be lost by being late; a false one is only ever early.
+AUTOMATED_OPEN_WINDOW_SECONDS = int(
+    os.getenv("AUTOMATED_OPEN_WINDOW_SECONDS", "30")
+)
+
+# User-agent fragments that identify a real mail client fetching remote
+# images. A client naming itself is a real fetch even when it is fast, so
+# these are never classed as automated.
+MAIL_CLIENT_UA_MARKERS = ("ms-office", "microsoft outlook", "outlook-ios",
+                          "outlook-android", "apple mail", "thunderbird")
+
+
 # How often a running send asks whether it is still wanted.
 #
 # Both send paths mark their campaign 'sending' and then loop. Before

@@ -226,6 +226,14 @@
           <input type="number" id="daily-send-cap" min="1" max="5000" step="1" placeholder="30">
           <p class="hint" data-i18n="dailyCapNote">Sends up to this many emails per day and automatically continues the next day until your whole list is done. (Can't be combined with A/B testing.)</p>
         </div>
+        <div class="form-group">
+          <label data-i18n="sendDaysLabel">Days it may send on</label>
+          <!-- Day names come from Intl at render time, in the panel's own
+               language. Seven labels x 14 locale files is 98 strings the
+               browser already knows. -->
+          <div id="send-days" class="send-days"></div>
+          <p class="hint" data-i18n="sendDaysHint">Leave all of them ticked to send every day. Unticking Saturday and Sunday keeps a paced campaign to working days.</p>
+        </div>
         <p class="schedule-note" data-i18n="scheduleNote">Will be sent automatically at the specified time.</p>
       </div>
     </div>
@@ -321,6 +329,14 @@
     <div id="reports-detail" style="display:none;">
       <button class="btn-back" id="btn-reports-back" data-i18n="btnBack">&larr; Back</button>
       <h3 id="detail-name"></h3>
+      <details id="detail-message" style="margin:8px 0;">
+        <summary data-i18n="detailShowMessage">Show the email that was sent</summary>
+        <p class="hint" style="margin:6px 0 2px;"><strong data-i18n="detailSubjectLabel">Subject</strong></p>
+        <p id="detail-subject" style="margin:0 0 8px;white-space:pre-wrap;word-break:break-word;"></p>
+        <p class="hint" style="margin:0 0 2px;"><strong data-i18n="detailBodyLabel">Message</strong></p>
+        <pre id="detail-body" style="white-space:pre-wrap;word-break:break-word;margin:0;font:inherit;"></pre>
+        <p class="hint" data-i18n="detailMessageHint">This is the text as you wrote it. Merge tags are filled in per recipient when each email goes out.</p>
+      </details>
       <div class="stat-cards">
         <div class="stat-card">
           <div class="stat-value" id="stat-sent">0</div>

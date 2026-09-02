@@ -38,6 +38,34 @@ from utils.send_classify import _classify_failure
 from workers.celery_app import celery
 
 
+def next_allowed_day(after, send_days):
+    """The next moment this campaign is permitted to send, keeping its time.
+
+    send_days holds ISO weekdays (1=Mon..7=Sun); NULL or empty means every
+    day, which is what every campaign did before 2026-09-02 and what a
+    rolled-back migration restores.
+
+    Rolls the DATE forward and leaves the clock alone, so a campaign set for
+    08:30 stays an 08:30 campaign - moving a weekend send to Monday must not
+    also move it to Monday midnight.
+
+    Bounded at seven days: with at least one permitted weekday a match is found
+    inside a week, and without one this returns `after` unchanged rather than
+    looping. The CHECK constraint on the column already refuses an empty array;
+    this is the belt.
+    """
+    if not send_days:
+        return after
+    allowed = {int(d) for d in send_days}
+    if not allowed:
+        return after
+    for _ in range(7):
+        if after.isoweekday() in allowed:
+            return after
+        after = after + timedelta(days=1)
+    return after
+
+
 @celery.task
 def process_scheduled_campaigns():
     """
@@ -106,6 +134,33 @@ def process_scheduled_campaigns():
                 )
             # Transient failures keep the campaign scheduled for retry.
             continue
+
+        # Not a day this campaign sends on. Roll it forward rather than
+        # sending, and do not claim it: the row stays 'scheduled' so the next
+        # permitted morning finds it exactly as it is now.
+        send_days = campaign.get("send_days")
+        if send_days:
+            _now = datetime.now(timezone.utc)
+            if _now.isoweekday() not in {int(d) for d in send_days}:
+                nxt = next_allowed_day(_now + timedelta(days=1), send_days)
+                try:
+                    prev = datetime.fromisoformat(
+                        str(campaign.get("scheduled_for")).replace("Z", "+00:00")
+                    )
+                    nxt = nxt.replace(hour=prev.hour, minute=prev.minute,
+                                      second=prev.second,
+                                      microsecond=prev.microsecond)
+                except (TypeError, ValueError):
+                    pass
+                campaign_model.update_if_status(
+                    campaign["id"], {"scheduled_for": nxt.isoformat()},
+                    expected="scheduled",
+                )
+                logger.info(
+                    "campaign %s does not send on ISO weekday %s; moved to %s",
+                    campaign["id"], _now.isoweekday(), nxt.isoformat(),
+                )
+                continue
 
         pending = contact_model.get_resumable_contacts(campaign["id"])
         if not pending:
@@ -346,8 +401,9 @@ def process_scheduled_campaigns():
             if not cancelled_midbatch and contact_model.has_resumable_contacts(
                 campaign["id"]
             ):
-                next_run = (
-                    datetime.now(timezone.utc) + timedelta(days=1)
+                next_run = next_allowed_day(
+                    datetime.now(timezone.utc) + timedelta(days=1),
+                    campaign.get("send_days"),
                 ).isoformat()
                 # Conditional: this is the write that used to put a stopped
                 # campaign back into 'scheduled' every single day, while

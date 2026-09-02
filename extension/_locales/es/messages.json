@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "La dirección del logo debe empezar por https://"
+  },
+  "detailShowMessage": {
+    "message": "Ver el correo enviado"
+  },
+  "detailSubjectLabel": {
+    "message": "Asunto"
+  },
+  "detailBodyLabel": {
+    "message": "Mensaje"
+  },
+  "detailMessageHint": {
+    "message": "Este es el texto tal como lo escribiste. Las etiquetas de combinación se rellenan para cada destinatario cuando sale cada correo."
+  },
+  "sendDaysLabel": {
+    "message": "Días en los que se puede enviar"
+  },
+  "sendDaysHint": {
+    "message": "Déjalos todos marcados para enviar todos los días. Si desmarcas sábado y domingo, una campaña repartida en varios días se limita a los días laborables."
   }
 }

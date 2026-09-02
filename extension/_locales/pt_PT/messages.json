@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "O endereço do logótipo tem de começar por https://"
+  },
+  "detailShowMessage": {
+    "message": "Ver o e-mail enviado"
+  },
+  "detailSubjectLabel": {
+    "message": "Assunto"
+  },
+  "detailBodyLabel": {
+    "message": "Mensagem"
+  },
+  "detailMessageHint": {
+    "message": "Este é o texto tal como o escreveu. As merge tags são preenchidas para cada destinatário no momento em que cada e-mail sai."
+  },
+  "sendDaysLabel": {
+    "message": "Dias em que pode enviar"
+  },
+  "sendDaysHint": {
+    "message": "Deixe todos assinalados para enviar todos os dias. Se desmarcar sábado e domingo, uma campanha distribuída por vários dias fica apenas nos dias úteis."
   }
 }

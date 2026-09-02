@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "Logo 网址必须以 https:// 开头。"
+  },
+  "detailShowMessage": {
+    "message": "查看已发送的邮件"
+  },
+  "detailSubjectLabel": {
+    "message": "主题"
+  },
+  "detailBodyLabel": {
+    "message": "邮件内容"
+  },
+  "detailMessageHint": {
+    "message": "这是您撰写时的原文。每封邮件发出时，合并标签会针对每位收件人分别填入。"
+  },
+  "sendDaysLabel": {
+    "message": "允许发送的日子"
+  },
+  "sendDaysHint": {
+    "message": "全部保持勾选即每天都发送。取消勾选周六和周日，分散到几天发送的活动就只在工作日进行。"
   }
 }

@@ -237,7 +237,15 @@ def test_the_open_and_click_paths_agree_about_counting_once():
     from routers import tracking
 
     src = inspect.getsource(tracking)
-    assert 'if not contact.get("opened_at")' in src, "the open guard is gone"
+    assert 'contact.get("opened_at")' in src, "the open guard is gone"
+    # Since 2026-09-02 the open counter carries a second condition: a pixel
+    # fetched by a security scanner is recorded but not counted. Both guards
+    # have to be there.
+    assert "not automated and not contact.get(" in src, (
+        "the automated-open guard is gone - a scanner fetching the pixel nine "
+        "seconds after delivery counts as an open AND excludes that recipient "
+        "from the follow-up"
+    )
     assert 'if not contact.get("clicked_at")' in src, (
         "the click counter is unguarded again — every repeat click inflates "
         "click_count against a denominator that counts people"

@@ -1617,3 +1617,22 @@ body {
   margin-top: 16px;
 }
 .csv-encoding-hint { margin: 12px 0 0; font-size: 12px; color: #a19f9d; }
+
+/* Day-of-week picker on the scheduling block. Wraps on a narrow sidebar
+   rather than overflowing it: the panel is an iframe inside someone else's
+   page and its width is not ours to assume. */
+.send-days {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 4px;
+}
+.send-day {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-size: 12px;
+  white-space: nowrap;
+  cursor: pointer;
+}
+.send-day input { margin: 0; cursor: pointer; }

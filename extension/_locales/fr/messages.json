@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "L'adresse du logo doit commencer par https://"
+  },
+  "detailShowMessage": {
+    "message": "Voir l'e-mail envoyé"
+  },
+  "detailSubjectLabel": {
+    "message": "Objet"
+  },
+  "detailBodyLabel": {
+    "message": "Contenu"
+  },
+  "detailMessageHint": {
+    "message": "Voici le texte tel que vous l'avez rédigé. Les balises de fusion sont remplies pour chaque destinataire au moment où son e-mail part."
+  },
+  "sendDaysLabel": {
+    "message": "Jours d'envoi autorisés"
+  },
+  "sendDaysHint": {
+    "message": "Laissez-les tous cochés pour envoyer tous les jours. Si vous décochez samedi et dimanche, une campagne étalée sur plusieurs jours reste limitée aux jours ouvrés."
   }
 }

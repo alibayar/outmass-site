@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "Die Logo-Adresse muss mit https:// beginnen."
+  },
+  "detailShowMessage": {
+    "message": "Gesendete E-Mail anzeigen"
+  },
+  "detailSubjectLabel": {
+    "message": "Betreff"
+  },
+  "detailBodyLabel": {
+    "message": "Inhalt"
+  },
+  "detailMessageHint": {
+    "message": "Das ist der Text so, wie Sie ihn geschrieben haben. Die Seriendruck-Tags werden beim Versand für jeden Empfänger einzeln eingesetzt."
+  },
+  "sendDaysLabel": {
+    "message": "Tage, an denen gesendet werden darf"
+  },
+  "sendDaysHint": {
+    "message": "Lassen Sie alle Häkchen gesetzt, um jeden Tag zu senden. Wenn Sie die Häkchen bei Samstag und Sonntag entfernen, bleibt eine über mehrere Tage verteilte Kampagne auf die Arbeitstage beschränkt."
   }
 }

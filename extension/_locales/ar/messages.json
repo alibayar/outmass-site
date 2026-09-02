@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "يجب أن يبدأ رابط الشعار بـ ⁦https://⁩"
+  },
+  "detailShowMessage": {
+    "message": "عرض الرسالة التي أُرسلت"
+  },
+  "detailSubjectLabel": {
+    "message": "الموضوع"
+  },
+  "detailBodyLabel": {
+    "message": "المحتوى"
+  },
+  "detailMessageHint": {
+    "message": "هذا هو النص كما كتبته. وتُملأ وسوم الدمج لكل مستلم عند إرسال رسالته."
+  },
+  "sendDaysLabel": {
+    "message": "الأيام المسموح بالإرسال فيها"
+  },
+  "sendDaysHint": {
+    "message": "اترك جميع الأيام محددة ليتم الإرسال كل يوم. وإلغاء تحديد السبت والأحد يُبقي الحملة الموزّعة على عدة أيام ضمن أيام العمل."
   }
 }

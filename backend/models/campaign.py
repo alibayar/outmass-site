@@ -51,6 +51,7 @@ def create_campaign(
     scheduled_for: str | None = None,
     attachments: list[dict] | None = None,
     daily_send_cap: int | None = None,
+    send_days: list[int] | None = None,
 ) -> dict:
     """Create a campaign row.
 
@@ -79,6 +80,11 @@ def create_campaign(
         data["scheduled_for"] = scheduled_for
     if daily_send_cap:
         data["daily_send_cap"] = daily_send_cap
+    # Omitted rather than written as NULL, so a backend running ahead of
+    # migration 035 still creates campaigns instead of erroring on an unknown
+    # column. NULL and absent mean the same thing to the worker: every day.
+    if send_days:
+        data["send_days"] = send_days
 
     result = get_db().table("campaigns").insert(data).execute()
     return result.data[0]

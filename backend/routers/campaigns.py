@@ -77,6 +77,7 @@ class CreateCampaignRequest(BaseModel):
     # Requires scheduled_for (the sidebar auto-schedules "now" when the
     # user sets a cap without picking a date). 0/None = no cap.
     daily_send_cap: int | None = None
+    send_days: list[int] | None = None
     # OneDrive sharing links the user added in the sidebar's
     # Attachments section. Stored as JSON on the campaign row and
     # rendered as a footer block on every outgoing email by the
@@ -178,6 +179,14 @@ async def create_campaign(
 
     # Daily cap rides the scheduled-send machinery, so it inherits the
     # same plan gate below. Clamp to a sane range; 0/negative = no cap.
+    if body.send_days is not None:
+        # ISO weekdays, deduplicated and ordered so the stored value reads the
+        # way a person would write it. An empty list means "never send", which
+        # nobody wants and the column's CHECK constraint refuses - treat it as
+        # "no restriction" rather than bouncing the whole campaign over a
+        # checkbox nobody ticked.
+        days = sorted({int(d) for d in body.send_days if 1 <= int(d) <= 7})
+        body.send_days = days or None
     if body.daily_send_cap is not None:
         if body.daily_send_cap <= 0:
             body.daily_send_cap = None
@@ -221,6 +230,7 @@ async def create_campaign(
         scheduled_for=body.scheduled_for,
         attachments=safe_attachments,
         daily_send_cap=body.daily_send_cap,
+        send_days=body.send_days,
     )
     # Store subject+body hashes (not content) so we can later prove
     # "this campaign was created with these parameters" without the
@@ -376,6 +386,17 @@ async def campaign_stats(
         "name": campaign["name"],
         "status": campaign["status"],
         "total_contacts": campaign["total_contacts"],
+        # What the campaign actually says. There was no way to see this after
+        # a campaign was created — Reports carried the numbers and never the
+        # message. Hélène Carpentier, 2026-09-02: "I can't seem to see what
+        # the campaign is anymore on the extension… It would be really good if
+        # we could see the detail of campaign too once it is set up."
+        #
+        # She asked in the same message whether we had added a second
+        # signature to her email. We had not, but she had no way to check, and
+        # a person who cannot read their own campaign has to ask us instead.
+        "subject": campaign.get("subject") or "",
+        "body": campaign.get("body") or "",
         "sent_count": sent,
         # Recipients who actually received it, which is what every rate above
         # is divided by. Reported so the panel can show the two numbers apart

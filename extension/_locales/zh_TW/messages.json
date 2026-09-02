@@ -1290,5 +1290,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "Logo 網址必須以 https:// 開頭。"
+  },
+  "detailShowMessage": {
+    "message": "查看已傳送的郵件"
+  },
+  "detailSubjectLabel": {
+    "message": "主旨"
+  },
+  "detailBodyLabel": {
+    "message": "郵件內容"
+  },
+  "detailMessageHint": {
+    "message": "這是您撰寫時的原文。每封郵件寄出時，合併標籤會針對每位收件者分別填入。"
+  },
+  "sendDaysLabel": {
+    "message": "允許傳送的日子"
+  },
+  "sendDaysHint": {
+    "message": "全部保持勾選即每天都傳送。取消勾選週六和週日，分散到數天傳送的行銷活動就只會在工作日進行。"
   }
 }

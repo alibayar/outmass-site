@@ -1301,5 +1301,23 @@
   },
   "alertLogoUrlInvalid": {
     "message": "The logo address must start with https://"
+  },
+  "detailShowMessage": {
+    "message": "Show the email that was sent"
+  },
+  "detailSubjectLabel": {
+    "message": "Subject"
+  },
+  "detailBodyLabel": {
+    "message": "Message"
+  },
+  "detailMessageHint": {
+    "message": "This is the text as you wrote it. Merge tags are filled in per recipient when each email goes out."
+  },
+  "sendDaysLabel": {
+    "message": "Days it may send on"
+  },
+  "sendDaysHint": {
+    "message": "Leave all of them ticked to send every day. Unticking Saturday and Sunday keeps a paced campaign to working days."
   }
 }

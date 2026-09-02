@@ -130,6 +130,7 @@ sign-in and sending.
 | `AI_GENERATION_MONTHLY_LIMIT` | web | no | defaults to 50 |
 | `PLAN_DROP_NOTICE_DAYS` | web | no | defaults to 14 |
 | `AUTH_RESUME_MAX_AGE_DAYS` | web, worker | no | defaults to 7 |
+| `AUTOMATED_OPEN_WINDOW_SECONDS` | web | no | defaults to 30; a pixel fetched sooner than this after that recipient's own send, by something that does not name itself as a mail client, is counted as a security scanner rather than as an open. Measured on Helene's CBRE campaign, 2026-09-02: 93 open events for 15 people, the first fourteen between 9 and 16 seconds |
 | `AUTO_RESUME_DORMANT_DAYS` | worker | no | defaults to 30; owner must have been seen this recently for auto-resume to continue |
 | `AUTO_RESUME_BACKOFF_HOURS` | worker | no | defaults to 6; minimum gap between attempts on the same partial campaign |
 | `RAILWAY_GIT_COMMIT_SHA` | web | no | injected by Railway itself, not set by hand; absent means the health endpoint answers 'unknown', which is honest rather than misleading |

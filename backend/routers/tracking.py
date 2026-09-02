@@ -11,6 +11,7 @@ from datetime import datetime, timezone
 from fastapi import APIRouter, BackgroundTasks, HTTPException, Query, Request
 from fastapi.responses import RedirectResponse, Response
 
+from config import AUTOMATED_OPEN_WINDOW_SECONDS, MAIL_CLIENT_UA_MARKERS
 from database import get_db
 from models import ab_test as ab_test_model
 from models import campaign as campaign_model
@@ -40,6 +41,42 @@ def _record_event(
             "metadata": metadata or {},
         }
     ).execute()
+
+
+def looks_automated(metadata: dict) -> bool:
+    """Was this pixel fetched by machinery rather than by a person?
+
+    Two signals, and both have to agree before an open is discarded:
+
+      - it arrived within AUTOMATED_OPEN_WINDOW_SECONDS of that recipient's
+        own send, and
+      - the fetcher did not identify itself as a mail client.
+
+    A fetch with no timing information is COUNTED. Not knowing is not
+    evidence, and the failure that matters here is discarding somebody's real
+    open, not tolerating a scanner's.
+
+    Why this is not cosmetic: mark_opened writes contacts.opened_at, and the
+    follow-up condition 'not_opened' reads it. Before this, a scanner opening
+    the pixel nine seconds after delivery excluded that recipient from the
+    follow-up entirely — a person who never saw the email, silently dropped
+    from the sequence meant to reach them. The metric was the visible half of
+    the fault; this was the expensive half.
+    """
+    secs = metadata.get("secs_since_sent")
+    if secs is None:
+        return False
+    try:
+        secs = int(secs)
+    except (TypeError, ValueError):
+        return False
+    if secs >= AUTOMATED_OPEN_WINDOW_SECONDS:
+        return False
+    ua = (metadata.get("ua") or "").lower()
+    if any(marker in ua for marker in MAIL_CLIENT_UA_MARKERS):
+        return False
+    return True
+
 
 
 def _tracking_metadata(request: Request, contact: dict) -> dict:
@@ -80,8 +117,14 @@ async def track_open(
     contact = contact_model.get_contact(contact_id)
 
     if contact:
-        # Only increment stats on first open (mark_opened checks opened_at is null)
-        if not contact.get("opened_at"):
+        meta = _tracking_metadata(request, contact)
+        automated = looks_automated(meta)
+        meta["automated"] = automated
+        # Only increment stats on first open (mark_opened checks opened_at is
+        # null), and only when a person appears to be behind it. An automated
+        # fetch is still RECORDED below - the event carries automated:true, so
+        # the evidence stays and the threshold can be re-calibrated on it.
+        if not automated and not contact.get("opened_at"):
             background_tasks.add_task(contact_model.mark_opened, contact_id)
             background_tasks.add_task(
                 campaign_model.increment_stat,
@@ -102,7 +145,7 @@ async def track_open(
             contact_id,
             contact["campaign_id"],
             "open",
-            _tracking_metadata(request, contact),
+            meta,
         )
 
     return Response(
