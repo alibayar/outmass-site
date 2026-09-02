@@ -149,6 +149,27 @@ Her kullanıcı-etkili commit push edilmeden önce kontrol et:
 
 Herhangi biri \*\*hayır\*\* ise \*\*push atma\*\*, kullanıcıya geri dön.
 
+\### 4.5 Canlı müşteri verisine yazmadan önce satırın tamamını oku
+
+Bir müşterinin **çalışan** kampanyasına/satırına tek bir UPDATE atmadan önce,
+**değiştirmediğin kısımları da** kontrol et. Ticket sana bir şey söyler; satır
+başka bir şey saklıyor olabilir, çünkü kimse onu bildirmedi.
+
+- **Merge etiketleri** — şablondaki her `{{tag}}` her alıcı için çözülüyor mu?
+  `_merge`, karşılığı yoksa etiketi olduğu gibi bırakır: alıcı `{{hook}}`
+  yazısını müşterinin kendi posta kutusundan görür.
+- **Gerçek render** — gerçek gövdeyi gerçek `render_body`'den geçirip çıktıya
+  bak; akıl yürütme yeterli değil.
+- **Bayt, yapıştırma değil** — sonuç tablosunda link görünen adres kolonda düz
+  metin olabilir. `position('<a ' in body) > 0` cevaplar, ekran görüntüsü değil.
+- **Görebildiğin bir çapadan yaz** — sondaki boşluklarını göremediğin bir
+  imzayı string eşleştirmek yerine, bilinen bir konumdan sonrasını yeniden yaz.
+- **Önce önizle** (SELECT), sonra yaz (UPDATE).
+
+Kaynak: 2026-09-02, Helene'in 51 gönderimi kalan kampanyasında imza
+değiştirilirken gövdenin ortasında `{{hook}}` bulundu. Temiz çıktı (66/66),
+ama bu önceden bilinebilir değildi ve kontrolün maliyeti tek sorguydu.
+
 \### 5. Backend-only değişiklikler için istisna (sınırlı)
 
 \*\*Kullanıcıya görünmeyen\*\* iç iyileştirmeler (örn. Redis command optimizasyonu, logging, test) onay olmadan yapılabilir \*\*ancak\*\*:
