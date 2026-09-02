@@ -14,6 +14,10 @@
  *                         backend/routers/auth.py to compare both sides)
  *   no-hardcoded-prices — no locale or markup holds a literal price, and the
  *                         Intl path that shows the real one still exists
+ *   csv-email-column    — the email column is found by what it HOLDS, not
+ *                         only by what it is called. "Email Address" was
+ *                         rejected until 2026-09-02 and turned a new user
+ *                         away twice in three minutes.
  *   render-parity       — the preview and the send produce identical HTML,
  *                         both read from backend/tests/fixtures/render_cases.json.
  *                         They have disagreed twice, in opposite directions,
@@ -59,6 +63,7 @@ const suites = [
   require("./locked-followup.test.js"),
   require("./stop-campaign.test.js"),
   require("./render-parity.test.js"),
+  require("./csv-email-column.test.js"),
 ];
 
 async function main() {

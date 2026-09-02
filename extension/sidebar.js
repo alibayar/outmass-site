@@ -1324,6 +1324,67 @@
       ingestCsvText(decoded.text, decoded.encoding, diag, false);
     };
 
+  // Which column holds the email address.
+  //
+  // Until 2026-09-02 this was `lowerHeaders.indexOf("email")` — an exact match
+  // on the five letters. "Email Address" failed. So did "E-mail", "Work
+  // Email", "email_address", and every header in a language other than
+  // English, in a product that ships in thirteen of them.
+  //
+  // Dhirender@quick-hire.com signed up on 09-01, sent himself a test, came
+  // back the next day with his real list and hit this twice, three minutes
+  // apart, then stopped. He is a recruiter; his list came out of a tool that
+  // writes "Email Address", which is what almost every ATS and CRM export
+  // writes.
+  //
+  // Two passes, because a name list can only ever be a list of names we
+  // thought of:
+  //   1. the header, normalised — case, spaces, dashes and underscores
+  //      removed, so "E-Mail Address" and "email_address" are one string;
+  //   2. failing that, the DATA. A column where most values look like email
+  //      addresses is the email column whatever its header says, in any
+  //      language. That is the pass that makes this fix work for the twelve
+  //      locales nobody here can proofread.
+  var EMAIL_HEADER_NAMES = [
+    "email", "emailaddress", "emails", "mail", "mailaddress",
+    "workemail", "businessemail", "primaryemail", "contactemail",
+    "personalemail", "emailid", "eaddress",
+  ];
+  var EMAIL_SHAPE = /^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]{2,}$/;
+
+  function normaliseHeader(h) {
+    return String(h || "").toLowerCase().replace(/[^a-z0-9]/g, "");
+  }
+
+  function findEmailColumn(headers, dataLines) {
+    var i;
+    for (i = 0; i < headers.length; i++) {
+      if (EMAIL_HEADER_NAMES.indexOf(normaliseHeader(headers[i])) > -1) return i;
+    }
+    // Content pass. Sample the first rows rather than the whole file: a
+    // 10,000-row upload should not pay for this, and twenty rows settle it.
+    var sample = dataLines.slice(0, 20);
+    var best = -1, bestScore = 0;
+    for (i = 0; i < headers.length; i++) {
+      var hits = 0, seen = 0;
+      for (var j = 0; j < sample.length; j++) {
+        if (!sample[j] || !sample[j].trim()) continue;
+        var v = (parseCSVLine(sample[j])[i] || "").trim();
+        if (!v) continue;
+        seen++;
+        if (EMAIL_SHAPE.test(v)) hits++;
+      }
+      // Four fifths, and at least three values to judge on. A column that is
+      // mostly addresses is the address column; one with a couple of stray
+      // "info@" strings in a notes field is not.
+      if (seen >= 3 && hits / seen >= 0.8 && hits > bestScore) {
+        best = i;
+        bestScore = hits;
+      }
+    }
+    return best;
+  }
+
     // Everything from here on is encoding-agnostic: it takes decoded text.
     // Split out of reader.onload so the picker's "Use this" lands in exactly
     // the same place as an automatic decode, rather than a parallel path
@@ -1337,7 +1398,8 @@
       var headers = parseCSVLine(lines[0]).map(function (h) { return h.trim(); });
       var lowerHeaders = headers.map(function (h) { return h.toLowerCase(); });
       // A.3: mandatory email column
-      if (lowerHeaders.indexOf("email") < 0) {
+      var emailIdx = findEmailColumn(headers, lines.slice(1));
+      if (emailIdx < 0) {
         // Point the user at the template that shows the required 'email' column,
         // appending a hint to the error and triggering the example-CSV download
         // so they can see the correct format immediately.
@@ -1368,8 +1430,11 @@
         headers.forEach(function (h, idx) {
           row[h] = values[idx] !== undefined ? values[idx] : "";
         });
-        // A.1 mirror: lowercase + dedupe on email
-        var em = (row.email || row.Email || row.EMAIL || "").trim().toLowerCase();
+        // A.1 mirror: lowercase + dedupe on email.
+        // Read by INDEX, not by key: the column may be called "Email Address"
+        // or anything else, and row[] keeps the author's own header names so
+        // their merge tags keep working.
+        var em = (values[emailIdx] || "").trim().toLowerCase();
         // Rows with a blank email can't be sent — count them so the user
         // isn't silently surprised by a lower recipient total (mirrors how
         // duplicates are surfaced below).
