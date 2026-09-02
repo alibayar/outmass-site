@@ -235,7 +235,7 @@ güncellenmemişti.
 
 \### Extension release öncesi ZORUNLU kontroller (her sürümde)
 
-`node extension/tests/run-all.js` — **18 suite** (2026-09-01'de sayıldı), hepsi
+`node extension/tests/run-all.js` — **19 suite** (2026-09-02'de sayıldı), hepsi
 yeşil olmadan zip paketleme. Sayı büyüdükçe bu satır eskiyor; script'in kendi
 çıktısı tek doğru kaynak. Aşağıdaki üçü ilk üçü ve niye var olduklarını
 taşıdıkları için burada duruyor:
