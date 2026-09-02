@@ -100,5 +100,17 @@
     "template": "Bye\n<img src=\"https://x.com/l.png\" alt=\"L\">\nwww.example.com",
     "merged": "Bye\n<img src=\"https://x.com/l.png\" alt=\"L\">\nwww.example.com",
     "expected": "<p>Bye<br><img src=\"https://x.com/l.png\" alt=\"L\"><br><a href=\"https://www.example.com\">www.example.com</a></p>"
+  },
+  {
+    "label": "a URL straight after a CJK word, where no space is expected",
+    "template": "官网www.outmass.app",
+    "merged": "官网www.outmass.app",
+    "expected": "<p>官网<a href=\"https://www.outmass.app\">www.outmass.app</a></p>"
+  },
+  {
+    "label": "an ideographic space still separates, so it is not eaten by the URL",
+    "template": "www.outmass.app　こんにちは",
+    "merged": "www.outmass.app　こんにちは",
+    "expected": "<p><a href=\"https://www.outmass.app\">www.outmass.app</a>　こんにちは</p>"
   }
 ]

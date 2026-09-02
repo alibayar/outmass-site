@@ -133,8 +133,15 @@ def inline_html_to_html(text: str) -> str:
 # "example.com" is NOT matched — too many ordinary sentences end in a word that
 # looks like a domain ("...the .com boom", "see figure 2.png"), and a wrong
 # link in someone's outbound mail is worse than a missing one they can add.
+# The preceding-character class is spelled out rather than written `\w`
+# because this pattern has a twin in extension/sidebar.js and the two must
+# agree character for character. JavaScript's `\w` is ASCII; Python's is
+# Unicode, so `官网www.outmass.app` — a URL after a CJK word, where no space
+# is expected — linked in the panel's preview and arrived as plain text in the
+# delivered mail. `re.ASCII` would fix that and break the other half, since it
+# would also narrow `\s` and glue an ideographic space onto the address.
 _URL_RE = re.compile(
-    r"(?<![\w@/.])"                 # not mid-word, mid-address or mid-path
+    r"(?<![A-Za-z0-9_@/.])"         # not mid-word, mid-address or mid-path
     r"(https?://[^\s<>\"']+|www\.[^\s<>\"']+)",
     re.IGNORECASE,
 )

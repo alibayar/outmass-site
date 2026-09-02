@@ -1,0 +1,64 @@
+{
+  "_comment": [
+    "Which column holds the address. Read by BOTH detectors:",
+    "  extension/tests/csv-email-column.test.js  -> findEmailColumn (sidebar.js)",
+    "  backend/tests/test_csv_email_column.py    -> find_email_column (utils/csv_headers.py)",
+    "",
+    "The file exists because the panel and the server disagreed for a day.",
+    "On 2026-09-02 the panel started accepting 'Email Address' and the server",
+    "kept demanding a header spelled exactly 'email', so the newly accepted",
+    "file was refused later and worse: after the campaign row existed, with an",
+    "English sentence no locale translates, leaving a 0-recipient campaign in",
+    "Reports. render_cases.json exists for the same reason on the body side.",
+    "",
+    "A case added here must pass on both sides or neither. That is the point:",
+    "there is no way to fix one detector and forget the other."
+  ],
+  "cases": [
+    { "header": "email,firstName", "rows": ["a@b.com,Ada"], "expect": 0,
+      "why": "the plain case that already worked — it must keep working" },
+
+    { "header": "Email Address,First Name", "rows": ["a@b.com,Ada", "c@d.com,Bo", "e@f.com,Cy"], "expect": 0,
+      "why": "what an ATS or CRM export writes, and what turned Dhirender away twice" },
+    { "header": "First Name,E-mail", "rows": ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], "expect": 1,
+      "why": "hyphenated, and not the first column" },
+    { "header": "name,work_email", "rows": ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], "expect": 1,
+      "why": "underscored" },
+    { "header": "Name,EMAIL ADDRESS", "rows": ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], "expect": 1,
+      "why": "shouting, with a space" },
+
+    { "header": "Ad,Soyad,Eposta", "rows": ["Ada,X,a@b.com", "Bo,Y,c@d.com", "Cy,Z,e@f.com"], "expect": 2,
+      "why": "Turkish header — no name list would have had this" },
+    { "header": "姓名,邮箱", "rows": ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], "expect": 1,
+      "why": "Chinese header, found from the data" },
+    { "header": "الاسم,البريد", "rows": ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], "expect": 1,
+      "why": "Arabic header, found from the data" },
+
+    { "header": "name,note", "rows": ["Ada,hello", "Bo,world", "Cy,test"], "expect": -1,
+      "why": "no email column at all — this must still be refused" },
+    { "header": "name,note", "rows": ["Ada,ask info@x.com", "Bo,world", "Cy,test"], "expect": -1,
+      "why": "one stray address in a notes field is not an email column" },
+    { "header": "name,email", "rows": ["Ada,", "Bo,", "Cy,"], "expect": 1,
+      "why": "named correctly but empty — the name pass answers before the data does" },
+
+    { "header": "name,E-mail", "rows": ["Ada,", "Bo,", "Cy,"], "expect": 1,
+      "why": "hyphenated AND empty — only header normalisation can find this" },
+    { "header": "First Name,Email Address", "rows": ["Ada,", "Bo,", "Cy,"], "expect": 1,
+      "why": "the ATS spelling with no data to fall back on" },
+
+    { "header": "name,notes", "rows": ["Ada,a@b.com", "Bo,called them", "Cy,no answer", "Dee,left vm"], "expect": -1,
+      "why": "one address in four is a notes field, not an email column" },
+
+    { "header": "name,contacto", "rows": ["Ada,a@b.com", "Bo,c@d.com"], "expect": -1,
+      "why": "two rows is not enough to name a column from its contents" },
+    { "header": "name,contacto", "rows": ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], "expect": 1,
+      "why": "three is — the row above and this one are the boundary" },
+
+    { "header": " email ,Company", "rows": ["a@b.com,Acme"], "expect": 0,
+      "why": "a padded header the name list knows — answered before the data is read" },
+    { "header": " kontakt ,Name", "rows": ["a@b.com,Ada", "c@d.com,Bo", "e@f.com,Cy"], "expect": 0,
+      "why": "padded AND unlisted, so only the content pass can answer. The server keys rows by the header AS WRITTEN, so sampling by the trimmed name reads back nothing and this is the only case that catches it" },
+    { "header": "First Name,Last Name,Email Address,Company", "rows": ["Ada,X,a@b.com,Acme", "Bo,Y,c@d.com,Beta", "Cy,Z,e@f.com,Gamma"], "expect": 2,
+      "why": "the exact shape of the file in the 0.3.3 review: accepted by the panel, 400'd by the server" }
+  ]
+}

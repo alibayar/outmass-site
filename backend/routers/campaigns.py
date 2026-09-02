@@ -10,6 +10,10 @@ POST /campaigns/{id}/send         → start sending
 import asyncio
 import base64
 import csv
+# Imported as a name, not as `html`: _wrap_links's own parameter is called
+# `html`, so the module would be shadowed inside the one function that
+# needs it — an AttributeError on every tracked click.
+from html import unescape as html_unescape
 import io
 import logging
 import re
@@ -45,7 +49,7 @@ from models import contact as contact_model
 from models import followup as followup_model
 from models import user as user_model
 from routers.auth import get_current_user
-from utils import welcome_email
+from utils import csv_headers, welcome_email
 from utils.client_version import client_at_least
 from utils.email_body import render_body
 from utils.merge_tags import (
@@ -660,20 +664,39 @@ async def upload_contacts(
         # reference, and a padded " email" even failed the mandatory-column
         # check. The sidebar's merge-tag chips are built from trimmed
         # headers, so storage must agree with them (0.1.26 review finding).
-        # A.2: Mandatory 'email' column (case-insensitive)
-        headers = [(h or "").strip().lower() for h in (reader.fieldnames or [])]
-        if "email" not in headers:
+        raw_fieldnames = list(reader.fieldnames or [])
+        fieldnames = [(h or "").strip() for h in raw_fieldnames]
+        # A.2: Mandatory address column. Found by name OR by contents — the
+        # panel has done this since 2026-09-02 and a server that still
+        # demanded the literal word "email" turned the accepted file into a
+        # 400 AFTER the campaign row existed, in English, in every locale.
+        #
+        # Sampled by the RAW header: DictReader keys rows by the header as
+        # written, so " email" would read back as nothing if we looked it up
+        # by its trimmed name — and a padded header is exactly the case the
+        # trimming above exists for.
+        rows = list(reader)
+        sample = [
+            [row.get(name) for name in raw_fieldnames]
+            for row in rows[:csv_headers.SAMPLE_ROWS]
+        ]
+        email_idx = csv_headers.find_email_column(fieldnames, sample)
+        if email_idx < 0:
             raise HTTPException(
                 status_code=400,
                 detail="Column 'email' is required in the CSV header",
             )
-        for row in reader:
+        email_field = fieldnames[email_idx]
+        for row in rows:
             normalized: dict = {}
             for k, v in row.items():
                 key = (k or "").strip()
                 if not key:
                     continue
-                if key.lower() == "email":
+                # The resolved column becomes "email" whatever it was called,
+                # so every downstream reader — merge tags, dedupe, the
+                # suppression check — keeps the one key it has always used.
+                if key == email_field:
                     normalized["email"] = v
                 else:
                     normalized[key] = v
@@ -2095,7 +2118,11 @@ def _wrap_links(html: str, contact_id: str) -> str:
         # Don't wrap unsubscribe or tracking URLs
         if BACKEND_URL in original_url:
             return match.group(0)
-        encoded = urllib.parse.quote(original_url, safe="")
+        # html.unescape first: the href sits in HTML, so a two-parameter
+        # link is written "?a=1&amp;b=2". Encoding that as-is sends the
+        # click to a parameter literally named "amp;b". Plain-text bodies
+        # reach this too since autolink started escaping ampersands.
+        encoded = urllib.parse.quote(html_unescape(original_url), safe="")
         tracked = f"{BACKEND_URL}/c/{contact_id}?url={encoded}"
         return f'href="{tracked}"'
 

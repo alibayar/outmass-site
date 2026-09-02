@@ -18,6 +18,10 @@
  *                         only by what it is called. "Email Address" was
  *                         rejected until 2026-09-02 and turned a new user
  *                         away twice in three minutes.
+ *   send-days           — the day a checkbox is LABELLED must be the day it
+ *                         stores. Without timeZone:UTC every label slid a
+ *                         day west of UTC, so a US user unticking Sat and
+ *                         Sun would have sent on Saturday.
  *   render-parity       — the preview and the send produce identical HTML,
  *                         both read from backend/tests/fixtures/render_cases.json.
  *                         They have disagreed twice, in opposite directions,
@@ -64,6 +68,7 @@ const suites = [
   require("./stop-campaign.test.js"),
   require("./render-parity.test.js"),
   require("./csv-email-column.test.js"),
+  require("./send-days.test.js"),
 ];
 
 async function main() {

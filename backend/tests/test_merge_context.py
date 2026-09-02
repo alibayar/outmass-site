@@ -31,7 +31,7 @@ from utils.merge_tags import build_merge_context
 
 def test_a_null_first_name_renders_as_nothing_not_as_none():
     """The defect, in the shape it actually arrives from the database."""
-    ctx = build_merge_context({"first_name": None, "email": "a@example.com"})
+    ctx = build_merge_context({"first_name": None, "email": "a@example.com"}, None)
 
     assert ctx["firstName"] == "", (
         f"firstName is {ctx['firstName']!r} - a recipient whose row has no "
@@ -43,7 +43,7 @@ def test_a_null_first_name_renders_as_nothing_not_as_none():
     "column", ["first_name", "last_name", "company", "position", "email"]
 )
 def test_every_contact_field_survives_a_null(column):
-    ctx = build_merge_context({column: None})
+    ctx = build_merge_context({column: None}, None)
     assert None not in ctx.values()
     assert "None" not in "".join(ctx.values())
 
@@ -51,7 +51,7 @@ def test_every_contact_field_survives_a_null(column):
 def test_a_missing_key_is_also_empty():
     """A contact dict that simply lacks the column - the case the original
     `.get(key, "")` was written for, which must keep working."""
-    ctx = build_merge_context({"email": "a@example.com"})
+    ctx = build_merge_context({"email": "a@example.com"}, None)
     assert ctx["firstName"] == ""
     assert ctx["company"] == ""
 
@@ -60,7 +60,8 @@ def test_a_null_custom_field_is_empty_too():
     """A spreadsheet column filled for one row and blank for the next is the
     ordinary case, not the exotic one."""
     ctx = build_merge_context(
-        {"first_name": "Ada", "custom_fields": {"city": None, "plan": "Pro"}}
+        {"first_name": "Ada", "custom_fields": {"city": None, "plan": "Pro"}},
+        None,
     )
     assert ctx["city"] == ""
     assert ctx["plan"] == "Pro"
@@ -93,7 +94,7 @@ def test_real_values_pass_through_unchanged():
 
 def test_a_numeric_custom_field_becomes_text():
     """CSV columns arrive as whatever the parser made of them."""
-    ctx = build_merge_context({"custom_fields": {"seats": 12, "active": False}})
+    ctx = build_merge_context({"custom_fields": {"seats": 12, "active": False}}, None)
     assert ctx["seats"] == "12"
     assert ctx["active"] == "False"
 

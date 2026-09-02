@@ -2,6 +2,57 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.3.3 — 2026-09-02
+
+- **Your open rate was too high, and it is now correct.** Security scanners at
+  the recipient's company fetch every image in an email the moment it arrives,
+  including the invisible one that records an open. We were counting those as
+  people. Campaigns sent to large companies were the worst affected — one
+  15-recipient campaign reported 15 opens, when two people had actually
+  opened it.
+
+  Two things follow. Your open numbers will look lower than they did last
+  week; the new ones are the real ones, and we have corrected the history so
+  past campaigns read correctly too. And more importantly, a scanner opening
+  your email no longer removes that person from a follow-up meant to reach
+  people who had not engaged — some recipients were being quietly dropped
+  from sequences they should have been in.
+
+- **Pick the days a campaign may send on.** Scheduled campaigns now have seven
+  day checkboxes. Untick Saturday and Sunday and the campaign waits for
+  Monday instead of sending over the weekend. Existing campaigns are
+  unchanged and still send on any day.
+
+- **Follow-ups can chase people who have not replied.** Until now a follow-up
+  could only go to people who had not opened. You can now choose either, and
+  "has not replied" is the new default — an open is a weaker signal than an
+  answer, and an unanswered email is usually the one worth following up.
+  Anyone who has already replied is still skipped, as before.
+
+- **Add a logo to your signature.** Settings takes the address of an image you
+  already have online, and `{{senderLogo}}` puts it in your emails. There is a
+  preview next to the field so you can see it before you send.
+
+- **Typed web addresses become links.** Writing `www.example.com` in your email
+  used to arrive as plain text that nobody could click. It is now a link, in
+  the preview and in the delivered email, without you having to do anything.
+
+- **CSV files with a differently-named email column now work.** A file whose
+  column is called "Email Address", "E-mail" or "Work Email" — which is what
+  most CRM and recruitment tools export — was rejected outright. So was every
+  file with a column heading in a language other than English. OutMass now
+  recognises the address column by its contents as well as its name.
+
+- **Campaign reports show the message you sent.** Opening a campaign's report
+  now shows its subject and body, so you can see what went out without
+  hunting for the draft.
+
+- **Rates are calculated per person, not per email.** A campaign with a
+  follow-up counted the follow-up as extra recipients, which pushed every
+  rate down. Reports also now show a dash instead of `0` when a figure could
+  not be loaded, so "nobody replied" and "we could not check" stop looking
+  identical.
+
 ## v0.3.2 — 2026-09-01
 
 - **You can stop a campaign.** Until today you could not — not from the panel,

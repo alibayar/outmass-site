@@ -144,13 +144,22 @@ def _logo_tag(url) -> str:
     )
 
 
-def build_merge_context(contact: dict, sender_info: dict | None = None) -> dict:
+def build_merge_context(contact: dict, sender_info: dict | None) -> dict:
     """The merge values for one recipient, in one place.
 
     All three send paths built this dict themselves and all three had the same
     None bug. Sharing it is the point: this repo has twice shipped a fix into
     one send path and left it out of the other two (render_body on 2026-09-01,
     the suppression-skip write before it).
+
+    `sender_info` has NO DEFAULT on purpose, and that is the third instance of
+    the same story. When it defaulted to None, the two workers called this
+    with one argument and every scheduled send, every resumed remainder and
+    every follow-up delivered `{{senderName}}` and `{{senderLogo}}` to the
+    recipient with the braces still on — while the send-now path, which does
+    pass it, looked correct in every test and every preview. Forgetting is now
+    a TypeError instead of a literal brace in somebody's cold outreach. Pass
+    the user row; pass None only where there deliberately is no sender.
     """
     ctx = {
         "firstName": _text(contact.get("first_name")),

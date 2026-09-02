@@ -4,6 +4,10 @@ Celery beat task: processes due follow-ups every hour.
 Uses stored refresh tokens to get fresh MS access tokens.
 """
 
+# Imported as a name, not as `html`: _wrap_links's own parameter is called
+# `html`, so the module would be shadowed inside the one function that
+# needs it — an AttributeError on every tracked click.
+from html import unescape as html_unescape
 import logging
 import re
 import time
@@ -154,6 +158,7 @@ def process_followups():
                         campaign=campaign,
                         followup=followup,
                         contact=contact,
+                        sender_info=user,
                         unsubscribe_text=user.get("unsubscribe_text") or "Unsubscribe",
                     )
                     sent_count += 1
@@ -340,10 +345,11 @@ def _send_followup_email(
     campaign: dict,
     followup: dict,
     contact: dict,
+    sender_info: dict,
     unsubscribe_text: str = "Unsubscribe",
 ):
     """Send a single follow-up email via Graph API."""
-    merge_ctx = build_merge_context(contact)
+    merge_ctx = build_merge_context(contact, sender_info)
 
     merged_subject = _merge(followup["subject"], merge_ctx)
     merged_body = _merge(followup["body"], merge_ctx)
@@ -435,7 +441,11 @@ def _wrap_links(html: str, contact_id: str) -> str:
         original_url = match.group(1)
         if BACKEND_URL in original_url:
             return match.group(0)
-        encoded = urllib.parse.quote(original_url, safe="")
+        # html.unescape first: the href sits in HTML, so a two-parameter
+        # link is written "?a=1&amp;b=2". Encoding that as-is sends the
+        # click to a parameter literally named "amp;b". Plain-text bodies
+        # reach this too since autolink started escaping ampersands.
+        encoded = urllib.parse.quote(html_unescape(original_url), safe="")
         tracked = f"{BACKEND_URL}/c/{contact_id}?url={encoded}"
         return f'href="{tracked}"'
 

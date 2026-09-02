@@ -1873,7 +1873,13 @@
     var locale = (typeof getActiveLocale === "function" && getActiveLocale()) || "en";
     var fmt;
     try {
-      fmt = new Intl.DateTimeFormat(locale, { weekday: "short" });
+      // timeZone must be UTC. The dates below are UTC midnights, so without
+      // it every viewer west of UTC formats them in local time, lands on the
+      // previous day, and reads the seven boxes as Sun..Sat while they carry
+      // ISO 1..7 (Mon..Sun). A user in New York unticking the boxes labelled
+      // "Sat" and "Sun" would switch off Sunday and MONDAY, and the campaign
+      // would send on Saturday — the one day they were trying to avoid.
+      fmt = new Intl.DateTimeFormat(locale, { weekday: "short", timeZone: "UTC" });
     } catch (e) {
       fmt = null;
     }
@@ -2329,6 +2335,13 @@
     }
     if (dailyCap > 0 && scheduledFor) {
       createPayload.daily_send_cap = dailyCap;
+    }
+    if (scheduledFor) {
+      // Attached to the schedule, not to the daily cap. Nesting it under the
+      // cap meant the day picker was visible, tickable and silently discarded
+      // for anyone who scheduled a campaign without also limiting the daily
+      // volume — and the worker honours send_days with or without a cap.
+      //
       // Only sent when the user has actually narrowed it. All seven ticked
       // means the same as no restriction, and omitting it keeps the payload
       // identical to what older backends already accept.

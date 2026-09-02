@@ -46,60 +46,19 @@ function load() {
   return ctx;
 }
 
-// [header line, data lines, expected index, what it is]
-const CASES = [
-  ["email,firstName", ["a@b.com,Ada"], 0,
-   "the plain case that already worked — it must keep working"],
-
-  ["Email Address,First Name", ["a@b.com,Ada", "c@d.com,Bo", "e@f.com,Cy"], 0,
-   "what an ATS or CRM export writes, and what turned Dhirender away twice"],
-  ["First Name,E-mail", ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], 1,
-   "hyphenated, and not the first column"],
-  ["name,work_email", ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], 1,
-   "underscored"],
-  ["Name,EMAIL ADDRESS", ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], 1,
-   "shouting, with a space"],
-
-  ["Ad,Soyad,Eposta", ["Ada,X,a@b.com", "Bo,Y,c@d.com", "Cy,Z,e@f.com"], 2,
-   "Turkish header — no name list would have had this"],
-  ["姓名,邮箱", ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], 1,
-   "Chinese header, found from the data"],
-  ["الاسم,البريد", ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], 1,
-   "Arabic header, found from the data"],
-
-  ["name,note", ["Ada,hello", "Bo,world", "Cy,test"], -1,
-   "no email column at all — this must still be refused"],
-  ["name,note", ["Ada,ask info@x.com", "Bo,world", "Cy,test"], -1,
-   "one stray address in a notes field is not an email column"],
-  ["name,email", ["Ada,", "Bo,", "Cy,"], 1,
-   "named correctly but empty — the name pass answers before the data does"],
-
-  // These three exist because the content pass shadowed the name pass: every
-  // header case was being solved by the data, so a mutation gutting the name
-  // list changed nothing any test could see. Each of these has data the
-  // content pass cannot read, so only the name pass can answer.
-  ["name,E-mail", ["Ada,", "Bo,", "Cy,"], 1,
-   "hyphenated AND empty — only header normalisation can find this"],
-  ["First Name,Email Address", ["Ada,", "Bo,", "Cy,"], 1,
-   "the ATS spelling with no data to fall back on"],
-
-  // And this one exists because "most of the column" was untested: a single
-  // address among several values must not win the column.
-  ["name,notes", ["Ada,a@b.com", "Bo,called them", "Cy,no answer", "Dee,left vm"],
-   -1, "one address in four is a notes field, not an email column"],
-
-  // The content pass needs something to corroborate. With one or two rows a
-  // single address could equally be a note, a referrer or an assistant's
-  // address, and guessing wrong sends the campaign to the wrong column. Two
-  // rows with an unrecognised header is therefore refused ON PURPOSE — the
-  // name list covers the spellings people actually use, and the user gets the
-  // "no email column" message with the example CSV rather than a silent
-  // mis-parse. Pinned so the floor is a decision rather than a leftover.
-  ["name,contacto", ["Ada,a@b.com", "Bo,c@d.com"], -1,
-   "two rows is not enough to name a column from its contents"],
-  ["name,contacto", ["Ada,a@b.com", "Bo,c@d.com", "Cy,e@f.com"], 1,
-   "three is — the row above and this one are the boundary"],
-];
+// The cases live in backend/tests/fixtures/email_column_cases.json and the
+// backend suite reads the same file, so the panel's detector and the server's
+// cannot drift. They did drift, for one day: this panel started accepting
+// "Email Address" on 2026-09-02 while upload_contacts still demanded a header
+// spelled exactly "email", which turned an accepted file into a 400 AFTER the
+// campaign row existed. render_cases.json exists for the same reason on the
+// body side.
+const SHARED = JSON.parse(
+  fs.readFileSync(
+    path.join(EXT, "..", "backend", "tests", "fixtures", "email_column_cases.json"),
+    "utf8"
+  )
+).cases.map((c) => [c.header, c.rows, c.expect, c.why]);
 
 function run() {
   const failures = [];
@@ -112,7 +71,7 @@ function run() {
     return { name: "csv-email-column", failures: [String(e.message)] };
   }
 
-  for (const [headerLine, rows, expected, label] of CASES) {
+  for (const [headerLine, rows, expected, label] of SHARED) {
     const headers = ctx.parseCSVLine(headerLine).map((h) => h.trim());
     let got;
     try {

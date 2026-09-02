@@ -16,6 +16,12 @@ from workers.followup_worker import _send_followup_email
 from workers.scheduled_worker import _send_email
 
 
+# The sender row these sends go out as. This file is about the
+# unsubscribe label, not the signature, but sender_info is required at
+# the call now — a send that cannot name its sender ships
+# "{{senderName}}" to the recipient.
+USER_ROW = {"id": "u-1", "sender_name": "Ada Lovelace"}
+
 def _capturing_client(captured: list) -> MagicMock:
     """Stub httpx.Client that captures the last sendMail payload."""
     client = MagicMock()
@@ -40,6 +46,7 @@ def test_scheduled_send_uses_user_unsubscribe_label():
         access_token="tok",
         campaign=_CAMPAIGN,
         contact=_CONTACT,
+        sender_info=USER_ROW,
         unsubscribe_text="Unsubscribe",
     )
 
@@ -63,6 +70,7 @@ def test_scheduled_send_default_is_english_not_turkish():
         access_token="tok",
         campaign=_CAMPAIGN,
         contact=_CONTACT,
+        sender_info=USER_ROW,
     )
 
     html = captured[-1]["message"]["body"]["content"]
@@ -80,6 +88,7 @@ def test_scheduled_send_escapes_html_in_label():
         access_token="tok",
         campaign=_CAMPAIGN,
         contact=_CONTACT,
+        sender_info=USER_ROW,
         unsubscribe_text='"><script>alert(1)</script>',
     )
 
@@ -98,6 +107,7 @@ def test_followup_send_uses_user_unsubscribe_label():
         campaign=_CAMPAIGN,
         followup={"subject": "Bump", "body": "Hey"},
         contact=_CONTACT,
+        sender_info=USER_ROW,
         unsubscribe_text="Remove me",
     )
 
@@ -116,6 +126,7 @@ def test_followup_send_default_is_english():
         campaign=_CAMPAIGN,
         followup={"subject": "Bump", "body": "Hey"},
         contact=_CONTACT,
+        sender_info=USER_ROW,
     )
 
     html = captured[-1]["message"]["body"]["content"]
