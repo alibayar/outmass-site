@@ -23,9 +23,9 @@ STEPS
 6. "Send" runs it; Reports shows delivery and a Stop button.
 
 PLAN-LOCKED FEATURES - intended, not errors
-Steps 1-6 are free. Four controls open a pricing dialog instead: automatic
-follow-ups, A/B test, Write with AI (PRO), scheduled sending (Starter). No
-payment is needed to see it.
+Steps 1-6 are free. Four open a pricing dialog instead: automatic
+follow-ups, A/B test, Write with AI (PRO), scheduled sending and its
+day-of-week picker (Starter). No payment needed to see it.
 
 PERMISSIONS
 - User.Read: the signed-in address, shown in the panel.
