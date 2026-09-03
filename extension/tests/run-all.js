@@ -18,6 +18,10 @@
  *                         only by what it is called. "Email Address" was
  *                         rejected until 2026-09-02 and turned a new user
  *                         away twice in three minutes.
+ *   auth-window-already-open — Chrome saying "only one web auth flow" means
+ *                         a window IS open; say so instead of a bare
+ *                         failure. Cost a user three hours and an
+ *                         abandoned checkout on 2026-09-03.
  *   send-days           — the day a checkbox is LABELLED must be the day it
  *                         stores. Without timeZone:UTC every label slid a
  *                         day west of UTC, so a US user unticking Sat and
@@ -69,6 +73,7 @@ const suites = [
   require("./render-parity.test.js"),
   require("./csv-email-column.test.js"),
   require("./send-days.test.js"),
+  require("./auth-window-already-open.test.js"),
 ];
 
 async function main() {

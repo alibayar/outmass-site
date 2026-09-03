@@ -2,6 +2,23 @@
 
 All notable user-facing changes to the OutMass Chrome Extension.
 
+## v0.3.4 — 2026-09-03
+
+- **Sign-in no longer fails silently when a window is already open.** If a
+  Microsoft sign-in window was still open somewhere — behind Outlook, on
+  another monitor, minimised in the taskbar — every further attempt was
+  refused by the browser, and OutMass showed only a generic failure. You had
+  no way to know what to look for. It now tells you a window is already open,
+  and brings it to the front for you.
+
+  This could keep someone out for hours. If it happened to you, nothing was
+  wrong with your Microsoft account or your organisation's settings.
+
+- **The sign-in button no longer starts several attempts at once.** Holding
+  the key down, or clicking quickly while waiting, used to launch a new
+  sign-in for each press — and every one after the first was refused. It now
+  runs one at a time.
+
 ## v0.3.3 — 2026-09-02
 
 - **Your open rate was too high, and it is now correct.** Security scanners at

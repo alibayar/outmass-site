@@ -269,11 +269,34 @@
   }
 
   // ── Login ──
+  var _loginInFlight = false;
+
   function doLogin() {
+    // One flight per click, and a held Enter key is not seven clicks.
+    //
+    // ravi@quick-hire.com fired seven complete signin_clicked → oauth_started
+    // → oauth_failed triples inside 947 milliseconds on 2026-09-03, at a very
+    // even 140ms apart — the signature of a key repeating on a focused
+    // button, not of fingers. Every one of them landed on a Chrome auth
+    // window that was already open and came back "Only one web auth flow is
+    // allowed at a time".
+    //
+    // The sidebar's own sign-in button has disabled itself during the flow
+    // since it was written; this one never did. The background single-flights
+    // too, but that is a second line of defence, and it did not hold here.
+    if (_loginInFlight) return;
+    _loginInFlight = true;
+
     showSection("loading");
 
     track("signin_clicked", { context: "popup" });
     chrome.runtime.sendMessage({ type: "MS_LOGIN", context: "popup" }, function (response) {
+      // Released on EVERY path out of this callback, before any branch can
+      // return. A guard that leaks on one error path is worse than none: the
+      // button would be dead until the popup is reopened, and the person it
+      // fails on is the one already having trouble signing in.
+      _loginInFlight = false;
+
       if (chrome.runtime.lastError) {
         showError(chrome.runtime.lastError.message);
         return;

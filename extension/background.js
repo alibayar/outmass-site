@@ -466,12 +466,34 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
   const flowContext = context || "unspecified";
 
   const failureContext = function (extra) {
+    // What OUR bookkeeping believed at the moment it failed.
+    //
+    // On 2026-09-03 a user could not sign in for three hours, and working out
+    // why took most of a morning and three wrong theories — a tenant block, a
+    // dead refresh token, an expired JWT — because the events said only that
+    // a window had closed. The answer was that a flight opened 144 seconds
+    // earlier was still open, and AUTH_FLIGHT_STALE_MS (60s) had already
+    // written it off, so we relaunched into it.
+    //
+    // Every one of those numbers was in memory when the event fired. None of
+    // it was recorded. These four fields turn that morning into one query,
+    // and they describe our own state, not anything the person did.
+    var flightAge = _authFlightStartedAt[flightKey]
+      ? Date.now() - _authFlightStartedAt[flightKey]
+      : null;
     return Object.assign(
       {
         attempt_id: attemptId,
         attempt_no: attemptNo,
         seconds: elapsed(),
         context: flowContext,
+        flight_key: flightKey,
+        // Whether we thought a window was open, and for how long. A failure
+        // with a live flight older than the stale threshold is the shape that
+        // cost us this morning.
+        flight_open: !!_authFlightByKey[flightKey],
+        flight_age_seconds: flightAge === null ? null : Math.round(flightAge / 1000),
+        flight_hinted: !!_authFlightHinted[flightKey],
       },
       extra
     );
@@ -627,6 +649,29 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
           errorCode = "consent_declined";
         } else if (/could not be loaded|failed to load|page could not/i.test(m)) {
           errorCode = "auth_page_failed";
+        } else if (/only one web auth flow/i.test(m)) {
+          // Chrome is telling us a window is open. Believe it.
+          //
+          // startMSLogin already has a hint for this — "check your other
+          // windows or taskbar" — but it fires from OUR bookkeeping, and only
+          // while the flight is younger than AUTH_FLIGHT_STALE_MS. Past that
+          // we assume the window is gone and relaunch, which is a guess from a
+          // timer. Chrome's window outlives our 60 seconds, so the relaunch
+          // lands on top of it and returns this string, and the user gets a
+          // bare failure with no idea where to look.
+          //
+          // ravi@quick-hire.com, 2026-09-03: a flight opened at 09:10:25 was
+          // still open at 09:12:49, 144 seconds later. He clicked seven times
+          // in one second and got seven of these. He never sent a campaign and
+          // abandoned a Starter checkout in the middle of it.
+          //
+          // The timer is a guess; this message is ground truth.
+          errorCode = "auth_window_already_open";
+          // flightKey, not `key` — that name belongs to startMSLogin, one
+          // function out, and reading it here would throw under "use strict"
+          // while every suite stayed green, which is exactly how 0.3.1
+          // shipped a panel that did not run.
+          _focusAuthWindow(flightKey);
         }
 
         // Auto-retry ONCE when the authorization PAGE failed to load — almost

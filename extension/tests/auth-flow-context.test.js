@@ -117,7 +117,15 @@ function run() {
       "computed from it mixes populations again"
   );
 
-  const failureCtx = /const failureContext = function[\s\S]{0,500}?\n  \};/.exec(bg);
+  // Bounded by anchors, not by a character budget. This was
+  // `[\s\S]{0,500}?` and broke on 2026-09-03 the moment failureContext grew
+  // the flight fields — a green guard failing on correct code, which teaches
+  // people to edit the test rather than read it.
+  const ctxStart = bg.indexOf("const failureContext = function");
+  const ctxEnd = ctxStart === -1 ? -1 : bg.indexOf("\n  };", ctxStart);
+  const failureCtx = ctxStart > -1 && ctxEnd > ctxStart
+    ? [bg.slice(ctxStart, ctxEnd)]
+    : null;
   check(failureCtx !== null, "failureContext could not be located");
   check(
     failureCtx === null || /context:\s*flowContext/.test(failureCtx[0]),

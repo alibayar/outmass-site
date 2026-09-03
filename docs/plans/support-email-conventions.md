@@ -76,6 +76,31 @@ code first — not from telemetry that means something adjacent.
 draft told a customer her campaign "sent fine" on the strength of that event
 while the campaign was still scheduled with zero sent. The row said otherwise.
 
+## Proactive outreach: report the fault, not the person
+
+When we write first because telemetry showed us something, the sentence's
+subject is the failure, never the user's actions.
+
+> ✗ "I can see several sign-in attempts on your account this morning that
+>    didn't complete."
+> ✓ "The Change button next to Sending as is failing — an error came through
+>    from your account this morning."
+
+Both admit exactly the same capability. The first counts what somebody did;
+the second reports a fault that happened to surface through them. Only one of
+those reads as being watched.
+
+It is also the truer description. Nobody here sits in front of a dashboard of
+somebody's clicks — an error is reported to us and an alarm fires. Saying so
+is accuracy, not softening.
+
+The instinct to say nothing about how we knew is wrong. "How did you know?"
+left unanswered is more unsettling than a plain answer, and it makes the offer
+of help look like a guess. Say how, and keep the person out of the subject.
+
+Ali, 2026-09-03, on the note sent to a user stuck on an account switch:
+*"insanların ne yaptıklarını takip ediyor gibi hissettiriyor."*
+
 ## Credit a finder without a count
 
 When someone reports something that turned out to be real, tell them what
