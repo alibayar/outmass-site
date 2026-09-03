@@ -133,7 +133,7 @@ REGISTRY: tuple[Var, ...] = (
     # role in this column by mistake and then sends an operator to set a
     # variable on a service that never looks at it.
     Var("FIRST_SIGNIN_INCLUDE_MAIL_READ", (WEB,), False,
-        "defaults to true; read only by routers/auth.py, so web alone. Safe to flip since the version gate (0.3.0+): older clients keep the wide ask whatever it says, so the flip no longer waits on store publication"),
+        "SET TO false on web, 2026-08-30 21:00 UTC. Code default is true, so the default tells you nothing about production - read this row instead. A first sign-in from 0.3.0+ now asks for Mail.Send + User.Read only; every reconnect, every client below 0.3.0 and every absent or unparseable version header still gets the wide ask, so nobody is narrowed silently. Baseline to beat: 64.6% of sign-ins never completed (n=127) before the flip"),
     Var("FREE_PLAN_MONTHLY_LIMIT", (WEB, WORKER), False, "defaults to 250"),
     Var("STARTER_PLAN_MONTHLY_LIMIT", (WEB, WORKER), False, "defaults to 2500"),
     Var("PRO_PLAN_MONTHLY_LIMIT", (WEB, WORKER), False, "defaults to 10000"),

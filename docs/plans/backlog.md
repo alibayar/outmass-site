@@ -153,7 +153,22 @@ in the window. It is an old session finally reporting, not a visitor that day.
 
 The lesson repeats: the count was two, the reading was one.
 
-### 🔴 Store listing claims a privacy guarantee the code does not keep — FIXED IN THE REPO, STILL LIVE IN THE STORE
+### 🟠 Store listing claims a privacy guarantee the code does not keep — GONE FROM EDGE 2026-09-03, STILL LIVE ON CHROME
+
+**Edge verified 2026-09-03 09:15** on the public listing: the section is now
+`🔒 SİZİN HESABINIZ, SİZİN GÖNDERİMİNİZ` and reads "Kampanyanız sunucularımızda
+saklanır, çünkü zamanlanmış gönderim, takip e-postaları ve kampanya raporları
+başka türlü çalışamaz." The reply-detection cadence and the 0.3.3 follow-up
+line went live in the same publish.
+
+**Chrome still serves the old text.** Ali pasted both stores the same night;
+Edge published, Chrome's listing edit is queued behind its own review while the
+0.3.3 package is already live. Two stores, one submission, different speeds —
+worth knowing for every future claims fix: the package landing does not mean
+the words did.
+
+Closes when the Chrome listing serves the replacement. Check by fetching the
+public page, not the dashboard.
 
 **Text fixed 2026-09-01 (`3401ee8`) in all twelve locales. Never pasted into
 either store.** Read off the live Chrome listing on 2026-09-03:
