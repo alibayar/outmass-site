@@ -441,6 +441,44 @@ def process_scheduled_campaigns():
         campaign_model.update_if_status(
             campaign["id"], {"status": final_status}, expected="sending"
         )
+
+        # Tell the owner their campaign paused on the monthly ceiling.
+        #
+        # routers/campaigns.py has sent this since 2026-07-20, and the comment
+        # there names the case that prompted it: "a Starter capped at exactly
+        # 2,500 with 250 recipients parked". It was written into the send-now
+        # path and not this one, so a SCHEDULED campaign stopped, went
+        # 'partial', and said nothing.
+        #
+        # 2026-09-03: marketing@hrds.com, Starter, capped at exactly 2,500
+        # again — 38 recipients waiting thirteen days for the reset, a panel
+        # reading "partial", and no message explaining either. Same plan, same
+        # number, same silence, because the fix only ever landed on one of the
+        # three send paths. That is the fifth time this repo has done it.
+        # sent_count > 0 is what separates "this campaign ran and stopped"
+        # from "there was never any headroom to start with". Without it the
+        # auto-resume beat re-schedules a capped campaign every
+        # AUTO_RESUME_BACKOFF_HOURS (6), the send beat runs it, remaining is 0
+        # so pending slices to empty and quota_capped is still true, and this
+        # block would fire on a pass that sent nothing. marketing@hrds.com
+        # waits thirteen days for a reset; that is roughly fifty-two identical
+        # emails telling them about a pause they already know about.
+        if quota_capped and sent_count > 0:
+            try:
+                from utils import welcome_email
+
+                next_reset = user_model.next_reset_date(user)
+                welcome_email.send_quota_capped_email(
+                    user.get("email"),
+                    user.get("name"),
+                    contact_model.count_resumable_contacts(campaign["id"]),
+                    limit,
+                    next_reset.isoformat() if next_reset else None,
+                    user.get("preferred_language"),
+                )
+            except Exception:  # noqa: BLE001
+                # Never let a courtesy email fail a completed send.
+                logger.warning("quota-capped email failed", exc_info=True)
         total_sent += sent_count
 
     return {"processed": len(due), "sent": total_sent}
