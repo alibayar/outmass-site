@@ -1,4 +1,4 @@
-# Faisal — 110 recipients never sent, and why we are not sending them (2026-08-31)
+# Faisal — 109 recipients never sent, and why we are not sending them (2026-08-31)
 
 Draft held for Ali. Not sent.
 
@@ -13,9 +13,18 @@ recipients.
 | `91e7ce08` SYC Wave Batch 2 | 2026-06-30 | 1020 | 1000 | **20** | 0 |
 | `49587d65` syc2 wave 1 | 2026-07-20 | 1210 | 999 | **91** | 120 |
 
-Of the 91, exactly **one** is on his suppression list — correctly held, not a
-miss. So the honest figure is **110 never attempted**, plus 120 attempted and
-rejected, which are a different thing and may or may not be our fault.
+**CORRECTED 2026-09-03, before sending.** Each campaign has exactly **one**
+address on his suppression list — correctly held, not a miss. The 08-31 pass
+caught the one inside the 91 and missed the one inside the 20, so the figure
+below said 110. It is **109**: nineteen on Batch 2, ninety on wave 1. Plus 120
+attempted and rejected, which are a different thing and may or may not be our
+fault.
+
+Suppression lives in its own `suppression_list` table, not in
+`contacts.status` — a count of `status = suppressed` returns zero for both
+campaigns and reads as though nobody was held. The daily alarm reports the raw
+111 for the same reason. Three numbers for one fact, and the only one fit for
+a customer email is the one that joins the table.
 
 `91e7ce08` last delivered 2026-06-30 17:49, 43 minutes after it was created —
 one uninterrupted pass, exactly 1000 rows. `49587d65` last delivered
@@ -73,8 +82,8 @@ Subject: **Two of your campaigns came up short — what happened**
 > through our own data.
 >
 > On two of your campaigns — SYC Wave Batch 2 from 30 June, and syc2 wave 1
-> from 20 July — a bug on our side meant **110 recipients were never sent
-> to at all.** Twenty on the first, ninety on the second. The campaigns
+> from 20 July — a bug on our side meant **109 recipients were never sent
+> to at all.** Nineteen on the first, ninety on the second. The campaigns
 > reported themselves as finished, which is why neither you nor we noticed
 > at the time. That was our fault. The cause is fixed and live now — a
 > campaign can no longer report itself finished while it is still holding
@@ -123,5 +132,5 @@ the difference is the whole reason he might reply.
 He has not opened the product since 2026-08-10. This email can go either way:
 it is an honest admission that may rebuild trust, or a reminder of a bad
 experience that closes the account. It is still the right thing to send —
-he paid for 5,486 recipients and 110 of them silently did not happen — but
+he paid for 5,486 recipients and 109 of them silently did not happen — but
 go in knowing it is not a neutral message.
