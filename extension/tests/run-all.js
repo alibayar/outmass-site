@@ -74,6 +74,7 @@ const suites = [
   require("./csv-email-column.test.js"),
   require("./send-days.test.js"),
   require("./auth-window-already-open.test.js"),
+  require("./auth-window-adoption.test.js"),
 ];
 
 async function main() {

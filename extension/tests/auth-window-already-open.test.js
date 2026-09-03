@@ -53,6 +53,18 @@ function run() {
         "window is already open, which is what cost ravi@quick-hire.com three hours"
     );
     check(
+      /_closeAuthWindow\(/.test(block),
+      "the fix no longer closes the orphaned window and retries — it only " +
+        "advises, which puts the work back on the user: find a window you " +
+        "cannot see and finish the sign-in inside it. A person hunting for a " +
+        "hidden window is a person who gives up (Ali, 2026-09-03)"
+    );
+    check(
+      /reclaimed/.test(block),
+      "the reclaim has no once-per-flight guard, so a failing close would " +
+        "loop and the user would watch the sign-in flash open and shut"
+    );
+    check(
       /auth_window_already_open/.test(block),
       "that message is recognised but not mapped to auth_window_already_open, " +
         "so friendlyAuthError() cannot reach the localized hint that already " +

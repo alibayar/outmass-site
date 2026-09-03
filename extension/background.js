@@ -219,6 +219,9 @@ var _authFlightHinted = {};
 var _authWindow = null; // { key, id }
 var _authWindowWatchKey = null;
 var _authWindowWatchTimer = null;
+// Flight keys whose auth window is known to have outlived their flight, so
+// the settle handler keeps the id instead of forgetting where the orphan is.
+var _authWindowOutlived = {};
 
 chrome.windows.onCreated.addListener(function (w) {
   if (_authWindowWatchKey === null || !w || w.type !== "popup") return;
@@ -253,6 +256,42 @@ function _focusAuthWindow(key) {
     );
   } catch (e) {
     log("Auth window focus threw:", e);
+  }
+}
+
+/**
+ * Close our own orphaned auth window so a fresh one can open.
+ *
+ * Chrome allows one web auth flow at a time. When it refuses a launch, a
+ * window of ours is still open somewhere the user cannot see — behind
+ * Outlook, on another monitor, minimised. Focusing it puts the work back on
+ * them: find this window, and finish the sign-in inside it. Ali, 2026-09-03:
+ * "müşteriye şunu yap demek pek hoş değil… kullanıcının ekstra bir şey
+ * yapmasına gerek kalmadan çözebilmemiz önemli." He is right — a person
+ * hunting for a hidden window is a person who gives up.
+ *
+ * We know the window's id because we opened it, so we can close it and try
+ * again. Only ever our own: `_authWindow` is set nowhere else.
+ */
+function _closeAuthWindow(key, done) {
+  if (!_authWindow || _authWindow.key !== key) {
+    done(false);
+    return;
+  }
+  var id = _authWindow.id;
+  try {
+    chrome.windows.remove(id, function () {
+      if (chrome.runtime.lastError) {
+        log("Auth window close failed:", chrome.runtime.lastError.message);
+        done(false);
+        return;
+      }
+      if (_authWindow && _authWindow.id === id) _authWindow = null;
+      done(true);
+    });
+  } catch (e) {
+    log("Auth window close threw:", e);
+    done(false);
   }
 }
 
@@ -354,7 +393,15 @@ function startMSLogin(includeOneDrive, includeMailRead, context) {
       delete _authFlightByKey[key];
       delete _authFlightStartedAt[key];
       delete _authFlightHinted[key];
-      if (_authWindow && _authWindow.key === key) _authWindow = null;
+      // Unless this flight is known to have left its window open: the
+      // 5-minute timeout resolves while the Microsoft window is still live
+      // and still holding Chrome's single-flow lock. Forgetting the id there
+      // is what made the reclaim useless for anyone who waited.
+      if (_authWindowOutlived[key]) {
+        delete _authWindowOutlived[key];
+      } else if (_authWindow && _authWindow.key === key) {
+        _authWindow = null;
+      }
     }
   };
   flight.then(clear, clear);
@@ -558,6 +605,10 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
     // backend can make Chrome report "Authorization page could not be loaded."
     // We warm the backend and relaunch ONCE before giving up.
     let retried = false;
+    // One reclaim per flight. If closing the orphan and relaunching does not
+    // work the first time, a second attempt would be a loop with a window
+    // close in it, and the user would see the sign-in flash open and shut.
+    let reclaimed = false;
 
     // Hard ceiling on the whole flight. A window that never settles used to
     // leave every sidebar button that awaits this promise disabled forever
@@ -575,6 +626,14 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
       if (settled) return;
       settled = true;
       track("oauth_failed", failureContext({ reason: "auth_timeout" }));
+      // Keep the window id. This path says so itself two lines down: the
+      // window is still open and still works. But the flight settles here,
+      // and `clear` drops _authWindow on ANY settle — so the one case where
+      // we are certain an orphan exists is the one case we forget where it
+      // is. Anybody who steps away for more than five minutes and comes back
+      // to a refused sign-in could never be rescued: the reclaim would find
+      // nothing to close. That is ravi@quick-hire.com's exact shape.
+      _authWindowOutlived[flightKey] = true;
       // The old text here said "timed out, please try again", which was
       // simply untrue: this timeout releases the UI, it does NOT cancel the
       // flow. The Microsoft window is still open and still works — finishing
@@ -606,6 +665,25 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
       if (chrome.runtime.lastError) {
         const m = String(chrome.runtime.lastError.message || "");
         log("Auth flow error:", m);
+
+        // Stop watching for a window this launch will never produce.
+        //
+        // launch() arms _armAuthWindowWatch before every call, and the watch
+        // adopts the first popup-type window it sees for three seconds — from
+        // ANY source. When Chrome refuses the launch outright, no window of
+        // ours is coming, so the watch sits armed with nothing to catch and
+        // takes the next stranger instead. An Outlook message opened in its
+        // own window is a popup-type window.
+        //
+        // That misadoption was harmless until today: it only mis-aimed
+        // _focusAuthWindow, and the note above this listener could fairly say
+        // "both failure modes degrade to exactly the old behaviour." The
+        // reclaim I added an hour ago points chrome.windows.remove at the same
+        // variable, which makes the same mistake destroy one of the user's
+        // own windows and report closed:true while doing it. Found by the
+        // pre-cut review, reproduced against this file.
+        _authWindowWatchKey = null;
+        clearTimeout(_authWindowWatchTimer);
 
         // A flight that already timed out has nothing left to report.
         //
@@ -667,10 +745,34 @@ async function _startMSLoginInner(includeOneDrive, includeMailRead, flightKey, c
           //
           // The timer is a guess; this message is ground truth.
           errorCode = "auth_window_already_open";
+
+          // Reclaim before advising. Close our own orphaned window and open a
+          // fresh one, so the click the user just made simply works. Telling
+          // them to go and find a window is the fallback, not the plan.
+          //
           // flightKey, not `key` — that name belongs to startMSLogin, one
           // function out, and reading it here would throw under "use strict"
           // while every suite stayed green, which is exactly how 0.3.1
           // shipped a panel that did not run.
+          if (!reclaimed) {
+            reclaimed = true;
+            _closeAuthWindow(flightKey, function (closed) {
+              track("oauth_window_reclaimed", failureContext({ closed: closed }));
+              if (!closed) {
+                // Not ours, or already gone. Chrome still refused, so the
+                // honest thing left is to say a window is open and raise
+                // whatever we can.
+                _focusAuthWindow(flightKey);
+                finish({ error: m, errorCode: errorCode });
+                return;
+              }
+              // Chrome releases the flow when the window actually closes, and
+              // the close callback can run a beat before it does.
+              setTimeout(launch, 250);
+            });
+            return;
+          }
+
           _focusAuthWindow(flightKey);
         }
 
