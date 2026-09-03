@@ -76,6 +76,25 @@ code first — not from telemetry that means something adjacent.
 draft told a customer her campaign "sent fine" on the strength of that event
 while the campaign was still scheduled with zero sent. The row said otherwise.
 
+## Credit a finder without a count
+
+When someone reports something that turned out to be real, tell them what
+their push prevented — not how many people it touched.
+
+"You stopped other people running into the same thing" gives them the credit.
+"It was affecting all 66 users" opens two doors nobody asked us to open: it
+tells them how small we are, and it moves the subject from what they did to
+how long we served everyone a wrong number. The second one turns a thank-you
+into a disclosure, and they did not ask for a disclosure.
+
+Ali, 2026-09-03, cutting a count from the note owed to Hélène Carpentier after
+she refused to believe a 100% open rate and turned out to be right: *"kaç
+kişiyi etkilediğini falan karıştırmayalım."*
+
+This is the mirror of the numbers rule below. A figure that helps them decide
+something is checked and written; a figure that only sizes our failure is left
+out.
+
 ## What a good reply looks like
 
 Four short paragraphs at most:

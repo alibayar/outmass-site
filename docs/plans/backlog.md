@@ -378,6 +378,46 @@ her feedback did arrive).
 > policy to apply to mail failing SPF/DKIM, and nothing told us when it
 > happened. DKIM was verified in the same sitting.)*
 
+### ⬜ Hélène's comped Pro ends 2026-10-01 — watch the 18 days before it
+
+Her two campaigns (CBRE 66, Sustainability FM 42, both 5/day) finish around
+**13 September**. The comp runs to **1 October**. That leaves eighteen days
+where she holds Pro and has nothing running, and those days answer a question
+we cannot answer by asking:
+
+- **Starts a third campaign** → she is choosing to use Pro. Ask about paying
+  for it as the comp nears its end; the answer means something.
+- **Goes quiet** → the question changes to "what was missing from Pro?", and
+  she is the only user who can answer it — she has run follow-ups, A/B and
+  scheduling on a real list.
+
+She is on Starter ($9) and has held comped Pro since 2026-08-30. Both earlier
+grants were OUR-FAULT compensation and exempt from the gift test: the first
+because the Starter gate blocked follow-ups and A/B, the second for the
+scheduled-send formatting bug, promised by email as 1 October and verified in
+the row on 2026-09-03.
+
+A third grant was proposed on 2026-09-02 — three months, for the quality of
+her feedback, which is real: she found the 100% open rate, and that one was
+inflating every user's numbers. But it is DISCRETIONARY, so the test applies
+([[gift_learning_or_crutch]]), and as stated it fails: she is already using
+the product heavily, so the gift buys no new usage, and it is paired with no
+question. What it would buy is three more months of not knowing whether our
+best-informed user values Pro at $19.
+
+**Do on 13 September:** thank her properly — she pushed on a number she did
+not believe, and that stopped other people from running into the same thing.
+Nobody has told her. Keep it separate from any grant.
+
+Say it that way, not with a count. Ali, 2026-09-03: *"kaç kişiyi etkilediğini
+falan karıştırmayalım."* A number opens two doors we do not want opened — it
+tells her how few users we have, and it moves the subject from what she did to
+how long we served everyone a wrong figure. "You stopped others hitting this"
+gives her the credit without either.
+
+If a gesture is wanted anyway, one month PAIRED WITH THE QUESTION passes the
+test; three months unasked does not.
+
 ### ⬜ Composer: links and an image in the signature — PROMISED TO A CUSTOMER 2026-09-01
 
 Hélène Carpentier asked both in the same message as her follow-up text:
