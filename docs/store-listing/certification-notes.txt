@@ -1,6 +1,7 @@
 OutMass adds mail merge (personalised bulk email) to Outlook on the web.
 Mail goes from the user's own mailbox via Microsoft Graph. No remote code
-is loaded.
+is loaded. It closes only the sign-in window it opened, to recover a
+sign-in the browser has blocked.
 
 TEST ACCOUNT
 Username: <FILL IN>
@@ -16,7 +17,7 @@ STEPS
 2. Click the OutMass icon, "Sign in with Microsoft", accept Microsoft's
    own consent screen.
 3. In the Outlook tab, open the side panel from the popup or the round
-   "OM" button at the page edge.
+   "OM" button.
 4. Upload a CSV: header email,firstName and two addresses you own.
 5. Write a subject and body, optionally with {{firstName}}. "Send test"
    mails it to you.
@@ -25,7 +26,7 @@ STEPS
 PLAN-LOCKED FEATURES - intended, not errors
 Steps 1-6 are free. Four open a pricing dialog instead: automatic
 follow-ups, A/B test, Write with AI (PRO), scheduled sending and its
-day-of-week picker (Starter). No payment needed to see it.
+day-of-week picker (Starter). No payment needed.
 
 PERMISSIONS
 - User.Read: the signed-in address, shown in the panel.
@@ -38,5 +39,5 @@ PERMISSIONS
   sharing links; file contents are never read.
 - storage, alarms, identity.
 - Hosts: the four Outlook domains above, plus api.getoutmass.com and
-  outmass-production.up.railway.app - one backend under two names, the
-  second tried only if the first is unreachable.
+  outmass-production.up.railway.app - one backend under two names; the
+  second is a fallback.
