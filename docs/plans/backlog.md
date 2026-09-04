@@ -387,6 +387,39 @@ her feedback did arrive).
 > policy to apply to mail failing SPF/DKIM, and nothing told us when it
 > happened. DKIM was verified in the same sitting.)*
 
+### ⬜ We learn someone tried to pay a full day after they gave up
+
+`checkout_abandoned` is emitted from the `checkout.session.expired` webhook
+(`billing.py:883`). Stripe fires that ~24h after an unpaid session was
+created, so the alert cannot arrive sooner than a day late whatever we do with
+it downstream.
+
+**2026-09-03, ravi@quick-hire.com.** Signed in at 08:59, could not switch
+which account his campaigns send from, clicked Upgrade at 09:01:43 - 107
+seconds after his first failure - opened a Starter checkout, abandoned it four
+minutes later and went back to fighting the sign-in for three hours. He never
+came back.
+
+The Telegram alert for that arrived at 09:01:46 on **2026-09-04**, twenty-four
+hours and one second after the session opened. By then we had already found
+the cause, fixed it, shipped 0.3.4 and emailed him - none of it prompted by
+the alert. What surfaced it in time was Ali noticing a second signup from the
+same company and asking about it.
+
+So the signal exists and is useless for intervention. The window in which
+somebody can be helped is the same afternoon, not the next morning.
+
+**A cheaper signal with no Stripe dependency:** `checkout_session_created`
+already fires - we saw his. A user with that event and no
+`subscription_created` after ~30 minutes is the same fact, available while
+they are still at the desk. A line in the report, or a Telegram ping.
+
+**Worth knowing before building it.** An abandoned checkout is not always a
+payment problem. Ravi's was a product problem wearing a payment costume: he
+believed the restriction he had hit was a plan limit, and it was not. A faster
+alert only helps if whoever reads it asks what the person was doing sixty
+seconds before they clicked Upgrade, rather than what happened to their card.
+
 ### ⬜ Hélène's comped Pro ends 2026-10-01 — watch the 18 days before it
 
 Her two campaigns (CBRE 66, Sustainability FM 42, both 5/day) finish around
