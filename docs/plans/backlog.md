@@ -387,6 +387,64 @@ her feedback did arrive).
 > policy to apply to mail failing SPF/DKIM, and nothing told us when it
 > happened. DKIM was verified in the same sitting.)*
 
+### ⬜ A campaign shows what it says and not how it sends
+
+`GET /campaigns/{id}/stats` returns subject, body, counts and rates. It
+returns none of `scheduled_for`, `daily_send_cap`, `send_days` or
+`attachments`, and the panel reads `send_days` in exactly one place - the
+create payload (`sidebar.js:2357`). So every pacing decision a user makes is
+write-only: chosen once at creation, never shown again.
+
+**Hélène Carpentier, 2026-09-03.** She asked us to untick Saturday and Sunday
+on her two running campaigns. There is no edit path, so Ali did it with an
+UPDATE and we told her it was done. She had no way to see that, and she could
+not have taken our word for it in the panel if she had wanted to.
+
+Between 15:06 and 15:42 that afternoon she cancelled both campaigns, rebuilt
+one from the 46 remaining recipients, and cancelled that too. The next morning
+she built `NEW 03sept2026` from the remainder of both - 79 after
+cross-campaign dedup trimmed 83 - and set the weekday picker herself.
+
+The rebuild reads as competent rather than confused: she found the 0.3.3
+picker and consolidated two campaigns into one with a higher daily cap. But
+she rebuilt to get a setting she had already been given, because the product
+could not show it to her. Next time the same request arrives, the honest
+answer is still "we changed it, take our word".
+
+This is the same defect as the one 0.3.3 fixed for the message itself, and
+the note in `campaigns.py` that shipped that fix says why it mattered: "a
+person who cannot read their own campaign has to ask us instead." They still
+cannot read its schedule.
+
+**Smallest useful version:** return the four fields and render them read-only
+under the campaign's report. No editing, no new concepts.
+
+### ⬜ Changing a running campaign's schedule means SQL on a live row
+
+There is no way for a user - or for us through the product - to change
+`send_days`, `daily_send_cap` or `scheduled_for` after a campaign starts. The
+day picker exists only on the create form.
+
+So a routine request ("skip weekends") became an UPDATE against a paying
+customer's running campaign on 2026-09-03. It went cleanly, because CLAUDE.md
+§4.5 made us read the whole row first - the same discipline that found
+`{{hook}}` sitting in the middle of her body a fortnight earlier. But the
+safety came from a habit, not from the system, and the next one might be run
+by somebody in a hurry.
+
+Two things make this worth doing beyond the convenience:
+
+- **We cannot promise what we cannot demonstrate.** Every schedule change we
+  make by hand is a claim the customer has to trust rather than verify. See
+  the item above.
+- **The write is more dangerous than it looks.** `send_days` feeds
+  `next_allowed_day`, which moves `scheduled_for`. An UPDATE on a campaign
+  mid-flight lands between beats, and getting the interaction wrong stops a
+  send or fires one on a day the customer explicitly excluded.
+
+**Depends on** the read gap above: showing the settings is the prerequisite
+for editing them, and it is worth shipping alone first.
+
 ### ⬜ We learn someone tried to pay a full day after they gave up
 
 `checkout_abandoned` is emitted from the `checkout.session.expired` webhook
