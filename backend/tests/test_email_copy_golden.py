@@ -1,10 +1,11 @@
 """Nobody changes a live transactional email by accident.
 
-Ten templates go out to real customers: welcome, quota-capped, upgrade
-thank-you, plan-dropped in two variants, reconnect, account-deleted, and three
-inactivity tiers. They live as inline string concatenation across four files,
-each one duplicated by hand into a text body and an HTML body, and until now
-nothing anywhere asserted a single word of them.
+Eleven templates go out to real customers: welcome, quota-capped,
+campaign-stalled, upgrade thank-you, plan-dropped in two variants, reconnect,
+account-deleted, and three inactivity tiers. They live as inline string
+concatenation across four files, each one duplicated by hand into a text body
+and an HTML body, and until now nothing anywhere asserted a single word of
+them.
 
 This pins every one. It is not a style check — it is the safety net under the
 localisation work (#36), which has to move all ten into a string table. A
@@ -49,6 +50,9 @@ def _render_all() -> dict:
         ("welcome", lambda: we.send_welcome_email("a@b.com", "Ada Lovelace")),
         ("quota_capped",
          lambda: we.send_quota_capped_email("a@b.com", "Ada", 250, 2500, "2026-09-14")),
+        ("campaign_stalled",
+         lambda: we.send_campaign_stalled_email(
+             "a@b.com", "Ada", "Wave 6 SYC Jeddah", 208, 45)),
         ("upgrade", lambda: we.send_upgrade_email("a@b.com", "Ada", "starter")),
         ("plan_dropped_payment_failed",
          lambda: we.send_plan_dropped_email("a@b.com", "Ada", "payment_failed")),
@@ -130,7 +134,7 @@ def test_every_template_is_pinned(rendered, golden):
 
 @pytest.mark.parametrize("part", ["subject", "text", "html"])
 def test_the_copy_has_not_changed(rendered, golden, part):
-    """The whole point. Ten templates, three parts each, compared verbatim."""
+    """The whole point. Every template, three parts each, compared verbatim."""
     if os.environ.get("UPDATE_EMAIL_GOLDENS"):
         GOLDEN.write_text(
             json.dumps(rendered, indent=2, ensure_ascii=False), encoding="utf-8"

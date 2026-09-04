@@ -387,6 +387,59 @@ her feedback did arrive).
 > policy to apply to mail failing SPF/DKIM, and nothing told us when it
 > happened. DKIM was verified in the same sitting.)*
 
+### ⬜ The panel tells a held campaign it will send itself — SHIP WITH 0.3.5
+
+`resumeHint` renders in the campaign detail view for every `partial` campaign
+(`sidebar.html:376`, shown by `sidebar.js:3572-3576`) and ends with: "If it was
+your monthly limit, they'll also be sent automatically after your reset."
+
+Since 2026-09-04 that sentence can be false. A campaign silent for more than
+`AUTO_RESUME_MAX_IDLE_DAYS` is held by the resume beat and will not send until
+someone presses Resume — and the email we send its owner says so in as many
+words: "Nothing is sent until you do." The panel they are sent to says the
+opposite, in fourteen locales, and it is the one sentence that tells a user
+they can safely do nothing.
+
+Found by the adversarial review of the guard itself; two skeptics tried to
+refute it and could not. The same review corrected a second error in the same
+copy: the email said "click Archive on the same screen", and there is no
+Archive control on the detail view at all — it lives on each campaign's row
+in the Reports list (`sidebar.js:3396`). That half is already fixed in the
+thirteen email files.
+
+**Exposure today is zero.** The blast-radius query run before the backend
+deploy returned no campaign that the guard would hold: three belong to owners
+with a broken Microsoft connection (skipped before the guard is reached) and
+one is two days old. The first user who could see the contradiction is
+abidalibalospura@outlook.com, and only if he reconnects — his two campaigns
+have been silent since 5-6 May with 22 people still waiting, which is exactly
+the case the guard exists for.
+
+**Smallest fix:** make the automatic-resumption half of `resumeHint`
+conditional rather than unconditional, which needs the campaign's held state
+in the stats payload — the same endpoint work as the item below. Until then
+the email is the authoritative message and the panel is stale.
+
+### ⬜ "1 recipients": both campaign emails count in English as if it were always plural
+
+`quota_capped.subject` has said "${skipped} recipients saved" since 2026-07-20
+and `campaign_stalled` now says "${pending} recipients" the same way. At a
+count of one both read "1 recipients". `pending` of exactly 1 is reachable
+— the guard only requires the campaign to have at least one waiting
+recipient — and one live row already sits at 2.
+
+Russian and Arabic had the sharper version of this and are fixed: both files
+already avoided letting a numeral govern a noun (`Сохранено получателей: ${skipped}`,
+`وعددهم ${skipped}`, the invariant `${days} дн.`) and the new strings had
+broken that convention, wrong for roughly 40% of reachable values in Russian.
+The Latin-script languages are left matching the shipped `quota_capped`
+wording rather than diverging from their own sibling email.
+
+Doing this properly means plural forms in the string table, which the catalog
+deliberately does not have — its markup is three tokens and no more, so a
+translator cannot break a message in a language nobody here can proofread.
+Worth doing for both emails at once, or not at all.
+
 ### ⬜ A campaign shows what it says and not how it sends
 
 `GET /campaigns/{id}/stats` returns subject, body, counts and rates. It

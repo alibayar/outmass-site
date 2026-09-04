@@ -153,6 +153,12 @@ REGISTRY: tuple[Var, ...] = (
         "defaults to 30; a pixel fetched sooner than this after that recipient's own send, by something that does not name itself as a mail client, is counted as a security scanner rather than as an open. Measured on Helene's CBRE campaign, 2026-09-02: 93 open events for 15 people, the first fourteen between 9 and 16 seconds"),
     Var("AUTO_RESUME_DORMANT_DAYS", (WORKER,), False, "defaults to 30; owner must have been seen this recently for auto-resume to continue"),
     Var("AUTO_RESUME_BACKOFF_HOURS", (WORKER,), False, "defaults to 6; minimum gap between attempts on the same partial campaign"),
+    Var("AUTO_RESUME_MAX_IDLE_DAYS", (WORKER,), False,
+        "defaults to 35; a campaign silent longer than this emails its owner "
+        "and waits for Resume instead of resuming itself. Must stay above the "
+        "longest possible quota wait (31 days between rolling resets, plus a "
+        "backoff window) or the four live 'sends automatically after your "
+        "reset' promises stop being true"),
     Var("INACTIVITY_NUDGE_ENABLED", (WORKER,), False,
         "defaults to false, so the nudge emails do not go out until it is set; "
         "absent from this registry until 2026-08-30 because config.py reads it "

@@ -1,12 +1,14 @@
 """
 OutMass — onboarding and billing transactional emails (MailerSend, best-effort).
 
-Four senders, five messages. Each is fired exactly once by a guarded trigger:
+Five senders, six messages. Each is fired exactly once by a guarded trigger:
 - send_welcome_email      — user row CREATED (first-ever sign-in, never later
   logins; auth callbacks pass the upsert's `created` flag).
 - send_upgrade_email      — first processing of a Stripe checkout (rides the
   webhook's replay guard, so redeliveries can't send it twice).
 - send_quota_capped_email — a send that hit the monthly ceiling.
+- send_campaign_stalled_email — a campaign silent too long to resume on its
+  own (rides campaigns.stalled_notice_at, written before the call).
 - send_plan_dropped_email — a paid plan ended, in two variants.
 
 All are dispatched via BackgroundTasks and never raise — a failed email must
@@ -47,6 +49,7 @@ __all__ = [
     "SUPPORT_EMAIL",
     "send_welcome_email",
     "send_quota_capped_email",
+    "send_campaign_stalled_email",
     "send_upgrade_email",
     "send_plan_dropped_email",
 ]
@@ -146,6 +149,41 @@ def send_quota_capped_email(
         skipped=skipped,
         limit=format_number(limit, lang),
         reset_phrase=reset_phrase,
+    )
+
+
+def send_campaign_stalled_email(
+    email: str,
+    name: str | None,
+    campaign: str,
+    pending: int,
+    days: int,
+    lang: str | None = None,
+) -> bool:
+    """Best-effort 'this campaign is too old to resume by itself'. Never raises.
+
+    Fired once per stall by auto_resume_partial_campaigns, which writes
+    campaigns.stalled_notice_at BEFORE calling this — the beat runs every two
+    hours, and a notification without a persistent marker is a notification
+    twelve times a day.
+
+    The opposite message to send_quota_capped_email, and the pair has to stay
+    consistent: that one promises the rest goes out on its own, this one says
+    it will not. What keeps both true is the threshold
+    (AUTO_RESUME_MAX_IDLE_DAYS, 35 days), which no quota wait can reach.
+
+    `campaign` is a name the user typed. It reaches the template as a variable
+    and every variable is escaped at render time, so a name containing markup,
+    angle brackets or a stray ${ cannot alter the message.
+    """
+    return _send(
+        "campaign_stalled",
+        email,
+        name,
+        lang,
+        campaign=campaign or "—",
+        pending=format_number(pending, lang),
+        days=days,
     )
 
 

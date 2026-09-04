@@ -1,4 +1,4 @@
-"""The ten transactional emails, as structure rather than as strings.
+"""The eleven transactional emails, as structure rather than as strings.
 
 Structure lives here; words live in ``strings/<lang>.json``. That split is the
 whole point: a translator adds one file with the same keys and gets ten
@@ -6,7 +6,7 @@ correctly-shaped emails, in both text and HTML, without touching Python.
 
 Every message is heading → greeting → body, so ``render()`` supplies the first
 two and each entry below describes only its body. That is not a coincidence
-worth preserving at all costs — it is just what all ten happened to be, and
+worth preserving at all costs — it is just what all of them happened to be, and
 noticing it removed two repeated blocks from every template.
 
 ## Adding a template
@@ -89,6 +89,25 @@ TEMPLATES: dict[str, EmailTemplate] = {
                 "quota_capped.automatic",
                 "quota_capped.sooner",
                 "quota_capped.questions",
+            ),
+            _SIGNATURE_ALI,
+        ),
+    ),
+    # The other half of quota_capped, and deliberately next to it: one says
+    # "this will carry on by itself", the other says "this one will not".
+    # Whoever edits either sentence should see both.
+    "campaign_stalled": EmailTemplate(
+        subject="campaign_stalled.subject",
+        heading="campaign_stalled.heading",
+        anon_greeting=False,
+        blocks=(
+            (
+                P,
+                "campaign_stalled.silent",
+                "campaign_stalled.asking",
+                "campaign_stalled.how",
+                "campaign_stalled.archive",
+                "campaign_stalled.questions",
             ),
             _SIGNATURE_ALI,
         ),

@@ -21,6 +21,13 @@ def get_resumable_partial_campaigns() -> list[dict]:
     would go out automatically. Ali's call, 2026-08-28 — the user should not
     have to come back and press anything, however many months it takes.
 
+    Narrowed on 2026-09-04, and only in the direction that sentence could not
+    have meant: a campaign that has not sent anything for more than
+    AUTO_RESUME_MAX_IDLE_DAYS now emails its owner and waits for Resume. The
+    threshold sits above the longest possible quota wait, so "forty monthly
+    batches, automatically" still holds; what it stops is the six-week silence
+    that sent 204 of faisal@samaed.com's emails the morning after he signed in.
+
     What replaces the age gate is not nothing:
 
       * `archived` is now the stop switch, and it is one the user can reach

@@ -52,7 +52,7 @@ from string import Template
 
 # ── Blocks ──
 #
-# Six kinds, which is exactly enough for all ten templates. Each is a tuple so
+# Six kinds, which is exactly enough for all eleven templates. Each is a tuple so
 # the catalog reads as data rather than as constructor calls.
 
 H = "h"          # heading — HTML only, see module docstring
@@ -64,7 +64,7 @@ NOTE = "note"    # small print — the grey footer text
 
 TEXT_WIDTH = 72
 
-# One shell for all ten. There used to be three: max-width 520, 540 and 560,
+# One shell for all of them. There used to be three: max-width 520, 540 and 560,
 # two different font stacks, and an <h2> that was brand blue in five templates
 # and black in the other five. Which one a customer got depended on which file
 # the message happened to live in.

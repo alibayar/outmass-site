@@ -295,6 +295,32 @@ AUTO_RESUME_DORMANT_DAYS = int(os.getenv("AUTO_RESUME_DORMANT_DAYS", "30"))
 # immediate path for that, and it does not go through this beat.
 AUTO_RESUME_BACKOFF_HOURS = int(os.getenv("AUTO_RESUME_BACKOFF_HOURS", "6"))
 
+# How long a campaign may go without sending anything before the beat stops
+# resuming it on its own and asks the owner instead.
+#
+# faisal@samaed.com, 2026-08-11: a campaign that had been silent for six weeks
+# sent 204 emails to his customers the morning after he signed in and touched
+# nothing. The dormancy hold above is what released it, and its self-healing
+# property — one sign-in and the next run resumes — is exactly what made the
+# send feel like it came from nowhere.
+#
+# Thirty-five days, and the number is not free-floating. Four live places
+# promise that a campaign stopped by the monthly quota carries on by itself:
+# the store listing in twelve languages, send_quota_capped_email,
+# alertQuotaCapped in fourteen locales, and the message owed to
+# marketing@hrds.com this week. A quota wait is bounded by construction — the
+# longest gap between two rolling resets is thirty-one days, plus at most one
+# AUTO_RESUME_BACKOFF_HOURS window on either side — so a threshold above that
+# breaks none of those four promises. It only catches the wait nothing bounds,
+# which is an owner who was away.
+#
+# What it costs: someone who leaves for two months now comes back to a
+# question rather than to a send. The listing does not promise "however long
+# you are gone", but it does not exclude it either, so this is a narrowing.
+# Ali's call, 2026-09-04 — a send two months later with no warning is the
+# incident itself.
+AUTO_RESUME_MAX_IDLE_DAYS = int(os.getenv("AUTO_RESUME_MAX_IDLE_DAYS", "35"))
+
 # How long the panel keeps saying "your plan ended" after a drop to Free.
 #
 # The notice is not the notification — the email sent at the moment of the

@@ -133,6 +133,7 @@ sign-in and sending.
 | `AUTOMATED_OPEN_WINDOW_SECONDS` | web | no | defaults to 30; a pixel fetched sooner than this after that recipient's own send, by something that does not name itself as a mail client, is counted as a security scanner rather than as an open. Measured on Helene's CBRE campaign, 2026-09-02: 93 open events for 15 people, the first fourteen between 9 and 16 seconds |
 | `AUTO_RESUME_DORMANT_DAYS` | worker | no | defaults to 30; owner must have been seen this recently for auto-resume to continue |
 | `AUTO_RESUME_BACKOFF_HOURS` | worker | no | defaults to 6; minimum gap between attempts on the same partial campaign |
+| `AUTO_RESUME_MAX_IDLE_DAYS` | worker | no | defaults to 35; a campaign silent longer than this emails its owner and waits for Resume instead of resuming itself. Must stay above the longest possible quota wait (31 days between rolling resets, plus a backoff window) or the four live "sends automatically after your reset" promises stop being true |
 | `RAILWAY_GIT_COMMIT_SHA` | web | no | injected by Railway itself, not set by hand; absent means the health endpoint answers 'unknown', which is honest rather than misleading |
 | `INACTIVITY_NUDGE_ENABLED` | worker | no | defaults to false, so the nudge emails do not go out until it is set |
 | `INACTIVITY_NUDGE_DAYS` | worker | no | defaults to 30 |

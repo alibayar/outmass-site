@@ -17,6 +17,7 @@ import httpx
 from config import (
     AUTO_RESUME_BACKOFF_HOURS,
     AUTO_RESUME_DORMANT_DAYS,
+    AUTO_RESUME_MAX_IDLE_DAYS,
     BACKEND_URL,
     FREE_PLAN_MONTHLY_LIMIT,
     GRAPH_API_BASE,
@@ -1693,6 +1694,131 @@ def _owner_is_dormant(user: dict) -> bool:
     return age > timedelta(days=AUTO_RESUME_DORMANT_DAYS)
 
 
+#: Written by this beat before it emails, cleared by POST
+#: /campaigns/{id}/resume. Its ABSENCE from a row means migration 036 has not
+#: been applied — the row comes from `select *`, so the key is there iff the
+#: column is. That is the whole compatibility story: no column, no guard, and
+#: auto-resume behaves exactly as it did before this change. Deploying the
+#: code ahead of the migration is therefore safe rather than a source of
+#: surprise mail, which matters because the two land separately.
+STALL_NOTICE_COLUMN = "stalled_notice_at"
+
+
+def _campaign_idle_days(campaign: dict, last_sent: str | None) -> float | None:
+    """How long since this campaign last put mail out, in days.
+
+    Anchored on the newest contacts.sent_at rather than on anything about the
+    campaign row, because the row moves for reasons that are not deliveries:
+    updated_at is bumped by the resume beat itself every six hours, which
+    would make a campaign look busy precisely while it was doing nothing.
+
+    A campaign that has never sent anything falls back to created_at. That is
+    reachable — a send can be parked before its first recipient — and "created
+    forty days ago, delivered nothing" is exactly as stale as "delivered once,
+    forty days ago".
+
+    None means we could not tell, and the caller resumes as it always has.
+    created_at is NOT NULL, so this is a fallback rather than a path; the
+    direction is deliberate anyway, because the alternative is holding a
+    campaign forever on a string we failed to parse and telling its owner it
+    has been silent for an unknown length of time.
+    """
+    anchor = last_sent or campaign.get("created_at")
+    if not anchor:
+        return None
+    try:
+        seen = datetime.fromisoformat(str(anchor).replace("Z", "+00:00"))
+    except ValueError:
+        logger.warning(
+            "auto_resume: unreadable idle anchor %r on campaign %s",
+            anchor, campaign.get("id"),
+        )
+        return None
+    if seen.tzinfo is None:
+        seen = seen.replace(tzinfo=timezone.utc)
+    return (datetime.now(timezone.utc) - seen).total_seconds() / 86400.0
+
+
+def _notify_stalled_owner(campaign: dict, user: dict, idle_days: float,
+                          campaign_model, contact_model) -> bool:
+    """Tell this campaign's owner it is too old to resume itself.
+
+    Returns whether they were actually told. It does NOT decide whether the
+    campaign is held — the caller holds it either way, and that separation is
+    the correction to this function's first draft. Failing to notify is a
+    reason to say nothing; it is never a reason to send several hundred
+    emails on someone's behalf.
+
+    Order matters: the marker is written FIRST, and the email only goes out if
+    that write succeeded. A message we cannot record having sent is a message
+    we send again in two hours, and then twelve times a day for as long as the
+    owner ignores it. The quota-capped notification shipped yesterday was one
+    condition away from exactly that — about fifty-two identical emails to one
+    customer over thirteen days.
+
+    Both failure directions therefore end in silence rather than in a send,
+    and both are recoverable by the person: the campaign stays 'partial', which
+    is the one status that shows a Resume button. A missed email costs a
+    reminder; a surprise send costs a customer.
+
+    The recipient count is a COUNT and not the length of the page the caller
+    already holds. get_resumable_contacts is capped at SUPABASE_MAX_ROWS
+    (1,000), so len() answers "how big was the page"; truncation of exactly
+    that read is what stranded 109 of faisal's recipients on 2026-08-31, and
+    the largest list on his account today is 1,210. The wrong number would
+    reach the person who most needs it right.
+    """
+    try:
+        campaign_model.update_campaign(
+            campaign["id"],
+            {STALL_NOTICE_COLUMN: datetime.now(timezone.utc).isoformat()},
+        )
+    except Exception:  # noqa: BLE001
+        # Reaching here means the column exists — the caller checked the row
+        # carries it — so this is a transient write failure, not an unapplied
+        # migration. Saying nothing and holding costs one delayed reminder;
+        # the next pass in two hours writes the marker and sends it. What it
+        # must not cost is the send this whole guard exists to stop.
+        logger.error(
+            "auto_resume: could not mark campaign %s as notified — holding it "
+            "and telling nobody this pass",
+            campaign.get("id"), exc_info=True,
+        )
+        return False
+
+    failure = None
+    try:
+        from utils import welcome_email
+
+        sent = welcome_email.send_campaign_stalled_email(
+            user.get("email"),
+            user.get("name"),
+            campaign.get("name") or "",
+            contact_model.count_resumable_contacts(campaign["id"]),
+            int(idle_days),
+            user.get("preferred_language"),
+        )
+    except Exception as exc:  # noqa: BLE001
+        sent, failure = False, exc
+
+    if not sent:
+        # The marker is already written, so this will not be retried: the
+        # campaign is held and its owner was not told. Logged at ERROR because
+        # nothing else will ever surface it, and counted separately in the
+        # beat's result so a number that is not zero is the signal to look.
+        #
+        # exc_info is the exception or None rather than True: _dispatch never
+        # raises — a missing API key, a 429 and a timeout all come back as
+        # False — and the commonest path through here would otherwise log a
+        # traceback reading "NoneType: None".
+        logger.error(
+            "auto_resume: campaign %s held but its owner was NOT told — it "
+            "stays 'partial' with its Resume button and nothing will send",
+            campaign.get("id"), exc_info=failure,
+        )
+    return bool(sent)
+
+
 @celery.task
 def auto_resume_partial_campaigns():
     """Flip recent 'partial' campaigns to 'scheduled' when the owner has
@@ -1708,6 +1834,10 @@ def auto_resume_partial_campaigns():
       - a campaign attempted within AUTO_RESUME_BACKOFF_HOURS is left alone,
         so a run that cannot succeed is retried at that interval rather than
         on every pass of a two-hourly beat
+      - a campaign silent for more than AUTO_RESUME_MAX_IDLE_DAYS does not
+        resume on its own: its owner is emailed once and it waits for the
+        Resume button (faisal@samaed.com, 2026-08-11 — 204 emails sent six
+        weeks after the campaign stopped, the morning after he signed in)
       - check_monthly_reset runs first, so the reset happens even if the
         user never logs in on their anniversary day
       - requires_reauth owners are skipped (retried on later runs once
@@ -1726,12 +1856,22 @@ def auto_resume_partial_campaigns():
     closed = 0
     dormant = 0
     backed_off = 0
+    held_stale = 0
+    held_stale_unnotified = 0
     users_cache: dict = {}
 
     for campaign in campaigns:
         # Cheapest guard first — it needs no user lookup.
         if _recently_attempted(campaign):
             backed_off += 1
+            continue
+
+        # Already asked; the answer is the Resume button. Checked up here
+        # rather than beside the decision that sets it, because a campaign
+        # waiting on its owner may wait for months and should cost nothing
+        # while it does — every guard below this line spends a query.
+        if campaign.get(STALL_NOTICE_COLUMN):
+            held_stale += 1
             continue
 
         uid = campaign.get("user_id")
@@ -1768,6 +1908,54 @@ def auto_resume_partial_campaigns():
             closed += 1
             continue
 
+        # Everything above this point still decides whether a resume is
+        # possible. This decides whether it should happen without asking.
+        #
+        # faisal@samaed.com, 2026-08-11: a campaign that had stopped partway
+        # on 27 June, leaving 208 people never written to, sent 204 emails at
+        # 06:04 the morning after he signed in and touched nothing else. The
+        # dormancy hold above is what released it — "one sign-in writes the
+        # column and the next run resumes" — so he was punished for opening
+        # the app, and his customers received a message he had written six
+        # weeks earlier.
+        #
+        # Placed AFTER the dormancy check on purpose, and after the quota and
+        # pending checks too. Each of those still means what it meant: a
+        # campaign with nothing left closes quietly, a quota hold waits
+        # silently as four live promises say it will, and an owner who is away
+        # is not emailed about a campaign they may never come back to. This
+        # replaces exactly one action — the resume — with a question, and only
+        # for a wait no quota can explain. Rows that have already been asked
+        # left this loop at the top.
+        #
+        # One read answering both remaining questions — how long has this been
+        # silent, and did today's batch already go out. Fetched once and only
+        # when something below actually asks: the same value read twice is how
+        # a two-hourly beat quietly doubles its own query count, and reading it
+        # for a campaign that needs neither answer is a query for nothing.
+        last_sent = None
+        if STALL_NOTICE_COLUMN in campaign or campaign.get("daily_send_cap"):
+            last_sent = contact_model.get_last_sent_at(campaign["id"])
+
+        if STALL_NOTICE_COLUMN in campaign:
+            idle_days = _campaign_idle_days(campaign, last_sent)
+            if idle_days is not None and idle_days > AUTO_RESUME_MAX_IDLE_DAYS:
+                # Held unconditionally. Whether we managed to TELL the owner
+                # is a separate question with a separate counter: a failed
+                # notification is a reason to stay quiet, never a reason to
+                # fall through and send. The first draft of this returned a
+                # single bool and let a failed marker write resume the
+                # campaign — which, because the branch above has already
+                # established the column exists, could only ever be reached by
+                # a transient blip, and would have answered it with the exact
+                # incident this guard was written for.
+                if not _notify_stalled_owner(
+                    campaign, user, idle_days, campaign_model, contact_model
+                ):
+                    held_stale_unnotified += 1
+                held_stale += 1
+                continue
+
         # A daily-capped campaign paces on scheduled_for and nothing else:
         # the send loop takes pending[:daily_send_cap] on every run, so
         # resuming "now" hands it another full batch immediately. If today's
@@ -1778,10 +1966,8 @@ def auto_resume_partial_campaigns():
         # scheduled_for = now(), and its owner watched 10 go out. She had
         # written in that morning asking how to slow it down.
         resume_at = datetime.now(timezone.utc)
-        if campaign.get("daily_send_cap"):
-            last_sent = contact_model.get_last_sent_at(campaign["id"])
-            if last_sent and _sent_today(last_sent):
-                resume_at = resume_at + timedelta(days=1)
+        if campaign.get("daily_send_cap") and last_sent and _sent_today(last_sent):
+            resume_at = resume_at + timedelta(days=1)
         campaign_model.update_campaign(
             campaign["id"],
             {
@@ -1800,4 +1986,14 @@ def auto_resume_partial_campaigns():
         # only one of them is worth a look.
         "held_owner_dormant": dormant,
         "held_backoff": backed_off,
+        # Campaigns waiting on their owner's answer rather than on anything
+        # we can fix. Counted separately from the dormancy hold because the
+        # two need opposite responses: one resolves itself when the person
+        # comes back, the other only ever resolves by someone pressing a
+        # button, and a number that never falls is the signal to look.
+        "held_stale": held_stale,
+        # The subset of those whose owner could not be told, this pass. Zero
+        # is the only good value: a held campaign whose owner never got the
+        # email is waiting on a button nobody knows to press.
+        "held_stale_unnotified": held_stale_unnotified,
     }

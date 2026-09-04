@@ -1684,10 +1684,21 @@ async def resume_campaign(
     # endpoint then 409s on — while the response above cheerfully reports N
     # recipients queued. Resume is an explicit un-stop, so it clears the stop
     # switch it is fighting.
-    campaign_model.update_campaign(
-        campaign_id,
-        {"status": "scheduled", "scheduled_for": now_iso, "archived": False},
-    )
+    updates = {
+        "status": "scheduled",
+        "scheduled_for": now_iso,
+        "archived": False,
+    }
+    # Pressing Resume IS the answer to the "this has been silent too long"
+    # email, so the next stall gets to ask again rather than being met with
+    # silence a year later. Written only when the row actually carries the
+    # column: it arrives from `select *`, so its absence means migration 036
+    # has not been applied, and naming a column that does not exist would fail
+    # the whole request — turning a missing migration into a broken Resume
+    # button for everybody.
+    if "stalled_notice_at" in campaign:
+        updates["stalled_notice_at"] = None
+    campaign_model.update_campaign(campaign_id, updates)
 
     return {
         "campaign_id": campaign_id,
