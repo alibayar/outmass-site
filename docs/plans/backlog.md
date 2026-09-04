@@ -153,7 +153,7 @@ in the window. It is an old session finally reporting, not a visitor that day.
 
 The lesson repeats: the count was two, the reading was one.
 
-### 🟠 Store listing claims a privacy guarantee the code does not keep — GONE FROM EDGE 2026-09-03, STILL LIVE ON CHROME
+### ✅ Store listing claims a privacy guarantee the code does not keep — GONE FROM BOTH STORES 2026-09-03
 
 **Edge verified 2026-09-03 09:15** on the public listing: the section is now
 `🔒 SİZİN HESABINIZ, SİZİN GÖNDERİMİNİZ` and reads "Kampanyanız sunucularımızda
@@ -167,8 +167,17 @@ Edge published, Chrome's listing edit is queued behind its own review while the
 worth knowing for every future claims fix: the package landing does not mean
 the words did.
 
-Closes when the Chrome listing serves the replacement. Check by fetching the
-public page, not the dashboard.
+**Closed 2026-09-03**, verified the way the closing condition required — by
+fetching the public page, not by reading the dashboard. Chrome now serves
+"Your campaign is stored on our servers, because scheduled sending, follow-ups
+and campaign reports…" in the section headed YOUR ACCOUNT, YOUR SENDING. The
+0.3.4 package review appears to have carried the queued listing text with it;
+Edge had published hours earlier.
+
+Found 2026-08-25, corrected in the repo 2026-09-01, live in both stores
+2026-09-03. Nine days, and seven of them were the gap between the file being
+right and the words being right — which is the only part of that interval a
+user could see.
 
 **Text fixed 2026-09-01 (`3401ee8`) in all twelve locales. Never pasted into
 either store.** Read off the live Chrome listing on 2026-09-03:
