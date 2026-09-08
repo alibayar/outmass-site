@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Welcome to OutMass — your first campaign in 3 steps</title>
+  <meta name="robots" content="noindex">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+      background: #faf9f8; color: #323130; line-height: 1.6;
+    }
+    .wrap { max-width: 640px; margin: 0 auto; padding: 48px 24px 64px; }
+    .badge {
+      display: inline-block; background: #dff6dd; color: #107c10;
+      font-size: 13px; font-weight: 600; padding: 4px 12px; border-radius: 12px;
+    }
+    h1 { font-size: 30px; margin: 14px 0 8px; }
+    .sub { color: #605e5c; font-size: 16px; margin-bottom: 32px; }
+    .step {
+      display: flex; gap: 16px; background: #fff; border: 1px solid #edebe9;
+      border-radius: 8px; padding: 20px; margin-bottom: 14px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+    }
+    .num {
+      flex: 0 0 36px; height: 36px; border-radius: 50%; background: #0078d4;
+      color: #fff; font-weight: 700; font-size: 17px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .step h2 { font-size: 17px; margin-bottom: 4px; }
+    .step p { font-size: 14px; color: #605e5c; }
+    .om-chip {
+      display: inline-flex; align-items: center; justify-content: center;
+      width: 26px; height: 26px; border-radius: 50%; background: #0078d4;
+      color: #fff; font-size: 10px; font-weight: 700; vertical-align: middle;
+    }
+    .cta {
+      display: inline-block; background: #0078d4; color: #fff; text-decoration: none;
+      font-size: 15px; font-weight: 600; padding: 12px 22px; border-radius: 4px;
+      margin-top: 6px;
+    }
+    .cta:hover { background: #106ebe; }
+    .alt { font-size: 13px; color: #605e5c; margin-top: 8px; }
+    .alt a { color: #0078d4; }
+    .note {
+      background: #fff4ce; border: 1px solid #f0e2a8; border-radius: 8px;
+      padding: 14px 16px; font-size: 13.5px; color: #605e5c; margin: 24px 0;
+    }
+    .support { font-size: 14px; color: #605e5c; margin-top: 28px; }
+    .support a { color: #0078d4; }
+    code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 13px; }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <span class="badge">✓ OutMass is installed</span>
+    <h1>Your first campaign in 3 steps</h1>
+    <p class="sub">OutMass lives inside Outlook on the web — here's how to find it and send your first personalized campaign.</p>
+
+    <div class="step">
+      <div class="num">1</div>
+      <div>
+        <h2>Open Outlook on the web</h2>
+        <p>OutMass works in the browser version of Outlook — not the Windows/Mac desktop app.</p>
+        <a class="cta" href="https://outlook.office.com/mail/" target="_blank" rel="noopener">Open Outlook (work / school)</a>
+        <p class="alt">Personal @outlook.com or @hotmail.com account? <a href="https://outlook.live.com/mail/" target="_blank" rel="noopener">Open outlook.live.com instead</a>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">2</div>
+      <div>
+        <h2>Click the round <span class="om-chip">OM</span> button</h2>
+        <p>Look at the <strong>bottom-right corner</strong> of your Outlook — the round OutMass button opens the campaign panel on the right. (If you don't see it, refresh the Outlook tab once.)</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="num">3</div>
+      <div>
+        <h2>Sign in with Microsoft, then send</h2>
+        <p><strong>Sign in first</strong> — sending uses your own Outlook account, so OutMass needs your permission. Then upload your recipients as a CSV (there's a template in the panel), write your email with <code>{{firstName}}</code> to personalize it, hit <strong>Preview</strong> or a <strong>Test Send</strong>, and send. OutMass paces delivery and tracks opens, clicks and replies.</p>
+      </div>
+    </div>
+
+    <div class="note">
+      💡 Your list comes from Excel? Save it as <strong>"CSV UTF-8 (Comma delimited)"</strong> — Excel's default "CSV" option can garble non-English characters.
+    </div>
+
+    <p class="support">
+      Stuck or have a question? Email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> — it goes straight to the founder, and replies usually come within a few hours.<br>
+      Free plan: 250 emails/month · <a href="https://getoutmass.com/pricing.html">plans &amp; pricing</a>
+    </p>
+  </div>
+</body>
+</html>

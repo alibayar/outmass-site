@@ -1,0 +1,11 @@
+User-agent: *
+Allow: /
+
+# Implementation plans and store-listing copy aren't user-facing —
+# Jekyll already excludes them, but we double-disallow here so any
+# crawler that finds direct paths skips them.
+Disallow: /plans/
+Disallow: /store-listing/
+Disallow: /uninstall.html
+
+Sitemap: https://getoutmass.com/sitemap.xml

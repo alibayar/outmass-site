@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pricing — OutMass</title>
+  <meta name="description" content="OutMass pricing: Free for 250 emails/month, Starter $9/month for 2,500, Pro $19/month for 10,000 emails plus AI writer and A/B testing.">
+  <link rel="canonical" href="https://getoutmass.com/pricing.html">
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.6; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
+
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .container { display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    nav a.cta-sm { background: #0078d4; color: #fff; padding: 8px 20px; border-radius: 6px; font-size: 14px; font-weight: 600; }
+    nav a.cta-sm:hover { background: #005fa3; text-decoration: none; }
+
+    .hero { text-align: center; padding: 60px 0 20px; }
+    .hero h1 { font-size: 38px; font-weight: 800; margin-bottom: 12px; }
+    .hero p { font-size: 18px; color: #555; }
+    .hero .compare { margin-top: 10px; font-size: 14px; color: #0078d4; font-weight: 600; }
+
+    .pricing-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 28px; max-width: 940px; margin: 48px auto 0; }
+    .price-card { border: 2px solid #e8e8e8; border-radius: 12px; padding: 36px 28px; text-align: center; }
+    .price-card.popular { border-color: #0078d4; position: relative; }
+    .price-card.popular::after { content: 'Most Popular'; position: absolute; top: -14px; left: 50%; transform: translateX(-50%); background: #0078d4; color: #fff; font-size: 12px; font-weight: 700; padding: 4px 14px; border-radius: 20px; }
+    .price-card h3 { font-size: 22px; margin-bottom: 8px; }
+    .price-card .price { font-size: 42px; font-weight: 800; margin: 12px 0 4px; }
+    .price-card .price span { font-size: 16px; font-weight: 400; color: #888; }
+    .price-card .limit { color: #0078d4; font-weight: 600; font-size: 14px; margin-bottom: 12px; }
+    .price-card ul { list-style: none; text-align: left; margin: 20px 0 28px; }
+    .price-card ul li { padding: 6px 0; font-size: 15px; color: #444; }
+    .price-card ul li::before { content: '✓ '; color: #0078d4; font-weight: 700; }
+    .price-card ul li.muted { color: #aaa; }
+    .price-card ul li.muted::before { content: '— '; color: #ccc; }
+    .btn-primary { display: inline-block; background: #0078d4; color: #fff; padding: 12px 28px; border-radius: 8px; font-size: 15px; font-weight: 600; width: 100%; text-align: center; }
+    .btn-primary:hover { background: #005fa3; text-decoration: none; }
+
+    .compare-table { max-width: 940px; margin: 80px auto 0; padding: 0 24px; }
+    .compare-table h2 { font-size: 28px; margin-bottom: 24px; text-align: center; }
+    .compare-table table { width: 100%; border-collapse: collapse; font-size: 15px; }
+    .compare-table th, .compare-table td { padding: 14px 12px; text-align: left; border-bottom: 1px solid #eee; }
+    .compare-table th { background: #f7f7f9; font-weight: 600; }
+    .compare-table .highlight { color: #0078d4; font-weight: 700; }
+
+    .faq { max-width: 700px; margin: 60px auto; padding: 0 24px; }
+    .faq h2 { font-size: 28px; margin-bottom: 28px; text-align: center; }
+    .faq-item { border-bottom: 1px solid #e8e8e8; padding: 20px 0; }
+    .faq-item h3 { font-size: 17px; margin-bottom: 8px; }
+    .faq-item p { color: #555; font-size: 15px; }
+
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="container">
+    <a href="index.html" class="logo">Out<span>Mass</span></a>
+    <div>
+      <a href="index.html" style="margin-right:20px;font-size:15px;color:#444;">Home</a>
+      <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm" class="cta-sm">Add to Chrome</a>
+    </div>
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="container">
+    <h1>Simple, transparent pricing</h1>
+    <p>Start free. Upgrade when you need more.</p>
+    <p class="compare">Available in 13 languages — from $9/month</p>
+  </div>
+</section>
+
+<section>
+  <div class="container">
+    <div class="pricing-grid">
+
+      <div class="price-card">
+        <h3>Free</h3>
+        <div class="price">$0<span>/mo</span></div>
+        <div class="limit">250 emails / month</div>
+        <ul>
+          <li>CSV recipient upload</li>
+          <li>Mail merge ({{firstName}} etc.)</li>
+          <li>Open tracking</li>
+          <li>Click tracking</li>
+          <li>Campaign reports</li>
+          <li class="muted">Scheduled sending</li>
+          <li class="muted">A/B testing</li>
+          <li class="muted">Templates</li>
+          <li class="muted">AI Email Writer</li>
+        </ul>
+        <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm" class="btn-primary">Get Started</a>
+      </div>
+
+      <div class="price-card">
+        <h3>Starter</h3>
+        <div class="price">$9<span>/mo</span></div>
+        <div class="limit">2,500 emails / month</div>
+        <ul>
+          <li>Everything in Free, plus:</li>
+          <li>Scheduled sending</li>
+          <li>Daily send limit (multi-day spread)</li>
+          <li>CSV export</li>
+          <li>Email templates</li>
+          <li class="muted">A/B testing</li>
+          <li class="muted">Automated follow-up</li>
+          <li class="muted">AI Email Writer</li>
+        </ul>
+        <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm" class="btn-primary">Start with Starter</a>
+      </div>
+
+      <div class="price-card popular">
+        <h3>Pro</h3>
+        <div class="price">$19<span>/mo</span></div>
+        <div class="limit">10,000 emails / month</div>
+        <ul>
+          <li>Everything in Starter, plus:</li>
+          <li>Automated follow-up (non-openers) — stops automatically when someone replies</li>
+          <li>A/B subject testing</li>
+          <li><strong>AI Email Writer</strong> (50/mo, 12 languages)</li>
+          <li>Priority support</li>
+        </ul>
+        <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm" class="btn-primary">Go Pro</a>
+      </div>
+
+    </div>
+  </div>
+  <p style="text-align:center;margin:0;font-size:14px;color:#666;">Install free from the <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Chrome Web Store</a> or <a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Microsoft Edge</a> — upgrade anytime inside Outlook.</p>
+</section>
+
+<section class="compare-table">
+  <h2>OutMass vs GMass</h2>
+  <table>
+    <thead>
+      <tr>
+        <th></th>
+        <th>OutMass Pro</th>
+        <th>GMass Standard</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>Monthly price</td>
+        <td class="highlight">$19</td>
+        <td>$29.95</td>
+      </tr>
+      <tr>
+        <td>Platform</td>
+        <td>Outlook Web</td>
+        <td>Gmail</td>
+      </tr>
+      <tr>
+        <td>Languages</td>
+        <td class="highlight">13 (incl. TR, DE, FR, ES, RU, AR, HI, ZH, ZH-TW, JA, PT-BR, PT-PT)</td>
+        <td>English only</td>
+      </tr>
+      <tr>
+        <td>AI Email Writer</td>
+        <td class="highlight">Included (Claude)</td>
+        <td>Not available</td>
+      </tr>
+      <tr>
+        <td>Email limit</td>
+        <td>10,000 / month</td>
+        <td>~15,000 (Gmail limit)</td>
+      </tr>
+      <tr>
+        <td>Mail merge</td>
+        <td>✓</td>
+        <td>✓</td>
+      </tr>
+      <tr>
+        <td>A/B testing</td>
+        <td>✓</td>
+        <td>✓</td>
+      </tr>
+      <tr>
+        <td>Follow-ups</td>
+        <td>✓</td>
+        <td>✓</td>
+      </tr>
+      <tr>
+        <td>Scheduled sending</td>
+        <td>✓</td>
+        <td>✓</td>
+      </tr>
+    </tbody>
+  </table>
+</section>
+
+<section class="faq">
+  <h2>Frequently Asked Questions</h2>
+  <div class="faq-item">
+    <h3>Can I try Pro features before buying?</h3>
+    <p>You can start on Free and upgrade anytime. Cancel anytime — no long-term contract.</p>
+  </div>
+  <div class="faq-item">
+    <h3>What payment methods do you accept?</h3>
+    <p>We accept all major credit cards via Stripe. Subscriptions are billed monthly.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Can I cancel anytime?</h3>
+    <p>Yes — cancel from your account settings at any time. You keep access until the end of your billing period.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Is there a refund policy?</h3>
+    <p>Yes — we offer a 30-day money-back guarantee. See our <a href="refund.html">refund policy</a>.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Do emails go through your servers?</h3>
+    <p>Your emails are sent directly through Microsoft Graph API using your own Outlook account — we never proxy or relay them through our own mail servers. To power scheduled sending, follow-ups, A/B tests and saved templates, we do store your campaign's subject and body text on our backend; it's deleted when you delete the campaign or your account. Reply detection, if you use it, checks who wrote to you and when so it can match a reply to a recipient &mdash; it never reads what they wrote, and message bodies are never downloaded. See the <a href="privacy.html">Privacy Policy</a> for details.</p>
+  </div>
+  <div class="faq-item">
+    <h3>Does OutMass work with Microsoft 365 work &amp; school accounts?</h3>
+    <p>Yes — Microsoft 365 work and school accounts are fully supported, and most can connect right away. Only if your organization specifically restricts third-party apps will an IT administrator need to approve OutMass first (a standard Microsoft security setting). In that case you can ask your admin to approve OutMass, email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> and we'll help, or sign in with a personal Outlook.com account instead — personal accounts work right away.</p>
+  </div>
+  <div class="faq-item">
+    <h3>What languages does OutMass support?</h3>
+    <p>The extension interface comes in 13 languages: English, Turkish, German, French, Spanish, Russian, Arabic (right-to-left), Hindi, Simplified Chinese, Traditional Chinese, Japanese, Português (Brasil) and Português (Portugal). Each is a separate translation — Traditional Chinese is written in Taiwan vocabulary rather than converted from Simplified, and the two Portuguese versions are written independently. The AI Email Writer drafts in 12 of them and your recipients' unsubscribe pages are served in 12, the difference in both cases being that Portuguese is offered once rather than twice. Missing yours? Email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> — we add requested languages quickly.</p>
+  </div>
+  <div class="faq-item">
+    <h3>What happens if I exceed my monthly email limit?</h3>
+    <p>Sending pauses until next month, or you can upgrade your plan anytime.</p>
+  </div>
+</section>
+
+<section class="faq" style="margin-top:0;">
+  <div style="background:#fff8e1;border:1px solid #ffd966;border-radius:8px;padding:20px 24px;">
+    <h3 style="font-size:16px;margin-bottom:10px;color:#8a5a00;">⚠️ Important: Microsoft sending limits apply</h3>
+    <p style="font-size:14px;color:#555;line-height:1.6;">
+      OutMass sends emails through your own Microsoft Outlook account via the Graph API.
+      Microsoft enforces its own sending limits on top of our plan quotas:
+    </p>
+    <ul style="font-size:14px;color:#555;margin:12px 0 12px 24px;line-height:1.8;">
+      <li><strong>Outlook.com (personal):</strong> ~300 emails/day</li>
+      <li><strong>Microsoft 365 Business:</strong> ~10,000 emails/day</li>
+      <li><strong>Exchange Online:</strong> 30 messages/minute throttle</li>
+    </ul>
+    <p style="font-size:14px;color:#555;line-height:1.6;">
+      Our plan quotas (Free: 250, Starter: 2,500, Pro: 10,000 per month) apply in addition to these limits —
+      whichever is stricter takes effect. We recommend spacing large campaigns over multiple days to avoid
+      Microsoft rate limits and maintain sender reputation.
+    </p>
+    <p style="font-size:13px;color:#888;margin-top:8px;">
+      Microsoft may update these limits without notice. OutMass cannot override or guarantee delivery against
+      Microsoft's platform limits.
+    </p>
+  </div>
+</section>
+
+<footer>
+  <div class="container">
+    <p>&copy; 2026 OutMass (Metis Information Technologies Ltd). All rights reserved.</p>
+    <p style="margin-top:8px;">
+      <a href="terms.html">Terms of Service</a>
+      <a href="privacy.html">Privacy Policy</a>
+      <a href="refund.html">Refund Policy</a>
+      <a href="mailto:support@getoutmass.com">Contact</a>
+    </p>
+  </div>
+</footer>
+
+<script src="js/store-cta.js"></script>
+</body>
+</html>

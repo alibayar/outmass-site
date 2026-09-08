@@ -1,0 +1,53 @@
+# GitHub Pages / Jekyll configuration
+#
+# The plans/ directory contains implementation docs that include merge-tag
+# examples like {{firstName}} and {{company}}. Jekyll/Liquid would try to
+# parse those as template variables and crash the build — so we exclude them.
+# They remain accessible on GitHub as source files.
+#
+# The blog/ posts also reference {{firstName}} etc. inside <code> blocks
+# as a feature explanation — we keep them in the build because they need
+# to be live HTML pages, but we mark them up as "raw" inside the article
+# bodies. Jekyll's default Liquid rendering on .html files is permissive
+# enough that the curly braces inside <code> tags pass through unchanged
+# in practice. If a post ever breaks the build, wrap the offending block
+# in {% raw %} ... {% endraw %}.
+
+title: OutMass
+description: Mass email and mail merge for Outlook — personalized campaigns, tracking, follow-ups
+url: https://getoutmass.com
+
+# THIS DIRECTORY IS THE LIVE SITE. Anything dropped into docs/ is served at
+# getoutmass.com unless it is named below, and `exclude` is a DENYLIST — it
+# fails open. A new folder is public by default and nothing warns you.
+#
+# That is not hypothetical. docs/Tim/ held a snapshot of a paying customer's
+# account taken while debugging his campaign — his address, his campaign id,
+# his recipient count, and the comped Pro plan he was on. It was never linked
+# from anywhere and it was never in the sitemap, and it answered HTTP 200 at
+# https://getoutmass.com/Tim/query_results.txt for a week, because it was put
+# in docs/ rather than docs/plans/ and the denylist had no reason to mention
+# it. Found 2026-09-08 while listing what the public repo would keep.
+#
+# Working notes belong in docs/plans/, which is excluded. Better still, they
+# belong in the private repo.
+exclude:
+  - plans/
+  - store-listing/
+  # Kept after the files were deleted, so re-creating either does not silently
+  # republish it. The launch entry names the FILE, not the launch/ folder —
+  # docs/launch.html is a real page and an over-broad pattern here would take
+  # it off the site.
+  - Tim/
+  - launch/producthunt.md
+
+# Jekyll ignores dot-directories by default, so .well-known would not be
+# published. Force-include it — Azure AD publisher-domain verification needs
+# https://getoutmass.com/.well-known/microsoft-identity-association.json live.
+include:
+  - .well-known
+
+# Important: keep the .html extensions Jekyll generates (no permalink
+# rewriting) because the existing nav links and the sitemap.xml all
+# point at .html paths.
+permalink: /:path/:basename:output_ext

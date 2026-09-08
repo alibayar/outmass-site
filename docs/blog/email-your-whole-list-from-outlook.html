@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Email Your Whole List From Outlook — Without Mailchimp — OutMass</title>
+  <meta name="description" content="Why BCC stops working at a few hundred recipients, what Contact Groups and distribution lists really do to Microsoft's limits, and what to do instead.">
+  <meta property="og:title" content="Email Your Whole List From Outlook — Without Mailchimp">
+  <meta property="og:description" content="Why BCC stops working, what the four kinds of 'list' really do to Microsoft's limits, and how to email your members from the mailbox you already have.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/email-your-whole-list-from-outlook.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/email-your-whole-list-from-outlook.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "Email Your Whole List From Outlook — Without Mailchimp",
+    "description": "Why BCC stops working at a few hundred recipients, what Contact Groups and distribution lists really do to Microsoft's limits, and how to email a membership or parent list from the mailbox you already have.",
+    "datePublished": "2026-08-24",
+    "dateModified": "2026-08-24",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/email-your-whole-list-from-outlook.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "How many people can I put in BCC in Outlook?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Microsoft counts To, Cc and Bcc together against one per-message recipient limit. That limit is customizable up to 1,000 recipients — an administrator can set any value from 1 to 1,000 for a mailbox. Outlook.com accounts have their own, lower published limits. The per-message ceiling is not the one that usually bites, though — the daily one is."}
+      },
+      {
+        "@type": "Question",
+        "name": "Why was my email blocked when I only sent to 63 people?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Small-number blocks usually mean one of three things rather than the 10,000-a-day limit: a personal Outlook.com account, whose published limits are much lower and vary with account history; a trial tenant, capped at 5,000 external recipients per day for the whole organisation; or a per-message recipient limit an administrator has set low, since it can be anywhere from 1 to 1,000."}
+      },
+      {
+        "@type": "Question",
+        "name": "Does sending to a distribution list count as one recipient?",
+        "acceptedAnswer": {"@type": "Answer", "text": "It depends which kind. Microsoft's limits page says a distribution group stored in the organisation's shared address book counts as one recipient for both the per-message limit and the daily recipient limit, while in a personal distribution list each recipient is counted separately. The tenant-wide external recipient cap counts every member individually either way, once the group is expanded."}
+      },
+      {
+        "@type": "Question",
+        "name": "Can I use Outlook Newsletters for parents or customers?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Not for people outside your organisation. Outlook's newsletter feature is built for recipients inside your own tenant, so a list of parents, members, customers or journalists on Gmail and other outside domains is out of scope for it."}
+      },
+      {
+        "@type": "Question",
+        "name": "Will upgrading my Microsoft 365 plan raise the limit?",
+        "acceptedAnswer": {"@type": "Answer", "text": "The recipient rate limit is the same 10,000 per 24 hours across Business Basic, Standard, Premium and the common enterprise plans, so upgrading for that reason alone does not help. Microsoft's own guidance is that a mailbox is not the right instrument for bulk mailing."}
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .table-wrap { overflow-x: auto; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>Email Your Whole List From Outlook — Without Mailchimp</h1>
+    <p class="meta">Published August 24, 2026 · 10 min read</p>
+
+    <p>There is a particular kind of person who ends up reading this. The secretary of a club with 300 members. The office manager at a school with 800 parents. The membership officer of a society that has sent the same weekly note for four years. They are not marketers, they do not want a marketing platform, and the people on their list already know who they are.</p>
+
+    <p>And one day the thing that always worked stops working. Outlook refuses to send. Or it sends, and half the recipients quietly never see it.</p>
+
+    <p>This is what is actually happening, and what to do about it, in the order the problems arrive.</p>
+
+    <div class="highlight">
+      <p><strong>Short version.</strong> BCC is not the problem and not the solution — Microsoft counts To, Cc and Bcc identically. Two different limits are biting: a per-message recipient cap (customizable up to 1,000) and a daily recipient count (10,000 per rolling 24 hours on common business plans), plus a tenant-wide cap on external recipients. Splitting your list into batches does not help. And a distribution group made by your administrator genuinely does count as one recipient against the first two — the Contact Group you made yourself does not.</p>
+    </div>
+
+    <h2 id="two-limits">The two limits people confuse</h2>
+
+    <p>Nearly every blocked send comes down to mistaking one limit for another.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Limit</th><th scope="col">What it counts</th><th scope="col">Typical value</th></tr></thead>
+        <tbody>
+          <tr><td>Recipient limit</td><td>To + Cc + Bcc in a <em>single</em> message</td><td>Customizable up to 1,000; an admin can set any value from 1 to 1,000 per mailbox</td></tr>
+          <tr><td>Recipient rate limit</td><td>Every recipient you send to, across <em>all</em> messages, in a rolling 24 hours</td><td>10,000 on Business Basic, Standard, Premium and common enterprise plans</td></tr>
+          <tr><td>Message rate limit</td><td>Messages handed to the server per minute</td><td>30 per minute</td></tr>
+          <tr><td>Tenant external recipient limit</td><td>External recipients for the whole organisation per 24 hours, scaled to your licence count</td><td>Trial tenants are capped at 5,000 per day</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>Values are from Microsoft's <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits">Exchange Online limits</a> service description. Personal Outlook.com accounts have their own <a href="https://support.microsoft.com/en-us/office/sending-limits-in-outlook-com-279ee200-594c-40f0-9ec8-bb6af7735c2e">published limits</a>, lower than these, and Microsoft notes they vary with account history — which is why a 50-recipient send can be refused on one account and sail through on another.</p>
+
+    <p>Microsoft's own worked example of the daily one: send to 5,000 recipients at 9am, 2,500 at 10am and 2,500 at 11am, and you are done until 9am tomorrow. Note what it counts — recipients, not messages.</p>
+
+    <p>This is why the two most common fixes fail. <strong>Splitting a list into batches of 50 or 80</strong> does nothing about the daily count, because every batch adds to the same total. And <strong>upgrading the plan</strong> does not move that number either: 10,000 recipients per 24 hours is the same on Business Basic and on E5.</p>
+
+    <h2 id="bcc">What BCC really does, and does not do</h2>
+
+    <p>People reach for BCC to protect privacy, which is a good instinct: recipients cannot see each other, and because they cannot see each other, nobody can start a reply-all avalanche. That part works exactly as intended.</p>
+
+    <p>What BCC does not do is make recipients cheaper. Microsoft's definition of the per-message recipient limit is the maximum across the To, Cc <em>and</em> Bcc fields combined. A hundred people in Bcc costs exactly what a hundred people in To costs.</p>
+
+    <p>There is a second, subtler cost. Microsoft scores incoming bulk mail with a Bulk Complaint Level and, past a threshold, files it in Junk. Microsoft is explicit that bulk mail is not the same thing as spam — it is mail that some recipients want and others do not — and it does not publish the signals behind that score. So we will not tell you that BCC "triggers" filters; what we will tell you is that a single message blasted to hundreds of addresses gives you no way to know who received it, no way to see who opened it, and one shared fate for the whole batch. If it goes to Junk, it goes there for everyone at once.</p>
+
+    <h2 id="four-lists">Four different things called "a list"</h2>
+
+    <p>Microsoft has four objects that all get called "the list" in conversation, and they behave differently in ways that matter. This is the table nobody puts in front of you.</p>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">What it is</th><th scope="col">Who can be on it</th><th scope="col">Do recipients see each other?</th><th scope="col">Worth knowing</th></tr></thead>
+        <tbody>
+          <tr>
+            <td><strong>Contact Group</strong><br>(you make it in your own Outlook)</td>
+            <td>Anyone, including outside addresses</td>
+            <td>Yes, if you put it in To or Cc — it expands into individual addresses</td>
+            <td>Microsoft states plainly: "In a personal distribution list, each recipient is counted separately." No limit relief at all.</td>
+          </tr>
+          <tr>
+            <td><strong>Distribution group</strong><br>(your admin makes it)</td>
+            <td>Mailboxes, mail users and mail contacts — outside people must first exist in the directory</td>
+            <td>Members inside your organisation can often expand it; outside recipients generally cannot</td>
+            <td><strong>Counts as one recipient</strong> against the per-message and daily limits. Up to 100,000 members; groups of 5,000 or more must have restricted senders or moderation. By default only people inside the organisation can send to it.</td>
+          </tr>
+          <tr>
+            <td><strong>Microsoft 365 Group</strong></td>
+            <td>Can include external guests if your admin allows it</td>
+            <td>Yes — membership is visible by design</td>
+            <td>Brings a SharePoint site, Planner and Teams along with it. Fine for a working team, heavy for "send an announcement".</td>
+          </tr>
+          <tr>
+            <td><strong>Shared mailbox</strong><br>(info@, office@)</td>
+            <td>Not a list — a mailbox several people send from</td>
+            <td>N/A</td>
+            <td>The catch that surprises schools: sending limits are counted against <em>the person</em> who sent, not the shared mailbox. Three people sharing office@ do not get three times the allowance for one campaign, and one person's big send eats their own daily count.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p><strong>This is the part almost every other article gets wrong, in both directions.</strong> Microsoft's limits page is explicit: "For the purposes of the recipient rate limit and the recipient limit, a distribution group that is stored in the organization's shared address book counts as one recipient. In a personal distribution list, each recipient is counted separately."</p>
+
+    <p>So the answer depends entirely on <em>which</em> list you built. A proper distribution group, created by your administrator, really does count as one recipient against the two limits that block most people — that is not a myth. The Contact Group you made yourself in Outlook does not: every member counts, exactly as if you had typed them all in.</p>
+
+    <p>One caveat keeps the first option honest. The tenant-wide external recipient cap counts group members individually once the group is expanded — Microsoft's own example is a message to a group with 1,000 external members counting as 1,000. For a school emailing parents or a club emailing members, those recipients are external, so the distribution group helps with the per-mailbox limits and not with the tenant one.</p>
+
+    <h2 id="dead-ends">Things that sound like the answer</h2>
+
+    <p><strong>Outlook Newsletters.</strong> Microsoft shipped a newsletter feature and it looks like exactly what you need. It is built for people inside your own organisation, so a list of parents on Gmail, journalists at their own publications or customers at their own companies is outside what it does.</p>
+
+    <p><strong>SMTP relay, Direct Send, High Volume Email.</strong> These come up whenever an IT person joins the thread. They are real, and they are not for you: relay needs a static IP or certificate and connector setup, Direct Send cannot reach external providers like Gmail at all, and High Volume Email is for mail inside the organisation. All three are administrator projects, not something an office manager configures on a Tuesday.</p>
+
+    <p><strong>A bigger plan.</strong> Covered above: the daily recipient number does not change with the tier.</p>
+
+    <h2 id="microsoft-guidance">What Microsoft actually recommends</h2>
+
+    <p>On the same page as those limits, Microsoft is blunt: customers "who need to send legitimate bulk commercial email (for example, customer newsletters) should use third-party providers that specialize in these services." Its own footnote says Exchange Online "isn't suited to accommodate bulk-mailing scenarios."</p>
+
+    <p>That advice is correct, and it is worth being honest about where it applies. If you are sending a promotional newsletter to fifty thousand people who signed up on a website, a mailbox is the wrong instrument and a proper email platform is the right one. Mailchimp exists for a reason.</p>
+
+    <p>But that is not what most people reading this are doing. Sending 300 members the fixture list, or 800 parents the term dates, or 60 journalists a personalised note, is not bulk commercial email. It is correspondence — and it belongs in the mailbox those people already recognise, from the address they will reply to. Moving it to a marketing platform costs you the thing that makes it work: it stops looking like a person writing to them.</p>
+
+    <h2 id="what-works">What actually keeps these emails landing</h2>
+
+    <p>Four things, in order of how much they matter for a list of this size:</p>
+
+    <ol>
+      <li><strong>Authenticate your domain.</strong> Since 2024 Google has required SPF or DKIM on <em>all</em> mail sent to Gmail addresses, not just bulk mail — and its stricter bulk-sender rules (DMARC, one-click unsubscribe, a complaint rate under 0.1%) begin around 5,000 messages a day, which a 300-member club will never reach. If you send from a Microsoft 365 domain, much of this is already configured; if you are not sure, this is the one question worth asking whoever administers your domain.</li>
+      <li><strong>Keep the list clean.</strong> Dead addresses and complaints are what reputation is actually made of. Remove bounces, honour every opt-out immediately, and never buy a list.</li>
+      <li><strong>Give people a way out.</strong> An unsubscribe link costs you one line and gives an unhappy recipient something to click that is not the junk button. Complaints are what reputation is actually made of.</li>
+      <li><strong>Send at a human pace.</strong> Thirty messages a minute is the ceiling. Microsoft says excess submissions are throttled and carried into the following minutes rather than blocking the account — so a fast blast does not fail loudly, it just crawls while you wonder what happened. A paced send of 300 takes about ten minutes and you know when it finished.</li>
+    </ol>
+
+    <p>Notice what is not on that list: tricks. There is no message count that is guaranteed safe and no wording that gets you past a filter. Reputation, authentication and consent are the whole game.</p>
+
+    <h2 id="where-outmass-fits">Where OutMass fits</h2>
+
+    <p>OutMass is a Chrome and Edge extension for Outlook on the web, and it exists for precisely the send this article is about. You upload your list as a CSV, your columns become merge tags, and every person gets their own message — their name, their details — sent through your own Microsoft account with the official Graph API. Nobody sees anybody else, and nobody sees a BCC field with 300 strangers in it.</p>
+
+    <p>Two practical notes, because a school or membership export is where they bite. Merge tags are single words: a column called <code>firstName</code> works as <code>{{firstName}}</code>, while "First Name" with a space does not — rename those headers before uploading. And your list and message are stored on our servers, because scheduled sends and campaign reports cannot work otherwise; if you handle children's data, that is a question worth settling with whoever owns data protection where you are, before the first send rather than after.</p>
+
+    <p>Because each recipient gets an individual message rather than one blast, you can see what happened: who clicked, who replied, and — with the usual caveat that open tracking is a pixel, and plenty of mail clients block or preload images — roughly who opened. Sends are paced to stay within Microsoft's per-minute ceiling, an unsubscribe link is built in, and a daily cap spreads a long list across several days. That cap counts what OutMass sends rather than everything leaving your mailbox, so it keeps a campaign inside the daily allowance rather than guaranteeing you never reach it.</p>
+
+    <p>Which of those you get depends on the plan: mail merge, open and click tracking and campaign reports are on the free tier; scheduled sending, the daily cap, saved templates and per-recipient CSV export come with Starter at $9 a month; follow-ups, A/B subject testing and the AI writer (50 drafts a month) with Pro at $19. The <a href="../pricing.html">pricing page</a> has the full breakdown.</p>
+
+    <p>And a straight word about the free plan, since this article's examples are bigger than it: free covers 250 emails a month and uploads of up to 250 rows — fine for a committee list or a trial run. The 300-member club and the 800-parent school in the opening paragraph need Starter or Pro. Better to read that here than to discover it halfway through an upload.</p>
+
+    <p>It will not turn your mailbox into a bulk email platform, and it should not: the limits above are Microsoft's, and they apply to every tool that sends from your account. What it does is make the send inside those limits organised, personal and visible.</p>
+
+    <div class="cta">
+      <h3>Try OutMass — free up to 250 emails/month</h3>
+      <p>Free covers 250 emails a month and lists up to 250 rows — CSV mail merge with open and click tracking, inside Outlook on the web. Bigger lists, scheduling and daily caps come with Starter; reply-aware follow-ups with Pro.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
+      <div style="margin-top:12px;font-size:13px;"><a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Also available for Microsoft Edge →</a></div>
+    </div>
+
+    <h2 id="faq">Questions people actually ask</h2>
+
+    <h3>How many people can I put in BCC in Outlook?</h3>
+    <p>Microsoft counts To, Cc and Bcc together against one per-message recipient limit, customizable up to 1,000 — an administrator can set any value from 1 to 1,000 for a mailbox, which is worth knowing if yours seems unusually low. Outlook.com accounts sit lower again. But the per-message ceiling is rarely the one that stops you; the daily one is.</p>
+
+    <h3>Why was my email blocked when I only sent to 63 people?</h3>
+    <p>Small-number blocks usually mean one of three things rather than the 10,000-a-day limit. A personal Outlook.com account has much lower published limits, and Microsoft says they vary with account history. A trial tenant is capped at 5,000 external recipients per day for the whole organisation. And an administrator can set a mailbox's per-message recipient limit anywhere from 1 to 1,000 — so a low ceiling may have been configured for you. If you are on a licensed business plan and nowhere near those, it is worth asking your admin what your mailbox's recipient limit is set to.</p>
+
+    <h3>Does sending to a distribution list count as one recipient?</h3>
+    <p>It depends which kind. Microsoft's limits page says a distribution group stored in the organisation's shared address book counts as one recipient for both the per-message limit and the daily recipient limit — but that in a personal distribution list, each recipient is counted separately. The tenant-wide external cap counts every member individually either way, once the group is expanded.</p>
+
+    <h3>Can I use Outlook Newsletters for parents or customers?</h3>
+    <p>Not for people outside your organisation — it is built for internal recipients.</p>
+
+    <h3>Will upgrading my Microsoft 365 plan raise the limit?</h3>
+    <p>Not the daily recipient limit: it is 10,000 per 24 hours across the common business and enterprise plans.</p>
+
+    <h3>Is an unsubscribe link legally required for a school or club newsletter?</h3>
+    <p>It depends on where you are and what the message is for, and this is not legal advice — if the answer matters to your organisation, ask someone qualified rather than a software blog. In the United States, CAN-SPAM's unsubscribe requirements attach to messages whose primary purpose is commercial advertising; transactional and relationship messages are treated differently. In the UK and EU, the rules that bite on marketing email to individuals come from the ePrivacy regime — PECR in the UK — on top of the lawful-basis question under GDPR, and they are stricter than most people expect. A term-dates notice to parents and a promotional offer are not the same thing under any of these, which is exactly why no one can hand you a universal answer.</p>
+
+    <p>Including an unsubscribe link anyway is good practice regardless, and it costs one line.</p>
+
+    <p class="updated-note">Limits and behaviours on this page were checked against Microsoft's documentation on 24 August 2026. Microsoft changes these numbers occasionally — the linked pages are the authority, and we re-check rather than leave old figures standing.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>
