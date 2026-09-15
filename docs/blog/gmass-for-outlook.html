@@ -18,7 +18,7 @@
     "headline": "GMass for Outlook? Use OutMass Instead — A Direct Comparison",
     "description": "GMass is a Gmail-only mail merge tool. If you're on Outlook, here's what GMass-equivalent features look like in OutMass — pricing, deliverability, and feature mapping.",
     "datePublished": "2026-04-29",
-    "dateModified": "2026-04-29",
+    "dateModified": "2026-09-15",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/gmass-for-outlook.html"
@@ -164,7 +164,7 @@
         <tr>
           <td>Reply detection</td>
           <td>Yes</td>
-          <td>Yes (daily inbox scan)</td>
+          <td>Yes (inbox checked every six hours)</td>
         </tr>
         <tr>
           <td>Engaged metric (open OR click OR reply)</td>
@@ -212,7 +212,7 @@
 
     <h3>Reply detection as a first-class metric</h3>
 
-    <p>Open rates lie. Apple Mail Privacy Protection inflates them by pre-loading every tracking pixel; Outlook 2019+ deflates them by blocking remote images by default. <strong>Replies don't lie.</strong> A reply is a recipient who saw the message, processed it, and chose to act. OutMass runs a daily scan of your Inbox via Microsoft Graph and stamps any matching contact as "replied." The Reports tab shows a Reply rate next to your open and click rates — usually a much smaller number, but the only one you can trust.</p>
+    <p>Open rates lie. Apple Mail Privacy Protection inflates them by pre-loading every tracking pixel; Outlook 2019+ deflates them by blocking remote images by default. <strong>Replies don't lie.</strong> A reply is a recipient who saw the message, processed it, and chose to act. OutMass checks your Inbox through Microsoft Graph every six hours and stamps any matching contact as "replied." The Reports tab shows a Reply rate next to your open and click rates — usually a much smaller number, but the only one you can trust.</p>
 
     <h3>"Engaged" — one honest engagement number</h3>
 
@@ -264,7 +264,7 @@
 
     <ul>
       <li><strong>Inbox-by-thread is different.</strong> Gmail groups the entire conversation; Outlook treats threading per-folder. Reply detection works in both, but threaded views in Outlook can feel busier when you've sent a multi-stage sequence.</li>
-      <li><strong>Multi-stage follow-ups are simpler in OutMass today.</strong> One stage right now ("if not opened in N days, send X"). GMass does up to eight. Pro tip: most cold sequences use 1–2 stages anyway, but if you live and die by 6-step sequences, OutMass isn't there yet.</li>
+      <li><strong>Multi-stage follow-ups are simpler in OutMass today.</strong> One stage right now ("if not replied, or not opened, in N days, send X"). GMass does up to eight. Pro tip: most cold sequences use 1–2 stages anyway, but if you live and die by 6-step sequences, OutMass isn't there yet.</li>
       <li><strong>Behavior triggers</strong> ("send if recipient clicked link X") aren't in OutMass yet.</li>
       <li><strong>Team features</strong> (shared templates across users, role-based access) aren't in OutMass yet.</li>
     </ul>
@@ -307,7 +307,7 @@
     <h3>Will my recipients know I switched tools?</h3>
     <p>No. Both tools send from your own email account, so the From, Reply-To, and DKIM signature stay the same. The only visible change is that GMass adds a "Sent via GMass" footer on its free tier; OutMass does not.</p>
 
-    <p class="updated-note">Last updated: April 29, 2026.</p>
+    <p class="updated-note">Last updated: September 15, 2026 &mdash; reply detection now checks every six hours.</p>
 
   </div>
 </div>

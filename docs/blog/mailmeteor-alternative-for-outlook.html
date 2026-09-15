@@ -18,7 +18,7 @@
     "headline": "Mailmeteor vs OutMass for Outlook",
     "description": "Mailmeteor has an Outlook add-in, so this is a real comparison rather than a platform mismatch. Where each tool is stronger for Outlook and Microsoft 365 mail merge — including where OutMass is behind.",
     "datePublished": "2026-06-12",
-    "dateModified": "2026-08-31",
+    "dateModified": "2026-09-15",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/mailmeteor-alternative-for-outlook.html"
@@ -92,7 +92,7 @@
 <div class="content">
   <div class="container">
     <h1>Mailmeteor vs OutMass for Outlook</h1>
-    <p class="meta">Published June 12, 2026 · updated August 31, 2026 · 6 min read</p>
+    <p class="meta">Published June 12, 2026 · updated September 15, 2026 · 6 min read</p>
 
     <p><a href="https://mailmeteor.com" rel="nofollow">Mailmeteor</a> sells an <a href="https://mailmeteor.com/products/microsoft-outlook" rel="nofollow">Outlook add-in</a> through Microsoft AppSource, alongside its Gmail, Sheets and Excel products. So if your mailbox is on Outlook or Microsoft 365, both it and <a href="../index.html">OutMass</a> are real options, and the choice is a real comparison rather than a platform question.</p>
 
@@ -114,7 +114,7 @@
     <p>If you run Outlook in the desktop app and rarely open it in a browser, that difference decides it before any feature does.</p>
 
     <div class="highlight">
-      <p><strong>The sending ceiling is Microsoft's, not ours.</strong> Whichever tool you use, sending from Outlook / Microsoft 365 is bounded by <strong>10,000 recipients/day</strong>, up to 500 recipients per message and a 30-messages-per-minute throttle (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Exchange Online limits</a>). Microsoft 365 subscribers on Outlook.com are capped at 5,000 recipients/day; for free Outlook.com accounts Microsoft publishes no figure at all, saying only that limits are lower and vary with account history. Brand-new Microsoft 365 tenants are throttled below the headline number for their first 30 days. See our <a href="outlook-mail-merge-limit.html">Outlook mail merge limit guide</a> for how OutMass paces sends to stay inside it.</p>
+      <p><strong>The sending ceiling is Microsoft's, not ours.</strong> Whichever tool you use, sending from Outlook / Microsoft 365 is bounded by <strong>10,000 recipients/day</strong>, 500 recipients per message by default (an admin can raise it to 1,000) and a 30-messages-per-minute throttle (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Exchange Online limits</a>). Microsoft 365 subscribers on Outlook.com are capped at 5,000 recipients/day; for free Outlook.com accounts Microsoft publishes no figure at all, saying only that limits are lower and vary with account history. Brand-new Microsoft 365 tenants also start with a lower tenant-wide limit on external recipients for their first 60 days (<a href="https://techcommunity.microsoft.com/blog/exchange/introducing-exchange-online-tenant-outbound-email-limits/4372797" rel="nofollow">Microsoft's post on tenant outbound email limits</a>). See our <a href="outlook-mail-merge-limit.html">Outlook mail merge limit guide</a> for how OutMass paces sends.</p>
     </div>
 
     <h2>Feature-by-feature comparison</h2>
@@ -215,7 +215,7 @@
 
     <h3>Reply detection, on every plan</h3>
 
-    <p>Open rates are noisy — since iOS 15 (2021), Apple's Mail Privacy Protection pre-loads tracking pixels for Apple Mail users regardless of whether the message was actually read, which inflates reported opens, while Outlook's default image-blocking deflates them. <strong>Replies don't lie.</strong> OutMass runs a daily scan of your Inbox via Microsoft Graph and stamps any matching contact as &quot;replied,&quot; then surfaces a reply rate alongside opens and clicks in the campaign report. It's usually a smaller number, but it's the one you can actually trust. Mailmeteor tracks replies too; the difference is that OutMass does not put it behind a paid tier — it is on the free plan, because a number you cannot see is not a number you can act on.</p>
+    <p>Open rates are noisy — since iOS 15 (2021), Apple's Mail Privacy Protection pre-loads tracking pixels for Apple Mail users regardless of whether the message was actually read, which inflates reported opens, while Outlook's default image-blocking deflates them. <strong>Replies don't lie.</strong> OutMass checks your Inbox through Microsoft Graph every six hours and stamps any matching contact as &quot;replied,&quot; then surfaces a reply rate alongside opens and clicks in the campaign report. It's usually a smaller number, but it's the one you can actually trust. Mailmeteor tracks replies too; the difference is that OutMass does not put it behind a paid tier — it is on the free plan, because a number you cannot see is not a number you can act on.</p>
 
     <h3>"Engaged" — one honest engagement number</h3>
 
@@ -271,7 +271,7 @@
     <h3>Can I switch from Mailmeteor to OutMass?</h3>
     <p>Yes. Export your contacts as a CSV, install OutMass, and recreate your templates — OutMass merge tags use double-brace syntax like <code>{{firstName}}</code>. Then re-import the CSV into a new campaign. Tracking history is per-platform, so your reporting starts fresh on the OutMass side.</p>
 
-    <p class="updated-note">Last updated: June 12, 2026.</p>
+    <p class="updated-note">Last updated: September 15, 2026 &mdash; corrected the new-tenant limit.</p>
 
   </div>
 </div>

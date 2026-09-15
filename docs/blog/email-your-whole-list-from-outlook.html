@@ -18,7 +18,7 @@
     "headline": "Email Your Whole List From Outlook — Without Mailchimp",
     "description": "Why BCC stops working at a few hundred recipients, what Contact Groups and distribution lists really do to Microsoft's limits, and how to email a membership or parent list from the mailbox you already have.",
     "datePublished": "2026-08-24",
-    "dateModified": "2026-08-24",
+    "dateModified": "2026-09-15",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/email-your-whole-list-from-outlook.html"
@@ -37,7 +37,7 @@
       {
         "@type": "Question",
         "name": "Why was my email blocked when I only sent to 63 people?",
-        "acceptedAnswer": {"@type": "Answer", "text": "Small-number blocks usually mean one of three things rather than the 10,000-a-day limit: a personal Outlook.com account, whose published limits are much lower and vary with account history; a trial tenant, capped at 5,000 external recipients per day for the whole organisation; or a per-message recipient limit an administrator has set low, since it can be anywhere from 1 to 1,000."}
+        "acceptedAnswer": {"@type": "Answer", "text": "Small-number blocks usually mean one of three things rather than the 10,000-a-day limit: a personal Outlook.com account, whose published limits are much lower and vary with account history; a trial tenant, whose whole organisation gets a low flat cap on external recipients (500 a day under Microsoft's 13 August 2026 update, rolling out from 14 September; the service description still says 5,000); or a per-message recipient limit an administrator has set low, since it can be anywhere from 1 to 1,000."}
       },
       {
         "@type": "Question",
@@ -133,7 +133,7 @@
           <tr><td>Recipient limit</td><td>To + Cc + Bcc in a <em>single</em> message</td><td>Customizable up to 1,000; an admin can set any value from 1 to 1,000 per mailbox</td></tr>
           <tr><td>Recipient rate limit</td><td>Every recipient you send to, across <em>all</em> messages, in a rolling 24 hours</td><td>10,000 on Business Basic, Standard, Premium and common enterprise plans</td></tr>
           <tr><td>Message rate limit</td><td>Messages handed to the server per minute</td><td>30 per minute</td></tr>
-          <tr><td>Tenant external recipient limit</td><td>External recipients for the whole organisation per 24 hours, scaled to your licence count</td><td>Trial tenants are capped at 5,000 per day</td></tr>
+          <tr><td>Tenant external recipient limit</td><td>External recipients for the whole organisation per 24 hours, scaled to your licence count</td><td>Trial tenants get a low flat cap: 500 per day under Microsoft's August 2026 update (the service description still says 5,000)</td></tr>
         </tbody>
       </table>
     </div>
@@ -146,7 +146,7 @@
 
     <h2 id="bcc">What BCC really does, and does not do</h2>
 
-    <p>People reach for BCC to protect privacy, which is a good instinct: recipients cannot see each other, and because they cannot see each other, nobody can start a reply-all avalanche. That part works exactly as intended.</p>
+    <p>People reach for BCC to protect privacy, which is a good instinct: recipients cannot see each other, and because they cannot see each other, nobody can start a reply-all avalanche. That part works exactly as intended. If you would rather each person get their own copy, addressed only to them, here is <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
 
     <p>What BCC does not do is make recipients cheaper. Microsoft's definition of the per-message recipient limit is the maximum across the To, Cc <em>and</em> Bcc fields combined. A hundred people in Bcc costs exactly what a hundred people in To costs.</p>
 
@@ -233,13 +233,13 @@
 
     <p>Which of those you get depends on the plan: mail merge, open and click tracking and campaign reports are on the free tier; scheduled sending, the daily cap, saved templates and per-recipient CSV export come with Starter at $9 a month; follow-ups, A/B subject testing and the AI writer (50 drafts a month) with Pro at $19. The <a href="../pricing.html">pricing page</a> has the full breakdown.</p>
 
-    <p>And a straight word about the free plan, since this article's examples are bigger than it: free covers 250 emails a month and uploads of up to 250 rows — fine for a committee list or a trial run. The 300-member club and the 800-parent school in the opening paragraph need Starter or Pro. Better to read that here than to discover it halfway through an upload.</p>
+    <p>And a straight word about the free plan, since this article's examples are bigger than it: free covers 250 emails a month — fine for a committee list or a trial run. The 300-member club and the 800-parent school in the opening paragraph need Starter or Pro. Better to read that here than to discover it halfway through an upload.</p>
 
     <p>It will not turn your mailbox into a bulk email platform, and it should not: the limits above are Microsoft's, and they apply to every tool that sends from your account. What it does is make the send inside those limits organised, personal and visible.</p>
 
     <div class="cta">
       <h3>Try OutMass — free up to 250 emails/month</h3>
-      <p>Free covers 250 emails a month and lists up to 250 rows — CSV mail merge with open and click tracking, inside Outlook on the web. Bigger lists, scheduling and daily caps come with Starter; reply-aware follow-ups with Pro.</p>
+      <p>Free covers 250 emails a month — CSV mail merge with open and click tracking, inside Outlook on the web. Bigger lists, scheduling and daily caps come with Starter; reply-aware follow-ups with Pro.</p>
       <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
       <div style="margin-top:12px;font-size:13px;"><a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Also available for Microsoft Edge →</a></div>
     </div>
@@ -250,7 +250,7 @@
     <p>Microsoft counts To, Cc and Bcc together against one per-message recipient limit, customizable up to 1,000 — an administrator can set any value from 1 to 1,000 for a mailbox, which is worth knowing if yours seems unusually low. Outlook.com accounts sit lower again. But the per-message ceiling is rarely the one that stops you; the daily one is.</p>
 
     <h3>Why was my email blocked when I only sent to 63 people?</h3>
-    <p>Small-number blocks usually mean one of three things rather than the 10,000-a-day limit. A personal Outlook.com account has much lower published limits, and Microsoft says they vary with account history. A trial tenant is capped at 5,000 external recipients per day for the whole organisation. And an administrator can set a mailbox's per-message recipient limit anywhere from 1 to 1,000 — so a low ceiling may have been configured for you. If you are on a licensed business plan and nowhere near those, it is worth asking your admin what your mailbox's recipient limit is set to.</p>
+    <p>Small-number blocks usually mean one of three things rather than the 10,000-a-day limit. A personal Outlook.com account has much lower published limits, and Microsoft says they vary with account history. A trial tenant's whole organisation gets a low flat cap on external recipients (500 a day under Microsoft's 13 August 2026 update, rolling out from 14 September; the service description still says 5,000). And an administrator can set a mailbox's per-message recipient limit anywhere from 1 to 1,000 — so a low ceiling may have been configured for you. If you are on a licensed business plan and nowhere near those, it is worth asking your admin what your mailbox's recipient limit is set to.</p>
 
     <h3>Does sending to a distribution list count as one recipient?</h3>
     <p>It depends which kind. Microsoft's limits page says a distribution group stored in the organisation's shared address book counts as one recipient for both the per-message limit and the daily recipient limit — but that in a personal distribution list, each recipient is counted separately. The tenant-wide external cap counts every member individually either way, once the group is expanded.</p>
@@ -266,7 +266,7 @@
 
     <p>Including an unsubscribe link anyway is good practice regardless, and it costs one line.</p>
 
-    <p class="updated-note">Limits and behaviours on this page were checked against Microsoft's documentation on 24 August 2026. Microsoft changes these numbers occasionally — the linked pages are the authority, and we re-check rather than leave old figures standing.</p>
+    <p class="updated-note">Limits and behaviours on this page were checked against Microsoft's documentation on 24 August 2026, and the trial-tenant limit again on 15 September 2026. Microsoft changes these numbers occasionally — the linked pages are the authority, and we re-check rather than leave old figures standing.</p>
 
   </div>
 </div>

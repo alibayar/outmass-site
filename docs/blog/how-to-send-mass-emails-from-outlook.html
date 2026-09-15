@@ -3,10 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>How to Send a Mass Email in Outlook Separately (2026 Guide) — OutMass</title>
-  <meta name="description" content="Send a mass email in Outlook so each person gets a separate message: the built-in mail merge, Word, VBA and OutMass compared, plus 2026 send limits.">
-  <meta property="og:title" content="How to Send a Mass Email in Outlook Separately (2026 Guide)">
-  <meta property="og:description" content="Send a mass email in Outlook so each person gets a separate message: the built-in mail merge, Word, VBA and OutMass compared, plus 2026 send limits.">
+  <title>How to Send Mass Emails from Outlook in 2026 (Step-by-Step) — OutMass</title>
+  <meta name="description" content="Four practical ways to send mass emails from Outlook — Word mail merge, distribution lists, VBA, and OutMass — with deliverability tips and limits explained.">
+  <meta property="og:title" content="How to Send Mass Emails from Outlook in 2026 (Step-by-Step)">
+  <meta property="og:description" content="Four practical ways to send mass emails from Outlook — Word mail merge, distribution lists, VBA, and OutMass — with deliverability tips and limits explained.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html">
   <link rel="canonical" href="https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html">
@@ -15,8 +15,8 @@
   {
     "@context": "https://schema.org",
     "@type": "Article",
-    "headline": "How to Send a Mass Email in Outlook, Separately to Each Person (2026)",
-    "description": "Send a mass email in Outlook so each person gets a separate message: the built-in mail merge, Word, VBA and OutMass compared, plus 2026 send limits.",
+    "headline": "How to Send Mass Emails from Outlook in 2026 (Step-by-Step)",
+    "description": "Four practical ways to send mass emails from Outlook — Word mail merge, distribution lists, VBA, and OutMass — with deliverability tips and limits explained.",
     "datePublished": "2026-04-29",
     "dateModified": "2026-09-15",
     "author": {"@type": "Organization", "name": "OutMass"},
@@ -29,10 +29,8 @@
     "@context": "https://schema.org",
     "@type": "FAQPage",
     "mainEntity": [
-      {"@type": "Question", "name": "How do I send a mass email in Outlook so each person gets it separately?",
-       "acceptedAnswer": {"@type": "Answer", "text": "In new Outlook and Outlook on the web, open a new message and choose Start mail merge from the Send dropdown: everyone gets their own copy of the same message, addressed only to them. To personalize each email with a name or other details from a list, use Word's mail merge (classic Outlook only) or a mail merge tool such as OutMass. A contact group sends one shared message instead: everyone sees the other addresses unless you move them to Bcc, and Bcc rules out personalization."}},
       {"@type": "Question", "name": "How many emails can I send from Outlook per day?",
-       "acceptedAnswer": {"@type": "Answer", "text": "Microsoft publishes a daily figure for some Outlook.com accounts and not others. Microsoft 365 subscribers: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free accounts: no figure is published — Microsoft says limits are lower and vary with account history. Microsoft 365 business and Exchange Online accounts allow up to 10,000 recipients per day, with no more than 500 in a single message and a per-minute throughput cap of 30 messages."}},
+       "acceptedAnswer": {"@type": "Answer", "text": "Microsoft publishes a daily figure for some Outlook.com accounts and not others. Microsoft 365 subscribers: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free accounts: no figure is published — Microsoft says limits are lower and vary with account history. Microsoft 365 business and Exchange Online accounts allow up to 10,000 recipients per day, with a per-message limit of 500 by default (an admin can raise it to 1,000) and a per-minute throughput cap of 30 messages."}},
       {"@type": "Question", "name": "Can Outlook do mail merge natively?",
        "acceptedAnswer": {"@type": "Answer", "text": "Classic Outlook needs Microsoft Word for it: Word drives a mail merge that uses Outlook as the sender, but the workflow has serious limitations: no scheduling, no open tracking, no follow-ups, and no easy way to reuse the same data source across campaigns. New Outlook and Outlook on the web have a basic built-in mail merge that sends everyone their own copy of the same message, but it cannot personalize each email yet."}},
       {"@type": "Question", "name": "Will my mass emails go to spam?",
@@ -93,7 +91,7 @@
 
 <div class="content">
   <div class="container">
-    <h1>How to Send a Mass Email in Outlook, Separately to Each Person (2026)</h1>
+    <h1>How to Send Mass Emails from Outlook in 2026 (Step-by-Step)</h1>
     <p class="meta">Published April 29, 2026 · 8 min read</p>
 
     <p>Outlook is the second-most-used email platform in the world, but it has a reputation for being painful to use for mass email. The default app gives you no real way to send a personalized message to hundreds of recipients without copy-pasting, hitting send limits, or landing in spam.</p>
@@ -101,13 +99,13 @@
     <p>This guide walks through every realistic option — from the built-in Word + Outlook mail merge to dedicated tools — so you can pick the right one for your situation. We'll cover daily send limits, deliverability, and what each method gives you (and quietly takes away).</p>
 
     <div class="highlight">
-      <p><strong>Sending separately:</strong> If each person should get their own email rather than one shared message, new Outlook and Outlook on the web can already do it with the same text for everyone: choose <em>Start mail merge</em> from the Send dropdown (<a href="does-new-outlook-have-mail-merge.html#today">how it works</a>). To greet each person by name or fill in details from a list, use Word's mail merge (classic Outlook only) or a tool like OutMass. A contact group or distribution list sends one email that everyone shares.</p>
+      <p><strong>Sending separately:</strong> If each person should get their own copy rather than one shared message, new Outlook and Outlook on the web have a built-in <em>Start mail merge</em> that does it with the same text for everyone. For that and the personalized options, see <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
       <p><strong>The short version:</strong> If you're sending fewer than 50 personalized emails a month and have plenty of patience, Word's mail merge wizard does the job. For everything else — scheduling, tracking, follow-ups, more than 100 recipients — you'll save hours and get better deliverability with a purpose-built tool. <a href="../index.html">OutMass</a> is the one we make.</p>
     </div>
 
     <h2>Method 1: Word + Outlook mail merge (free, native, painful)</h2>
 
-    <p>Microsoft's official answer to mass email from Outlook is Word's mail merge feature. It works, but it's slower and more limited than most people expect.</p>
+    <p>In classic Outlook, Microsoft's answer to mass email is Word's mail merge feature. It works, but it's slower and more limited than most people expect.</p>
 
     <div class="highlight">
       <p><strong>Classic Outlook only.</strong> Word drives this merge through MAPI, which the new Outlook does not expose &mdash; if you have been moved to new Outlook, Word will try to open classic Outlook and the merge will not complete. <a href="does-new-outlook-have-mail-merge.html">What mail merge does and does not do in new Outlook &rarr;</a></p>
@@ -140,7 +138,7 @@
 
     <h2>Method 2: Outlook distribution lists / contact groups</h2>
 
-    <p>Distribution lists let you address one email to a group, but they're closer to a CC: than a real mail merge. Every recipient sees every other recipient's address (or you BCC and lose personalization entirely).</p>
+    <p>Distribution lists let you address one email to a group, but they're closer to a CC: than a real mail merge. Put a contact group in To or Cc and recipients can see every member's address; move it to Bcc and the list is hidden, but everyone still gets the same message with no personalization. To send so each person sees only their own address, see <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
 
     <h3>When this works</h3>
 
@@ -152,7 +150,7 @@
 
     <h3>When this falls apart</h3>
 
-    <p>Distribution lists are not appropriate for cold outreach, sales sequences, or anything where the recipient should believe they got an individual message. They also count against Outlook's recipient limits per message — you can't fit more than 500 addresses in a single send on a Microsoft 365 mailbox.</p>
+    <p>Distribution lists are not appropriate for cold outreach, sales sequences, or anything where the recipient should believe they got an individual message. They also count against the per-message recipient limit, which adds up To, Cc and Bcc and counts each member of a contact group separately; Microsoft lists it as customizable up to 1,000 recipients on a Microsoft 365 business mailbox (many mailboxes default to 500).</p>
 
     <h2>Method 3: VBA scripts</h2>
 
@@ -163,7 +161,7 @@
     <h3>The catches</h3>
 
     <ul>
-      <li>VBA runs only on Windows desktop Outlook. Outlook on the web, Outlook for Mac, and the new Outlook for Windows preview do not support it.</li>
+      <li>VBA runs only on Windows desktop Outlook. Outlook on the web, Outlook for Mac, and the new Outlook for Windows do not support it.</li>
       <li>Modern security policies in Microsoft 365 often block macro-driven sends entirely or trigger anti-malware scans on every message.</li>
       <li>You're now maintaining a script. Recipients change, columns change, and a tiny bug can email the wrong people the wrong message.</li>
       <li>No tracking unless you build it yourself.</li>
@@ -180,7 +178,7 @@
       <li><strong>Open and click tracking</strong> so you can see who's engaged.</li>
       <li><strong>Reply detection</strong> — the strongest engagement signal you'll ever get.</li>
       <li><strong>Scheduled sending</strong> — your campaign goes out at the time you choose, even with your browser closed.</li>
-      <li><strong>Automatic follow-up</strong> for recipients who didn't open the first email.</li>
+      <li><strong>Automatic follow-up</strong> for recipients who didn't reply (or didn't open).</li>
       <li><strong>Templates</strong> so your best-performing email is one click away.</li>
       <li><strong>A real unsubscribe flow</strong> with a global suppression list.</li>
       <li><strong>Per-recipient rate limiting</strong> so Microsoft doesn't flag your account.</li>
@@ -207,9 +205,11 @@
         <tr><td>Outlook.com (free)</td><td>Not published</td><td>Not published</td><td>Not published</td></tr>
         <tr><td>Microsoft 365 Personal / Family</td><td>5,000 recipients</td><td>Not published</td><td>500 recipients</td></tr>
         <tr><td>Microsoft 365 Business / Exchange Online</td><td>10,000 recipients</td><td>30 messages</td><td>500 recipients</td></tr>
-        <tr><td>New tenant (first 30 days)</td><td>Reduced — often 1,000–2,000</td><td>30 messages</td><td>500 recipients</td></tr>
+        <tr><td>New Microsoft 365 tenant (first 60 days)</td><td>Lower tenant-wide limit on external recipients (10%, then 25%)</td><td>30 messages</td><td>500 recipients</td></tr>
       </tbody>
     </table>
+
+    <p>The new-tenant row is a different kind of limit from the others. Microsoft's <a href="https://techcommunity.microsoft.com/blog/exchange/introducing-exchange-online-tenant-outbound-email-limits/4372797" rel="nofollow">tenant external recipient rate limit</a> caps how many people outside your organization the whole tenant can email per day, based on its license count. A tenant less than 31 days old gets 10% of that standard quota, and 25% from day 31 to day 60.</p>
 
     <p>If you exceed the per-minute throughput Microsoft will queue your messages temporarily; if you exceed the per-day limit you'll hit a hard <code>SubmissionQuotaExceeded</code> error and can't send again until the number of recipients you messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour.</p>
 
@@ -222,7 +222,7 @@
       <li><strong>Keep the message text-heavy.</strong> Long blocks of text, conversational tone, and short signatures look like real correspondence. Marketing-template HTML with images and gradient headers looks like marketing.</li>
       <li><strong>Skip attachments for cold outreach.</strong> A 1 MB PDF triggers more spam filters than a link to the same PDF on OneDrive.</li>
       <li><strong>Send during business hours in the recipient's timezone.</strong> 3 a.m. blasts get flagged.</li>
-      <li><strong>Spread the send.</strong> A 1-second delay between messages avoids Microsoft's anti-spam throttles and looks more human.</li>
+      <li><strong>Spread the send.</strong> Microsoft caps sending at 30 messages a minute, so leave at least 2 seconds between messages.</li>
       <li><strong>Always include a real unsubscribe link.</strong> One unsubscribe complaint is fine. Three on the same campaign and Microsoft starts paying attention.</li>
     </ul>
 
@@ -230,11 +230,8 @@
 
     <h2>Frequently asked questions</h2>
 
-    <h3>How do I send a mass email in Outlook so each person gets it separately?</h3>
-    <p>In new Outlook and Outlook on the web, open a new message and choose Start mail merge from the Send dropdown: everyone gets their own copy of the same message, addressed only to them. To personalize each email with a name or other details from a list, use Word's mail merge (classic Outlook only) or a mail merge tool such as OutMass. A contact group sends one shared message instead: everyone sees the other addresses unless you move them to Bcc, and Bcc rules out personalization.</p>
-
     <h3>How many emails can I send from Outlook per day?</h3>
-    <p>Microsoft publishes a daily figure for some Outlook.com accounts and not others. Microsoft 365 subscribers: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free accounts: no figure is published — Microsoft says limits are lower and vary with account history. Microsoft 365 business and Exchange Online accounts allow up to 10,000 recipients per day, with no more than 500 in a single message and a per-minute throughput cap of 30 messages.</p>
+    <p>Microsoft publishes a daily figure for some Outlook.com accounts and not others. Microsoft 365 subscribers: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free accounts: no figure is published — Microsoft says limits are lower and vary with account history. Microsoft 365 business and Exchange Online accounts allow up to 10,000 recipients per day, with a per-message limit of 500 by default (an admin can raise it to 1,000) and a per-minute throughput cap of 30 messages.</p>
 
     <h3>Can Outlook do mail merge natively?</h3>
     <p>Classic Outlook needs Microsoft Word for it: Word drives a mail merge that uses Outlook as the sender, but the workflow has serious limitations: no scheduling, no open tracking, no follow-ups, and no easy way to reuse the same data source across campaigns. New Outlook and Outlook on the web have a basic built-in mail merge that sends everyone their own copy of the same message, but it cannot personalize each email yet.</p>
@@ -252,7 +249,7 @@
 
     <p>For a few dozen personalized emails a month, Word's mail merge does the job — clunky but free. For anything bigger, dedicated tooling pays for itself the first time you don't have to manually rebuild a follow-up list. <a href="../index.html">OutMass</a> is built specifically for the Outlook side of this problem; it's free up to 250 emails a month so you can decide for yourself.</p>
 
-    <p class="updated-note">Last updated: September 15, 2026 &mdash; added how to send so each person gets their own email, including new Outlook's built-in mail merge, and corrected when the daily limit resets.</p>
+    <p class="updated-note">Last updated: September 15, 2026 &mdash; corrected when the daily limit resets, how the per-message recipient limit works, the new-tenant limit and the pacing advice, named new Outlook's built-in mail merge, and moved sending separately to its own article.</p>
 
   </div>
 </div>

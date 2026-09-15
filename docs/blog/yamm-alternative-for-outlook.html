@@ -18,7 +18,7 @@
     "headline": "Yet Another Mail Merge for Outlook? Use OutMass",
     "description": "Yet Another Mail Merge (YAMM) is a Google Workspace add-on for Gmail + Sheets — there's no Outlook version. OutMass is the Outlook-native mail merge: CSV personalization, tracking, scheduling, and follow-ups from your own Outlook account.",
     "datePublished": "2026-06-12",
-    "dateModified": "2026-06-12",
+    "dateModified": "2026-09-15",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/yamm-alternative-for-outlook.html"
@@ -32,9 +32,9 @@
       {"@type": "Question", "name": "Does Yet Another Mail Merge (YAMM) work with Outlook?",
        "acceptedAnswer": {"@type": "Answer", "text": "No. Yet Another Mail Merge is a Google Workspace add-on that runs inside Gmail and Google Sheets. It depends on Google's APIs and sends through Gmail, so it does not run in Outlook, Outlook on the web, or Microsoft 365 at all."}},
       {"@type": "Question", "name": "Is there a YAMM equivalent for Outlook?",
-       "acceptedAnswer": {"@type": "Answer", "text": "OutMass is the closest Outlook-native equivalent. It's a Chrome extension that adds mail merge inside Outlook on the web (outlook.office.com, outlook.live.com, outlook.office365.com). You merge from a CSV instead of a Google Sheet, and it handles open and click tracking, scheduled sending, automatic follow-ups for non-openers, and reply detection — all sent through your own Microsoft account."}},
+       "acceptedAnswer": {"@type": "Answer", "text": "OutMass is the closest Outlook-native equivalent. It's a Chrome extension that adds mail merge inside Outlook on the web (outlook.office.com, outlook.live.com, outlook.office365.com). You merge from a CSV instead of a Google Sheet, and it handles open and click tracking, scheduled sending, automatic follow-ups to people who haven't replied (or haven't opened), and reply detection — all sent through your own Microsoft account."}},
       {"@type": "Question", "name": "How is OutMass different from YAMM?",
-       "acceptedAnswer": {"@type": "Answer", "text": "YAMM lives in the Google world (Gmail + Google Sheets). OutMass is Outlook-native: it works inside Outlook on the web, merges from a CSV instead of a spreadsheet, and sends through Microsoft Graph using your own mailbox. It also adds Outlook-specific features such as OneDrive attachment links, daily reply detection via Graph, an Engaged metric, and Resume after partial failures."}},
+       "acceptedAnswer": {"@type": "Answer", "text": "YAMM lives in the Google world (Gmail + Google Sheets). OutMass is Outlook-native: it works inside Outlook on the web, merges from a CSV instead of a spreadsheet, and sends through Microsoft Graph using your own mailbox. It also adds Outlook-specific features such as OneDrive attachment links, reply detection via Graph every six hours, an Engaged metric, and Resume after partial failures."}},
       {"@type": "Question", "name": "Can I move my YAMM mail merges to Outlook?",
        "acceptedAnswer": {"@type": "Answer", "text": "Yes. Export your Google Sheet as a CSV (File → Download → Comma-separated values), install OutMass, and recreate your templates using the double-brace merge-tag syntax such as {{firstName}}. Then re-import the CSV into a new campaign and send. Tracking history doesn't carry over because it's per-platform, but your contacts and message templates transfer cleanly."}}
     ]
@@ -174,7 +174,7 @@
         <tr>
           <td>Reply detection</td>
           <td>Check their current features</td>
-          <td>Yes (daily inbox scan via Graph)</td>
+          <td>Yes (inbox checked via Graph every six hours)</td>
         </tr>
         <tr>
           <td>Engaged metric (open OR click OR reply)</td>
@@ -220,7 +220,7 @@
 
     <h3>Reply detection as a first-class metric</h3>
 
-    <p>Open rates are noisy — Apple Mail Privacy Protection inflates them and Outlook's image blocking deflates them. <strong>Replies don't lie.</strong> OutMass runs a daily scan of your Inbox through Microsoft Graph and stamps any matching contact as "replied," so your Reports tab shows a reply rate next to opens and clicks. It's usually a smaller number, but it's the one you can actually trust.</p>
+    <p>Open rates are noisy — Apple Mail Privacy Protection inflates them and Outlook's image blocking deflates them. <strong>Replies don't lie.</strong> OutMass checks your Inbox through Microsoft Graph every six hours and stamps any matching contact as "replied," so your Reports tab shows a reply rate next to opens and clicks. It's usually a smaller number, but it's the one you can actually trust.</p>
 
     <h3>"Engaged" — one honest engagement number</h3>
 
@@ -284,7 +284,7 @@
       </tbody>
     </table>
 
-    <p>For YAMM's current plans and quotas, check their current pricing — they price per Google account and the tiers move over time. If you're sending from a single Outlook mailbox, keep in mind you'll hit Microsoft's send throttling before any plan limit becomes the constraint: Exchange Online meters delivery at about <strong>30 messages per minute</strong> on top of the 10,000-recipient daily cap, and brand-new tenants are held to lower limits for their first 30 days (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Exchange Online limits</a>). OutMass paces sends to stay under that rate; see <a href="outlook-mail-merge-limit.html">our breakdown of Outlook's send limits</a> for the full numbers by account type.</p>
+    <p>For YAMM's current plans and quotas, check their current pricing — they price per Google account and the tiers move over time. If you're sending from a single Outlook mailbox, keep in mind you'll hit Microsoft's send throttling before any plan limit becomes the constraint: Exchange Online meters delivery at about <strong>30 messages per minute</strong> on top of the 10,000-recipient daily cap (<a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Exchange Online limits</a>), and brand-new tenants start with a lower tenant-wide limit on external recipients for their first 60 days (<a href="https://techcommunity.microsoft.com/blog/exchange/introducing-exchange-online-tenant-outbound-email-limits/4372797" rel="nofollow">Microsoft's post on tenant outbound email limits</a>). OutMass paces sends to stay under that rate; see <a href="outlook-mail-merge-limit.html">our breakdown of Outlook's send limits</a> for the full numbers by account type.</p>
 
     <div class="cta">
       <h3>Try OutMass — free up to 250 emails/month</h3>
@@ -299,15 +299,15 @@
     <p>No. Yet Another Mail Merge is a Google Workspace add-on that runs inside Gmail and Google Sheets. It depends on Google's APIs and sends through Gmail, so it does not run in Outlook, Outlook on the web, or Microsoft 365 at all.</p>
 
     <h3>Is there a YAMM equivalent for Outlook?</h3>
-    <p>OutMass is the closest Outlook-native equivalent. It's a Chrome extension that adds mail merge inside Outlook on the web (outlook.office.com, outlook.live.com, outlook.office365.com). You merge from a CSV instead of a Google Sheet, and it handles open and click tracking, scheduled sending, automatic follow-ups for non-openers, and reply detection — all sent through your own Microsoft account.</p>
+    <p>OutMass is the closest Outlook-native equivalent. It's a Chrome extension that adds mail merge inside Outlook on the web (outlook.office.com, outlook.live.com, outlook.office365.com). You merge from a CSV instead of a Google Sheet, and it handles open and click tracking, scheduled sending, automatic follow-ups to people who haven't replied (or haven't opened), and reply detection — all sent through your own Microsoft account.</p>
 
     <h3>How is OutMass different from YAMM?</h3>
-    <p>YAMM lives in the Google world (Gmail + Google Sheets). OutMass is Outlook-native: it works inside Outlook on the web, merges from a CSV instead of a spreadsheet, and sends through Microsoft Graph using your own mailbox. It also adds Outlook-specific features such as OneDrive attachment links, daily reply detection via Graph, an Engaged metric, and Resume after partial failures.</p>
+    <p>YAMM lives in the Google world (Gmail + Google Sheets). OutMass is Outlook-native: it works inside Outlook on the web, merges from a CSV instead of a spreadsheet, and sends through Microsoft Graph using your own mailbox. It also adds Outlook-specific features such as OneDrive attachment links, reply detection via Graph every six hours, an Engaged metric, and Resume after partial failures.</p>
 
     <h3>Can I move my YAMM mail merges to Outlook?</h3>
     <p>Yes. Export your Google Sheet as a CSV (File → Download → Comma-separated values), install OutMass, and recreate your templates using the double-brace merge-tag syntax such as <code>{{firstName}}</code>. Then re-import the CSV into a new campaign and send. Tracking history doesn't carry over because it's per-platform, but your contacts and message templates transfer cleanly.</p>
 
-    <p class="updated-note">Last updated: June 12, 2026.</p>
+    <p class="updated-note">Last updated: September 15, 2026 &mdash; corrected the new-tenant limit.</p>
 
   </div>
 </div>

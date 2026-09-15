@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>How to Send a Mass Email Individually in Outlook (2026) — OutMass</title>
+  <meta name="description" content="Send one email to many people in Outlook so each person gets their own copy, sent separately: Start mail merge, Word, Bcc and OutMass compared.">
+  <meta property="og:title" content="How to Send a Mass Email Individually in Outlook (2026)">
+  <meta property="og:description" content="What each recipient sees with a contact group, Bcc, Start mail merge, Word's mail merge and OutMass, and how to send so every person gets their own email.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://getoutmass.com/blog/send-mass-email-individually-outlook.html">
+  <link rel="canonical" href="https://getoutmass.com/blog/send-mass-email-individually-outlook.html">
+
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "Article",
+    "headline": "How to Send a Mass Email Individually in Outlook (2026)",
+    "description": "How to send one email to many people in Outlook so each person receives their own copy with no other recipients listed: Start mail merge in new Outlook and Outlook on the web, Word's mail merge in classic Outlook, why Bcc is not the same, and OutMass in Outlook on the web.",
+    "datePublished": "2026-09-15",
+    "dateModified": "2026-09-15",
+    "author": {"@type": "Organization", "name": "OutMass"},
+    "publisher": {"@type": "Organization", "name": "OutMass"},
+    "mainEntityOfPage": "https://getoutmass.com/blog/send-mass-email-individually-outlook.html"
+  }
+  </script>
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": [
+      {
+        "@type": "Question",
+        "name": "Can I send a mass email in Outlook without Bcc?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Yes. In new Outlook for Windows and Outlook on the web, Start mail merge in the Send dropdown gives each recipient their own copy with no other recipients listed. In classic Outlook, Word's mail merge sends a separate message to each address and can add each person's details from your list."}
+      },
+      {
+        "@type": "Question",
+        "name": "How do I make a mass email look like it was sent to one person?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Send each person a separate message. Start mail merge does that with the same text for everyone. Word's mail merge in classic Outlook, or OutMass in Outlook on the web, can also add each person's name or other details from your list."}
+      },
+      {
+        "@type": "Question",
+        "name": "Why can everyone see the other addresses?",
+        "acceptedAnswer": {"@type": "Answer", "text": "The addresses went in To or Cc, typed in or added through a contact group. Microsoft says a personal distribution list cannot be shown in the To box without letting recipients expand it to every name and address. Put the group in Bcc, or send each person a separate message."}
+      },
+      {
+        "@type": "Question",
+        "name": "Does sending separately get around Outlook's sending limits?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Only the per-message limit, because each message has one recipient. Microsoft's daily limit counts recipients across all your messages, so 200 separate emails to 200 people use the same daily allowance as one email to all 200."}
+      },
+      {
+        "@type": "Question",
+        "name": "Will a big Bcc email be flagged as spam?",
+        "acceptedAnswer": {"@type": "Answer", "text": "Microsoft's guidance does not give a yes or no. Its outbound spam guidance for mass mail through Microsoft 365 says to stay within the sending limits, including avoiding large Bcc lists, and says marketing email should always offer a way to unsubscribe."}
+      }
+    ]
+  }
+  </script>
+
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; color: #1a1a2e; line-height: 1.75; }
+    a { color: #0078d4; text-decoration: none; }
+    a:hover { text-decoration: underline; }
+    .container { max-width: 760px; margin: 0 auto; padding: 0 24px; }
+    nav { padding: 18px 0; border-bottom: 1px solid #e8e8e8; }
+    nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
+    .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
+    .logo span { color: #1a1a2e; }
+    .nav-links { display: flex; gap: 22px; font-size: 15px; color: #444; }
+    .content { padding: 48px 0 80px; }
+    .content h1 { font-size: 34px; line-height: 1.25; margin-bottom: 12px; letter-spacing: -0.3px; }
+    .content .meta { color: #888; font-size: 14px; margin-bottom: 36px; }
+    .content h2 { font-size: 22px; margin: 40px 0 14px; color: #1a1a2e; line-height: 1.35; }
+    .content h3 { font-size: 17px; margin: 26px 0 10px; color: #1a1a2e; }
+    .content p, .content li { font-size: 16px; color: #333; margin-bottom: 14px; }
+    .content ul, .content ol { margin: 0 0 18px 24px; }
+    .content li { margin-bottom: 6px; }
+    .content code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 14px; }
+    .table-wrap { overflow-x: auto; }
+    .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
+    .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
+    .content th { background: #f9f9fa; font-weight: 600; }
+    .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
+    .highlight p:last-child { margin-bottom: 0; }
+    .cta { margin: 40px 0 16px; padding: 28px 24px; background: #f0f7ff; border-radius: 12px; text-align: center; }
+    .cta h3 { margin: 0 0 8px; font-size: 20px; }
+    .cta p { margin: 0 0 16px; color: #444; }
+    .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
+    .cta-button:hover { background: #005ea6; text-decoration: none; }
+    .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
+    footer a { color: #666; margin: 0 12px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <a href="../index.html" class="logo">Out<span>Mass</span></a>
+    <div class="nav-links">
+      <a href="../index.html">Home</a>
+      <a href="../pricing.html">Pricing</a>
+      <a href="index.html">Blog</a>
+    </div>
+  </div>
+</nav>
+
+<div class="content">
+  <div class="container">
+    <h1>How to Send a Mass Email Individually in Outlook (2026)</h1>
+    <p class="meta">Published September 15, 2026 · 6 min read</p>
+
+    <p>You have one message and a list of people. Put the addresses in To, or add a contact group, and everyone can see everyone else. Microsoft says a <a href="https://support.microsoft.com/en-us/outlook/hide-names-and-addresses-in-a-personal-distribution-list">personal distribution list cannot be shown in the To box</a> without letting recipients expand it to every name and address.</p>
+
+    <p>Bcc hides the list, but it is still one message to many people, with the same words for everyone. For an email that arrives the way a message to one person does, each person needs a separate message. There are a few ways to do that from Outlook, and they look different when they land.</p>
+
+    <div class="highlight">
+      <p><strong>Short version.</strong> Same text for everyone, in new Outlook for Windows or Outlook on the web: use <strong>Start mail merge</strong> from the Send dropdown, and each person gets their own copy with no other recipients listed. Each person's name or details in the message: Word's mail merge with classic Outlook, or a tool like OutMass in Outlook on the web. Bcc only hides the list.</p>
+    </div>
+
+    <h2 id="what-they-see">What each option looks like to the person receiving it</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">Method</th><th scope="col">What the recipient sees</th><th scope="col">Personalized per person?</th><th scope="col">Works in</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Contact group in To or Cc</strong></td><td>Every address on the list, once they expand the group</td><td>No</td><td>Any Outlook with contact groups</td></tr>
+          <tr><td><strong>Bcc</strong></td><td>No other recipients; with Microsoft's workaround, your own address in To</td><td>No, one identical message</td><td>Any Outlook</td></tr>
+          <tr><td><strong>Start mail merge</strong></td><td>Their own copy, with no other recipients listed</td><td>No, the same text for everyone</td><td>New Outlook for Windows, Outlook on the web</td></tr>
+          <tr><td><strong>Word's mail merge</strong></td><td>An individual message to their address, with no Cc or Bcc</td><td>Yes, fields from your mailing list</td><td>Classic Outlook with desktop Word</td></tr>
+          <tr><td><strong>OutMass</strong></td><td>A separate message with only their address in To, and no Cc or Bcc</td><td>Yes, <code>{{column}}</code> fields from a CSV</td><td>Outlook on the web, in Chrome or Edge</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <p>The first two are one message with many recipients. The last three send each person a message of their own.</p>
+
+    <h2 id="new-outlook">Same message, sent separately: Start mail merge in new Outlook</h2>
+
+    <p>For the same text to everyone, the built-in option in new Outlook for Windows and Outlook on the web is enough. The steps, from Microsoft's <a href="https://support.microsoft.com/en-us/outlook/sharing/new-outlook-tips-for-executive-admins-and-delegates">new Outlook tips for executive admins and delegates</a>:</p>
+
+    <ol>
+      <li>Start a new mail.</li>
+      <li>Open the dropdown on the <strong>Send</strong> button.</li>
+      <li>Select <strong>Start mail merge</strong>.</li>
+    </ol>
+
+    <p>Microsoft says every recipient will receive "their own copy of the email without other recipients listed." There are no per-person fields, so everyone reads the same words. What the feature does today, and what Microsoft has said about a personalized version, is on <a href="does-new-outlook-have-mail-merge.html#today">our page about mail merge in new Outlook</a>.</p>
+
+    <h2 id="word">Separate and personalized in classic Outlook: Word's mail merge</h2>
+
+    <p>Microsoft's <a href="https://support.microsoft.com/en-us/word/use-mail-merge-in-word-to-send-bulk-email-messages">instructions for sending email with Word's mail merge</a> say Word sends a separate message to each address in your list and that you cannot add anyone in Cc or Bcc. You cannot attach files, though you can include links. Fields from your mailing list, such as a greeting line, make each message personal.</p>
+
+    <p>The catch is the email program. Word needs a MAPI-compatible email program installed, and new Outlook does not provide MAPI, so the merge will not run from it: an answer from Microsoft External Staff on Microsoft Q&amp;A says Word tries to open classic Outlook instead (<a href="does-new-outlook-have-mail-merge.html#why-it-broke">why that happens</a>). <a href="https://support.microsoft.com/en-us/word/use-mail-merge-for-bulk-email-letters-labels-and-envelopes">Word for the web cannot run a merge</a> either. On a Mac, Microsoft notes that <strong>Merge to E-Mail</strong> is unavailable until you have selected a default email program, such as Outlook for Mac.</p>
+
+    <p>The full Word and Excel steps are in <a href="mail-merge-in-outlook.html">mail merge in Outlook, the native way</a>.</p>
+
+    <h2 id="bcc">Why Bcc is not the same thing</h2>
+
+    <p>Bcc does one job well: recipients cannot see each other's addresses. Microsoft's advice for keeping a personal distribution list private is your own address in To and the list in Bcc. But it is still one message, and everyone gets identical text.</p>
+
+    <p>Bcc addresses also count toward the per-message limit. Microsoft's <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits">Exchange Online limits</a> count the To, Cc and Bcc fields of one message together, customizable up to 1,000 recipients. <a href="https://support.microsoft.com/en-us/outlook/sending-limits-in-outlook-com">Outlook.com</a> lists 500 recipients per message for Microsoft 365 subscribers, and lower limits for non-subscribers. Microsoft's <a href="https://learn.microsoft.com/en-us/defender-office-365/outbound-spam-protection-about">outbound spam guidance</a> for mass mail through Microsoft 365 recommends staying within the sending limits, which it says includes avoiding large Bcc lists.</p>
+
+    <p>What Bcc costs against those limits, and how contact groups differ from lists your administrator makes, is covered in <a href="email-your-whole-list-from-outlook.html#bcc">what Bcc really does</a> and <a href="email-your-whole-list-from-outlook.html#four-lists">the four kinds of list</a>.</p>
+
+    <h2 id="outmass">Separate and personalized from Outlook on the web: OutMass</h2>
+
+    <p>OutMass is a Chrome and Edge extension for Outlook on the web. It sends each recipient a separate message through Microsoft Graph, from your own mailbox, with only their address in To and nothing in Cc or Bcc.</p>
+
+    <ul>
+      <li>Columns in your CSV become merge tags such as <code>{{firstName}}</code> (one word, no spaces), in the subject and the body. Send now and Test Send stop on an unknown or misspelled tag, so run Test Send before you schedule.</li>
+      <li><strong>Test Send</strong> delivers one merged sample to your own address first.</li>
+      <li>Messages go out about 2 seconds apart, and each one is saved to your Sent Items.</li>
+      <li>Every message carries an unsubscribe link.</li>
+    </ul>
+
+    <p>Free covers up to 250 emails a month. Scheduled sending comes with Starter at $9 a month, and follow-ups with Pro at $19 a month; details are on the <a href="../pricing.html">pricing page</a>.</p>
+
+    <div class="cta">
+      <h3>Try OutMass — free up to 250 emails/month</h3>
+      <p>A separate, personalized message for every person on your CSV, sent from your own mailbox in Outlook on the web.</p>
+      <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass</a>
+      <div style="margin-top:12px;font-size:13px;"><a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Also available for Microsoft Edge →</a></div>
+    </div>
+
+    <h2 id="check">How to check it really went out individually</h2>
+
+    <p>Put yourself on the list before trusting any method with a real one.</p>
+
+    <ul>
+      <li><strong>Start mail merge:</strong> include your own address, then check that the To line on your copy shows only you.</li>
+      <li><strong>Word's mail merge:</strong> add a row with your address and send just that record first, using the <strong>Send records</strong> option.</li>
+      <li><strong>OutMass:</strong> use Test Send. After the real send, each person is a separate item in your Sent Items.</li>
+    </ul>
+
+    <p>If your copy shows anyone else in To, it went out as one shared message.</p>
+
+    <h2 id="limits">Sending individually does not raise Microsoft's limits</h2>
+
+    <p>Separate messages still count toward the daily limit. <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits">Exchange Online</a> counts every recipient you send to in a 24-hour period, across all your messages, so 200 separate emails to 200 people use the same allowance as one email to all 200. The numbers by account type are in <a href="outlook-mail-merge-limit.html">Outlook's send limits explained</a>, and the other ways to send mass email from Outlook are in our <a href="how-to-send-mass-emails-from-outlook.html">step-by-step guide</a>.</p>
+
+    <h2 id="decide">Which one to use</h2>
+
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th scope="col">If you…</th><th scope="col">Do this</th></tr></thead>
+        <tbody>
+          <tr><td>Want the same text for everyone, in new Outlook for Windows or Outlook on the web</td><td>Start mail merge from the Send dropdown.</td></tr>
+          <tr><td>Want each person's name or details, in classic Outlook for Windows</td><td>Word's mail merge — <a href="mail-merge-in-outlook.html">steps here</a>.</td></tr>
+          <tr><td>Want each person's name or details, in Outlook on the web</td><td>A tool that merges from your list, such as <a href="#outmass">OutMass</a>.</td></tr>
+          <tr><td>Only need to hide the addresses</td><td>Bcc, with your own address in To.</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <h2 id="faq">Questions people actually ask</h2>
+
+    <h3>Can I send a mass email in Outlook without Bcc?</h3>
+    <p>Yes. In new Outlook for Windows and Outlook on the web, Start mail merge in the Send dropdown gives each recipient their own copy with no other recipients listed. In classic Outlook, Word's mail merge sends a separate message to each address and can add each person's details from your list.</p>
+
+    <h3>How do I make a mass email look like it was sent to one person?</h3>
+    <p>Send each person a separate message. Start mail merge does that with the same text for everyone. Word's mail merge in classic Outlook, or OutMass in Outlook on the web, can also add each person's name or other details from your list.</p>
+
+    <h3>Why can everyone see the other addresses?</h3>
+    <p>The addresses went in To or Cc, typed in or added through a contact group. Microsoft says a personal distribution list cannot be shown in the To box without letting recipients expand it to every name and address. Put the group in Bcc, or send each person a separate message.</p>
+
+    <h3>Does sending separately get around Outlook's sending limits?</h3>
+    <p>Only the per-message limit, because each message has one recipient. Microsoft's daily limit counts recipients across all your messages, so 200 separate emails to 200 people use the same daily allowance as one email to all 200.</p>
+
+    <h3>Will a big Bcc email be flagged as spam?</h3>
+    <p>Microsoft's guidance does not give a yes or no. Its outbound spam guidance for mass mail through Microsoft 365 says to stay within the sending limits, including avoiding large Bcc lists, and says marketing email should always offer a way to unsubscribe.</p>
+
+    <p class="updated-note">Published September 15, 2026 &mdash; checked against Microsoft's documentation on 15 September 2026.</p>
+
+  </div>
+</div>
+
+<footer>
+  <a href="../index.html">Home</a>
+  <a href="../pricing.html">Pricing</a>
+  <a href="index.html">Blog</a>
+  <a href="../privacy.html">Privacy</a>
+  <a href="../terms.html">Terms</a>
+</footer>
+
+</body>
+</html>

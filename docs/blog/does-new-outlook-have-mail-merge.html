@@ -18,7 +18,7 @@
     "headline": "Does the New Outlook Have Mail Merge? What Works Today",
     "description": "What mail merge in new Outlook and Outlook on the web can actually do today, why Word mail merge stopped working after the upgrade, and where Microsoft's Mail Merge (Advanced) stands on the roadmap.",
     "datePublished": "2026-08-24",
-    "dateModified": "2026-08-24",
+    "dateModified": "2026-09-15",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/does-new-outlook-have-mail-merge.html"
@@ -117,7 +117,7 @@
     <p>So this page does something simple: it separates what ships today from what is on the roadmap, and it cites Microsoft for both.</p>
 
     <div class="highlight">
-      <p><strong>Short version.</strong> Classic Outlook for Windows still does full Word-driven mail merge. New Outlook and Outlook on the web have a <em>basic</em> mail merge that gives each recipient their own copy of the message, and Word-driven merge does not work there at all. The personalized version — Microsoft calls it <strong>Mail Merge (Advanced)</strong> — is roadmap item 423047, currently listed as preview in August 2026 and general availability in September 2026, status "In development."</p>
+      <p><strong>Short version.</strong> Classic Outlook for Windows still does full Word-driven mail merge. New Outlook and Outlook on the web have a <em>basic</em> mail merge that gives each recipient their own copy of the message, and Word-driven merge does not work there at all. The personalized version — Microsoft calls it <strong>Mail Merge (Advanced)</strong> — is roadmap item 423047, currently listed as preview in August 2026 and general availability in September 2026, status "In development." As of 15 September 2026 the roadmap still shows it as in development, not yet rolling out.</p>
     </div>
 
     <h2 id="why-it-broke">Why your Word mail merge stopped working</h2>
@@ -130,7 +130,7 @@
 
     <h2 id="today">What mail merge in new Outlook does today</h2>
 
-    <p>The version shipping now is Mail Merge (Basic). Microsoft's instruction is to open a new message and pick <em>Start mail merge</em> from the Send dropdown. What it does is give every recipient their own copy of the email, addressed only to them — so nobody sees the whole list. Think of it as a better BCC.</p>
+    <p>The version shipping now is Mail Merge (Basic), and it is there in both new Outlook for Windows and Outlook on the web. <a href="https://support.microsoft.com/en-us/outlook/sharing/new-outlook-tips-for-executive-admins-and-delegates">Microsoft's instruction</a> is to open a new message and pick <em>Start mail merge</em> from the Send dropdown. What it does is give every recipient their own copy of the email, addressed only to them — so nobody sees the whole list. Think of it as a better BCC. For the steps, and for the options when each person should also see their own name or details, see <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
 
     <p>What it is not, yet, is personalization. There is no data file to import and no per-recipient fields: you address the message the way you address any other, and everyone gets the same body. That difference — one identical message versus a message that greets each person by name — is exactly what the Advanced version is meant to add.</p>
 
@@ -142,7 +142,7 @@
       <p>"Mail Merge (Basic) will be improved upon to allow fields to be replaced by values per email address. When Mail Merge (Advanced) is launched, not only will every recipient receive their own email with only their email address in the recipients list, but the emails can further be personalized to include content such as their name."</p>
     </div>
 
-    <p>Current state of that entry, checked on 24 August 2026: status <strong>In development</strong>, preview <strong>August 2026</strong>, general availability <strong>September 2026</strong>, last modified 29 May 2026. Platforms named are Outlook on the web and new Outlook for Windows.</p>
+    <p>Current state of that entry, checked on 15 September 2026: status <strong>In development</strong>, preview <strong>August 2026</strong>, general availability <strong>September 2026</strong>, last modified 29 May 2026. Platforms named are Outlook on the web and new Outlook for Windows.</p>
 
     <p>Treat those dates as a plan, not a promise. The entry has been revised more than once since it appeared, and a good deal of the coverage you will find still quotes earlier dates that have already come and gone. We re-check the roadmap rather than repeat an old article, and we date this page when we do.</p>
 
@@ -190,8 +190,8 @@
         <tbody>
           <tr><td>Use classic Outlook and just want the old merge</td><td>Nothing changed. Word + Excel still works — <a href="mail-merge-in-outlook.html">step-by-step here</a>.</td></tr>
           <tr><td>Got moved to new Outlook and your merge broke</td><td>Turn off "Try the new Outlook" to get classic back, or run the merge in Outlook on the web with a tool that does not need MAPI.</td></tr>
-          <tr><td>Only need everyone to get their own copy, no personalization</td><td>Mail Merge (Basic) in new Outlook already does that.</td></tr>
-          <tr><td>Need names, fields, tracking, follow-ups or reports</td><td>That is not in the box today, on any Outlook — <a href="#where-outmass-fits">here is what we built for it</a>.</td></tr>
+          <tr><td>Only need everyone to get their own copy, no personalization</td><td>Mail Merge (Basic) in new Outlook and Outlook on the web already does that (<a href="send-mass-email-individually-outlook.html">how</a>).</td></tr>
+          <tr><td>Need names, fields, tracking, follow-ups or reports</td><td>Tracking, follow-ups and reports are not built into any Outlook, and names and fields need Word's merge in classic Outlook — <a href="#where-outmass-fits">here is what we built for it</a>.</td></tr>
         </tbody>
       </table>
     </div>
@@ -200,11 +200,11 @@
 
     <p>OutMass is a Chrome and Edge extension that runs inside Outlook on the web. It reads a CSV, turns your columns into merge tags, and sends each message through your own Microsoft account with the official Graph API — so what lands in the recipient's inbox is a normal email from your address.</p>
 
-    <p>The parts it adds are the ones no merge button covers: open and click tracking, a daily check of your inbox for real replies, follow-ups that skip anyone who has already answered, campaigns scheduled for a later time, a per-day cap that spreads a long list over several days so you stay under the daily recipient ceiling, A/B subject testing, and a campaign report you can export. Sends are paced at roughly 30 a minute on every plan, which is the ceiling Microsoft sets.</p>
+    <p>The parts it adds are the ones no merge button covers: open and click tracking, a check of your inbox for real replies every six hours, follow-ups that skip anyone who has already answered, campaigns scheduled for a later time, a per-day cap that spreads a long list over several days so you stay under the daily recipient ceiling, A/B subject testing, and a campaign report you can export. Sends are paced at roughly 30 a minute on every plan, which is the ceiling Microsoft sets.</p>
 
     <p>Which of those you get depends on the plan: mail merge, open and click tracking and campaign reports are on the free tier; scheduled sending, the daily cap, saved templates and per-recipient CSV export come with Starter at $9 a month; follow-ups, A/B subject testing and the AI writer with Pro at $19. The full breakdown is on the <a href="../pricing.html">pricing page</a>.</p>
 
-    <p>It works today, on the Outlook you already have, and it keeps working whatever September brings — because the value was never the merge itself. It is knowing what happened after you hit send.</p>
+    <p>It works today, on the Outlook you already have, and it keeps working whatever the roadmap brings — because the value was never the merge itself. It is knowing what happened after you hit send.</p>
 
     <div class="cta">
       <h3>Try OutMass — free up to 250 emails/month</h3>
@@ -230,7 +230,7 @@
     <h3>Why were my mail merge emails not received?</h3>
     <p>The usual culprits are Microsoft's sending limits — messages held back once you pass 30 a minute, or a daily recipient ceiling reached after a big send — or a large identical send being filtered. Sending at a controlled pace from your own mailbox, with an unsubscribe link and a clean list, is what keeps that from happening.</p>
 
-    <p class="updated-note">This page tracks Microsoft 365 roadmap item 423047. Roadmap state last checked 24 August 2026 (status "In development", preview August 2026, GA September 2026). Dates on that item have changed before; we re-check it rather than quoting an old article.</p>
+    <p class="updated-note">This page tracks Microsoft 365 roadmap item 423047. Roadmap state last checked 15 September 2026 (status "In development", preview August 2026, GA September 2026). Dates on that item have changed before; we re-check it rather than quoting an old article.</p>
 
   </div>
 </div>
