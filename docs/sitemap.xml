@@ -2,7 +2,7 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.sitemaps.org/schemas/sitemap/0.9
-                            http://www.sitemaps.org/schemas/sitemap/0.9">
+                            http://www.sitemaps.org/schemas/sitemap/0.9/sitemap.xsd">
 
   <url>
     <loc>https://getoutmass.com/</loc>
@@ -36,14 +36,14 @@
 
   <url>
     <loc>https://getoutmass.com/blog/</loc>
-    <lastmod>2026-06-12</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html</loc>
-    <lastmod>2026-08-24</lastmod>
+    <lastmod>2026-09-15</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
@@ -57,14 +57,14 @@
 
   <url>
     <loc>https://getoutmass.com/blog/outlook-mail-merge-limit.html</loc>
-    <lastmod>2026-08-24</lastmod>
+    <lastmod>2026-09-09</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
 
   <url>
     <loc>https://getoutmass.com/blog/mailmeteor-alternative-for-outlook.html</loc>
-    <lastmod>2026-06-12</lastmod>
+    <lastmod>2026-09-11</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
