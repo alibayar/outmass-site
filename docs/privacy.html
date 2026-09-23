@@ -45,7 +45,7 @@
 <div class="content">
   <div class="container">
     <h1>Privacy Policy</h1>
-    <p class="updated">Last updated: April 18, 2026</p>
+    <p class="updated">Last updated: September 23, 2026</p>
 
     <p>This Privacy Policy describes how Metis Information Technologies Ltd ("OutMass", "we", "us") collects, uses, and protects your personal data when you use the OutMass Chrome extension and related services. We are committed to protecting your privacy and complying with the UK GDPR, the EU General Data Protection Regulation (GDPR), and other applicable data protection laws.</p>
 
@@ -71,12 +71,13 @@
         <tr><td>Email open and click events</td><td>Tracking and reporting</td><td>Legitimate interest</td></tr>
         <tr><td>Usage statistics (features used, session duration)</td><td>Product improvement</td><td>Legitimate interest</td></tr>
         <tr><td>Payment information</td><td>Subscription billing (processed by Stripe — card details never touch our servers)</td><td>Contract performance</td></tr>
+        <tr id="signin-help"><td>Email address you give us when asking for help signing in (optional), with the answers you chose and technical details of your attempts (browser and version, which Outlook you use, language, extension version, the kinds of errors)</td><td>Replying to you about that sign-in</td><td>Your request, before any account exists (steps prior to a contract, GDPR Art. 6(1)(b))</td></tr>
       </tbody>
     </table>
 
     <h2>3. Data We Do NOT Collect</h2>
     <ul>
-      <li>We do <strong>not</strong> read your Outlook inbox or any messages you receive.</li>
+      <li>We do <strong>not</strong> read the content of your Outlook inbox or of any message you receive. Reply detection, if you turn it on, looks only at who wrote to you, when, and which conversation it belongs to — never at what they wrote.</li>
       <li>We do <strong>not</strong> copy or store emails that other people have sent you.</li>
       <li>We do <strong>not</strong> store your Microsoft password — authentication is handled by Microsoft's own OAuth 2.0 flow.</li>
       <li>We do <strong>not</strong> store your payment card details — Stripe handles them directly.</li>
@@ -90,7 +91,9 @@
     <p>When you sign in with Microsoft, we request the following permissions:</p>
     <ul>
       <li><strong>Mail.Send</strong> — to send emails on your behalf via Microsoft Graph API</li>
-      <li><strong>Mail.Read</strong> — to detect replies for follow-up automation</li>
+      <li><strong>User.Read</strong> — your name and email address, to set up your OutMass account</li>
+      <li><strong>offline_access</strong> — so scheduled emails and follow-ups can still be sent when Outlook is closed</li>
+      <li><strong>Mail.Read</strong> (optional) — requested when you turn on reply detection, so follow-ups stop for people who already replied. It reads only the sender, time and conversation of incoming mail. Versions of the extension older than 0.3.0 ask for it at sign-in.</li>
       <li><strong>Files.Read.All / Files.ReadWrite</strong> (optional) — only requested if you opt into the OneDrive attachment feature. We use these scopes <em>solely</em> to read the metadata of files you explicitly select in the OneDrive picker and to generate anonymous "view" sharing links for those files. We never download, browse, modify, or read the contents of your OneDrive files. The sharing links live in your own OneDrive — they are not stored on OutMass servers.</li>
     </ul>
     <p>OAuth access tokens are stored securely and are never shared with third parties. You can revoke access at any time from your Microsoft account settings. The OneDrive scopes are optional — if you never use the OneDrive attachment feature, they are never requested.</p>
@@ -113,8 +116,18 @@
       <li><strong>Upstash</strong> — Redis queue for email scheduling</li>
       <li><strong>Microsoft Graph API</strong> — Email sending</li>
       <li><strong>PostHog</strong> — Anonymous product analytics and error tracking</li>
+      <li><strong>MailerSend</strong> — Transactional email (for example the welcome email and notices about your account and campaigns)</li>
+      <li><strong>Telegram</strong> — Internal notifications to our team, such as feedback you send us from the extension (including the email address you give with it)</li>
     </ul>
     <p>Each service operates under their own privacy policies and data protection agreements.</p>
+
+    <p>
+      If you ask for help signing in, the address you give is stored only in
+      our database; if we reply, the conversation is kept in our support
+      mailbox (see Section 7). We send nothing to it automatically, and we
+      never use it for analytics or marketing. The notification our team
+      receives about your request does not contain the address.
+    </p>
 
     <p>
       We collect anonymous usage telemetry through our extension to understand
@@ -136,6 +149,8 @@
       <li>Campaign metadata is retained for 12 months after creation.</li>
       <li>Tracking data (opens, clicks) is retained for 6 months.</li>
       <li>Upon account deletion, all personal data is removed within 30 days.</li>
+      <li>Sign-in help requests are deleted within 30 days of being sent, or as soon as you sign in with that address, whichever comes first.</li>
+      <li>Support email conversations are kept for up to 24 months after the last message, or deleted sooner on request.</li>
       <li><strong>Audit log.</strong> For fraud prevention, legal defence, and compliance with the Turkish Tax Procedure Law (VUK) and equivalent UK/EU obligations, we retain a limited record of account activity for <strong>5 years</strong>. These records contain: a one-way SHA-256 hash of your email address, the type of action (login, campaign creation, send trigger, account deletion, etc.), a timestamp, and the IP address from which the action originated. IP addresses are <strong>anonymised to /24 (IPv4) or /48 (IPv6) after 12 months</strong> as an additional data-minimisation measure. These records do <strong>not</strong> contain email content, recipient addresses, or campaign bodies. This processing is based on our legitimate interest (GDPR Art. 6(1)(f)) and legal obligations (GDPR Art. 6(1)(c)) and overrides the right to erasure under GDPR Art. 17(3).</li>
     </ul>
 
