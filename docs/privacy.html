@@ -71,7 +71,7 @@
         <tr><td>Email open and click events</td><td>Tracking and reporting</td><td>Legitimate interest</td></tr>
         <tr><td>Usage statistics (features used, session duration)</td><td>Product improvement</td><td>Legitimate interest</td></tr>
         <tr><td>Payment information</td><td>Subscription billing (processed by Stripe — card details never touch our servers)</td><td>Contract performance</td></tr>
-        <tr id="signin-help"><td>Email address you give us when asking for help signing in (optional), with the answers you chose and technical details of your attempts (browser and version, which Outlook you use, language, extension version, the kinds of errors)</td><td>Replying to you about that sign-in</td><td>Your request, before any account exists (steps prior to a contract, GDPR Art. 6(1)(b))</td></tr>
+        <tr id="signin-help"><td>What you write when asking for help signing in and the email address you give (both optional; at least one of the two), with the answers you chose and technical details of your attempts (browser and version, which Outlook you use, language, extension version, the kinds of errors)</td><td>Understanding and fixing that sign-in problem, and replying to you if you gave an address</td><td>Your request, before any account exists (steps prior to a contract, GDPR Art. 6(1)(b))</td></tr>
       </tbody>
     </table>
 
@@ -122,11 +122,16 @@
     <p>Each service operates under their own privacy policies and data protection agreements.</p>
 
     <p>
-      If you ask for help signing in, the address you give is stored only in
-      our database; if we reply, the conversation is kept in our support
-      mailbox (see Section 7). We send nothing to it automatically, and we
-      never use it for analytics or marketing. The notification our team
-      receives about your request does not contain the address.
+      If you ask for help signing in, what you write and the address you give
+      are stored in our database. What you write — never your address — is
+      also included in one daily summary email to our support inbox
+      (MailerSend); any email address you type into the message itself is
+      removed from that copy. Our team gets an instant internal notification
+      (Telegram) that a request arrived, which contains neither what you
+      wrote nor your address. If we reply, the conversation is kept in our
+      support mailbox (see Section 7). We send nothing to your address
+      automatically, and we never use what you write or your address for
+      analytics or marketing.
     </p>
 
     <p>
@@ -149,7 +154,7 @@
       <li>Campaign metadata is retained for 12 months after creation.</li>
       <li>Tracking data (opens, clicks) is retained for 6 months.</li>
       <li>Upon account deletion, all personal data is removed within 30 days.</li>
-      <li>Sign-in help requests are deleted within 30 days of being sent, or as soon as you sign in with that address, whichever comes first.</li>
+      <li>Sign-in help requests are deleted from our database within 30 days of being sent, or as soon as you sign in with that address, whichever comes first. The copy of what you wrote in the daily summary email in our support inbox is kept like support email (below).</li>
       <li>Support email conversations are kept for up to 24 months after the last message, or deleted sooner on request.</li>
       <li><strong>Audit log.</strong> For fraud prevention, legal defence, and compliance with the Turkish Tax Procedure Law (VUK) and equivalent UK/EU obligations, we retain a limited record of account activity for <strong>5 years</strong>. These records contain: a one-way SHA-256 hash of your email address, the type of action (login, campaign creation, send trigger, account deletion, etc.), a timestamp, and the IP address from which the action originated. IP addresses are <strong>anonymised to /24 (IPv4) or /48 (IPv6) after 12 months</strong> as an additional data-minimisation measure. These records do <strong>not</strong> contain email content, recipient addresses, or campaign bodies. This processing is based on our legitimate interest (GDPR Art. 6(1)(f)) and legal obligations (GDPR Art. 6(1)(c)) and overrides the right to erasure under GDPR Art. 17(3).</li>
     </ul>
