@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sorry to see you go — OutMass</title>
+  <title data-i18n="title">Sorry to see you go — OutMass</title>
   <meta name="robots" content="noindex">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -15,6 +15,7 @@
     nav .inner { max-width: 1080px; margin: 0 auto; padding: 0 24px; display: flex; justify-content: space-between; align-items: center; }
     .logo { font-size: 22px; font-weight: 700; color: #0078d4; }
     .logo span { color: #1a1a2e; }
+    .nav-home { font-size: 15px; color: #444; }
 
     .content { padding: 64px 24px 96px; }
     .card { max-width: 640px; margin: 0 auto; background: #fff; border-radius: 12px; padding: 48px 40px; box-shadow: 0 2px 12px rgba(0,0,0,0.04); }
@@ -26,26 +27,36 @@
     p, li { font-size: 15px; color: #444; margin-bottom: 10px; }
     ul { margin-left: 24px; margin-bottom: 18px; }
 
-    .reminder { background: #fff8e6; border-left: 4px solid #f2a900; padding: 18px 22px; border-radius: 0 8px 8px 0; margin: 24px 0; }
+    .ask h2 { margin-top: 0; margin-bottom: 4px; }
+    .ask-sub { color: #666; font-size: 14px; margin-bottom: 16px; }
+
+    .reminder { background: #fff8e6; border-left: 4px solid #f2a900; padding: 18px 22px; border-radius: 0 8px 8px 0; margin: 40px 0 24px; }
     .reminder h3 { font-size: 15px; margin-bottom: 8px; color: #8a5a00; }
     .reminder p { color: #5a3d00; font-size: 14px; margin-bottom: 6px; }
     .reminder p:last-child { margin-bottom: 0; }
+    .reminder ul { margin: 8px 0 10px 20px; }
+    .reminder li { font-size: 14px; color: #5a3d00; }
+    .reminder a { color: #8a5a00; text-decoration: underline; }
 
     .cta-row { display: flex; gap: 12px; flex-wrap: wrap; margin: 28px 0 8px; }
-    .btn { display: inline-block; padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; transition: all 0.15s; cursor: pointer; border: none; text-align: center; }
+    .btn { display: inline-block; padding: 11px 20px; border-radius: 8px; font-weight: 600; font-size: 14px; font-family: inherit; transition: all 0.15s; cursor: pointer; border: none; text-align: center; }
     .btn-primary { background: #0078d4; color: #fff; }
     .btn-primary:hover { background: #005ea6; text-decoration: none; }
+    .btn-primary:disabled { background: #8ab8e0; cursor: default; }
     .btn-secondary { background: #f3f2f1; color: #323130; }
     .btn-secondary:hover { background: #e1dfdd; text-decoration: none; }
 
-    form { margin-top: 12px; }
     label { display: block; font-size: 14px; color: #444; margin-bottom: 8px; font-weight: 500; }
-    .reasons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
-    .reason-chip { display: inline-block; padding: 8px 14px; background: #f3f2f1; border: 1px solid transparent; border-radius: 20px; font-size: 13px; color: #444; cursor: pointer; transition: all 0.15s; }
+    .reasons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+    .reason-chip { display: inline-block; padding: 8px 14px; background: #f3f2f1; border: 1px solid transparent; border-radius: 20px; font-size: 13px; font-family: inherit; line-height: 1.4; color: #444; cursor: pointer; transition: all 0.15s; text-align: start; }
     .reason-chip:hover { background: #e8e8e8; }
     .reason-chip.selected { background: #deecf9; border-color: #0078d4; color: #004578; }
+    .reason-chip:disabled { cursor: default; }
+    .reason-chip:disabled:not(.selected) { opacity: 0.55; }
+    .reason-chip:disabled:hover:not(.selected) { background: #f3f2f1; }
     textarea { width: 100%; padding: 12px 14px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px; font-family: inherit; resize: vertical; min-height: 80px; }
     textarea:focus { outline: none; border-color: #0078d4; }
+    .more { margin-top: 16px; }
     .submit-row { margin-top: 14px; display: flex; align-items: center; gap: 12px; }
     .status { font-size: 13px; color: #666; }
     .status.success { color: #107c10; }
@@ -53,87 +64,920 @@
 
     footer { padding: 28px 0; text-align: center; font-size: 13px; color: #888; }
     footer a { color: #666; margin: 0 10px; }
+
+    /* Arabic. The page mirrors by itself (flex rows, text alignment); these
+       are the three rules written with a physical side. */
+    [dir="rtl"] ul { margin-left: 0; margin-right: 24px; }
+    [dir="rtl"] .reminder { border-left: none; border-right: 4px solid #f2a900; border-radius: 8px 0 0 8px; }
+    [dir="rtl"] .reminder ul { margin: 8px 20px 10px 0; }
+
+    /* A store name or an address is one unit; "Microsoft Edge Add-ons" broke
+       at its hyphen in German and Russian. The longest such run is ~170px. */
+    span[dir="ltr"] { white-space: nowrap; }
+    /* Italics are a Latin convention; these scripts get a slanted fake. The
+       panel path keeps its emphasis as weight instead. */
+    :lang(ja) em, :lang(zh) em, :lang(hi) em, :lang(ar) em { font-style: normal; font-weight: 600; }
   </style>
 </head>
 <body>
 
+<!-- The English below is what renders without JavaScript, and what stays on
+     screen if anything in the script fails. The script replaces each data-i18n
+     element with the same key from its string table; the table's "en" entry
+     is this text, and a test holds the two equal. -->
 <nav>
   <div class="inner">
     <a href="index.html" class="logo">Out<span>Mass</span></a>
-    <a href="index.html" style="font-size:15px;color:#444;">Home</a>
+    <a href="index.html" class="nav-home" data-i18n="navHome">Home</a>
   </div>
 </nav>
 
 <div class="content">
   <div class="card">
-    <h1>Sorry to see you go 👋</h1>
-    <p class="subtitle">OutMass has been removed from your browser. We hope it served you well.</p>
+    <h1 data-i18n="h1">Sorry to see you go 👋</h1>
+    <p class="subtitle" data-i18n="subtitle">OutMass has been removed from your browser. We hope it served you well.</p>
 
+    <!-- The question comes first and one tap answers it. It used to sit at the
+         bottom, under the subscription reminder, and needed a chip AND a Send
+         press, and almost nobody answered. -->
+    <div class="ask">
+      <h2 id="ask-title" data-i18n="askTitle">What made you uninstall?</h2>
+      <p class="ask-sub" data-i18n="askSub">One tap is enough. No email required, no follow-up.</p>
+      <div class="reasons" id="reasons" role="group" aria-labelledby="ask-title">
+        <button type="button" class="reason-chip" data-reason="not_useful" data-i18n="r_not_useful">Not useful for me</button>
+        <button type="button" class="reason-chip" data-reason="too_expensive" data-i18n="r_too_expensive">Too expensive</button>
+        <button type="button" class="reason-chip" data-reason="bugs" data-i18n="r_bugs">Bugs / didn't work</button>
+        <button type="button" class="reason-chip" data-reason="better_alternative" data-i18n="r_better_alternative">Found a better tool</button>
+        <button type="button" class="reason-chip" data-reason="outlook_limits" data-i18n="r_outlook_limits">Outlook sending limits</button>
+        <button type="button" class="reason-chip" data-reason="privacy" data-i18n="r_privacy">Privacy concerns</button>
+        <button type="button" class="reason-chip" data-reason="other" data-i18n="r_other">Other</button>
+      </div>
+      <p class="status" id="status" role="status" aria-live="polite"></p>
+
+      <div class="more" id="more" style="display:none;">
+        <label for="details" data-i18n="moreLabel">Add a sentence (optional)</label>
+        <textarea id="details" name="details" maxlength="1000" data-i18n-placeholder="detailsPlaceholder" placeholder="What would have made OutMass work better for you?"></textarea>
+        <div class="submit-row">
+          <button type="button" class="btn btn-primary" id="send-btn" data-i18n="sendBtn">Send</button>
+          <span class="status" id="more-status" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- At every stage, as before 2026-10. The stage belongs to this INSTALL,
+         not to the person: a subscriber who signed in before the stage URL
+         existed (0.1.28), reinstalled, or never re-ran the sign-in window
+         arrives here as "installed" or "panel_opened". Hiding this for them
+         was tried in review and refuted; nothing on this page can tell a
+         payer from a new install. -->
     <div class="reminder" id="sub-reminder">
-      <h3>🔔 Still have an active subscription?</h3>
-      <p>Removing the extension does <strong>not</strong> cancel your paid subscription. If you were on Starter or Pro:</p>
-      <ul style="margin:8px 0 10px 20px;font-size:14px;color:#5a3d00;">
-        <li>Reinstall OutMass and use <em>Settings → Manage Subscription</em>, or</li>
-        <li>Email <a href="mailto:support@getoutmass.com" style="color:#8a5a00;text-decoration:underline;">support@getoutmass.com</a> and we'll cancel + refund the current period.</li>
+      <h3 data-i18n="remTitle">🔔 Still have an active subscription?</h3>
+      <p data-i18n="remBody">Removing the extension does <strong>not</strong> cancel your paid subscription. If you were on Starter or Pro:</p>
+      <ul>
+        <li data-i18n="remItem1">Reinstall OutMass and use <em>Account → Manage Subscription</em>, or</li>
+        <li data-i18n="remItem2">Email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> and we'll cancel + refund the current period.</li>
       </ul>
     </div>
 
-    <h2>If it was a mistake…</h2>
-    <p>You can reinstall OutMass from the <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Chrome Web Store</a> or <a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Microsoft Edge Add-ons</a> — your data, campaigns, and templates are still there waiting for you.</p>
+    <h2 data-i18n="mistakeTitle">If it was a mistake…</h2>
+    <p data-i18n="mistakeBody">You can reinstall OutMass from the <a href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Chrome Web Store</a> or <a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc">Microsoft Edge Add-ons</a> — your data, campaigns, and templates are still there waiting for you.</p>
 
     <div class="cta-row">
-      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Reinstall OutMass</a>
-      <a class="btn btn-secondary" href="mailto:support@getoutmass.com?subject=OutMass%20support">Email support</a>
+      <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm" data-i18n="reinstallBtn">Reinstall OutMass</a>
+      <a class="btn btn-secondary" href="mailto:support@getoutmass.com?subject=OutMass%20support" data-i18n="supportBtn">Email support</a>
     </div>
-
-    <h2 style="margin-top:48px;">Help us improve</h2>
-    <p style="margin-bottom:16px;">If you have 15 seconds, we'd love to know why. No email required, no follow-up.</p>
-
-    <form id="feedback-form">
-      <label>What made you uninstall?</label>
-      <div class="reasons" id="reasons">
-        <span class="reason-chip" data-reason="not_useful">Not useful for me</span>
-        <span class="reason-chip" data-reason="too_expensive">Too expensive</span>
-        <span class="reason-chip" data-reason="bugs">Bugs / didn't work</span>
-        <span class="reason-chip" data-reason="better_alternative">Found a better tool</span>
-        <span class="reason-chip" data-reason="outlook_limits">Outlook sending limits</span>
-        <span class="reason-chip" data-reason="privacy">Privacy concerns</span>
-        <span class="reason-chip" data-reason="other">Other</span>
-      </div>
-
-      <label for="details">Anything else? <span style="color:#888;font-weight:400;">(optional)</span></label>
-      <textarea id="details" name="details" placeholder="What would have made OutMass work better for you?"></textarea>
-
-      <div class="submit-row">
-        <button type="submit" class="btn btn-primary">Send feedback</button>
-        <span class="status" id="status"></span>
-      </div>
-    </form>
   </div>
 </div>
 
 <footer>
-  <a href="index.html">Home</a>
-  <a href="privacy.html">Privacy</a>
-  <a href="terms.html">Terms</a>
-  <a href="mailto:support@getoutmass.com">Contact</a>
+  <a href="index.html" data-i18n="footHome">Home</a>
+  <a href="privacy.html" data-i18n="footPrivacy">Privacy</a>
+  <a href="terms.html" data-i18n="footTerms">Terms</a>
+  <a href="mailto:support@getoutmass.com" data-i18n="footContact">Contact</a>
 </footer>
 
 <script>
   (function () {
-    var selectedReason = null;
-    var reasons = document.getElementById("reasons");
-    var form = document.getElementById("feedback-form");
-    var status = document.getElementById("status");
+    // ── The page in the person's language ──
+    //
+    // The one surface that reaches someone who gave up before Outlook, whose
+    // email we never learn. Same thirteen languages as extension/_locales.
+    //
+    // The language machinery (LANGS, mapTag, pickLang, build) is the same as
+    // in welcome.html, kept identical by
+    // extension/tests/site-pages-i18n.test.js, which runs one table of cases
+    // against both.
+    var LANGS = ["en", "de", "es", "fr", "pt_BR", "pt_PT", "ru", "tr", "ja", "zh_CN", "zh_TW", "hi", "ar"];
+
+    // Panel words this page names, copied from extension/_locales/<lang> and
+    // compared with them by the test. The subscription button lives on the
+    // Account tab (sidebar.html, #account-btn-portal); this page said
+    // "Settings" until 2026-10-10, which is not where it is.
+    var PANEL_TERMS = {
+      account: "tabAccount",
+      manageSub: "btnManageSub"
+    };
+    var PANEL_PHRASES = {};
+
+    var CWS = "https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm";
+    var LINKS = {
+      cws: { href: CWS },
+      edge: { href: "https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc" }
+    };
+
+    // Inline markup is written as tokens, never as HTML: [b]…[/b] bold,
+    // [em]…[/em] italic, [a:id]…[/a] a link from LINKS, [ltr]…[/ltr] a Latin
+    // run kept left-to-right inside Arabic, {name} a panel term ("@name"
+    // below) or the support address.
+    //
+    // r_<code> are the answers; the code is what the backend records, so it
+    // never changes with the language.
+    var STRINGS = {
+      en: {
+        "@account": "Account",
+        "@manageSub": "Manage Subscription",
+        title: "Sorry to see you go — OutMass",
+        navHome: "Home",
+        h1: "Sorry to see you go 👋",
+        subtitle: "OutMass has been removed from your browser. We hope it served you well.",
+        askTitle: "What made you uninstall?",
+        askSub: "One tap is enough. No email required, no follow-up.",
+        r_desktop_app: "I use the Outlook desktop app, not Outlook in the browser",
+        r_not_found: "I couldn't find OutMass in Outlook",
+        r_not_what_expected: "It wasn't what I expected",
+        r_admin_approval: "Microsoft asked for my administrator's approval",
+        r_permissions: "I didn't want to give these permissions",
+        r_signin_failed: "Sign-in didn't work",
+        r_csv_upload: "My recipient list wouldn't upload",
+        r_too_complicated: "Too complicated",
+        r_bugs: "Bugs / didn't work",
+        r_too_expensive: "Too expensive",
+        r_outlook_limits: "Outlook sending limits",
+        r_better_alternative: "Found a better tool",
+        r_not_useful: "Not useful for me",
+        r_privacy: "Privacy concerns",
+        r_other: "Other",
+        thanks: "Thank you — that helps.",
+        moreLabel: "Add a sentence (optional)",
+        detailsPlaceholder: "What would have made OutMass work better for you?",
+        sendBtn: "Send",
+        statusEmpty: "Write a sentence first.",
+        statusSending: "Sending…",
+        statusSent: "Thanks — we'll read every word.",
+        remTitle: "🔔 Still have an active subscription?",
+        remBody: "Removing the extension does [b]not[/b] cancel your paid subscription. If you were on Starter or Pro:",
+        remItem1: "Reinstall OutMass and use [em]{account} → {manageSub}[/em], or",
+        remItem2: "Email {email} and we'll cancel + refund the current period.",
+        mistakeTitle: "If it was a mistake…",
+        mistakeBody: "You can reinstall OutMass from the [a:cws][ltr]Chrome Web Store[/ltr][/a] or [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — your data, campaigns, and templates are still there waiting for you.",
+        reinstallBtn: "Reinstall OutMass",
+        supportBtn: "Email support",
+        footHome: "Home",
+        footPrivacy: "Privacy",
+        footTerms: "Terms",
+        footContact: "Contact"
+      },
+      de: {
+        "@account": "Konto",
+        "@manageSub": "Abonnement verwalten",
+        title: "Schade, dass Sie gehen — OutMass",
+        navHome: "Startseite",
+        h1: "Schade, dass Sie gehen 👋",
+        subtitle: "OutMass wurde aus Ihrem Browser entfernt. Wir hoffen, es hat Ihnen gute Dienste geleistet.",
+        askTitle: "Warum haben Sie OutMass deinstalliert?",
+        askSub: "Ein Klick genügt. Keine E-Mail-Adresse nötig, keine Nachfragen.",
+        r_desktop_app: "Ich nutze die Outlook-Desktop-App, nicht Outlook im Browser",
+        r_not_found: "Ich habe OutMass in Outlook nicht gefunden",
+        r_not_what_expected: "Es war nicht das, was ich erwartet hatte",
+        r_admin_approval: "Microsoft hat die Zustimmung meines Administrators verlangt",
+        r_permissions: "Ich wollte diese Berechtigungen nicht erteilen",
+        r_signin_failed: "Die Anmeldung hat nicht funktioniert",
+        r_csv_upload: "Meine Empfängerliste ließ sich nicht hochladen",
+        r_too_complicated: "Zu kompliziert",
+        r_bugs: "Fehler / hat nicht funktioniert",
+        r_too_expensive: "Zu teuer",
+        r_outlook_limits: "Versandlimits von Outlook",
+        r_better_alternative: "Ein besseres Tool gefunden",
+        r_not_useful: "Für mich nicht nützlich",
+        r_privacy: "Bedenken beim Datenschutz",
+        r_other: "Etwas anderes",
+        thanks: "Danke — das hilft uns.",
+        moreLabel: "Einen Satz hinzufügen (optional)",
+        detailsPlaceholder: "Was hätte OutMass für Sie besser machen können?",
+        sendBtn: "Senden",
+        statusEmpty: "Schreiben Sie zuerst einen Satz.",
+        statusSending: "Wird gesendet…",
+        statusSent: "Danke — wir lesen jedes Wort.",
+        remTitle: "🔔 Haben Sie noch ein aktives Abonnement?",
+        remBody: "Das Entfernen der Erweiterung kündigt Ihr bezahltes Abonnement [b]nicht[/b]. Wenn Sie Starter oder Pro hatten:",
+        remItem1: "Installieren Sie OutMass erneut und nutzen Sie [em]{account} → {manageSub}[/em], oder",
+        remItem2: "Schreiben Sie an {email}, dann kündigen wir und erstatten den laufenden Zeitraum.",
+        mistakeTitle: "Falls es ein Versehen war…",
+        mistakeBody: "Sie können OutMass aus dem [a:cws][ltr]Chrome Web Store[/ltr][/a] oder über [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] erneut installieren — Ihre Daten, Kampagnen und Vorlagen sind noch da und warten auf Sie.",
+        reinstallBtn: "OutMass erneut installieren",
+        supportBtn: "E-Mail an den Support",
+        footHome: "Startseite",
+        footPrivacy: "Datenschutz",
+        footTerms: "Nutzungsbedingungen",
+        footContact: "Kontakt"
+      },
+      es: {
+        "@account": "Cuenta",
+        "@manageSub": "Gestionar suscripción",
+        title: "Lamentamos que te vayas — OutMass",
+        navHome: "Inicio",
+        h1: "Lamentamos que te vayas 👋",
+        subtitle: "OutMass se ha quitado de tu navegador. Esperamos que te haya sido útil.",
+        askTitle: "¿Por qué desinstalaste OutMass?",
+        askSub: "Basta con un clic. No hace falta correo electrónico y no te escribiremos después.",
+        r_desktop_app: "Uso la aplicación de escritorio de Outlook, no Outlook en el navegador",
+        r_not_found: "No encontré OutMass en Outlook",
+        r_not_what_expected: "No era lo que esperaba",
+        r_admin_approval: "Microsoft pidió la aprobación de mi administrador",
+        r_permissions: "No quería dar estos permisos",
+        r_signin_failed: "No pude iniciar sesión",
+        r_csv_upload: "Mi lista de destinatarios no se subía",
+        r_too_complicated: "Demasiado complicado",
+        r_bugs: "Errores / no funcionaba",
+        r_too_expensive: "Demasiado caro",
+        r_outlook_limits: "Límites de envío de Outlook",
+        r_better_alternative: "Encontré una herramienta mejor",
+        r_not_useful: "No me resulta útil",
+        r_privacy: "Preocupaciones de privacidad",
+        r_other: "Otro motivo",
+        thanks: "Gracias — nos ayuda mucho.",
+        moreLabel: "Añade una frase (opcional)",
+        detailsPlaceholder: "¿Qué habría hecho que OutMass te funcionara mejor?",
+        sendBtn: "Enviar",
+        statusEmpty: "Escribe primero una frase.",
+        statusSending: "Enviando…",
+        statusSent: "Gracias — leeremos cada palabra.",
+        remTitle: "🔔 ¿Aún tienes una suscripción activa?",
+        remBody: "Quitar la extensión [b]no[/b] cancela tu suscripción de pago. Si tenías Starter o Pro:",
+        remItem1: "Vuelve a instalar OutMass y usa [em]{account} → {manageSub}[/em], o",
+        remItem2: "Escribe a {email} y cancelaremos y reembolsaremos el periodo actual.",
+        mistakeTitle: "Si fue un error…",
+        mistakeBody: "Puedes volver a instalar OutMass desde la [a:cws][ltr]Chrome Web Store[/ltr][/a] o [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — tus datos, campañas y plantillas siguen ahí esperándote.",
+        reinstallBtn: "Reinstalar OutMass",
+        supportBtn: "Escribir a soporte",
+        footHome: "Inicio",
+        footPrivacy: "Privacidad",
+        footTerms: "Términos",
+        footContact: "Contacto"
+      },
+      fr: {
+        "@account": "Compte",
+        "@manageSub": "Gérer l'abonnement",
+        title: "Dommage de vous voir partir — OutMass",
+        navHome: "Accueil",
+        h1: "Dommage de vous voir partir 👋",
+        subtitle: "OutMass a été retiré de votre navigateur. Nous espérons qu'il vous a été utile.",
+        askTitle: "Pourquoi avez-vous désinstallé OutMass ?",
+        askSub: "Un clic suffit. Aucune adresse e-mail demandée, aucune relance.",
+        r_desktop_app: "J'utilise l'application de bureau Outlook, pas Outlook dans le navigateur",
+        r_not_found: "Je n'ai pas trouvé OutMass dans Outlook",
+        r_not_what_expected: "Ce n'était pas ce que j'attendais",
+        r_admin_approval: "Microsoft demandait l'approbation de mon administrateur",
+        r_permissions: "Je ne voulais pas accorder ces autorisations",
+        r_signin_failed: "La connexion n'a pas fonctionné",
+        r_csv_upload: "Ma liste de destinataires ne s'importait pas",
+        r_too_complicated: "Trop compliqué",
+        r_bugs: "Bugs / ça ne marchait pas",
+        r_too_expensive: "Trop cher",
+        r_outlook_limits: "Limites d'envoi d'Outlook",
+        r_better_alternative: "J'ai trouvé un meilleur outil",
+        r_not_useful: "Pas utile pour moi",
+        r_privacy: "Inquiétudes sur la confidentialité",
+        r_other: "Autre raison",
+        thanks: "Merci — cela nous aide.",
+        moreLabel: "Ajouter une phrase (facultatif)",
+        detailsPlaceholder: "Qu'est-ce qui aurait rendu OutMass plus utile pour vous ?",
+        sendBtn: "Envoyer",
+        statusEmpty: "Écrivez d'abord une phrase.",
+        statusSending: "Envoi en cours…",
+        statusSent: "Merci — nous lirons chaque mot.",
+        remTitle: "🔔 Vous avez encore un abonnement actif ?",
+        remBody: "Supprimer l'extension [b]n'annule pas[/b] votre abonnement payant. Si vous aviez l'offre Starter ou Pro :",
+        remItem1: "Réinstallez OutMass et utilisez [em]{account} → {manageSub}[/em], ou",
+        remItem2: "Écrivez à {email} et nous annulerons et rembourserons la période en cours.",
+        mistakeTitle: "Si c'était une erreur…",
+        mistakeBody: "Vous pouvez réinstaller OutMass depuis le [a:cws][ltr]Chrome Web Store[/ltr][/a] ou [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — vos données, campagnes et modèles vous attendent toujours.",
+        reinstallBtn: "Réinstaller OutMass",
+        supportBtn: "Écrire au support",
+        footHome: "Accueil",
+        footPrivacy: "Confidentialité",
+        footTerms: "Conditions",
+        footContact: "Contact"
+      },
+      pt_BR: {
+        "@account": "Conta",
+        "@manageSub": "Gerenciar assinatura",
+        title: "Que pena ver você partir — OutMass",
+        navHome: "Início",
+        h1: "Que pena ver você partir 👋",
+        subtitle: "O OutMass foi removido do seu navegador. Esperamos que ele tenha sido útil.",
+        askTitle: "Por que você desinstalou o OutMass?",
+        askSub: "Um clique basta. Sem e-mail e sem acompanhamento.",
+        r_desktop_app: "Uso o aplicativo de desktop do Outlook, não o Outlook no navegador",
+        r_not_found: "Não encontrei o OutMass no Outlook",
+        r_not_what_expected: "Não era o que eu esperava",
+        r_admin_approval: "A Microsoft pediu a aprovação do meu administrador",
+        r_permissions: "Não quis dar essas permissões",
+        r_signin_failed: "Não consegui entrar",
+        r_csv_upload: "Não consegui enviar minha lista de destinatários",
+        r_too_complicated: "Complicado demais",
+        r_bugs: "Bugs / não funcionou",
+        r_too_expensive: "Caro demais",
+        r_outlook_limits: "Limites de envio do Outlook",
+        r_better_alternative: "Encontrei uma ferramenta melhor",
+        r_not_useful: "Não é útil para mim",
+        r_privacy: "Preocupações com privacidade",
+        r_other: "Outro motivo",
+        thanks: "Obrigado — isso ajuda.",
+        moreLabel: "Adicione uma frase (opcional)",
+        detailsPlaceholder: "O que teria feito o OutMass funcionar melhor para você?",
+        sendBtn: "Enviar",
+        statusEmpty: "Escreva uma frase primeiro.",
+        statusSending: "Enviando…",
+        statusSent: "Obrigado — vamos ler cada palavra.",
+        remTitle: "🔔 Ainda tem uma assinatura ativa?",
+        remBody: "Remover a extensão [b]não[/b] cancela sua assinatura paga. Se você estava no Starter ou no Pro:",
+        remItem1: "Reinstale o OutMass e use [em]{account} → {manageSub}[/em], ou",
+        remItem2: "Escreva para {email} e nós cancelamos e reembolsamos o período atual.",
+        mistakeTitle: "Se foi um engano…",
+        mistakeBody: "Você pode reinstalar o OutMass pela [a:cws][ltr]Chrome Web Store[/ltr][/a] ou pelo [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — seus dados, campanhas e modelos continuam lá esperando por você.",
+        reinstallBtn: "Reinstalar o OutMass",
+        supportBtn: "Falar com o suporte",
+        footHome: "Início",
+        footPrivacy: "Privacidade",
+        footTerms: "Termos",
+        footContact: "Contato"
+      },
+      pt_PT: {
+        "@account": "Conta",
+        "@manageSub": "Gerir subscrição",
+        title: "Lamentamos a sua saída — OutMass",
+        navHome: "Início",
+        h1: "Lamentamos a sua saída 👋",
+        subtitle: "O OutMass foi removido do seu navegador. Esperamos que lhe tenha sido útil.",
+        askTitle: "Porque desinstalou o OutMass?",
+        askSub: "Basta um clique. Sem e-mail e sem seguimento.",
+        r_desktop_app: "Uso a aplicação para computador do Outlook, não o Outlook no navegador",
+        r_not_found: "Não encontrei o OutMass no Outlook",
+        r_not_what_expected: "Não era o que esperava",
+        r_admin_approval: "A Microsoft pediu a aprovação do meu administrador",
+        r_permissions: "Não quis dar estas permissões",
+        r_signin_failed: "Não consegui iniciar sessão",
+        r_csv_upload: "Não consegui carregar a minha lista de destinatários",
+        r_too_complicated: "Demasiado complicado",
+        r_bugs: "Erros / não funcionou",
+        r_too_expensive: "Demasiado caro",
+        r_outlook_limits: "Limites de envio do Outlook",
+        r_better_alternative: "Encontrei uma ferramenta melhor",
+        r_not_useful: "Não me é útil",
+        r_privacy: "Preocupações com a privacidade",
+        r_other: "Outro motivo",
+        thanks: "Obrigado — isso ajuda.",
+        moreLabel: "Acrescente uma frase (opcional)",
+        detailsPlaceholder: "O que teria feito o OutMass funcionar melhor para si?",
+        sendBtn: "Enviar",
+        statusEmpty: "Escreva primeiro uma frase.",
+        statusSending: "A enviar…",
+        statusSent: "Obrigado — vamos ler cada palavra.",
+        remTitle: "🔔 Ainda tem uma subscrição ativa?",
+        remBody: "Remover a extensão [b]não[/b] cancela a sua subscrição paga. Se estava no Starter ou no Pro:",
+        remItem1: "Reinstale o OutMass e use [em]{account} → {manageSub}[/em], ou",
+        remItem2: "Escreva para {email} e nós cancelamos e reembolsamos o período atual.",
+        mistakeTitle: "Se foi engano…",
+        mistakeBody: "Pode reinstalar o OutMass a partir da [a:cws][ltr]Chrome Web Store[/ltr][/a] ou do [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — os seus dados, campanhas e modelos continuam lá à sua espera.",
+        reinstallBtn: "Reinstalar o OutMass",
+        supportBtn: "Contactar o suporte",
+        footHome: "Início",
+        footPrivacy: "Privacidade",
+        footTerms: "Termos",
+        footContact: "Contacto"
+      },
+      ru: {
+        "@account": "Аккаунт",
+        "@manageSub": "Управление подпиской",
+        title: "Жаль, что вы уходите — OutMass",
+        navHome: "Главная",
+        h1: "Жаль, что вы уходите 👋",
+        subtitle: "OutMass удалён из вашего браузера. Надеемся, он был вам полезен.",
+        askTitle: "Почему вы удалили OutMass?",
+        askSub: "Достаточно одного нажатия. Email не нужен, писать вам мы не будем.",
+        r_desktop_app: "Я пользуюсь настольным приложением Outlook, а не Outlook в браузере",
+        r_not_found: "Не получилось найти OutMass в Outlook",
+        r_not_what_expected: "Ожидания не оправдались",
+        r_admin_approval: "Microsoft запросил одобрение администратора",
+        r_permissions: "Не хочу давать эти разрешения",
+        r_signin_failed: "Не удалось войти",
+        r_csv_upload: "Не удалось загрузить список получателей",
+        r_too_complicated: "Слишком сложно",
+        r_bugs: "Ошибки / не работало",
+        r_too_expensive: "Слишком дорого",
+        r_outlook_limits: "Лимиты отправки в Outlook",
+        r_better_alternative: "Есть инструмент получше",
+        r_not_useful: "Мне это не пригодилось",
+        r_privacy: "Беспокоит конфиденциальность",
+        r_other: "Другая причина",
+        thanks: "Спасибо — это нам поможет.",
+        moreLabel: "Добавьте пару слов (необязательно)",
+        detailsPlaceholder: "Что помогло бы OutMass лучше вам подойти?",
+        sendBtn: "Отправить",
+        statusEmpty: "Сначала напишите хотя бы одно предложение.",
+        statusSending: "Отправка…",
+        statusSent: "Спасибо — мы прочитаем каждое слово.",
+        remTitle: "🔔 У вас ещё есть активная подписка?",
+        remBody: "Удаление расширения [b]не[/b] отменяет платную подписку. Если у вас был план Starter или Pro:",
+        remItem1: "Установите OutMass снова и откройте [em]{account} → {manageSub}[/em], или",
+        remItem2: "Напишите на {email}, и мы отменим подписку и вернём деньги за текущий период.",
+        mistakeTitle: "Если это была ошибка…",
+        mistakeBody: "OutMass можно снова установить из [a:cws][ltr]Chrome Web Store[/ltr][/a] или [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — ваши данные, кампании и шаблоны никуда не делись.",
+        reinstallBtn: "Установить OutMass снова",
+        supportBtn: "Написать в поддержку",
+        footHome: "Главная",
+        footPrivacy: "Конфиденциальность",
+        footTerms: "Условия",
+        footContact: "Контакты"
+      },
+      tr: {
+        "@account": "Hesap",
+        "@manageSub": "Aboneliği Yönet",
+        title: "Gitmenize üzüldük — OutMass",
+        navHome: "Ana sayfa",
+        h1: "Gitmenize üzüldük 👋",
+        subtitle: "OutMass tarayıcınızdan kaldırıldı. İşinize yaramış olmasını umuyoruz.",
+        askTitle: "OutMass'i neden kaldırdınız?",
+        askSub: "Tek tıklama yeterli. E-posta adresi gerekmez, size sonradan yazmayız.",
+        r_desktop_app: "Outlook masaüstü uygulamasını kullanıyorum, tarayıcıdaki Outlook'u değil",
+        r_not_found: "OutMass'i Outlook'ta bulamadım",
+        r_not_what_expected: "Beklediğim gibi değildi",
+        r_admin_approval: "Microsoft yöneticimin onayını istedi",
+        r_permissions: "Bu izinleri vermek istemedim",
+        r_signin_failed: "Giriş yapamadım",
+        r_csv_upload: "Alıcı listem yüklenmedi",
+        r_too_complicated: "Çok karmaşık",
+        r_bugs: "Hatalar / çalışmadı",
+        r_too_expensive: "Çok pahalı",
+        r_outlook_limits: "Outlook gönderim limitleri",
+        r_better_alternative: "Daha iyi bir araç buldum",
+        r_not_useful: "Benim için yararlı değil",
+        r_privacy: "Gizlilik endişeleri",
+        r_other: "Başka bir neden",
+        thanks: "Teşekkürler — bu bize yardımcı oluyor.",
+        moreLabel: "Bir cümle ekleyin (isteğe bağlı)",
+        detailsPlaceholder: "OutMass'in işinize daha çok yaraması için ne gerekirdi?",
+        sendBtn: "Gönder",
+        statusEmpty: "Önce bir cümle yazın.",
+        statusSending: "Gönderiliyor…",
+        statusSent: "Teşekkürler — her kelimesini okuyacağız.",
+        remTitle: "🔔 Hâlâ aktif bir aboneliğiniz var mı?",
+        remBody: "Uzantıyı kaldırmak ücretli aboneliğinizi iptal [b]etmez[/b]. Starter veya Pro planındaysanız:",
+        remItem1: "OutMass'i yeniden yükleyip [em]{account} → {manageSub}[/em] yolunu kullanın veya",
+        remItem2: "{email} adresine yazın; aboneliği iptal eder, içinde bulunduğunuz dönemin ücretini iade ederiz.",
+        mistakeTitle: "Yanlışlıkla olduysa…",
+        mistakeBody: "OutMass'i [a:cws][ltr]Chrome Web Store[/ltr][/a] veya [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] üzerinden yeniden yükleyebilirsiniz — verileriniz, kampanyalarınız ve şablonlarınız sizi bekliyor.",
+        reinstallBtn: "OutMass'i yeniden yükleyin",
+        supportBtn: "Destek ekibine yazın",
+        footHome: "Ana sayfa",
+        footPrivacy: "Gizlilik",
+        footTerms: "Koşullar",
+        footContact: "İletişim"
+      },
+      ja: {
+        "@account": "アカウント",
+        "@manageSub": "サブスクリプション管理",
+        title: "ご利用ありがとうございました — OutMass",
+        navHome: "ホーム",
+        h1: "ご利用ありがとうございました 👋",
+        subtitle: "OutMass はブラウザーから削除されました。お役に立てていれば幸いです。",
+        askTitle: "アンインストールした理由を教えてください",
+        askSub: "ワンクリックで送信されます。メールアドレスは不要で、こちらからご連絡することもありません。",
+        r_desktop_app: "ブラウザーの Outlook ではなく、デスクトップ版 Outlook を使っている",
+        r_not_found: "Outlook で OutMass が見つからなかった",
+        r_not_what_expected: "期待していたものと違った",
+        r_admin_approval: "Microsoft から管理者の承認を求められた",
+        r_permissions: "これらのアクセス許可を与えたくなかった",
+        r_signin_failed: "サインインできなかった",
+        r_csv_upload: "受信者リストをアップロードできなかった",
+        r_too_complicated: "操作が複雑すぎる",
+        r_bugs: "不具合がある / 動作しなかった",
+        r_too_expensive: "料金が高すぎる",
+        r_outlook_limits: "Outlook の送信制限",
+        r_better_alternative: "もっと良いツールを見つけた",
+        r_not_useful: "自分には役に立たなかった",
+        r_privacy: "プライバシーが心配",
+        r_other: "その他",
+        thanks: "ありがとうございます。参考にさせていただきます。",
+        moreLabel: "ひとこと追加する（任意）",
+        detailsPlaceholder: "OutMass がどうなっていれば使い続けられましたか？",
+        sendBtn: "送信",
+        statusEmpty: "先にひとこと入力してください。",
+        statusSending: "送信中…",
+        statusSent: "ありがとうございます。すべて読ませていただきます。",
+        remTitle: "🔔 有料のサブスクリプションがまだ有効ですか？",
+        remBody: "拡張機能を削除しても、有料のサブスクリプションは解約[b]されません[/b]。Starter または Pro をご利用だった場合：",
+        remItem1: "OutMass を再インストールして「[em]{account} → {manageSub}[/em]」を使うか、",
+        remItem2: "{email} までメールでご連絡ください。解約し、現在の期間分を返金します。",
+        mistakeTitle: "誤って削除した場合…",
+        mistakeBody: "OutMass は [a:cws][ltr]Chrome Web Store[/ltr][/a] または [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] から再インストールできます。データ、キャンペーン、テンプレートはそのまま残っています。",
+        reinstallBtn: "OutMass を再インストール",
+        supportBtn: "サポートにメール",
+        footHome: "ホーム",
+        footPrivacy: "プライバシー",
+        footTerms: "利用規約",
+        footContact: "お問い合わせ"
+      },
+      zh_CN: {
+        "@account": "账户",
+        "@manageSub": "管理订阅",
+        title: "很遗憾您要离开 — OutMass",
+        navHome: "首页",
+        h1: "很遗憾您要离开 👋",
+        subtitle: "OutMass 已从您的浏览器中移除。希望它曾对您有所帮助。",
+        askTitle: "您为什么卸载 OutMass？",
+        askSub: "点一下就够了。无需填写邮箱，我们也不会再联系您。",
+        r_desktop_app: "我用的是 Outlook 桌面应用，不是浏览器中的 Outlook",
+        r_not_found: "我在 Outlook 中找不到 OutMass",
+        r_not_what_expected: "和我预期的不一样",
+        r_admin_approval: "Microsoft 要求我的管理员批准",
+        r_permissions: "我不想授予这些权限",
+        r_signin_failed: "登录没有成功",
+        r_csv_upload: "我的收件人列表上传不了",
+        r_too_complicated: "太复杂",
+        r_bugs: "有错误 / 无法使用",
+        r_too_expensive: "太贵",
+        r_outlook_limits: "Outlook 发送限制",
+        r_better_alternative: "找到了更好的工具",
+        r_not_useful: "对我没有用",
+        r_privacy: "担心隐私",
+        r_other: "其他原因",
+        thanks: "谢谢，这对我们很有帮助。",
+        moreLabel: "补充一句话（可选）",
+        detailsPlaceholder: "怎样才能让 OutMass 更适合您？",
+        sendBtn: "发送",
+        statusEmpty: "请先写一句话。",
+        statusSending: "正在发送…",
+        statusSent: "谢谢 — 我们会认真阅读每一个字。",
+        remTitle: "🔔 还有有效的订阅吗？",
+        remBody: "移除扩展程序[b]不会[/b]取消您的付费订阅。如果您使用的是 Starter 或 Pro：",
+        remItem1: "重新安装 OutMass，然后使用[em]{account} → {manageSub}[/em]，或者",
+        remItem2: "发邮件至 {email}，我们会为您取消订阅并退还当前周期的费用。",
+        mistakeTitle: "如果是误操作…",
+        mistakeBody: "您可以从 [a:cws][ltr]Chrome Web Store[/ltr][/a] 或 [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] 重新安装 OutMass — 您的数据、活动和模板都还在。",
+        reinstallBtn: "重新安装 OutMass",
+        supportBtn: "发邮件给客服",
+        footHome: "首页",
+        footPrivacy: "隐私",
+        footTerms: "条款",
+        footContact: "联系我们"
+      },
+      zh_TW: {
+        "@account": "帳戶",
+        "@manageSub": "管理訂閱",
+        title: "很遺憾您要離開 — OutMass",
+        navHome: "首頁",
+        h1: "很遺憾您要離開 👋",
+        subtitle: "OutMass 已從您的瀏覽器中移除。希望它曾經幫上您的忙。",
+        askTitle: "您為什麼移除 OutMass？",
+        askSub: "點一下就好。不需要填寫電子郵件，我們也不會再聯絡您。",
+        r_desktop_app: "我用的是 Outlook 桌面應用程式，不是瀏覽器中的 Outlook",
+        r_not_found: "我在 Outlook 中找不到 OutMass",
+        r_not_what_expected: "和我預期的不一樣",
+        r_admin_approval: "Microsoft 要求我的管理員核准",
+        r_permissions: "我不想授予這些權限",
+        r_signin_failed: "無法登入",
+        r_csv_upload: "我的收件者名單無法上傳",
+        r_too_complicated: "太複雜",
+        r_bugs: "有錯誤 / 無法使用",
+        r_too_expensive: "太貴",
+        r_outlook_limits: "Outlook 寄送限制",
+        r_better_alternative: "找到更好的工具",
+        r_not_useful: "對我沒有用",
+        r_privacy: "擔心隱私",
+        r_other: "其他原因",
+        thanks: "謝謝，這對我們很有幫助。",
+        moreLabel: "補充一句話（選填）",
+        detailsPlaceholder: "怎麼做才能讓 OutMass 更適合您？",
+        sendBtn: "傳送",
+        statusEmpty: "請先寫一句話。",
+        statusSending: "正在傳送…",
+        statusSent: "謝謝 — 我們會仔細閱讀每一個字。",
+        remTitle: "🔔 還有有效的訂閱嗎？",
+        remBody: "移除擴充功能[b]不會[/b]取消您的付費訂閱。如果您使用的是 Starter 或 Pro：",
+        remItem1: "重新安裝 OutMass，然後使用[em]{account} → {manageSub}[/em]，或",
+        remItem2: "寄信至 {email}，我們會為您取消訂閱，並把本期費用還給您。",
+        mistakeTitle: "如果是誤刪…",
+        mistakeBody: "您可以從 [a:cws][ltr]Chrome Web Store[/ltr][/a] 或 [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] 重新安裝 OutMass — 您的資料、行銷活動和範本都還在。",
+        reinstallBtn: "重新安裝 OutMass",
+        supportBtn: "寄信給客服",
+        footHome: "首頁",
+        footPrivacy: "隱私權",
+        footTerms: "條款",
+        footContact: "聯絡我們"
+      },
+      hi: {
+        "@account": "खाता",
+        "@manageSub": "सदस्यता प्रबंधित करें",
+        title: "आपको जाते देख दुख है — OutMass",
+        navHome: "होम",
+        h1: "आपको जाते देख दुख है 👋",
+        subtitle: "OutMass आपके ब्राउज़र से हटा दिया गया है। उम्मीद है कि यह आपके काम आया।",
+        askTitle: "आपने OutMass को अनइंस्टॉल क्यों किया?",
+        askSub: "बस एक क्लिक काफ़ी है। कोई ईमेल नहीं चाहिए, और हम आपसे दोबारा संपर्क नहीं करेंगे।",
+        r_desktop_app: "मेरा Outlook डेस्कटॉप ऐप है, ब्राउज़र वाला Outlook नहीं",
+        r_not_found: "Outlook में OutMass नहीं मिला",
+        r_not_what_expected: "उम्मीद के मुताबिक़ नहीं था",
+        r_admin_approval: "Microsoft ने मेरे एडमिन की मंज़ूरी माँगी",
+        r_permissions: "ये अनुमतियाँ देना ठीक नहीं लगा",
+        r_signin_failed: "साइन इन नहीं हो पाया",
+        r_csv_upload: "प्राप्तकर्ता सूची अपलोड नहीं हुई",
+        r_too_complicated: "बहुत जटिल",
+        r_bugs: "बग / काम नहीं किया",
+        r_too_expensive: "बहुत महँगा",
+        r_outlook_limits: "Outlook की भेजने की सीमाएँ",
+        r_better_alternative: "बेहतर टूल मिल गया",
+        r_not_useful: "मेरे काम का नहीं",
+        r_privacy: "गोपनीयता की चिंता",
+        r_other: "कोई और वजह",
+        thanks: "धन्यवाद — इससे हमें मदद मिलती है।",
+        moreLabel: "एक वाक्य जोड़ें (वैकल्पिक)",
+        detailsPlaceholder: "OutMass को आपके लिए बेहतर बनाने के लिए क्या होना चाहिए था?",
+        sendBtn: "भेजें",
+        statusEmpty: "पहले एक वाक्य लिखें।",
+        statusSending: "भेजा जा रहा है…",
+        statusSent: "धन्यवाद — हम हर शब्द पढ़ेंगे।",
+        remTitle: "🔔 क्या आपकी सदस्यता अभी भी सक्रिय है?",
+        remBody: "एक्सटेंशन हटाने से आपकी सशुल्क सदस्यता रद्द [b]नहीं[/b] होती। अगर आप Starter या Pro प्लान पर थे:",
+        remItem1: "OutMass को फिर से इंस्टॉल करें और [em]{account} → {manageSub}[/em] का उपयोग करें, या",
+        remItem2: "{email} पर ईमेल करें, हम सदस्यता रद्द करके मौजूदा अवधि का पैसा लौटा देंगे।",
+        mistakeTitle: "अगर यह गलती से हुआ…",
+        mistakeBody: "आप OutMass को [a:cws][ltr]Chrome Web Store[/ltr][/a] या [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] से फिर से इंस्टॉल कर सकते हैं — आपका डेटा, अभियान और टेम्पलेट अभी भी वहीं हैं।",
+        reinstallBtn: "OutMass फिर से इंस्टॉल करें",
+        supportBtn: "सपोर्ट को ईमेल करें",
+        footHome: "होम",
+        footPrivacy: "गोपनीयता",
+        footTerms: "शर्तें",
+        footContact: "संपर्क"
+      },
+      ar: {
+        "@account": "الحساب",
+        "@manageSub": "إدارة الاشتراك",
+        title: "يؤسفنا رحيلك — OutMass",
+        navHome: "الرئيسية",
+        h1: "يؤسفنا رحيلك 👋",
+        subtitle: "تمت إزالة OutMass من متصفحك. نأمل أن يكون قد أفادك.",
+        askTitle: "ما الذي دفعك إلى إزالة OutMass؟",
+        askSub: "نقرة واحدة تكفي. لا حاجة إلى بريد إلكتروني، ولن نتواصل معك لاحقًا.",
+        r_desktop_app: "أستخدم تطبيق Outlook لسطح المكتب، لا Outlook في المتصفح",
+        r_not_found: "لم أجد OutMass في Outlook",
+        r_not_what_expected: "لم يكن كما توقعت",
+        r_admin_approval: "طلب Microsoft موافقة المسؤول لدي",
+        r_permissions: "لم أرغب في منح هذه الأذونات",
+        r_signin_failed: "لم ينجح تسجيل الدخول",
+        r_csv_upload: "تعذّر رفع قائمة المستلمين",
+        r_too_complicated: "معقّد جدًا",
+        r_bugs: "أخطاء / لم يعمل",
+        r_too_expensive: "باهظ الثمن",
+        r_outlook_limits: "حدود الإرسال في Outlook",
+        r_better_alternative: "وجدت أداة أفضل",
+        r_not_useful: "غير مفيد لي",
+        r_privacy: "مخاوف تتعلق بالخصوصية",
+        r_other: "سبب آخر",
+        thanks: "شكرًا — هذا يساعدنا.",
+        moreLabel: "أضف جملة (اختياري)",
+        detailsPlaceholder: "ما الذي كان سيجعل OutMass أنسب لك؟",
+        sendBtn: "إرسال",
+        statusEmpty: "اكتب جملة أولًا.",
+        statusSending: "جارٍ الإرسال…",
+        statusSent: "شكرًا — سنقرأ كل كلمة.",
+        remTitle: "🔔 هل لا يزال لديك اشتراك نشط؟",
+        remBody: "إزالة الإضافة [b]لا[/b] تلغي اشتراكك المدفوع. إذا كنت على خطة Starter أو Pro:",
+        remItem1: "أعد تثبيت OutMass واستخدم [em]{account} ← {manageSub}[/em]، أو",
+        remItem2: "راسلنا على {email} وسنلغي الاشتراك ونردّ مبلغ الفترة الحالية.",
+        mistakeTitle: "إذا كان ذلك عن طريق الخطأ…",
+        mistakeBody: "يمكنك إعادة تثبيت OutMass من [a:cws][ltr]Chrome Web Store[/ltr][/a] أو [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — بياناتك وحملاتك وقوالبك لا تزال بانتظارك.",
+        reinstallBtn: "إعادة تثبيت OutMass",
+        supportBtn: "راسل الدعم",
+        footHome: "الرئيسية",
+        footPrivacy: "الخصوصية",
+        footTerms: "الشروط",
+        footContact: "اتصل بنا"
+      }
+    };
+
+    // ── The answers, by how far they got ──
+    //
+    // "Bugs / didn't work" means something very different at signin_clicked
+    // than at sent, so each stage offers the reasons that can happen there.
+    // The first set is the hypothesis behind the translated welcome page: if
+    // the people who never reached Outlook mostly answer desktop_app, a
+    // translation is not the fix; if they answer not_found, it is. Read it
+    // from stage=installed answers only. outlook_reached and panel_opened can
+    // still be desktop-app users (the welcome page sends everyone to Outlook
+    // on the web once, and the panel opens by itself on that first visit),
+    // but they have seen the panel, so they are no evidence about finding it.
+    //
+    // Someone who saw the panel stopped at its sign-in card, which says what
+    // Microsoft will ask for; "I didn't want to give these permissions" is
+    // the answer that card can produce, so IN_PANEL offers it too.
+    var EARLY = ["desktop_app", "not_found", "not_what_expected", "other"];
+    var IN_PANEL = ["desktop_app", "not_found", "permissions", "not_what_expected", "other"];
+    var SIGNING_IN = ["admin_approval", "permissions", "signin_failed", "other"];
+    var SIGNED_IN = ["csv_upload", "too_complicated", "bugs", "too_expensive", "other"];
+    var SENT = ["too_expensive", "outlook_limits", "better_alternative", "not_useful", "bugs", "other"];
+    // No stage (a plain visit, or an extension older than 0.1.28) or one we do
+    // not know.
+    var ANY = ["not_useful", "too_expensive", "bugs", "better_alternative", "outlook_limits", "privacy", "other"];
+    var STAGE_REASONS = {
+      installed: EARLY,
+      outlook_reached: EARLY,
+      onboarded: IN_PANEL,
+      panel_opened: IN_PANEL,
+      signin_clicked: SIGNING_IN,
+      auth_started: SIGNING_IN,
+      signed_in: SIGNED_IN,
+      recipients_uploaded: SIGNED_IN,
+      test_sent: SIGNED_IN,
+      sent: SENT
+    };
+
+    function reasonsFor(stage) {
+      return Object.prototype.hasOwnProperty.call(STAGE_REASONS, stage) ? STAGE_REASONS[stage] : ANY;
+    }
+
+    // ── Which language ── (identical to welcome.html)
+    function mapTag(tag) {
+      if (typeof tag !== "string") return null;
+      var parts = tag.slice(0, 35).replace(/_/g, "-").toLowerCase().split("-");
+      var primary = parts[0];
+      var rest = parts.slice(1);
+      if (primary === "zh") {
+        if (rest.indexOf("hans") >= 0) return "zh_CN";
+        if (rest.indexOf("hant") >= 0 || rest.indexOf("tw") >= 0 ||
+            rest.indexOf("hk") >= 0 || rest.indexOf("mo") >= 0) return "zh_TW";
+        return "zh_CN";
+      }
+      if (primary === "pt") return rest.indexOf("br") >= 0 ? "pt_BR" : "pt_PT";
+      return LANGS.indexOf(primary) >= 0 ? primary : null;
+    }
+
+    function pickLang(hl, languages, language) {
+      var found = mapTag(hl);
+      if (found) return found;
+      var first = (languages && typeof languages.length === "number" && languages.length)
+        ? languages[0] : language;
+      return mapTag(first) || "en";
+    }
+
+    // ── Strings to nodes ── (identical to welcome.html)
+    var TOKEN = /\[(\/?)(b|em|ltr|a)(?::([a-z]+))?\]|\{([A-Za-z]+)\}/g;
+
+    function openTag(name, arg) {
+      if (name === "b") return document.createElement("strong");
+      if (name === "em") return document.createElement("em");
+      if (name === "ltr") {
+        var span = document.createElement("span");
+        span.setAttribute("dir", "ltr");
+        return span;
+      }
+      var link = LINKS[arg];
+      if (!link) throw new Error("unknown link [a:" + arg + "]");
+      var a = document.createElement("a");
+      a.setAttribute("href", link.href);
+      if (link.blank) {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener");
+      }
+      return a;
+    }
+
+    function piece(name, table) {
+      if (Object.prototype.hasOwnProperty.call(table, "@" + name)) {
+        return document.createTextNode(table["@" + name]);
+      }
+      var el;
+      if (name === "email") {
+        el = document.createElement("a");
+        el.setAttribute("href", "mailto:support@getoutmass.com");
+        el.setAttribute("dir", "ltr");
+        el.appendChild(document.createTextNode("support@getoutmass.com"));
+        return el;
+      }
+      throw new Error("unknown token {" + name + "}");
+    }
+
+    function build(str, table) {
+      var out = [];
+      var open = [];
+      var names = [];
+      var add = function (node) {
+        if (open.length) open[open.length - 1].appendChild(node);
+        else out.push(node);
+      };
+      var last = 0;
+      var m;
+      TOKEN.lastIndex = 0;
+      while ((m = TOKEN.exec(str)) !== null) {
+        if (m.index > last) add(document.createTextNode(str.slice(last, m.index)));
+        last = TOKEN.lastIndex;
+        if (m[4]) {
+          add(piece(m[4], table));
+        } else if (m[1]) {
+          if (names[names.length - 1] !== m[2]) throw new Error("unbalanced [/" + m[2] + "]");
+          open.pop();
+          names.pop();
+        } else {
+          var el = openTag(m[2], m[3]);
+          add(el);
+          open.push(el);
+          names.push(m[2]);
+        }
+      }
+      if (last < str.length) add(document.createTextNode(str.slice(last)));
+      if (open.length) throw new Error("unclosed [" + names[names.length - 1] + "]");
+      return out;
+    }
+
+    function apply(lang) {
+      var table = STRINGS[lang];
+      var els = document.querySelectorAll("[data-i18n]");
+      var built = [];
+      var i;
+      for (i = 0; i < els.length; i++) {
+        var key = els[i].getAttribute("data-i18n");
+        if (typeof table[key] !== "string") throw new Error("no " + lang + " string for " + key);
+        built.push(build(table[key], table));
+      }
+      for (i = 0; i < els.length; i++) {
+        var el = els[i];
+        while (el.firstChild) el.removeChild(el.firstChild);
+        for (var j = 0; j < built[i].length; j++) el.appendChild(built[i][j]);
+      }
+      var holders = document.querySelectorAll("[data-i18n-placeholder]");
+      for (i = 0; i < holders.length; i++) {
+        holders[i].setAttribute("placeholder", table[holders[i].getAttribute("data-i18n-placeholder")]);
+      }
+      var root = document.documentElement;
+      root.setAttribute("lang", lang.replace("_", "-"));
+      if (lang === "ar") root.setAttribute("dir", "rtl");
+    }
+
+    // ── One id per page view ──
+    //
+    // Sent with the tap and with a later sentence, so the two can be told
+    // apart from two different people. Made fresh on every load and kept
+    // nowhere: it links nothing beyond this one visit.
+    function visitId() {
+      try {
+        var c = window.crypto;
+        if (c && typeof c.randomUUID === "function") return c.randomUUID();
+        if (c && typeof c.getRandomValues === "function") {
+          var b = new Uint8Array(16);
+          c.getRandomValues(b);
+          b[6] = (b[6] & 0x0f) | 0x40;
+          b[8] = (b[8] & 0x3f) | 0x80;
+          var h = "";
+          for (var i = 0; i < 16; i++) {
+            h += (b[i] + 0x100).toString(16).slice(1);
+            if (i === 3 || i === 5 || i === 7 || i === 9) h += "-";
+          }
+          return h;
+        }
+      } catch (e) { /* no id: both calls still go, without one */ }
+      return undefined;
+    }
+
+    window.OMPage = {
+      LANGS: LANGS,
+      STRINGS: STRINGS,
+      PANEL_TERMS: PANEL_TERMS,
+      PANEL_PHRASES: PANEL_PHRASES,
+      LINKS: LINKS,
+      STAGE_REASONS: STAGE_REASONS,
+      mapTag: mapTag,
+      pickLang: pickLang,
+      reasonsFor: reasonsFor
+    };
 
     // The extension registers this page's URL ahead of time and keeps it
     // pointed at the furthest funnel stage the user reached (see
-    // analytics.js). "bugs / didn't work" means something very different at
-    // stage=signin_clicked than at stage=sent, and the free-text box rarely
-    // says which. Anyone can hand-edit these, so the backend re-validates.
+    // analytics.js). Anyone can hand-edit these, so the backend re-validates.
     var params = new URLSearchParams(window.location.search);
     var stage = (params.get("stage") || "").slice(0, 40);
     var extVersion = (params.get("v") || "").slice(0, 20);
+
+    var lang = "en";
+    try {
+      lang = pickLang(params.get("hl"), navigator.languages, navigator.language);
+      apply(lang);
+    } catch (e) {
+      // The English markup stays, so the answers are in English too.
+      lang = "en";
+    }
+    var t = STRINGS[lang];
+    var visit = visitId();
 
     // Most people who land here close the tab without writing anything. If we
     // only counted the ones who fill in the form, "where do we lose users"
@@ -150,58 +994,94 @@
           body: JSON.stringify({
             stage: stage,
             version: extVersion,
-            user_agent: navigator.userAgent
+            user_agent: navigator.userAgent,
+            lang: lang,
+            visit: visit
           })
         }).catch(function () { /* the user is leaving; never surface this */ });
       } catch (e) { /* ancient browser — not worth a fallback */ }
     }
 
-    reasons.addEventListener("click", function (e) {
-      if (!e.target.classList.contains("reason-chip")) return;
-      // Single-select: clear other chips
-      reasons.querySelectorAll(".reason-chip").forEach(function (c) { c.classList.remove("selected"); });
-      e.target.classList.add("selected");
-      selectedReason = e.target.getAttribute("data-reason");
-    });
+    // Resolves either way. The person is leaving: we would rather lose one
+    // answer than show them an error or ask them to retry. keepalive, because
+    // the tab is often closed the moment the answer is tapped.
+    function postFeedback(reason, details) {
+      try {
+        return fetch("https://outmass-production.up.railway.app/api/uninstall-feedback", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          keepalive: true,
+          body: JSON.stringify({
+            reason: reason,
+            details: details,
+            user_agent: navigator.userAgent,
+            stage: stage,
+            version: extVersion,
+            lang: lang,
+            visit: visit
+          })
+        }).then(function () {}, function () {});
+      } catch (e) {
+        return { then: function (done) { done(); } };
+      }
+    }
 
-    form.addEventListener("submit", function (e) {
-      e.preventDefault();
-      var details = document.getElementById("details").value.trim();
-      if (!selectedReason && !details) {
-        status.textContent = "Pick a reason or add details first.";
-        status.className = "status error";
+    var reasonsEl = document.getElementById("reasons");
+    var status = document.getElementById("status");
+    var more = document.getElementById("more");
+    var details = document.getElementById("details");
+    var sendBtn = document.getElementById("send-btn");
+    var moreStatus = document.getElementById("more-status");
+    var chosen = null;
+
+    // One tap answers: it sends at once, says thank you, and offers the
+    // optional sentence. The answer cannot be changed afterwards. A sentence
+    // does not re-file it: it goes out with the same reason and visit id and
+    // is read next to that reason, so whoever counts reasons should read each
+    // visit's sentence too.
+    function tap(reason, btn) {
+      if (chosen) return;
+      chosen = reason;
+      var chips = reasonsEl.childNodes;
+      for (var i = 0; i < chips.length; i++) {
+        if (chips[i].nodeType === 1) chips[i].disabled = true;
+      }
+      btn.className = "reason-chip selected";
+      btn.setAttribute("aria-pressed", "true");
+      status.textContent = t.thanks;
+      status.className = "status success";
+      more.style.display = "block";
+      postFeedback(reason, "");
+    }
+
+    var codes = reasonsFor(stage);
+    while (reasonsEl.firstChild) reasonsEl.removeChild(reasonsEl.firstChild);
+    for (var r = 0; r < codes.length; r++) {
+      (function (code) {
+        var b = document.createElement("button");
+        b.setAttribute("type", "button");
+        b.className = "reason-chip";
+        b.setAttribute("data-reason", code);
+        b.appendChild(document.createTextNode(t["r_" + code]));
+        b.addEventListener("click", function () { tap(code, b); });
+        reasonsEl.appendChild(b);
+      })(codes[r]);
+    }
+
+    sendBtn.addEventListener("click", function () {
+      var text = details.value.trim();
+      if (!text) {
+        moreStatus.textContent = t.statusEmpty;
+        moreStatus.className = "status error";
         return;
       }
-
-      status.textContent = "Sending…";
-      status.className = "status";
-
-      fetch("https://outmass-production.up.railway.app/api/uninstall-feedback", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          reason: selectedReason,
-          details: details,
-          user_agent: navigator.userAgent,
-          stage: stage,
-          version: extVersion
-        })
-      })
-      .then(function (r) {
-        if (r.ok) {
-          status.textContent = "Thanks — we'll read every word.";
-          status.className = "status success";
-          form.querySelector("button[type=submit]").disabled = true;
-        } else {
-          throw new Error("HTTP " + r.status);
-        }
-      })
-      .catch(function () {
-        // Backend may be unavailable — still thank the user; we'd rather
-        // lose a single feedback datapoint than make the user retry.
-        status.textContent = "Thanks for your feedback!";
-        status.className = "status success";
-        form.querySelector("button[type=submit]").disabled = true;
+      moreStatus.textContent = t.statusSending;
+      moreStatus.className = "status";
+      sendBtn.disabled = true;
+      details.disabled = true;
+      postFeedback(chosen, text).then(function () {
+        moreStatus.textContent = t.statusSent;
+        moreStatus.className = "status success";
       });
     });
   })();
