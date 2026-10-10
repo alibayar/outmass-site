@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Welcome to OutMass — your first campaign in 3 steps</title>
+  <title data-i18n="title">Welcome to OutMass — your first campaign in 3 steps</title>
   <meta name="robots" content="noindex">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -50,48 +50,560 @@
     .support { font-size: 14px; color: #605e5c; margin-top: 28px; }
     .support a { color: #0078d4; }
     code { background: #f3f2f1; padding: 1px 6px; border-radius: 3px; font-size: 13px; }
+    /* An address or "CSV UTF-8" is one unit, never split across lines. */
+    span[dir="ltr"] { white-space: nowrap; }
   </style>
 </head>
 <body>
+  <!-- The English below is what renders without JavaScript, and what stays on
+       screen if anything in the script fails. The script replaces each
+       data-i18n element with the same key from its string table; the table's
+       "en" entry is this text, and a test holds the two equal. -->
   <div class="wrap">
-    <span class="badge">✓ OutMass is installed</span>
-    <h1>Your first campaign in 3 steps</h1>
-    <p class="sub">OutMass lives inside Outlook on the web — here's how to find it and send your first personalized campaign.</p>
+    <span class="badge" data-i18n="badge">✓ OutMass is installed</span>
+    <h1 data-i18n="h1">Your first campaign in 3 steps</h1>
+    <p class="sub" data-i18n="sub">OutMass lives inside Outlook on the web — here's how to find it and send your first personalized campaign.</p>
 
     <div class="step">
       <div class="num">1</div>
       <div>
-        <h2>Open Outlook on the web</h2>
-        <p>OutMass works in the browser version of Outlook — not the Windows/Mac desktop app.</p>
-        <a class="cta" href="https://outlook.office.com/mail/" target="_blank" rel="noopener">Open Outlook (work / school)</a>
-        <p class="alt">Personal @outlook.com or @hotmail.com account? <a href="https://outlook.live.com/mail/" target="_blank" rel="noopener">Open outlook.live.com instead</a>.</p>
+        <h2 data-i18n="s1Title">Open Outlook on the web</h2>
+        <p data-i18n="s1Body">OutMass works in the browser version of Outlook — not the Windows/Mac desktop app.</p>
+        <a class="cta" href="https://outlook.office.com/mail/" target="_blank" rel="noopener" data-i18n="s1Cta">Open Outlook (work / school)</a>
+        <p class="alt" data-i18n="s1Alt">Personal @outlook.com or @hotmail.com account? <a href="https://outlook.live.com/mail/" target="_blank" rel="noopener">Open outlook.live.com instead</a>.</p>
       </div>
     </div>
 
     <div class="step">
       <div class="num">2</div>
       <div>
-        <h2>Click the round <span class="om-chip">OM</span> button</h2>
-        <p>Look at the <strong>bottom-right corner</strong> of your Outlook — the round OutMass button opens the campaign panel on the right. (If you don't see it, refresh the Outlook tab once.)</p>
+        <h2 data-i18n="s2Title">Click the round <span class="om-chip">OM</span> button</h2>
+        <p data-i18n="s2Body">Look at the <strong>bottom-right corner</strong> of your Outlook — the round OutMass button opens the campaign panel on the right. (If you don't see it, refresh the Outlook tab once.)</p>
       </div>
     </div>
 
     <div class="step">
       <div class="num">3</div>
       <div>
-        <h2>Sign in with Microsoft, then send</h2>
-        <p><strong>Sign in first</strong> — sending uses your own Outlook account, so OutMass needs your permission. Then upload your recipients as a CSV (there's a template in the panel), write your email with <code>{{firstName}}</code> to personalize it, hit <strong>Preview</strong> or a <strong>Test Send</strong>, and send. OutMass paces delivery and tracks opens and clicks — and replies too, once you turn on reply detection in the panel.</p>
+        <h2 data-i18n="s3Title">Sign in with Microsoft, then send</h2>
+        <p data-i18n="s3Body"><strong>Sign in first</strong> — sending uses your own Outlook account, so OutMass needs your permission. Then upload your recipients as a CSV (there's a template in the panel), write your email with <code>{{firstName}}</code> to personalize it, hit <strong>Preview</strong> or a <strong>Test Send</strong>, and send. OutMass paces delivery and tracks opens and clicks — and replies too, once you turn on reply detection in the panel.</p>
       </div>
     </div>
 
-    <div class="note">
+    <div class="note" data-i18n="tip">
       💡 Your list comes from Excel? Save it as <strong>"CSV UTF-8 (Comma delimited)"</strong> — Excel's default "CSV" option can garble non-English characters.
     </div>
 
     <p class="support">
-      Stuck or have a question? Email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> — it goes straight to the founder, and replies usually come within a few hours.<br>
-      Free plan: 250 emails/month · <a href="https://getoutmass.com/pricing.html">plans &amp; pricing</a>
+      <span data-i18n="support">Stuck or have a question? Email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> — it goes straight to the founder, and replies usually come within a few hours.</span><br>
+      <span data-i18n="plan">Free plan: 250 emails/month · <a href="https://getoutmass.com/pricing.html">plans &amp; pricing</a></span>
     </p>
   </div>
+
+<script>
+  (function () {
+    // ── The page in the person's language ──
+    //
+    // Between install and Outlook this page is all a new user sees. It was
+    // English only and named the panel's buttons in English while their panel
+    // showed them translated. Same thirteen languages as extension/_locales.
+    //
+    // The same language machinery (LANGS, mapTag, pickLang, build) is in
+    // uninstall.html. The two copies are kept identical by
+    // extension/tests/site-pages-i18n.test.js, which runs one table of cases
+    // against both.
+    var LANGS = ["en", "de", "es", "fr", "pt_BR", "pt_PT", "ru", "tr", "ja", "zh_CN", "zh_TW", "hi", "ar"];
+
+    // Words this page names on the panel, copied from the panel's own locale
+    // files so the reader looks for exactly what their panel shows. The test
+    // compares every "@" entry below with extension/_locales/<lang>, so a
+    // panel wording change fails CI instead of leaving this page pointing at
+    // a label nobody can find.
+    //
+    // PANEL_TERMS are whole messages: the signed-out panel's Sign in button
+    // (reauthBannerCta, not btnMicrosoftLogin, which is the popup's), the two
+    // composer buttons, and the example-CSV link under the upload box.
+    // PANEL_PHRASES must appear INSIDE the named message: the panel has no
+    // label for reply detection, only the banner that offers to turn it on,
+    // so the page uses the banner's own name for the feature.
+    var PANEL_TERMS = {
+      signIn: "reauthBannerCta",
+      preview: "btnPreview",
+      testSend: "btnTestSend",
+      template: "csvTemplateDownload"
+    };
+    var PANEL_PHRASES = {
+      replies: "repliesOffBannerText"
+    };
+
+    var LINKS = {
+      live: { href: "https://outlook.live.com/mail/", blank: true },
+      pricing: { href: "https://getoutmass.com/pricing.html" }
+    };
+
+    // Inline markup is written as tokens, never as HTML: [b]…[/b] is bold,
+    // [a:id]…[/a] a link from LINKS, [ltr]…[/ltr] a Latin run kept
+    // left-to-right inside Arabic (an address or "CSV UTF-8" would otherwise
+    // be reordered by the bidi algorithm), {name} a panel term ("@name"
+    // below) or a fixed piece of the page (the OM chip, {{firstName}}, the
+    // support address).
+    //
+    // English keeps today's wording, which names the template only as "a
+    // template in the panel"; every other language names the link.
+    var STRINGS = {
+      en: {
+        "@signIn": "Sign in",
+        "@preview": "Preview",
+        "@testSend": "Test Send",
+        "@template": "Download example CSV",
+        "@replies": "reply detection",
+        title: "Welcome to OutMass — your first campaign in 3 steps",
+        badge: "✓ OutMass is installed",
+        h1: "Your first campaign in 3 steps",
+        sub: "OutMass lives inside Outlook on the web — here's how to find it and send your first personalized campaign.",
+        s1Title: "Open Outlook on the web",
+        s1Body: "OutMass works in the browser version of Outlook — not the Windows/Mac desktop app.",
+        s1Cta: "Open Outlook (work / school)",
+        s1Alt: "Personal [ltr]@outlook.com[/ltr] or [ltr]@hotmail.com[/ltr] account? [a:live]Open [ltr]outlook.live.com[/ltr] instead[/a].",
+        s2Title: "Click the round {chip} button",
+        s2Body: "Look at the [b]bottom-right corner[/b] of your Outlook — the round OutMass button opens the campaign panel on the right. (If you don't see it, refresh the Outlook tab once.)",
+        s3Title: "Sign in with Microsoft, then send",
+        s3Body: "[b]{signIn} first[/b] — sending uses your own Outlook account, so OutMass needs your permission. Then upload your recipients as a CSV (there's a template in the panel), write your email with {firstName} to personalize it, hit [b]{preview}[/b] or a [b]{testSend}[/b], and send. OutMass paces delivery and tracks opens and clicks — and replies too, once you turn on {replies} in the panel.",
+        tip: "💡 Your list comes from Excel? Save it as [b]\"[ltr]CSV UTF-8[/ltr] (Comma delimited)\"[/b] — Excel's default \"[ltr]CSV[/ltr]\" option can garble non-English characters.",
+        support: "Stuck or have a question? Email {email} — it goes straight to the founder, and replies usually come within a few hours.",
+        plan: "Free plan: 250 emails/month · [a:pricing]plans & pricing[/a]"
+      },
+      de: {
+        "@signIn": "Anmelden",
+        "@preview": "Vorschau",
+        "@testSend": "Testversand",
+        "@template": "Beispiel-CSV herunterladen",
+        "@replies": "Antworterkennung",
+        title: "Willkommen bei OutMass — Ihre erste Kampagne in 3 Schritten",
+        badge: "✓ OutMass ist installiert",
+        h1: "Ihre erste Kampagne in 3 Schritten",
+        sub: "OutMass arbeitet in Outlook im Web — so finden Sie es und senden Ihre erste personalisierte Kampagne.",
+        s1Title: "Öffnen Sie Outlook im Web",
+        s1Body: "OutMass funktioniert in der Browserversion von Outlook — nicht in der Desktop-App für Windows/Mac.",
+        s1Cta: "Outlook öffnen (Arbeit / Schule)",
+        s1Alt: "Privates Konto bei [ltr]@outlook.com[/ltr] oder [ltr]@hotmail.com[/ltr]? [a:live]Öffnen Sie stattdessen [ltr]outlook.live.com[/ltr][/a].",
+        s2Title: "Klicken Sie auf die runde Schaltfläche {chip}",
+        s2Body: "Schauen Sie in die [b]untere rechte Ecke[/b] Ihres Outlook — die runde OutMass-Schaltfläche öffnet rechts das Kampagnen-Panel. (Wenn Sie sie nicht sehen, laden Sie den Outlook-Tab einmal neu.)",
+        s3Title: "Mit Microsoft anmelden, dann senden",
+        s3Body: "Klicken Sie zuerst auf [b]{signIn}[/b] — gesendet wird über Ihr eigenes Outlook-Konto, daher braucht OutMass Ihre Erlaubnis. Laden Sie dann Ihre Empfänger als CSV hoch (eine Vorlage gibt es im Panel: [b]{template}[/b]), schreiben Sie Ihre E-Mail mit {firstName}, um sie zu personalisieren, nutzen Sie [b]{preview}[/b] oder einen [b]{testSend}[/b] und senden Sie. OutMass verteilt den Versand zeitlich und erfasst Öffnungen und Klicks — und auch Antworten, sobald Sie im Panel die {replies} aktivieren.",
+        tip: "💡 Ihre Liste stammt aus Excel? Speichern Sie sie als [b]„[ltr]CSV UTF-8[/ltr]“[/b] — die Standardoption „[ltr]CSV[/ltr]“ von Excel kann Sonderzeichen verfälschen.",
+        support: "Sie kommen nicht weiter oder haben eine Frage? Schreiben Sie an {email} — die Nachricht geht direkt an den Gründer, und Antworten kommen meist innerhalb weniger Stunden.",
+        plan: "Kostenloser Plan: 250 E-Mails/Monat · [a:pricing]Pläne & Preise[/a]"
+      },
+      es: {
+        "@signIn": "Iniciar sesión",
+        "@preview": "Vista previa",
+        "@testSend": "Envío de prueba",
+        "@template": "Descargar CSV de ejemplo",
+        "@replies": "detección de respuestas",
+        title: "Te damos la bienvenida a OutMass — tu primera campaña en 3 pasos",
+        badge: "✓ OutMass está instalado",
+        h1: "Tu primera campaña en 3 pasos",
+        sub: "OutMass funciona dentro de Outlook en la web — así lo encuentras y envías tu primera campaña personalizada.",
+        s1Title: "Abre Outlook en la web",
+        s1Body: "OutMass funciona en la versión de Outlook para navegador — no en la aplicación de escritorio de Windows/Mac.",
+        s1Cta: "Abrir Outlook (trabajo / escuela)",
+        s1Alt: "¿Cuenta personal de [ltr]@outlook.com[/ltr] o [ltr]@hotmail.com[/ltr]? [a:live]Abre [ltr]outlook.live.com[/ltr] en su lugar[/a].",
+        s2Title: "Haz clic en el botón redondo {chip}",
+        s2Body: "Mira la [b]esquina inferior derecha[/b] de tu Outlook — el botón redondo de OutMass abre el panel de campañas a la derecha. (Si no lo ves, actualiza una vez la pestaña de Outlook.)",
+        s3Title: "Inicia sesión con Microsoft y envía",
+        s3Body: "Primero pulsa [b]{signIn}[/b] — los envíos salen de tu propia cuenta de Outlook, así que OutMass necesita tu permiso. Después sube tus destinatarios como CSV (hay una plantilla en el panel: [b]{template}[/b]), escribe tu correo con {firstName} para personalizarlo, usa [b]{preview}[/b] o un [b]{testSend}[/b], y envía. OutMass reparte los envíos en el tiempo y registra aperturas y clics — y también respuestas, cuando activas la {replies} en el panel.",
+        tip: "💡 ¿Tu lista viene de Excel? Guárdala como [b]“[ltr]CSV UTF-8[/ltr]”[/b] — la opción “[ltr]CSV[/ltr]” predeterminada de Excel puede estropear las tildes y otros caracteres especiales.",
+        support: "¿Te has atascado o tienes una pregunta? Escribe a {email} — llega directamente al fundador, y la respuesta suele llegar en pocas horas.",
+        plan: "Plan gratuito: 250 correos al mes · [a:pricing]planes y precios[/a]"
+      },
+      fr: {
+        "@signIn": "Se connecter",
+        "@preview": "Aperçu",
+        "@testSend": "Envoi test",
+        "@template": "Télécharger un CSV d'exemple",
+        "@replies": "détection des réponses",
+        title: "Bienvenue dans OutMass — votre première campagne en 3 étapes",
+        badge: "✓ OutMass est installé",
+        h1: "Votre première campagne en 3 étapes",
+        sub: "OutMass fonctionne dans Outlook sur le web — voici comment le trouver et envoyer votre première campagne personnalisée.",
+        s1Title: "Ouvrez Outlook sur le web",
+        s1Body: "OutMass fonctionne dans la version navigateur d'Outlook — pas dans l'application de bureau Windows/Mac.",
+        s1Cta: "Ouvrir Outlook (travail / école)",
+        s1Alt: "Compte personnel [ltr]@outlook.com[/ltr] ou [ltr]@hotmail.com[/ltr] ? [a:live]Ouvrez plutôt [ltr]outlook.live.com[/ltr][/a].",
+        s2Title: "Cliquez sur le bouton rond {chip}",
+        s2Body: "Regardez le [b]coin inférieur droit[/b] de votre Outlook — le bouton rond OutMass ouvre le panneau de campagne à droite. (Si vous ne le voyez pas, actualisez une fois l'onglet Outlook.)",
+        s3Title: "Connectez-vous avec Microsoft, puis envoyez",
+        s3Body: "Cliquez d'abord sur [b]{signIn}[/b] — l'envoi passe par votre propre compte Outlook, OutMass a donc besoin de votre autorisation. Importez ensuite vos destinataires au format CSV (un modèle est disponible dans le panneau : [b]{template}[/b]), rédigez votre e-mail avec {firstName} pour le personnaliser, utilisez [b]{preview}[/b] ou un [b]{testSend}[/b], puis envoyez. OutMass étale l'envoi dans le temps et suit les ouvertures et les clics — et aussi les réponses, une fois la {replies} activée dans le panneau.",
+        tip: "💡 Votre liste vient d'Excel ? Enregistrez-la au format [b][ltr]CSV UTF-8[/ltr][/b] — l'option [ltr]CSV[/ltr] par défaut d'Excel peut abîmer les caractères accentués.",
+        support: "Un blocage ou une question ? Écrivez à {email} — votre message arrive directement chez le fondateur, et la réponse vient généralement en quelques heures.",
+        plan: "Offre gratuite : 250 e-mails par mois · [a:pricing]offres et tarifs[/a]"
+      },
+      pt_BR: {
+        "@signIn": "Entrar",
+        "@preview": "Visualizar",
+        "@testSend": "Envio de teste",
+        "@template": "Baixar CSV de exemplo",
+        "@replies": "detecção de respostas",
+        title: "Boas-vindas ao OutMass — sua primeira campanha em 3 passos",
+        badge: "✓ O OutMass está instalado",
+        h1: "Sua primeira campanha em 3 passos",
+        sub: "O OutMass fica dentro do Outlook na web — veja como encontrá-lo e enviar sua primeira campanha personalizada.",
+        s1Title: "Abra o Outlook na web",
+        s1Body: "O OutMass funciona na versão do Outlook para navegador — não no aplicativo para desktop do Windows/Mac.",
+        s1Cta: "Abrir o Outlook (trabalho / escola)",
+        s1Alt: "Conta pessoal [ltr]@outlook.com[/ltr] ou [ltr]@hotmail.com[/ltr]? [a:live]Abra o [ltr]outlook.live.com[/ltr] em vez disso[/a].",
+        s2Title: "Clique no botão redondo {chip}",
+        s2Body: "Olhe no [b]canto inferior direito[/b] do seu Outlook — o botão redondo do OutMass abre o painel de campanhas à direita. (Se ele não aparecer, atualize a aba do Outlook uma vez.)",
+        s3Title: "Entre com a Microsoft e envie",
+        s3Body: "Primeiro clique em [b]{signIn}[/b] — o envio usa a sua própria conta do Outlook, então o OutMass precisa da sua permissão. Depois faça o upload da sua lista de destinatários em CSV (há um modelo no painel: [b]{template}[/b]), escreva seu e-mail com {firstName} para personalizá-lo, use [b]{preview}[/b] ou um [b]{testSend}[/b] e envie. O OutMass distribui o envio ao longo do tempo e acompanha aberturas e cliques — e também respostas, depois que você ativar a {replies} no painel.",
+        tip: "💡 Sua lista vem do Excel? Salve como [b]“[ltr]CSV UTF-8[/ltr]”[/b] — a opção “[ltr]CSV[/ltr]” padrão do Excel pode corromper acentos e outros caracteres especiais.",
+        support: "Travou ou tem uma pergunta? Escreva para {email} — vai direto para o fundador, e a resposta costuma chegar em poucas horas.",
+        plan: "Plano gratuito: 250 e-mails por mês · [a:pricing]planos e preços[/a]"
+      },
+      pt_PT: {
+        "@signIn": "Iniciar sessão",
+        "@preview": "Pré-visualizar",
+        "@testSend": "Envio de teste",
+        "@template": "Transferir CSV de exemplo",
+        "@replies": "deteção de respostas",
+        title: "Boas-vindas ao OutMass — a sua primeira campanha em 3 passos",
+        badge: "✓ O OutMass está instalado",
+        h1: "A sua primeira campanha em 3 passos",
+        sub: "O OutMass funciona dentro do Outlook na web — veja como encontrá-lo e enviar a sua primeira campanha personalizada.",
+        s1Title: "Abra o Outlook na web",
+        s1Body: "O OutMass funciona na versão do Outlook para navegador — não na aplicação para computador Windows/Mac.",
+        s1Cta: "Abrir o Outlook (trabalho / escola)",
+        s1Alt: "Conta pessoal [ltr]@outlook.com[/ltr] ou [ltr]@hotmail.com[/ltr]? [a:live]Abra o [ltr]outlook.live.com[/ltr] em vez disso[/a].",
+        s2Title: "Clique no botão redondo {chip}",
+        s2Body: "Olhe para o [b]canto inferior direito[/b] do seu Outlook — o botão redondo do OutMass abre o painel de campanhas à direita. (Se não o vir, atualize uma vez o separador do Outlook.)",
+        s3Title: "Inicie sessão com a Microsoft e envie",
+        s3Body: "Primeiro clique em [b]{signIn}[/b] — o envio usa a sua própria conta do Outlook, por isso o OutMass precisa da sua autorização. Depois carregue os seus destinatários em CSV (há um modelo no painel: [b]{template}[/b]), escreva o seu e-mail com {firstName} para o personalizar, use [b]{preview}[/b] ou um [b]{testSend}[/b] e envie. O OutMass distribui o envio ao longo do tempo e acompanha aberturas e cliques — e também respostas, depois de ativar a {replies} no painel.",
+        tip: "💡 A sua lista vem do Excel? Guarde-a como [b]“[ltr]CSV UTF-8[/ltr]”[/b] — a opção “[ltr]CSV[/ltr]” predefinida do Excel pode estragar acentos e outros caracteres especiais.",
+        support: "Precisa de ajuda ou tem uma dúvida? Escreva para {email} — a mensagem vai diretamente para o fundador, e a resposta costuma chegar em poucas horas.",
+        plan: "Plano gratuito: 250 e-mails por mês · [a:pricing]planos e preços[/a]"
+      },
+      ru: {
+        "@signIn": "Войти",
+        "@preview": "Предпросмотр",
+        "@testSend": "Тестовая отправка",
+        "@template": "Скачать пример CSV",
+        "@replies": "определение ответов",
+        title: "Добро пожаловать в OutMass — ваша первая кампания за 3 шага",
+        badge: "✓ OutMass установлен",
+        h1: "Ваша первая кампания за 3 шага",
+        sub: "OutMass работает внутри Outlook в браузере — вот как его найти и отправить первую персонализированную кампанию.",
+        s1Title: "Откройте Outlook в браузере",
+        s1Body: "OutMass работает в браузерной версии Outlook — не в настольном приложении для Windows/Mac.",
+        s1Cta: "Открыть Outlook (работа / учёба)",
+        s1Alt: "Личная учётная запись [ltr]@outlook.com[/ltr] или [ltr]@hotmail.com[/ltr]? [a:live]Тогда откройте [ltr]outlook.live.com[/ltr][/a].",
+        s2Title: "Нажмите круглую кнопку {chip}",
+        s2Body: "Посмотрите в [b]правый нижний угол[/b] Outlook — круглая кнопка OutMass открывает панель кампаний справа. (Если её не видно, один раз обновите вкладку Outlook.)",
+        s3Title: "Войдите через Microsoft и отправляйте",
+        s3Body: "Сначала нажмите [b]{signIn}[/b] — письма уходят с вашей собственной учётной записи Outlook, поэтому OutMass нужно ваше разрешение. Затем загрузите получателей в формате CSV (шаблон есть в панели: [b]{template}[/b]), напишите письмо с {firstName} для персонализации, нажмите [b]{preview}[/b] или [b]{testSend}[/b] и отправляйте. OutMass распределяет отправку во времени и отслеживает открытия и клики — а также ответы, когда вы включите {replies} в панели.",
+        tip: "💡 Список из Excel? Сохраните его как [b]«[ltr]CSV UTF-8[/ltr]»[/b] — стандартный вариант «[ltr]CSV[/ltr]» в Excel может исказить кириллицу и другие нелатинские символы.",
+        support: "Что-то не получается или есть вопрос? Напишите на {email} — письмо попадёт прямо к основателю, а ответ обычно приходит в течение нескольких часов.",
+        plan: "Бесплатный план: 250 писем в месяц · [a:pricing]планы и цены[/a]"
+      },
+      tr: {
+        "@signIn": "Giriş yap",
+        "@preview": "Önizleme",
+        "@testSend": "Test Gönder",
+        "@template": "Örnek CSV indir",
+        "@replies": "Yanıt algılama",
+        title: "OutMass'e hoş geldiniz — 3 adımda ilk kampanyanız",
+        badge: "✓ OutMass yüklendi",
+        h1: "3 adımda ilk kampanyanız",
+        sub: "OutMass, Outlook'un web sürümünün içinde çalışır — onu nasıl bulacağınızı ve ilk kişiselleştirilmiş kampanyanızı nasıl göndereceğinizi aşağıda bulabilirsiniz.",
+        s1Title: "Outlook'un web sürümünü açın",
+        s1Body: "OutMass, Outlook'un tarayıcı sürümünde çalışır — Windows/Mac masaüstü uygulamasında çalışmaz.",
+        s1Cta: "Outlook'u açın (iş / okul)",
+        s1Alt: "Kişisel [ltr]@outlook.com[/ltr] veya [ltr]@hotmail.com[/ltr] hesabınız mı var? [a:live]Bunun yerine [ltr]outlook.live.com[/ltr] adresini açın[/a].",
+        s2Title: "Yuvarlak {chip} düğmesine tıklayın",
+        s2Body: "Outlook'unuzun [b]sağ alt köşesine[/b] bakın — yuvarlak OutMass düğmesi sağda kampanya panelini açar. (Göremiyorsanız Outlook sekmesini bir kez yenileyin.)",
+        s3Title: "Microsoft ile giriş yapın, sonra gönderin",
+        s3Body: "Önce [b]{signIn}[/b] düğmesine basın — gönderim kendi Outlook hesabınızdan yapılır, bu yüzden OutMass'in izninize ihtiyacı var. Ardından alıcılarınızı CSV olarak yükleyin (panelde bir şablon var: [b]{template}[/b]), kişiselleştirmek için e-postanızı {firstName} ile yazın, [b]{preview}[/b] ya da [b]{testSend}[/b] ile kontrol edin ve gönderin. OutMass gönderimi zamana yayar, açılmaları ve tıklamaları izler — paneldeki [b]{replies}[/b] özelliğini açtığınızda yanıtları da.",
+        tip: "💡 Listeniz Excel'den mi geliyor? [b]“[ltr]CSV UTF-8[/ltr]”[/b] olarak kaydedin — Excel'in varsayılan “[ltr]CSV[/ltr]” seçeneği Türkçe karakterleri ve diğer özel karakterleri bozabilir.",
+        support: "Takıldınız mı ya da bir sorunuz mu var? {email} adresine yazın — doğrudan kurucuya ulaşır ve yanıt genellikle birkaç saat içinde gelir.",
+        plan: "Ücretsiz plan: ayda 250 e-posta · [a:pricing]planlar ve fiyatlar[/a]"
+      },
+      ja: {
+        "@signIn": "サインイン",
+        "@preview": "プレビュー",
+        "@testSend": "テスト送信",
+        "@template": "サンプル CSV をダウンロード",
+        "@replies": "返信検出",
+        title: "OutMass へようこそ — 3 ステップで最初のキャンペーン",
+        badge: "✓ OutMass がインストールされました",
+        h1: "3 ステップで最初のキャンペーンを送信",
+        sub: "OutMass は Outlook on the web の中で動作します。OutMass の見つけ方と、最初のパーソナライズされたキャンペーンの送り方をご案内します。",
+        s1Title: "Outlook on the web を開く",
+        s1Body: "OutMass はブラウザー版の Outlook で動作します。Windows/Mac のデスクトップ アプリでは動作しません。",
+        s1Cta: "Outlook を開く（職場 / 学校）",
+        s1Alt: "個人用の [ltr]@outlook.com[/ltr] または [ltr]@hotmail.com[/ltr] アカウントの場合は、[a:live]代わりに [ltr]outlook.live.com[/ltr] を開いてください[/a]。",
+        s2Title: "丸い {chip} ボタンをクリック",
+        s2Body: "Outlook の[b]右下隅[/b]をご覧ください。丸い OutMass ボタンを押すと、右側にキャンペーンパネルが開きます。（表示されない場合は、Outlook のタブを一度再読み込みしてください。）",
+        s3Title: "Microsoft でサインインして送信",
+        s3Body: "まず「[b]{signIn}[/b]」を押してください。送信にはご自身の Outlook アカウントを使うため、OutMass にはお客様の許可が必要です。次に、受信者を CSV でアップロードし（パネルにテンプレートがあります：[b]{template}[/b]）、{firstName} を使ってメールをパーソナライズし、「[b]{preview}[/b]」または「[b]{testSend}[/b]」で確認してから送信します。OutMass は配信のペースを調整し、開封とクリックを記録します。パネルで{replies}をオンにすると、返信も記録されます。",
+        tip: "💡 リストを Excel で作成しましたか？ [b]「[ltr]CSV UTF-8[/ltr]」[/b]形式で保存してください。Excel の既定の「[ltr]CSV[/ltr]」形式では、日本語など英語以外の文字が文字化けすることがあります。",
+        support: "お困りのことやご質問があれば、{email} までメールでお問い合わせください。創業者に直接届き、通常は数時間以内に返信いたします。",
+        plan: "無料プラン：月 250 通 · [a:pricing]プランと料金[/a]"
+      },
+      zh_CN: {
+        "@signIn": "登录",
+        "@preview": "预览",
+        "@testSend": "测试发送",
+        "@template": "下载示例 CSV",
+        "@replies": "回复检测",
+        title: "欢迎使用 OutMass — 3 步发出您的第一个活动",
+        badge: "✓ OutMass 已安装",
+        h1: "3 步发出您的第一个活动",
+        sub: "OutMass 在网页版 Outlook 中运行 — 下面介绍如何找到它，并发出您的第一个个性化活动。",
+        s1Title: "打开网页版 Outlook",
+        s1Body: "OutMass 在浏览器版 Outlook 中运行 — 不支持 Windows/Mac 桌面应用。",
+        s1Cta: "打开 Outlook（工作 / 学校）",
+        s1Alt: "使用个人 [ltr]@outlook.com[/ltr] 或 [ltr]@hotmail.com[/ltr] 账户？[a:live]请改为打开 [ltr]outlook.live.com[/ltr][/a]。",
+        s2Title: "点击圆形 {chip} 按钮",
+        s2Body: "请看 Outlook 的[b]右下角[/b] — 圆形 OutMass 按钮会在右侧打开活动面板。（如果看不到，请刷新一次 Outlook 标签页。）",
+        s3Title: "使用 Microsoft 登录，然后发送",
+        s3Body: "请先点击[b]{signIn}[/b] — 邮件通过您自己的 Outlook 账户发出，因此 OutMass 需要您的授权。然后以 CSV 格式上传收件人（面板中有模板：[b]{template}[/b]），在邮件中使用 {firstName} 进行个性化，点击[b]{preview}[/b]或[b]{testSend}[/b]，然后发送。OutMass 会控制发送节奏，并跟踪打开和点击 — 在面板中开启{replies}后，还会跟踪回复。",
+        tip: "💡 您的列表来自 Excel？请另存为[b]“[ltr]CSV UTF-8[/ltr]”[/b] — Excel 默认的“[ltr]CSV[/ltr]”选项可能会把中文等非英文字符变成乱码。",
+        support: "遇到问题或有疑问？请发邮件至 {email} — 邮件会直接送达创始人，通常几小时内就会回复。",
+        plan: "免费套餐：每月 250 封邮件 · [a:pricing]套餐与价格[/a]"
+      },
+      zh_TW: {
+        "@signIn": "登入",
+        "@preview": "預覽",
+        "@testSend": "測試傳送",
+        "@template": "下載 CSV 範例檔",
+        "@replies": "回覆偵測",
+        title: "歡迎使用 OutMass — 3 個步驟寄出您的第一個行銷活動",
+        badge: "✓ OutMass 已安裝",
+        h1: "3 個步驟寄出您的第一個行銷活動",
+        sub: "OutMass 在網頁版 Outlook 中運作 — 以下說明如何找到它，並寄出您的第一個個人化行銷活動。",
+        s1Title: "開啟網頁版 Outlook",
+        s1Body: "OutMass 在瀏覽器版 Outlook 中運作 — 不支援 Windows/Mac 桌面應用程式。",
+        s1Cta: "開啟 Outlook（公司 / 學校）",
+        s1Alt: "使用個人 [ltr]@outlook.com[/ltr] 或 [ltr]@hotmail.com[/ltr] 帳戶？[a:live]請改為開啟 [ltr]outlook.live.com[/ltr][/a]。",
+        s2Title: "點選圓形 {chip} 按鈕",
+        s2Body: "請看 Outlook 的[b]右下角[/b] — 圓形 OutMass 按鈕會在右側開啟行銷活動面板。（如果沒看到，請重新整理一次 Outlook 分頁。）",
+        s3Title: "使用 Microsoft 登入，然後傳送",
+        s3Body: "請先點選[b]{signIn}[/b] — 郵件會透過您自己的 Outlook 帳戶寄出，因此 OutMass 需要您的授權。接著以 CSV 格式上傳收件者（面板中有範本：[b]{template}[/b]），在郵件中使用 {firstName} 進行個人化，點選[b]{preview}[/b]或[b]{testSend}[/b]，然後傳送。OutMass 會控制寄送節奏，並追蹤開啟和點擊 — 在面板中開啟{replies}後，也會追蹤回覆。",
+        tip: "💡 您的名單來自 Excel？請另存為[b]「[ltr]CSV UTF-8[/ltr]」[/b] — Excel 預設的「[ltr]CSV[/ltr]」選項可能會讓中文等非英文字元變成亂碼。",
+        support: "遇到問題或有疑問？請寄信至 {email} — 信件會直接送到創辦人手上，通常幾小時內就會回覆。",
+        plan: "免費方案：每月 250 封郵件 · [a:pricing]方案與價格[/a]"
+      },
+      hi: {
+        "@signIn": "साइन इन",
+        "@preview": "पूर्वावलोकन",
+        "@testSend": "टेस्ट भेजें",
+        "@template": "उदाहरण CSV डाउनलोड करें",
+        "@replies": "जवाब पहचान",
+        title: "OutMass में आपका स्वागत है — 3 चरणों में आपका पहला अभियान",
+        badge: "✓ OutMass इंस्टॉल हो गया है",
+        h1: "3 चरणों में आपका पहला अभियान",
+        sub: "OutMass वेब पर Outlook के अंदर काम करता है — यहाँ जानें कि इसे कैसे ढूँढें और अपना पहला व्यक्तिगत अभियान कैसे भेजें।",
+        s1Title: "वेब पर Outlook खोलें",
+        s1Body: "OutMass, Outlook के ब्राउज़र संस्करण में काम करता है — Windows/Mac के डेस्कटॉप ऐप में नहीं।",
+        s1Cta: "Outlook खोलें (कार्य / स्कूल)",
+        s1Alt: "निजी [ltr]@outlook.com[/ltr] या [ltr]@hotmail.com[/ltr] खाता है? [a:live]इसके बजाय [ltr]outlook.live.com[/ltr] खोलें[/a]।",
+        s2Title: "गोल {chip} बटन पर क्लिक करें",
+        s2Body: "अपने Outlook के [b]नीचे दाएँ कोने[/b] में देखें — गोल OutMass बटन दाईं ओर अभियान पैनल खोलता है। (अगर यह न दिखे, तो Outlook टैब को एक बार रीफ़्रेश करें।)",
+        s3Title: "Microsoft से साइन इन करें, फिर भेजें",
+        s3Body: "पहले [b]{signIn}[/b] पर क्लिक करें — ईमेल आपके अपने Outlook खाते से जाते हैं, इसलिए OutMass को आपकी अनुमति चाहिए। फिर अपने प्राप्तकर्ताओं को CSV के रूप में अपलोड करें (पैनल में एक टेम्पलेट है: [b]{template}[/b]), व्यक्तिगत बनाने के लिए अपना ईमेल {firstName} के साथ लिखें, [b]{preview}[/b] या [b]{testSend}[/b] से जाँचें, और भेजें। OutMass भेजने की रफ़्तार नियंत्रित करता है और खोलने व क्लिक को ट्रैक करता है — और पैनल में {replies} चालू करने के बाद जवाबों को भी।",
+        tip: "💡 आपकी सूची Excel से आई है? उसे [b]“[ltr]CSV UTF-8[/ltr]”[/b] के रूप में सेव करें — Excel का डिफ़ॉल्ट “[ltr]CSV[/ltr]” विकल्प हिंदी जैसे गैर-अंग्रेज़ी अक्षरों को बिगाड़ सकता है।",
+        support: "कहीं अटक गए हैं या कोई सवाल है? {email} पर ईमेल करें — यह सीधे संस्थापक तक पहुँचता है, और जवाब आम तौर पर कुछ घंटों में आता है।",
+        plan: "मुफ़्त प्लान: हर महीने 250 ईमेल · [a:pricing]प्लान और कीमतें[/a]"
+      },
+      ar: {
+        "@signIn": "تسجيل الدخول",
+        "@preview": "معاينة",
+        "@testSend": "إرسال اختباري",
+        "@template": "تنزيل ملف CSV نموذجي",
+        "@replies": "اكتشاف الردود",
+        title: "مرحبًا بك في OutMass — حملتك الأولى في 3 خطوات",
+        badge: "✓ تم تثبيت OutMass",
+        h1: "حملتك الأولى في 3 خطوات",
+        sub: "يعمل OutMass داخل Outlook على الويب — إليك كيف تجده وترسل حملتك المخصصة الأولى.",
+        s1Title: "افتح Outlook على الويب",
+        s1Body: "يعمل OutMass في إصدار المتصفح من Outlook — وليس في تطبيق سطح المكتب على Windows/Mac.",
+        s1Cta: "افتح Outlook (العمل / المدرسة)",
+        s1Alt: "حساب شخصي على [ltr]@outlook.com[/ltr] أو [ltr]@hotmail.com[/ltr]؟ [a:live]افتح [ltr]outlook.live.com[/ltr] بدلًا من ذلك[/a].",
+        s2Title: "انقر على الزر الدائري {chip}",
+        s2Body: "انظر إلى [b]الزاوية السفلية اليمنى[/b] من Outlook — يفتح زر OutMass الدائري لوحة الحملات على اليمين. (إذا لم تره، فحدّث علامة تبويب Outlook مرة واحدة.)",
+        s3Title: "سجّل الدخول عبر Microsoft، ثم أرسل",
+        s3Body: "انقر أولًا على [b]{signIn}[/b] — يتم الإرسال من حساب Outlook الخاص بك، لذلك يحتاج OutMass إلى إذنك. بعد ذلك ارفع قائمة المستلمين بصيغة CSV (يوجد نموذج في اللوحة: [b]{template}[/b])، واكتب رسالتك مع {firstName} لتخصيصها، واستخدم [b]{preview}[/b] أو [b]{testSend}[/b]، ثم أرسل. يوزّع OutMass الإرسال على فترات ويتتبّع مرات الفتح والنقرات — والردود أيضًا بعد أن تفعّل {replies} في اللوحة.",
+        tip: "💡 هل قائمتك من Excel؟ احفظها بصيغة [b][ltr]CSV UTF-8[/ltr][/b] — فخيار [ltr]CSV[/ltr] الافتراضي في Excel قد يُفسد الحروف العربية وغيرها من الحروف غير الإنجليزية.",
+        support: "هل واجهت مشكلة أو لديك سؤال؟ راسلنا على {email} — تصل الرسالة مباشرة إلى المؤسس، وعادةً يأتي الرد خلال بضع ساعات.",
+        plan: "الخطة المجانية: 250 رسالة شهريًا · [a:pricing]الخطط والأسعار[/a]"
+      }
+    };
+
+    // ── Which language ──
+    //
+    // A BCP 47 tag ("pt-BR", "zh-Hant-HK", "fr-CA", or our own "pt_BR") to
+    // one of LANGS, or null. Chinese goes by script first (Hant/Hans), then
+    // by region; Portuguese is Brazilian only for BR, European for every
+    // other region; everything else by its primary subtag.
+    function mapTag(tag) {
+      if (typeof tag !== "string") return null;
+      var parts = tag.slice(0, 35).replace(/_/g, "-").toLowerCase().split("-");
+      var primary = parts[0];
+      var rest = parts.slice(1);
+      if (primary === "zh") {
+        if (rest.indexOf("hans") >= 0) return "zh_CN";
+        if (rest.indexOf("hant") >= 0 || rest.indexOf("tw") >= 0 ||
+            rest.indexOf("hk") >= 0 || rest.indexOf("mo") >= 0) return "zh_TW";
+        return "zh_CN";
+      }
+      if (primary === "pt") return rest.indexOf("br") >= 0 ? "pt_BR" : "pt_PT";
+      return LANGS.indexOf(primary) >= 0 ? primary : null;
+    }
+
+    // ?hl= first, when it names one of ours: a later extension version can
+    // pass the panel's own language there, which beats the browser's guess.
+    // The value is only ever used to choose a key of STRINGS; it never
+    // reaches the page.
+    //
+    // Then ONLY THE BROWSER'S FIRST LANGUAGE, and one we do not have means
+    // English — the rule the welcome email already follows
+    // (backend/routers/auth.py _signin_language). The panel shows the
+    // browser's language or, failing that, English; it never walks down the
+    // list. A page that did ("ko-KR, de-DE" → German) would name German
+    // buttons beside an English panel, which is the mismatch this page exists
+    // to end.
+    function pickLang(hl, languages, language) {
+      var found = mapTag(hl);
+      if (found) return found;
+      var first = (languages && typeof languages.length === "number" && languages.length)
+        ? languages[0] : language;
+      return mapTag(first) || "en";
+    }
+
+    // ── Strings to nodes ──
+    //
+    // Every element is made with createElement and every word with
+    // createTextNode, so nothing is ever parsed as markup — not even our own
+    // strings.
+    var TOKEN = /\[(\/?)(b|em|ltr|a)(?::([a-z]+))?\]|\{([A-Za-z]+)\}/g;
+
+    function openTag(name, arg) {
+      if (name === "b") return document.createElement("strong");
+      if (name === "em") return document.createElement("em");
+      if (name === "ltr") {
+        var span = document.createElement("span");
+        span.setAttribute("dir", "ltr");
+        return span;
+      }
+      var link = LINKS[arg];
+      if (!link) throw new Error("unknown link [a:" + arg + "]");
+      var a = document.createElement("a");
+      a.setAttribute("href", link.href);
+      if (link.blank) {
+        a.setAttribute("target", "_blank");
+        a.setAttribute("rel", "noopener");
+      }
+      return a;
+    }
+
+    function piece(name, table) {
+      if (Object.prototype.hasOwnProperty.call(table, "@" + name)) {
+        return document.createTextNode(table["@" + name]);
+      }
+      var el;
+      if (name === "chip") {
+        el = document.createElement("span");
+        el.className = "om-chip";
+        el.appendChild(document.createTextNode("OM"));
+        return el;
+      }
+      if (name === "firstName") {
+        el = document.createElement("code");
+        el.setAttribute("dir", "ltr");
+        el.appendChild(document.createTextNode("{{firstName}}"));
+        return el;
+      }
+      if (name === "email") {
+        el = document.createElement("a");
+        el.setAttribute("href", "mailto:support@getoutmass.com");
+        el.setAttribute("dir", "ltr");
+        el.appendChild(document.createTextNode("support@getoutmass.com"));
+        return el;
+      }
+      throw new Error("unknown token {" + name + "}");
+    }
+
+    function build(str, table) {
+      var out = [];
+      var open = [];
+      var names = [];
+      var add = function (node) {
+        if (open.length) open[open.length - 1].appendChild(node);
+        else out.push(node);
+      };
+      var last = 0;
+      var m;
+      TOKEN.lastIndex = 0;
+      while ((m = TOKEN.exec(str)) !== null) {
+        if (m.index > last) add(document.createTextNode(str.slice(last, m.index)));
+        last = TOKEN.lastIndex;
+        if (m[4]) {
+          add(piece(m[4], table));
+        } else if (m[1]) {
+          if (names[names.length - 1] !== m[2]) throw new Error("unbalanced [/" + m[2] + "]");
+          open.pop();
+          names.pop();
+        } else {
+          var el = openTag(m[2], m[3]);
+          add(el);
+          open.push(el);
+          names.push(m[2]);
+        }
+      }
+      if (last < str.length) add(document.createTextNode(str.slice(last)));
+      if (open.length) throw new Error("unclosed [" + names[names.length - 1] + "]");
+      return out;
+    }
+
+    // All strings are built before any is swapped in, so a broken one leaves
+    // the whole page in English rather than half translated.
+    function apply(lang) {
+      var table = STRINGS[lang];
+      var els = document.querySelectorAll("[data-i18n]");
+      var built = [];
+      var i;
+      for (i = 0; i < els.length; i++) {
+        var key = els[i].getAttribute("data-i18n");
+        if (typeof table[key] !== "string") throw new Error("no " + lang + " string for " + key);
+        built.push(build(table[key], table));
+      }
+      for (i = 0; i < els.length; i++) {
+        var el = els[i];
+        while (el.firstChild) el.removeChild(el.firstChild);
+        for (var j = 0; j < built[i].length; j++) el.appendChild(built[i][j]);
+      }
+      var root = document.documentElement;
+      root.setAttribute("lang", lang.replace("_", "-"));
+      if (lang === "ar") root.setAttribute("dir", "rtl");
+    }
+
+    // Read by extension/tests/site-pages-i18n.test.js, which runs this very
+    // script; nothing on the page uses it.
+    window.OMPage = {
+      LANGS: LANGS,
+      STRINGS: STRINGS,
+      PANEL_TERMS: PANEL_TERMS,
+      PANEL_PHRASES: PANEL_PHRASES,
+      LINKS: LINKS,
+      mapTag: mapTag,
+      pickLang: pickLang
+    };
+
+    try {
+      var hl = new URLSearchParams(window.location.search).get("hl");
+      apply(pickLang(hl, navigator.languages, navigator.language));
+    } catch (e) { /* the English markup is the page */ }
+  })();
+</script>
 </body>
 </html>
