@@ -4,9 +4,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>How to Send Mass Emails from Outlook in 2026 (Step-by-Step) — OutMass</title>
-  <meta name="description" content="Four practical ways to send mass emails from Outlook — Word mail merge, distribution lists, VBA, and OutMass — with deliverability tips and limits explained.">
+  <meta name="description" content="Every practical way to send mass email from Outlook in 2026 — Word mail merge, contact groups and Bcc, VBA, and OutMass for the new Outlook and Outlook on the web — with Microsoft's sending limits and our sources.">
   <meta property="og:title" content="How to Send Mass Emails from Outlook in 2026 (Step-by-Step)">
-  <meta property="og:description" content="Four practical ways to send mass emails from Outlook — Word mail merge, distribution lists, VBA, and OutMass — with deliverability tips and limits explained.">
+  <meta property="og:description" content="Every practical way to send mass email from Outlook in 2026 — Word mail merge, contact groups and Bcc, VBA, and OutMass for the new Outlook and Outlook on the web — with Microsoft's sending limits and our sources.">
   <meta property="og:type" content="article">
   <meta property="og:url" content="https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html">
   <link rel="canonical" href="https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html">
@@ -16,9 +16,9 @@
     "@context": "https://schema.org",
     "@type": "Article",
     "headline": "How to Send Mass Emails from Outlook in 2026 (Step-by-Step)",
-    "description": "Four practical ways to send mass emails from Outlook — Word mail merge, distribution lists, VBA, and OutMass — with deliverability tips and limits explained.",
+    "description": "Every practical way to send mass email from Outlook in 2026 — Word mail merge, contact groups and Bcc, VBA, and OutMass for the new Outlook and Outlook on the web — with Microsoft's sending limits and our sources.",
     "datePublished": "2026-04-29",
-    "dateModified": "2026-09-15",
+    "dateModified": "2026-10-10",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/how-to-send-mass-emails-from-outlook.html"
@@ -32,11 +32,15 @@
       {"@type": "Question", "name": "How many emails can I send from Outlook per day?",
        "acceptedAnswer": {"@type": "Answer", "text": "Microsoft publishes a daily figure for some Outlook.com accounts and not others. Microsoft 365 subscribers: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free accounts: no figure is published — Microsoft says limits are lower and vary with account history. Microsoft 365 business and Exchange Online accounts allow up to 10,000 recipients per day, with a per-message limit of 500 by default (an admin can raise it to 1,000) and a per-minute throughput cap of 30 messages."}},
       {"@type": "Question", "name": "Can Outlook do mail merge natively?",
-       "acceptedAnswer": {"@type": "Answer", "text": "Classic Outlook needs Microsoft Word for it: Word drives a mail merge that uses Outlook as the sender, but the workflow has serious limitations: no scheduling, no open tracking, no follow-ups, and no easy way to reuse the same data source across campaigns. New Outlook and Outlook on the web have a basic built-in mail merge that sends everyone their own copy of the same message, but it cannot personalize each email yet."}},
+       "acceptedAnswer": {"@type": "Answer", "text": "Classic Outlook needs Microsoft Word for it: Word drives a mail merge that uses Outlook as the sender, but the workflow has serious limitations: no scheduling, no open tracking, no follow-ups, and no easy way to reuse the same data source across campaigns. New Outlook and Outlook on the web have a basic built-in mail merge that sends everyone their own copy of the same message, but it cannot personalize each email yet. Microsoft's personalized version (roadmap item 423047) was listed for September 2026; on 10 October 2026 it was still \"In development\"."}},
+      {"@type": "Question", "name": "Can I put each person's name in the subject line?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Not with Word's mail merge: you type one subject for everyone, and only the body takes fields from your list. In OutMass any column of your CSV works in the subject as well as the body, on every plan."}},
+      {"@type": "Question", "name": "Can I add an attachment to a mail merge?",
+       "acceptedAnswer": {"@type": "Answer", "text": "Word's mail merge from Windows can't attach a file to each email; the usual workaround is a link to the file. OutMass works the same way, built in: you pick files from your OneDrive and each email carries them as links (up to 10), shown as buttons under your message. Recipients see a link, not an attachment, which also keeps your emails light. The first time, Microsoft asks you to allow OneDrive access, and on a work or school account that often needs your IT administrator's approval."}},
       {"@type": "Question", "name": "Will my mass emails go to spam?",
        "acceptedAnswer": {"@type": "Answer", "text": "Mass emails from Outlook generally land in the inbox if you respect three rules: stay below the daily and per-minute limits, use a personalized subject and body for each recipient, and include a working unsubscribe link. Bulk-attachment campaigns are far more likely to be filtered than text or link-based ones."}},
       {"@type": "Question", "name": "Is mail merge legal?",
-       "acceptedAnswer": {"@type": "Answer", "text": "Personalized email at scale is legal in most jurisdictions when you have a legitimate basis to contact the recipient, identify yourself clearly, and offer an unsubscribe option. CAN-SPAM (US), GDPR (EU), KVKK (TR) and similar laws all apply — make sure your sender identity, business address, and opt-out are real."}}
+       "acceptedAnswer": {"@type": "Answer", "text": "Personalized email at scale is legal in most jurisdictions when you have a legitimate basis to contact the recipient, identify yourself clearly, and offer an unsubscribe option. CAN-SPAM (US), GDPR (EU), KVKK (TR) and similar laws all apply — make sure your sender identity, business address, and opt-out are real. OutMass adds the opt-out link to every email; your postal address you type into the message yourself."}}
     ]
   }
   </script>
@@ -72,6 +76,10 @@
     .cta-button { display: inline-block; background: #0078d4; color: #fff; padding: 12px 24px; border-radius: 8px; font-weight: 600; transition: background 0.15s; }
     .cta-button:hover { background: #005ea6; text-decoration: none; }
     .updated-note { color: #888; font-size: 13px; font-style: italic; margin-top: 28px; }
+    .content a { overflow-wrap: anywhere; }
+    @media (max-width: 480px) {
+      .content th, .content td { padding: 8px 5px; font-size: 14px; }
+    }
     footer { padding: 28px 0; border-top: 1px solid #e8e8e8; text-align: center; font-size: 14px; color: #888; }
     footer a { color: #666; margin: 0 12px; }
   </style>
@@ -92,15 +100,15 @@
 <div class="content">
   <div class="container">
     <h1>How to Send Mass Emails from Outlook in 2026 (Step-by-Step)</h1>
-    <p class="meta">Published April 29, 2026 · 8 min read</p>
+    <p class="meta">Published April 29, 2026 · updated October 10, 2026 · 13 min read</p>
 
-    <p>Outlook is the second-most-used email platform in the world, but it has a reputation for being painful to use for mass email. The default app gives you no real way to send a personalized message to hundreds of recipients without copy-pasting, hitting send limits, or landing in spam.</p>
+    <p>Outlook is one of the most widely used email apps there is, but it has a reputation for being painful to use for mass email. The default app gives you no real way to send a personalized message to hundreds of recipients without copy-pasting, hitting send limits, or landing in spam.</p>
 
     <p>This guide walks through every realistic option — from the built-in Word + Outlook mail merge to dedicated tools — so you can pick the right one for your situation. We'll cover daily send limits, deliverability, and what each method gives you (and quietly takes away).</p>
 
     <div class="highlight">
       <p><strong>Sending separately:</strong> If each person should get their own copy rather than one shared message, new Outlook and Outlook on the web have a built-in <em>Start mail merge</em> that does it with the same text for everyone. For that and the personalized options, see <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
-      <p><strong>The short version:</strong> If you're sending fewer than 50 personalized emails a month and have plenty of patience, Word's mail merge wizard does the job. For everything else — scheduling, tracking, follow-ups, more than 100 recipients — you'll save hours and get better deliverability with a purpose-built tool. <a href="../index.html">OutMass</a> is the one we make.</p>
+      <p><strong>The short version:</strong> If you're sending fewer than 50 personalized emails a month and have plenty of patience, Word's mail merge wizard does the job in classic Outlook. For everything else — scheduling, tracking, follow-ups, more than 100 recipients — you'll save hours and get better deliverability with a purpose-built tool. <a href="../index.html">OutMass</a> is the one we make.</p>
     </div>
 
     <h2>Method 1: Word + Outlook mail merge (free, native, painful)</h2>
@@ -136,9 +144,22 @@
 
     <p>For a one-time announcement to a small list, this is fine. For ongoing outbound, the missing pieces add up fast.</p>
 
+    <h2 id="new-outlook">Personalized mass email in the new Outlook and Outlook on the web</h2>
+
+    <p>On the new Outlook for Windows, Method 1 only works if you switch back: if the <strong>Try the new Outlook</strong> toggle is still there, turning it off brings classic Outlook back, unless your organization has removed it (<a href="does-new-outlook-have-mail-merge.html#why-it-broke">why Word's merge stopped working</a>). In Outlook on the web, or on Windows without classic Outlook, it doesn't work at all. Here is where things stand, as of 10 October 2026:</p>
+
+    <ul>
+      <li><strong>Word's mail merge does not work.</strong> It hands messages to Outlook through MAPI, and Microsoft's own comparison of new and classic Outlook lists MAPI as "Not supported" in the new one.</li>
+      <li><strong>The built-in <em>Start mail merge</em> sends copies, not personal emails.</strong> In the new Outlook it sits in the Send drop-down. Microsoft describes it this way: "Every recipient will receive their own copy of the email without other recipients listed." Everyone gets the same text; there are no fields for names.</li>
+      <li><strong>The personalized version is still on the roadmap.</strong> Microsoft 365 roadmap item 423047, "Mail Merge (Advanced)", lists preview in August 2026 and availability in September 2026. On 10 October 2026 it still says "In development", so the September date has passed with no rollout listed. <a href="does-new-outlook-have-mail-merge.html">What the new Outlook's mail merge does and does not do &rarr;</a></li>
+      <li><strong>What works today is an extension in Outlook on the web.</strong> OutMass adds a campaign panel to Outlook in Chrome or Microsoft Edge: upload a CSV, put any column into the subject and the body, preview, send yourself a test, then send. It works with personal Outlook.com and Hotmail accounts and with Microsoft 365 work and school accounts. You sign in with Microsoft; OutMass never sees or stores your password.</li>
+    </ul>
+
+    <p>OutMass does not run inside the new Outlook for Windows desktop app, classic Outlook or Outlook for Mac. If the account you use in Outlook is Outlook.com, Hotmail or a Microsoft 365 work or school account, open Outlook on the web in Chrome or Edge with that account: it is the same mailbox, and campaigns send from it. A Gmail, Yahoo, iCloud or other account added to Outlook can't send through OutMass.</p>
+
     <h2>Method 2: Outlook distribution lists / contact groups</h2>
 
-    <p>Distribution lists let you address one email to a group, but they're closer to a CC: than a real mail merge. Put a contact group in To or Cc and recipients can see every member's address; move it to Bcc and the list is hidden, but everyone still gets the same message with no personalization. To send so each person sees only their own address, see <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
+    <p>Distribution lists let you address one email to a group, but they're closer to a CC: than a real mail merge. Put a contact group in To or Cc and recipients can see every member's address; put your own address in To and the group in Bcc and the list is hidden, but everyone still gets the same message with no personalization. To send so each person sees only their own address, see <a href="send-mass-email-individually-outlook.html">how to send a mass email individually in Outlook</a>.</p>
 
     <h3>When this works</h3>
 
@@ -171,20 +192,21 @@
 
     <h2>Method 4: A dedicated mail merge tool (like OutMass)</h2>
 
-    <p>This is the path most people end up on once Method 1 stops scaling. A dedicated tool lives inside Outlook, uses your own account to send (so deliverability and identity stay yours), and adds the things Word's mail merge can't:</p>
+    <p>This is the path most people end up on once Method 1 stops scaling, and the only one that personalizes in the new Outlook today. A dedicated tool lives inside Outlook, uses your own account to send (so deliverability and identity stay yours), and adds the things Word's mail merge can't. Here is what OutMass does, and on which plan:</p>
 
     <ul>
-      <li><strong>CSV-driven personalization</strong> with any columns you want, not just first/last name.</li>
-      <li><strong>Open and click tracking</strong> so you can see who's engaged.</li>
-      <li><strong>Reply detection</strong> — the strongest engagement signal you'll ever get.</li>
-      <li><strong>Scheduled sending</strong> — your campaign goes out at the time you choose, even with your browser closed.</li>
-      <li><strong>Automatic follow-up</strong> for recipients who didn't reply (or didn't open).</li>
-      <li><strong>Templates</strong> so your best-performing email is one click away.</li>
-      <li><strong>A real unsubscribe flow</strong> with a global suppression list.</li>
-      <li><strong>Per-recipient rate limiting</strong> so Microsoft doesn't flag your account.</li>
+      <li><strong>Personalization from a CSV</strong>, in the subject line as well as the body, with any column in your file. A field your list can't fill is caught before anything is sent, so nobody receives a literal <code>{{firstName}}</code>. <em>All plans.</em></li>
+      <li><strong>Preview and a test send to yourself</strong> before the real one. <em>All plans.</em></li>
+      <li><strong>Open and click tracking</strong>, so you can see who engaged. Opens are approximate, because many mail apps block or pre-load images. <em>All plans.</em></li>
+      <li><strong>An unsubscribe link in every email.</strong> Anyone who unsubscribes is skipped in all of your later campaigns. <em>All plans.</em></li>
+      <li><strong>Paced sending</strong>: messages go out spaced apart rather than all at once, and more gently from personal Outlook.com accounts. <em>All plans.</em></li>
+      <li><strong>Scheduled sending</strong>: the campaign goes out at the time you choose, even with your browser closed. <em>Starter and Pro.</em></li>
+      <li><strong>Saved templates</strong> for emails you send again. <em>Starter and Pro.</em></li>
+      <li><strong>Reply detection</strong>, which you turn on after your first send. On a work or school account, Microsoft usually asks your IT administrator to approve it. <em>All plans.</em></li>
+      <li><strong>One automatic follow-up per campaign</strong> to people who haven't replied or haven't opened. Without reply detection, it also reaches people who already replied. <em>Pro.</em></li>
     </ul>
 
-    <p>OutMass adds all of these as a Chrome extension that injects a sidebar into <a href="https://outlook.office.com" rel="nofollow">outlook.office.com</a> and <a href="https://outlook.live.com" rel="nofollow">outlook.live.com</a>. Setup is signing in with Microsoft once. You can run a campaign in under five minutes.</p>
+    <p>OutMass is an extension for Chrome and Microsoft Edge. It adds a panel to Outlook on the web (outlook.office.com, outlook.live.com and outlook.cloud.microsoft), opened from a round <strong>OM</strong> button. Setup is signing in with Microsoft once. See <a href="../pricing.html">plans and pricing</a> for the full list.</p>
 
     <div class="cta">
       <h3>Stop fighting Word's mail merge wizard</h3>
@@ -202,16 +224,18 @@
         <tr><th>Account type</th><th>Per day</th><th>Per minute</th><th>Per message</th></tr>
       </thead>
       <tbody>
-        <tr><td>Outlook.com (free)</td><td>Not published</td><td>Not published</td><td>Not published</td></tr>
-        <tr><td>Microsoft 365 Personal / Family</td><td>5,000 recipients</td><td>Not published</td><td>500 recipients</td></tr>
-        <tr><td>Microsoft 365 Business / Exchange Online</td><td>10,000 recipients</td><td>30 messages</td><td>500 recipients</td></tr>
-        <tr><td>New Microsoft 365 tenant (first 60 days)</td><td>Lower tenant-wide limit on external recipients (10%, then 25%)</td><td>30 messages</td><td>500 recipients</td></tr>
+        <tr><td>Outlook.com (free)</td><td>Not published; Microsoft says lower than for subscribers</td><td>Not published</td><td>Not published</td></tr>
+        <tr><td>Outlook.com with a Microsoft 365 subscription</td><td>5,000 recipients, of which 1,000 can be people you have never emailed</td><td>Not published</td><td>500 recipients</td></tr>
+        <tr><td>Microsoft 365 Business / Exchange Online</td><td>10,000 recipients</td><td>30 messages</td><td>Up to 1,000, set by your admin (500 by default)</td></tr>
+        <tr><td>New Microsoft 365 tenant (first 60 days)</td><td>Lower tenant-wide limit on external recipients (10%, then 25%)</td><td>30 messages</td><td>As above</td></tr>
       </tbody>
     </table>
 
+    <p>Microsoft also says, on the same Exchange Online page, that its mailboxes aren't meant for bulk commercial email such as newsletters to large lists. Treat these numbers as a ceiling, not a target: an account that sends many similar emails to people who don't know it can be stopped well before it reaches them.</p>
+
     <p>The new-tenant row is a different kind of limit from the others. Microsoft's <a href="https://techcommunity.microsoft.com/blog/exchange/introducing-exchange-online-tenant-outbound-email-limits/4372797" rel="nofollow">tenant external recipient rate limit</a> caps how many people outside your organization the whole tenant can email per day, based on its license count. A tenant less than 31 days old gets 10% of that standard quota, and 25% from day 31 to day 60.</p>
 
-    <p>If you exceed the per-minute throughput Microsoft will queue your messages temporarily; if you exceed the per-day limit you'll hit a hard <code>SubmissionQuotaExceeded</code> error and can't send again until the number of recipients you messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour.</p>
+    <p>If you exceed the per-minute throughput, Microsoft holds the extra messages and sends them over the following minutes. If you exceed the per-day limit, you get a "submission quota exceeded" non-delivery report (code 5.2.2) and can't send again until the number of recipients you messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour.</p>
 
     <h2>Deliverability: how to actually land in the inbox</h2>
 
@@ -221,12 +245,13 @@
       <li><strong>Personalize the subject and the first line.</strong> "Hi {{firstName}}" in the body isn't enough — variation in the subject is what separates an email a human wrote from a bulk send.</li>
       <li><strong>Keep the message text-heavy.</strong> Long blocks of text, conversational tone, and short signatures look like real correspondence. Marketing-template HTML with images and gradient headers looks like marketing.</li>
       <li><strong>Skip attachments for cold outreach.</strong> A 1 MB PDF triggers more spam filters than a link to the same PDF on OneDrive.</li>
-      <li><strong>Send during business hours in the recipient's timezone.</strong> 3 a.m. blasts get flagged.</li>
+      <li><strong>Send during business hours in the recipient's timezone.</strong> A batch that lands at 3 a.m. looks like a machine, not a person.</li>
       <li><strong>Spread the send.</strong> Microsoft caps sending at 30 messages a minute, so leave at least 2 seconds between messages.</li>
-      <li><strong>Always include a real unsubscribe link.</strong> One unsubscribe complaint is fine. Three on the same campaign and Microsoft starts paying attention.</li>
+      <li><strong>Always include a real unsubscribe link.</strong> Someone who can't opt out tends to press "Report spam" instead, and those reports count against you.</li>
+      <li><strong>Put your postal address in the email.</strong> If you're sending commercial email to people in the US, CAN-SPAM requires it, along with a working opt-out.</li>
     </ul>
 
-    <p>Tools like OutMass handle these defaults automatically — every send is rate-limited, the unsubscribe link is generated for each recipient, and deliverability defaults are tuned for cold outreach. The Word mail merge does none of these.</p>
+    <p>OutMass does two of these for you: it spaces messages out, and it adds an unsubscribe link to every email and skips anyone who used it. The rest — the subject, the wording, the timing, your address in the text — are your choices. Word's mail merge does neither.</p>
 
     <h2>Frequently asked questions</h2>
 
@@ -234,22 +259,43 @@
     <p>Microsoft publishes a daily figure for some Outlook.com accounts and not others. Microsoft 365 subscribers: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free accounts: no figure is published — Microsoft says limits are lower and vary with account history. Microsoft 365 business and Exchange Online accounts allow up to 10,000 recipients per day, with a per-message limit of 500 by default (an admin can raise it to 1,000) and a per-minute throughput cap of 30 messages.</p>
 
     <h3>Can Outlook do mail merge natively?</h3>
-    <p>Classic Outlook needs Microsoft Word for it: Word drives a mail merge that uses Outlook as the sender, but the workflow has serious limitations: no scheduling, no open tracking, no follow-ups, and no easy way to reuse the same data source across campaigns. New Outlook and Outlook on the web have a basic built-in mail merge that sends everyone their own copy of the same message, but it cannot personalize each email yet.</p>
+    <p>Classic Outlook needs Microsoft Word for it: Word drives a mail merge that uses Outlook as the sender, but the workflow has serious limitations: no scheduling, no open tracking, no follow-ups, and no easy way to reuse the same data source across campaigns. New Outlook and Outlook on the web have a basic built-in mail merge that sends everyone their own copy of the same message, but it cannot personalize each email yet. Microsoft's personalized version (roadmap item 423047) was listed for September 2026; on 10 October 2026 it was still "In development".</p>
+
+    <h3>Can I put each person's name in the subject line?</h3>
+    <p>Not with Word's mail merge: you type one subject for everyone, and only the body takes fields from your list. In OutMass any column of your CSV works in the subject as well as the body, on every plan.</p>
+
+    <h3>Can I add an attachment to a mail merge?</h3>
+    <p>Word's mail merge from Windows can't attach a file to each email; the usual workaround is a link to the file. OutMass works the same way, built in: you pick files from your OneDrive and each email carries them as links (up to 10), shown as buttons under your message. Recipients see a link, not an attachment, which also keeps your emails light. The first time, Microsoft asks you to allow OneDrive access, and on a work or school account that often needs your IT administrator's approval.</p>
 
     <h3>Will my mass emails go to spam?</h3>
     <p>Mass emails from Outlook generally land in the inbox if you respect three rules: stay below the daily and per-minute limits, use a personalized subject and body for each recipient, and include a working unsubscribe link. Bulk-attachment campaigns are far more likely to be filtered than text or link-based ones.</p>
 
     <h3>Is mail merge legal?</h3>
-    <p>Personalized email at scale is legal in most jurisdictions when you have a legitimate basis to contact the recipient, identify yourself clearly, and offer an unsubscribe option. CAN-SPAM (US), GDPR (EU), KVKK (TR) and similar laws all apply — make sure your sender identity, business address, and opt-out are real.</p>
+    <p>Personalized email at scale is legal in most jurisdictions when you have a legitimate basis to contact the recipient, identify yourself clearly, and offer an unsubscribe option. CAN-SPAM (US), GDPR (EU), KVKK (TR) and similar laws all apply — make sure your sender identity, business address, and opt-out are real. OutMass adds the opt-out link to every email; your postal address you type into the message yourself.</p>
 
     <h3>Does OutMass work with Outlook for Mac or the new Outlook?</h3>
-    <p>OutMass runs on Outlook for the web — outlook.office.com and outlook.live.com — so it works the same on Windows, Mac, Linux, and ChromeOS as long as you're using Chrome (or any Chromium browser like Edge or Brave). The desktop apps are not supported because they don't expose an extension API.</p>
+    <p>OutMass runs in Outlook on the web (outlook.office.com, outlook.live.com and outlook.cloud.microsoft) in Chrome or Microsoft Edge, on Windows or Mac. It doesn't run inside the desktop apps: the new Outlook for Windows, classic Outlook or Outlook for Mac. If your account is Outlook.com, Hotmail or Microsoft 365, open Outlook on the web in your browser with it instead; it is the same mailbox. Gmail, Yahoo, iCloud and other accounts added to Outlook can't send through OutMass.</p>
 
     <h2>Wrapping up</h2>
 
-    <p>For a few dozen personalized emails a month, Word's mail merge does the job — clunky but free. For anything bigger, dedicated tooling pays for itself the first time you don't have to manually rebuild a follow-up list. <a href="../index.html">OutMass</a> is built specifically for the Outlook side of this problem; it's free up to 250 emails a month so you can decide for yourself.</p>
+    <p>For a few dozen personalized emails a month, Word's mail merge does the job — clunky but free. For anything bigger, dedicated tooling pays for itself the first time you don't have to manually rebuild a follow-up list. <a href="../index.html">OutMass</a> is built specifically for the Outlook side of this problem; it's free up to 250 emails a month, with personalization and tracking included (follow-ups are on Pro), so you can decide for yourself.</p>
 
-    <p class="updated-note">Last updated: September 15, 2026 &mdash; corrected when the daily limit resets, how the per-message recipient limit works, the new-tenant limit and the pacing advice, named new Outlook's built-in mail merge, and moved sending separately to its own article.</p>
+    <h2>How we checked this, and our sources</h2>
+
+    <p>We make OutMass, so we are not a neutral reviewer. Every figure about Microsoft's products comes from Microsoft's own pages, checked on 10 October 2026; every statement about OutMass describes what it does today, plan by plan. Limits change, so check these before you rely on them:</p>
+
+    <ul>
+      <li><a href="https://support.microsoft.com/en-us/outlook/sending-limits-in-outlook-com" rel="nofollow">Microsoft Support: sending limits in Outlook.com</a></li>
+      <li><a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">Microsoft Learn: Exchange Online limits</a></li>
+      <li><a href="https://techcommunity.microsoft.com/t5/exchange-team-blog/customizable-recipient-limits-in-office-365/ba-p/1183228" rel="nofollow">Exchange Team: customizable recipient limits (the 500 default)</a></li>
+      <li><a href="https://techcommunity.microsoft.com/blog/exchange/introducing-exchange-online-tenant-outbound-email-limits/4372797" rel="nofollow">Exchange Team: tenant outbound email limits</a></li>
+      <li><a href="https://learn.microsoft.com/en-us/troubleshoot/exchange/email-delivery/ndr/fix-error-for-submission-quota-exceeded-in-exchange-online" rel="nofollow">Microsoft Learn: the "submission quota exceeded" error</a></li>
+      <li><a href="https://support.microsoft.com/en-us/outlook/getstarted/feature-comparison-between-new-outlook-and-classic-outlook" rel="nofollow">Microsoft Support: feature comparison between new and classic Outlook</a></li>
+      <li><a href="https://support.microsoft.com/en-us/outlook/sharing/new-outlook-tips-for-executive-admins-and-delegates" rel="nofollow">Microsoft Support: the new Outlook's basic mail merge</a></li>
+      <li><a href="https://www.microsoft.com/en-us/microsoft-365/roadmap?id=423047" rel="nofollow">Microsoft 365 roadmap item 423047: Mail Merge (Advanced)</a></li>
+    </ul>
+
+    <p class="updated-note">Last updated: October 10, 2026 &mdash; added what works in the new Outlook and Outlook on the web today, which OutMass features are on which plan, the subject-line and attachment questions, the roadmap status checked that day, Microsoft's wording for the daily-limit error and the per-message default, and our sources.</p>
 
   </div>
 </div>
