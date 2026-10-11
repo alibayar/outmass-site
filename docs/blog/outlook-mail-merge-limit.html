@@ -18,7 +18,7 @@
     "headline": "Outlook Mail Merge Limit: How to Send 1000+ Emails Without Blocks",
     "description": "Outlook caps daily sending. Here's the exact limit by account type, why Microsoft enforces it, and how to send 1000+ personalized emails without your account getting throttled.",
     "datePublished": "2026-04-29",
-    "dateModified": "2026-09-15",
+    "dateModified": "2026-10-11",
     "author": {"@type": "Organization", "name": "OutMass"},
     "publisher": {"@type": "Organization", "name": "OutMass"},
     "mainEntityOfPage": "https://getoutmass.com/blog/outlook-mail-merge-limit.html"
@@ -32,13 +32,13 @@
       {"@type": "Question", "name": "What is the Outlook send limit?",
        "acceptedAnswer": {"@type": "Answer", "text": "It depends on the account, and Microsoft publishes a number for only some of them. Microsoft 365 subscribers on Outlook.com: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free Outlook.com accounts: no figure is published — Microsoft says only that limits are lower and vary with account history, and newer accounts are the most restricted. Microsoft 365 business and Exchange Online plans: 10,000 recipients a day, 500 per message by default (an admin can raise it to 1,000), 30 messages a minute."}},
       {"@type": "Question", "name": "What happens when I hit the Outlook send limit?",
-       "acceptedAnswer": {"@type": "Answer", "text": "Microsoft returns a SubmissionQuotaExceeded error and rejects new sends until the number of recipients you have messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour: Microsoft&#39;s own worked example has a sender who sends at 09:00 unable to send again until 09:00 the next day."}},
+       "acceptedAnswer": {"@type": "Answer", "text": "On a Microsoft 365 work or school mailbox, Microsoft returns a \"submission quota exceeded\" non-delivery report (code 5.2.2) and rejects new sends until the number of recipients you have messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour: Microsoft&#39;s own worked example has a sender who sends at 09:00 unable to send again until 09:00 the next day. On a personal Outlook.com account, Microsoft may instead pause sending and ask you to verify the account, with instructions sent to your Outlook inbox; follow them before you send again."}},
       {"@type": "Question", "name": "Can I increase my Outlook send limit?",
-       "acceptedAnswer": {"@type": "Answer", "text": "The limit is enforced server-side and cannot be raised through any user setting. New tenants also start with a lower tenant-wide limit on external recipients: 10% of the standard quota while the tenant is less than 31 days old, and 25% from day 31 to day 60. Organisations sending high-volume legitimate mail typically use a transactional service like Microsoft Azure Communication Services, SendGrid, or Mailgun for that traffic — not their primary Outlook mailbox."}},
+       "acceptedAnswer": {"@type": "Answer", "text": "On a Microsoft 365 work or school mailbox, the limit is enforced server-side and no user setting raises it. For Outlook.com, Microsoft says a new account's low quota is temporary and rises as the account establishes credibility, and it suggests a Microsoft 365 subscription, an up-to-date phone number and alternate email address on the account, and the Microsoft Authenticator app. New tenants also start with a lower tenant-wide limit on external recipients: 10% of the standard quota while the tenant is less than 31 days old, and 25% from day 31 to day 60. Organisations sending high-volume legitimate mail typically use a transactional service like Microsoft Azure Communication Services, SendGrid, or Mailgun for that traffic — not their primary Outlook mailbox."}},
       {"@type": "Question", "name": "Does sending slowly avoid the limit?",
        "acceptedAnswer": {"@type": "Answer", "text": "Slowing the per-minute rate avoids the throughput cap where one is published (30/min on business plans) but does not raise the daily total. If your daily ceiling is below the size of your list, you need a multi-day campaign or a different sending channel."}},
       {"@type": "Question", "name": "Will my account get suspended for sending too much?",
-       "acceptedAnswer": {"@type": "Answer", "text": "Hitting the daily limit by itself doesn't suspend your account — Microsoft just throttles new sends. Suspension typically happens when a high spam-complaint rate, abuse reports, or a sudden burst pattern triggers Microsoft's anti-abuse systems. Slow, personalized, per-minute-rate-limited sending stays well below those thresholds."}}
+       "acceptedAnswer": {"@type": "Answer", "text": "On a work or school mailbox, hitting the daily limit by itself doesn't suspend the account — Microsoft refuses new sends until the 24-hour window clears. A personal Outlook.com account may instead be paused until you verify it. Suspension typically happens when a high spam-complaint rate, abuse reports, or a sudden burst pattern triggers Microsoft's anti-abuse systems. Slow, personalized, paced sending lowers that risk but does not remove it, especially from a new personal Outlook.com account."}}
     ]
   }
   </script>
@@ -66,6 +66,7 @@
     .content table { width: 100%; border-collapse: collapse; margin: 18px 0 24px; font-size: 15px; }
     .content th, .content td { text-align: left; padding: 10px 12px; border-bottom: 1px solid #edebe9; vertical-align: top; }
     .content th { background: #f9f9fa; font-weight: 600; }
+    .table-wrap { overflow-x: auto; }
     .highlight { background: #f0f7ff; border-left: 4px solid #0078d4; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
     .highlight p:last-child { margin-bottom: 0; }
     .warning { background: #fff8e6; border-left: 4px solid #f2a900; padding: 16px 20px; border-radius: 0 8px 8px 0; margin: 22px 0; }
@@ -96,9 +97,9 @@
 <div class="content">
   <div class="container">
     <h1>Outlook Mail Merge Limit: How to Send 1000+ Emails Without Blocks</h1>
-    <p class="meta">Published April 29, 2026 · 7 min read</p>
+    <p class="meta">Published April 29, 2026 · updated October 11, 2026 · 7 min read</p>
 
-    <p>You write a campaign, hit Send on 1,200 personalized emails, and somewhere partway through Outlook stops cooperating. New messages disappear into the Outbox. A few hours later you get a polite NDR titled <code>SubmissionQuotaExceeded</code>. Welcome to Microsoft's mail-merge limit.</p>
+    <p>You write a campaign, hit Send on 1,200 personalized emails, and somewhere partway through Outlook stops cooperating. New messages disappear into the Outbox. Then a non-delivery report arrives: "The message can't be submitted because the sender's submission quota was exceeded." Welcome to Microsoft's mail-merge limit.</p>
 
     <p>This post covers exactly what the limit is, why it exists, what triggers it, and the realistic ways to send 1,000+ personalized emails per day from an Outlook account without getting throttled or — worse — flagged for abuse.</p>
 
@@ -106,6 +107,7 @@
 
     <p>Microsoft publishes business-plan limits at <a href="https://learn.microsoft.com/en-us/office365/servicedescriptions/exchange-online-service-description/exchange-online-limits" rel="nofollow">learn.microsoft.com/exchange-online-limits</a> and consumer limits at <a href="https://support.microsoft.com/en-us/outlook/sending-limits-in-outlook-com" rel="nofollow">support.microsoft.com/outlook/sending-limits</a>. Stripped to the essentials — with the cells Microsoft does not publish left as such, rather than guessed:</p>
 
+    <div class="table-wrap">
     <table>
       <thead>
         <tr>
@@ -123,8 +125,8 @@
           <td>Not published</td>
         </tr>
         <tr>
-          <td>Microsoft 365 Personal / Family</td>
-          <td>5,000</td>
+          <td>Outlook.com with a Microsoft 365 subscription</td>
+          <td>5,000 (1,000 of them to people you have never emailed)</td>
           <td>Not published</td>
           <td>500</td>
         </tr>
@@ -132,34 +134,35 @@
           <td>Microsoft 365 Business Basic / Standard / Premium</td>
           <td>10,000</td>
           <td>30</td>
-          <td>500</td>
+          <td>Up to 1,000, set by your admin (500 by default)</td>
         </tr>
         <tr>
           <td>Exchange Online (standalone)</td>
           <td>10,000</td>
           <td>30</td>
-          <td>500</td>
+          <td>Up to 1,000, set by your admin (500 by default)</td>
         </tr>
         <tr>
           <td>New Microsoft 365 tenant (first 60 days)</td>
           <td>Lower tenant-wide limit on external recipients (10%, then 25% of the standard quota)</td>
           <td>30</td>
-          <td>500</td>
+          <td>As above</td>
         </tr>
         <tr>
-          <td>Trial / education tenants</td>
-          <td>Reduced — varies</td>
+          <td>Trial tenants</td>
+          <td>Capped for the whole tenant; Microsoft's own pages give different figures</td>
           <td>30</td>
-          <td>500</td>
+          <td>As above</td>
         </tr>
       </tbody>
     </table>
+    </div>
 
     <p>Three numbers in tension:</p>
 
     <ul>
-      <li><strong>Recipients per day</strong> — your hard ceiling. Hitting this returns <code>SubmissionQuotaExceeded</code>.</li>
-      <li><strong>Messages per minute</strong> — throughput throttle. Going above results in <code>RecipientRateLimitedTemporarily</code>; messages queue and retry.</li>
+      <li><strong>Recipients per day</strong> — your hard ceiling. Hitting it on a work or school mailbox returns a "submission quota exceeded" report (5.2.2); a personal Outlook.com account may instead be paused until you verify it.</li>
+      <li><strong>Messages per minute</strong> — a throughput throttle. Microsoft holds the extra messages and sends them over the following minutes.</li>
       <li><strong>Recipients per message</strong> — caps the To/CC/BCC fields on a single message.</li>
     </ul>
 
@@ -179,25 +182,25 @@
 
     <h3>Per-day limit</h3>
 
-    <p>Microsoft returns a non-delivery report (NDR) with code <code>5.2.121 RESOLVER.RST.RecipSizeLimit</code> or, more commonly, <code>5.7.1 SubmissionQuotaExceeded</code>. The message disappears from your Outbox and lands in your Sent Items as "queued." Future sends get the same treatment until the number of recipients you have messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour.</p>
+    <p><strong>On a Microsoft 365 work or school mailbox,</strong> Microsoft returns a non-delivery report (NDR) with code <strong>5.2.2</strong>, "Submission quota exceeded"; its help page for the error reads "The message can't be submitted because the sender's submission quota was exceeded." Future sends get the same answer until the number of recipients you have messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour. The account itself is not suspended: nothing sends, and you find the NDR if you go looking.</p>
 
-    <p>Your account is <strong>not</strong> suspended. You don't get an email from Microsoft. The only visible effect is that nothing is sending and you eventually find the NDR if you go looking.</p>
+    <p><strong>On a personal Outlook.com account,</strong> Microsoft may instead pause sending and ask you to verify the account, with instructions sent to your Outlook inbox. Follow them before you send again. OutMass stops the campaign when this happens and shows the same instruction, and you press <strong>Resume sending</strong> once the account is verified.</p>
 
     <h3>Per-minute limit</h3>
 
-    <p>Microsoft returns <code>4.7.500 Server busy</code> and the message stays in the queue. Outlook (or your sending tool) is expected to retry after a short delay — typically 30–120 seconds. If your tool doesn't retry, those messages just hang.</p>
+    <p>Microsoft throttles rather than refuses: in its own words, the excess is "throttled and successively carried over to the following minutes," which "will typically not block the sender's account." A tool that submits over SMTP has to retry the messages that were turned away.</p>
 
     <h3>Burst patterns trigger separate anti-abuse systems</h3>
 
-    <p>Even if you stay under the published limits, sending 200 identical messages in 10 seconds is a pattern that Microsoft's anti-abuse layer flags as automated. The penalty is escalating: temporary throttle first, soft-block on the account second, full suspension on repeat offenses. Avoiding bursts isn't optional.</p>
+    <p>Even if you stay under the published limits, sending 200 near-identical messages in a few seconds looks automated. Microsoft says Exchange Online "isn't suited to accommodate bulk-mailing scenarios," and that Outlook.com limits vary with an account's usage history. In our experience, personal Outlook.com accounts, new ones especially, can be stopped well below the published numbers. Avoiding bursts isn't optional.</p>
 
     <h2>How to send 1000+ emails without hitting the wall</h2>
 
     <h3>Stay below the per-minute throughput</h3>
 
-    <p>Microsoft's documented cap is 30 messages a minute, which is one message every 2 seconds. <strong>Treat that as a ceiling, not a target.</strong> OutMass waits 2 seconds between messages; for a large list, spreading the campaign over several days with a daily cap keeps you further from the daily limit.</p>
+    <p>Microsoft's documented cap for business mailboxes is 30 messages a minute, which is one message every 2 seconds. <strong>Treat that as a ceiling, not a target.</strong> For a large list, spreading the campaign over several days with a daily cap keeps you further from the daily limit.</p>
 
-    <p>Tools like <a href="../index.html">OutMass</a> bake this in automatically — there's a 2-second delay between sends by default (about 30/minute), and the pacing is enforced server-side so you can't accidentally trip over it.</p>
+    <p>Tools like <a href="../index.html">OutMass</a> pace sends for you. From a Microsoft 365 work or school mailbox, OutMass sends about one message every 2 seconds. From a personal Outlook.com account, a campaign goes out much more slowly, a few messages at a time, because Microsoft publishes no limits for free accounts and holds new ones lower; follow-ups, A/B test winners and campaigns with a large daily limit still go out about 2 seconds apart.</p>
 
     <h3>Spread campaigns across multiple days</h3>
 
@@ -214,7 +217,7 @@
 
     <h3>Personalize past the first line</h3>
 
-    <p>Outlook's anti-spam system has a hash-similarity detector. If 1,000 messages have the same body except for <code>{{firstName}}</code> at the top, that's still ~99% the same — it triggers similarity flags. Effective personalization changes more than a name:</p>
+    <p>Spam filters compare messages. If 1,000 messages have the same body except for <code>{{firstName}}</code> at the top, they are still about 99% the same, and they read as one bulk mailing. Effective personalization changes more than a name:</p>
 
     <ul>
       <li>Different first sentences ("I noticed you just launched X" vs "Saw your team's recent post on Y").</li>
@@ -226,13 +229,13 @@
 
     <h3>Use a real, working unsubscribe link</h3>
 
-    <p>One spam complaint per 1,000 messages is normal. Three per 1,000 starts ringing alarms. The fastest way to lower complaints is to make unsubscribe trivial — a one-click link in every message. Recipients who would have hit "Mark as spam" will hit Unsubscribe instead, and Microsoft's reputation system distinguishes between the two.</p>
+    <p>Spam complaints count against a sender, and the fastest way to lower them is to make unsubscribing easy: a link in every message. Recipients who would have pressed "Report spam" press Unsubscribe instead. OutMass adds that link to every email and skips anyone who used it in your later campaigns.</p>
 
     <h3>Skip attachments for cold outreach</h3>
 
     <p>Attachments are the single biggest deliverability killer for cold mail. A 1 MB PDF attached to an unrecognized sender is treated like a phishing attempt by most modern filters. The same PDF as a OneDrive sharing link — the sender's name on the link, no payload in the message — sails through.</p>
 
-    <p>OutMass enforces this by default: attachments are added as OneDrive links rather than encoded into the message. <a href="gmass-for-outlook.html">More on why this matters</a>.</p>
+    <p>OutMass works this way: files are added from your OneDrive as links, never attached to the message. <a href="gmass-for-outlook.html">More on why this matters</a>.</p>
 
     <h2>If 10,000/day still isn't enough</h2>
 
@@ -240,7 +243,7 @@
 
     <h3>Option 1: Multiple sending accounts (carefully)</h3>
 
-    <p>Some companies set up several Microsoft 365 mailboxes — <code>sales@</code>, <code>outreach@</code>, individual reps — and split the campaign across them. This works but only if each mailbox is a real, signed-off address with a real human attached. Burner accounts created solely to escape the limit get caught and banned within days.</p>
+    <p>Some companies set up several Microsoft 365 mailboxes — <code>sales@</code>, <code>outreach@</code>, individual reps — and split the campaign across them. This works but only if each mailbox is a real, signed-off address with a real human attached. Accounts created only to get around the limit are exactly what anti-abuse systems look for, and they put the whole domain's reputation at risk.</p>
 
     <h3>Option 2: A transactional email service</h3>
 
@@ -250,7 +253,7 @@
 
     <h3>Option 3: Multi-day campaigns</h3>
 
-    <p>Most "I need to send 50,000 emails" use cases are actually "I need to send 50,000 emails over the next 30 days." A 50,000-message campaign at 1,500/day = 33 days, comfortably below limits and far better for deliverability than a 5-day blast at 10,000/day. <a href="../index.html">OutMass</a> handles this natively: upload your CSV once, set a <strong>Daily send limit</strong> in the Schedule section (say 1,500), and the server-side worker sends that many per day — automatically continuing each day until the whole list is done, with ~30/minute pacing inside every batch. Your browser doesn't need to stay open.</p>
+    <p>Most "I need to send 50,000 emails" use cases are actually "I need to send 50,000 emails over the next 30 days." A 50,000-message campaign at 1,500/day = 33 days, comfortably below limits and far better for deliverability than a 5-day blast at 10,000/day. <a href="../index.html">OutMass</a> handles this natively on the Starter and Pro plans: upload your CSV once, set a <strong>Daily send limit</strong> in the Schedule section (say 1,500 on a work or school mailbox; much lower on a personal Outlook.com account), and OutMass's server sends that many per day, continuing each day until the whole list is done, paced inside every batch. Your browser doesn't need to stay open.</p>
 
         <div class="highlight">
       <p><strong>Emailing a club, school or membership list?</strong> The limits on this page are only half the story &mdash; the other half is which kind of &ldquo;list&rdquo; you use and what BCC really costs you. <a href="email-your-whole-list-from-outlook.html">Email your whole list from Outlook, without Mailchimp &rarr;</a></p>
@@ -258,7 +261,7 @@
 
 <div class="cta">
       <h3>Send 1,000+ personalized emails without hitting Microsoft's ceiling</h3>
-      <p>Built-in rate limiting, scheduled sending, and OneDrive attachments for better deliverability.</p>
+      <p>Paced sending on every plan; scheduled, multi-day sending on Starter and Pro; files as OneDrive links instead of attachments.</p>
       <a class="cta-button" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm">Install OutMass — free up to 250/month</a>
       <div style="margin-top:12px;font-size:13px;"><a href="https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc" rel="nofollow">Also available for Microsoft Edge →</a></div>
     </div>
@@ -269,18 +272,18 @@
     <p>It depends on the account, and Microsoft publishes a number for only some of them. Microsoft 365 subscribers on Outlook.com: 5,000 recipients a day, 500 per message, and 1,000 a day to people you have not emailed before. Free Outlook.com accounts: no figure is published — Microsoft says only that limits are lower and vary with account history, and newer accounts are the most restricted. Microsoft 365 business and Exchange Online plans: 10,000 recipients a day, 500 per message by default (an admin can raise it to 1,000), 30 messages a minute.</p>
 
     <h3>What happens when I hit the Outlook send limit?</h3>
-    <p>Microsoft returns a <code>SubmissionQuotaExceeded</code> error and rejects new sends until the number of recipients you have messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour: Microsoft&#39;s own worked example has a sender who sends at 09:00 unable to send again until 09:00 the next day.</p>
+    <p>On a Microsoft 365 work or school mailbox, Microsoft returns a "submission quota exceeded" non-delivery report (code 5.2.2) and rejects new sends until the number of recipients you have messaged in the past 24 hours drops below the limit. It is a rolling window, not a reset at a fixed hour: Microsoft&#39;s own worked example has a sender who sends at 09:00 unable to send again until 09:00 the next day. On a personal Outlook.com account, Microsoft may instead pause sending and ask you to verify the account, with instructions sent to your Outlook inbox; follow them before you send again.</p>
 
     <h3>Can I increase my Outlook send limit?</h3>
-    <p>The limit is enforced server-side and cannot be raised through any user setting. New tenants also start with a lower tenant-wide limit on external recipients: 10% of the standard quota while the tenant is less than 31 days old, and 25% from day 31 to day 60. Organisations sending high-volume legitimate mail typically use a transactional service like Microsoft Azure Communication Services, SendGrid, or Mailgun for that traffic — not their primary Outlook mailbox.</p>
+    <p>On a Microsoft 365 work or school mailbox, the limit is enforced server-side and no user setting raises it. For Outlook.com, Microsoft says a new account's low quota is temporary and rises as the account establishes credibility, and it suggests a Microsoft 365 subscription, an up-to-date phone number and alternate email address on the account, and the Microsoft Authenticator app. New tenants also start with a lower tenant-wide limit on external recipients: 10% of the standard quota while the tenant is less than 31 days old, and 25% from day 31 to day 60. Organisations sending high-volume legitimate mail typically use a transactional service like Microsoft Azure Communication Services, SendGrid, or Mailgun for that traffic — not their primary Outlook mailbox.</p>
 
     <h3>Does sending slowly avoid the limit?</h3>
     <p>Slowing the per-minute rate avoids the throughput cap where one is published (30/min on business plans) but does not raise the daily total. If your daily ceiling is below the size of your list, you need a multi-day campaign or a different sending channel.</p>
 
     <h3>Will my account get suspended for sending too much?</h3>
-    <p>Hitting the daily limit by itself doesn't suspend your account — Microsoft just throttles new sends. Suspension typically happens when a high spam-complaint rate, abuse reports, or a sudden burst pattern triggers Microsoft's anti-abuse systems. Slow, personalized, per-minute-rate-limited sending stays well below those thresholds.</p>
+    <p>On a work or school mailbox, hitting the daily limit by itself doesn't suspend the account — Microsoft refuses new sends until the 24-hour window clears. A personal Outlook.com account may instead be paused until you verify it. Suspension typically happens when a high spam-complaint rate, abuse reports, or a sudden burst pattern triggers Microsoft's anti-abuse systems. Slow, personalized, paced sending lowers that risk but does not remove it, especially from a new personal Outlook.com account.</p>
 
-    <p class="updated-note">Last updated: September 15, 2026 &mdash; corrected the new-tenant limit and the daily reset wording, and linked the guide to sending each person their own email.</p>
+    <p class="updated-note">Last updated: October 11, 2026 &mdash; Microsoft's own wording and code for the daily-limit error (5.2.2), what happens over the per-minute cap, the per-message default, the subscriber row, OutMass's pace by account type, which plans have multi-day sending, and what a personal Outlook.com account sees at its limit (Microsoft asks you to verify the account) and how its limit rises.</p>
 
   </div>
 </div>
