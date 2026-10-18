@@ -74,6 +74,12 @@
     /* A store name or an address is one unit; "Microsoft Edge Add-ons" broke
        at its hyphen in German and Russian. The longest such run is ~170px. */
     span[dir="ltr"] { white-space: nowrap; }
+    /* Except the two Microsoft addresses: one word each, 227px and 199px at
+       15px Segoe UI, against a 192px text column at a 320px viewport. They
+       may wrap, and break anywhere when nothing else fits. */
+    a[href^="https://account.live.com/"], a[href^="https://myapplications.microsoft.com/"],
+    a[href^="https://account.live.com/"] span[dir="ltr"],
+    a[href^="https://myapplications.microsoft.com/"] span[dir="ltr"] { white-space: normal; overflow-wrap: anywhere; }
     /* Italics are a Latin convention; these scripts get a slanted fake. The
        panel path keeps its emphasis as weight instead. */
     :lang(ja) em, :lang(zh) em, :lang(hi) em, :lang(ar) em { font-style: normal; font-weight: 600; }
@@ -146,6 +152,14 @@
       <a class="btn btn-primary" href="https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm" data-i18n="reinstallBtn">Reinstall OutMass</a>
       <a class="btn btn-secondary" href="mailto:support@getoutmass.com?subject=OutMass%20support" data-i18n="supportBtn">Email support</a>
     </div>
+
+    <!-- At every stage, and last: an optional how-to, not a warning. Someone
+         who left over trust wants our access gone, and once the extension is
+         removed the panel's own Delete my account is out of reach. The two
+         addresses are Microsoft's (privacy.html#your-mailbox); erasure by
+         email is privacy.html's existing promise. -->
+    <h2 data-i18n="removeTitle">Removing OutMass completely?</h2>
+    <p data-i18n="removeBody">The extension is gone from your browser. If you'd also like to remove the permission you gave OutMass on your Microsoft account, you can do it at <a href="https://account.live.com/consent/Manage">account.live.com/consent/Manage</a> (Outlook.com and Hotmail) or <a href="https://myapplications.microsoft.com/">myapplications.microsoft.com</a> (work or school accounts). If your IT administrator approved OutMass for your organization, only they can remove that approval. To have your OutMass account and data deleted too, email <a href="mailto:support@getoutmass.com">support@getoutmass.com</a> from the address you signed in with.</p>
   </div>
 </div>
 
@@ -182,7 +196,12 @@
     var CWS = "https://chromewebstore.google.com/detail/outmass/adcfddainnkjomddlappnnbeomhlcbmm";
     var LINKS = {
       cws: { href: CWS },
-      edge: { href: "https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc" }
+      edge: { href: "https://microsoftedge.microsoft.com/addons/detail/nfgnhhdeninjmnpfbhnggknimhejbelc" },
+      // Where a person removes OutMass's permission on Microsoft's side, the
+      // same two addresses as privacy.html#your-mailbox: personal accounts
+      // (Outlook.com, Hotmail), then work or school accounts.
+      consent: { href: "https://account.live.com/consent/Manage" },
+      myapps: { href: "https://myapplications.microsoft.com/" }
     };
 
     // Inline markup is written as tokens, never as HTML: [b]…[/b] bold,
@@ -232,6 +251,8 @@
         mistakeBody: "You can reinstall OutMass from the [a:cws][ltr]Chrome Web Store[/ltr][/a] or [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — your data, campaigns, and templates are still there waiting for you.",
         reinstallBtn: "Reinstall OutMass",
         supportBtn: "Email support",
+        removeTitle: "Removing OutMass completely?",
+        removeBody: "The extension is gone from your browser. If you'd also like to remove the permission you gave OutMass on your Microsoft account, you can do it at [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com and Hotmail) or [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (work or school accounts). If your IT administrator approved OutMass for your organization, only they can remove that approval. To have your OutMass account and data deleted too, email {email} from the address you signed in with.",
         footHome: "Home",
         footPrivacy: "Privacy",
         footTerms: "Terms",
@@ -276,6 +297,8 @@
         mistakeBody: "Sie können OutMass aus dem [a:cws][ltr]Chrome Web Store[/ltr][/a] oder über [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] erneut installieren — Ihre Daten, Kampagnen und Vorlagen sind noch da und warten auf Sie.",
         reinstallBtn: "OutMass erneut installieren",
         supportBtn: "E-Mail an den Support",
+        removeTitle: "OutMass vollständig entfernen?",
+        removeBody: "Die Erweiterung wurde aus Ihrem Browser entfernt. Wenn Sie auch die Berechtigung entfernen möchten, die Sie OutMass für Ihr Microsoft-Konto erteilt haben, geht das unter [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com und Hotmail) oder [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (Geschäfts-, Schul- oder Unikonten). Hat Ihre IT-Administration OutMass für Ihre Organisation genehmigt, kann nur sie diese Genehmigung entfernen. Wenn auch Ihr OutMass-Konto und Ihre Daten gelöscht werden sollen, schreiben Sie von der Adresse, mit der Sie sich angemeldet haben, an {email}.",
         footHome: "Startseite",
         footPrivacy: "Datenschutz",
         footTerms: "Nutzungsbedingungen",
@@ -320,6 +343,8 @@
         mistakeBody: "Puedes volver a instalar OutMass desde la [a:cws][ltr]Chrome Web Store[/ltr][/a] o [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — tus datos, campañas y plantillas siguen ahí esperándote.",
         reinstallBtn: "Reinstalar OutMass",
         supportBtn: "Escribir a soporte",
+        removeTitle: "¿Quieres quitar OutMass por completo?",
+        removeBody: "La extensión ya no está en tu navegador. Si también quieres retirar el permiso que diste a OutMass en tu cuenta de Microsoft, puedes hacerlo en [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com y Hotmail) o en [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (cuentas profesionales o educativas). Si un administrador de TI aprobó OutMass para toda tu organización, solo un administrador puede retirar esa aprobación. Si quieres que también eliminemos tu cuenta de OutMass y tus datos, escribe a {email} desde la dirección con la que iniciaste sesión.",
         footHome: "Inicio",
         footPrivacy: "Privacidad",
         footTerms: "Términos",
@@ -364,6 +389,8 @@
         mistakeBody: "Vous pouvez réinstaller OutMass depuis le [a:cws][ltr]Chrome Web Store[/ltr][/a] ou [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — vos données, campagnes et modèles vous attendent toujours.",
         reinstallBtn: "Réinstaller OutMass",
         supportBtn: "Écrire au support",
+        removeTitle: "Supprimer complètement OutMass ?",
+        removeBody: "L'extension a été retirée de votre navigateur. Si vous souhaitez aussi retirer l'autorisation que vous avez accordée à OutMass sur votre compte Microsoft, vous pouvez le faire sur [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com et Hotmail) ou sur [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (comptes professionnels ou scolaires). Si votre service informatique a approuvé OutMass pour votre organisation, lui seul peut retirer cette approbation. Pour que votre compte OutMass et vos données soient aussi supprimés, écrivez à {email} depuis l'adresse avec laquelle vous vous êtes connecté.",
         footHome: "Accueil",
         footPrivacy: "Confidentialité",
         footTerms: "Conditions",
@@ -408,6 +435,8 @@
         mistakeBody: "Você pode reinstalar o OutMass pela [a:cws][ltr]Chrome Web Store[/ltr][/a] ou pelo [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — seus dados, campanhas e modelos continuam lá esperando por você.",
         reinstallBtn: "Reinstalar o OutMass",
         supportBtn: "Falar com o suporte",
+        removeTitle: "Quer remover o OutMass por completo?",
+        removeBody: "A extensão foi removida do seu navegador. Se você também quiser remover a permissão que deu ao OutMass na sua conta Microsoft, pode fazer isso em [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com e Hotmail) ou em [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (contas corporativas ou de estudante). Se a equipe de TI aprovou o OutMass para a sua organização, só ela pode remover essa aprovação. Para que sua conta do OutMass e seus dados também sejam excluídos, escreva para {email} usando o endereço com que você entrou.",
         footHome: "Início",
         footPrivacy: "Privacidade",
         footTerms: "Termos",
@@ -452,6 +481,8 @@
         mistakeBody: "Pode reinstalar o OutMass a partir da [a:cws][ltr]Chrome Web Store[/ltr][/a] ou do [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — os seus dados, campanhas e modelos continuam lá à sua espera.",
         reinstallBtn: "Reinstalar o OutMass",
         supportBtn: "Contactar o suporte",
+        removeTitle: "Quer remover o OutMass por completo?",
+        removeBody: "A extensão já foi removida do seu navegador. Se também quiser remover a permissão que deu ao OutMass na sua conta Microsoft, pode fazê-lo em [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com e Hotmail) ou em [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (contas escolares ou profissionais). Se o departamento de informática aprovou o OutMass para a sua organização, só ele pode remover essa aprovação. Para que a sua conta do OutMass e os seus dados também sejam eliminados, escreva para {email} a partir do endereço com que iniciou sessão.",
         footHome: "Início",
         footPrivacy: "Privacidade",
         footTerms: "Termos",
@@ -496,6 +527,8 @@
         mistakeBody: "OutMass можно снова установить из [a:cws][ltr]Chrome Web Store[/ltr][/a] или [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — ваши данные, кампании и шаблоны никуда не делись.",
         reinstallBtn: "Установить OutMass снова",
         supportBtn: "Написать в поддержку",
+        removeTitle: "Хотите удалить OutMass полностью?",
+        removeBody: "Расширение удалено из вашего браузера. Если вы также хотите отозвать разрешение, которое дали OutMass в своей учётной записи Microsoft, это можно сделать на [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com и Hotmail) или на [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (рабочие или учебные учётные записи). Если OutMass для вашей организации одобрил ИТ-администратор, отменить это одобрение может только он. Чтобы мы удалили и ваш аккаунт OutMass вместе с данными, напишите на {email} с того адреса, под которым вы входили.",
         footHome: "Главная",
         footPrivacy: "Конфиденциальность",
         footTerms: "Условия",
@@ -540,6 +573,8 @@
         mistakeBody: "OutMass'i [a:cws][ltr]Chrome Web Store[/ltr][/a] veya [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] üzerinden yeniden yükleyebilirsiniz — verileriniz, kampanyalarınız ve şablonlarınız sizi bekliyor.",
         reinstallBtn: "OutMass'i yeniden yükleyin",
         supportBtn: "Destek ekibine yazın",
+        removeTitle: "OutMass'i tamamen kaldırmak mı istiyorsunuz?",
+        removeBody: "Uzantı tarayıcınızdan kaldırıldı. Microsoft hesabınızda OutMass'e verdiğiniz izni de kaldırmak isterseniz bunu [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com ve Hotmail) ya da [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (iş veya okul hesapları) adresinden yapabilirsiniz. OutMass'i kuruluşunuz için BT yöneticiniz onayladıysa bu onayı yalnızca o kaldırabilir. OutMass hesabınızın ve verilerinizin de silinmesini isterseniz giriş yaptığınız adresten {email} adresine yazın.",
         footHome: "Ana sayfa",
         footPrivacy: "Gizlilik",
         footTerms: "Koşullar",
@@ -584,6 +619,8 @@
         mistakeBody: "OutMass は [a:cws][ltr]Chrome Web Store[/ltr][/a] または [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] から再インストールできます。データ、キャンペーン、テンプレートはそのまま残っています。",
         reinstallBtn: "OutMass を再インストール",
         supportBtn: "サポートにメール",
+        removeTitle: "OutMass を完全に削除したい場合",
+        removeBody: "拡張機能はブラウザーから削除されました。Microsoft アカウントで OutMass に与えたアクセス許可も削除したい場合は、[a:consent][ltr]account.live.com/consent/Manage[/ltr][/a]（Outlook.com と Hotmail）または [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a]（職場または学校アカウント）で削除できます。組織の IT 管理者が OutMass を承認している場合、その承認を取り消せるのは管理者だけです。OutMass のアカウントとデータも削除をご希望の場合は、サインインに使ったアドレスから {email} までメールでご連絡ください。",
         footHome: "ホーム",
         footPrivacy: "プライバシー",
         footTerms: "利用規約",
@@ -628,6 +665,8 @@
         mistakeBody: "您可以从 [a:cws][ltr]Chrome Web Store[/ltr][/a] 或 [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] 重新安装 OutMass — 您的数据、活动和模板都还在。",
         reinstallBtn: "重新安装 OutMass",
         supportBtn: "发邮件给客服",
+        removeTitle: "要彻底移除 OutMass 吗？",
+        removeBody: "扩展程序已从您的浏览器中移除。如果您还想撤销在 Microsoft 账户中授予 OutMass 的权限，可以在 [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a]（Outlook.com 和 Hotmail）或 [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a]（工作或学校账户）中操作。如果您所在组织的 IT 管理员已为组织批准 OutMass，则只有管理员才能撤销该批准。如果您也希望删除 OutMass 账户和数据，请用登录时使用的邮箱地址发邮件至 {email}。",
         footHome: "首页",
         footPrivacy: "隐私",
         footTerms: "条款",
@@ -672,6 +711,8 @@
         mistakeBody: "您可以從 [a:cws][ltr]Chrome Web Store[/ltr][/a] 或 [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] 重新安裝 OutMass — 您的資料、行銷活動和範本都還在。",
         reinstallBtn: "重新安裝 OutMass",
         supportBtn: "寄信給客服",
+        removeTitle: "要完全移除 OutMass 嗎？",
+        removeBody: "擴充功能已從您的瀏覽器中移除。如果您也想撤銷在 Microsoft 帳戶中授予 OutMass 的權限，可以前往 [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a]（Outlook.com 和 Hotmail）或 [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a]（公司或學校帳戶）處理。如果您組織的 IT 管理員已為組織核准 OutMass，就只有管理員能撤銷這項核准。如果您也希望刪除 OutMass 帳戶和資料，請用登入時使用的電子郵件地址寄信至 {email}。",
         footHome: "首頁",
         footPrivacy: "隱私權",
         footTerms: "條款",
@@ -716,6 +757,8 @@
         mistakeBody: "आप OutMass को [a:cws][ltr]Chrome Web Store[/ltr][/a] या [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] से फिर से इंस्टॉल कर सकते हैं — आपका डेटा, अभियान और टेम्पलेट अभी भी वहीं हैं।",
         reinstallBtn: "OutMass फिर से इंस्टॉल करें",
         supportBtn: "सपोर्ट को ईमेल करें",
+        removeTitle: "OutMass को पूरी तरह हटाना चाहते हैं?",
+        removeBody: "एक्सटेंशन आपके ब्राउज़र से हटा दिया गया है। अगर आप अपने Microsoft खाते में OutMass को दी गई अनुमति भी हटाना चाहते हैं, तो यह [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (Outlook.com और Hotmail) या [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (ऑफ़िस या स्कूल वाले खाते) पर कर सकते हैं। अगर आपके IT एडमिन ने आपके संगठन के लिए OutMass को मंज़ूरी दी है, तो उस मंज़ूरी को सिर्फ़ वही हटा सकते हैं। अगर आप चाहते हैं कि आपका OutMass खाता और डेटा भी हटा दिया जाए, तो जिस पते से आपने साइन इन किया था, उसी से {email} पर ईमेल करें।",
         footHome: "होम",
         footPrivacy: "गोपनीयता",
         footTerms: "शर्तें",
@@ -760,6 +803,8 @@
         mistakeBody: "يمكنك إعادة تثبيت OutMass من [a:cws][ltr]Chrome Web Store[/ltr][/a] أو [a:edge][ltr]Microsoft Edge Add-ons[/ltr][/a] — بياناتك وحملاتك وقوالبك لا تزال بانتظارك.",
         reinstallBtn: "إعادة تثبيت OutMass",
         supportBtn: "راسل الدعم",
+        removeTitle: "هل تريد إزالة OutMass بالكامل؟",
+        removeBody: "تمت إزالة الإضافة من متصفحك. إذا أردت أيضًا إزالة الإذن الذي منحته لـ OutMass في حساب Microsoft الخاص بك، فيمكنك ذلك من [a:consent][ltr]account.live.com/consent/Manage[/ltr][/a] (لحسابات Outlook.com و Hotmail) أو من [a:myapps][ltr]myapplications.microsoft.com[/ltr][/a] (لحسابات العمل أو المؤسسات التعليمية). إذا وافق مسؤول تقنية المعلومات لديك على OutMass لمؤسستك، فهو وحده من يستطيع إزالة هذه الموافقة. ولحذف حسابك في OutMass وبياناتك أيضًا، راسلنا على {email} من العنوان الذي سجّلت الدخول به.",
         footHome: "الرئيسية",
         footPrivacy: "الخصوصية",
         footTerms: "الشروط",
@@ -785,7 +830,10 @@
     var EARLY = ["desktop_app", "not_found", "not_what_expected", "other"];
     var IN_PANEL = ["desktop_app", "not_found", "permissions", "not_what_expected", "other"];
     var SIGNING_IN = ["admin_approval", "permissions", "signin_failed", "other"];
-    var SIGNED_IN = ["csv_upload", "too_complicated", "bugs", "too_expensive", "other"];
+    // "privacy" since 2026-10-18: someone who signed in and left at once may
+    // have left over what OutMass can do in their mailbox, and before this
+    // these three stages had no way to say so.
+    var SIGNED_IN = ["csv_upload", "too_complicated", "bugs", "too_expensive", "privacy", "other"];
     var SENT = ["too_expensive", "outlook_limits", "better_alternative", "not_useful", "bugs", "other"];
     // No stage (a plain visit, or an extension older than 0.1.28) or one we do
     // not know.
